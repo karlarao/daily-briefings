@@ -83,7 +83,7 @@
   .content strong{font-weight:700}
   .content hr{border:0;border-top:1px solid var(--border);margin:20px 0}
   .content blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid var(--accent);background:var(--surface-2);border-radius:0 6px 6px 0;color:var(--ink-soft)}
-  .pending{color:var(--ink-faint);font-style:italic;padding:20px 0}
+  .content .pending{color:var(--ink-faint);font-style:italic;padding:20px 0}
   .flagbanner{margin:0 0 20px;padding:13px 16px;border:1px solid color-mix(in oklab,var(--urgent) 45%,var(--border));border-left:4px solid var(--urgent);border-radius:8px;background:color-mix(in oklab,var(--urgent) 9%,var(--surface));color:var(--ink)}
   .flagbanner .fb-h{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--urgent);font-weight:700;margin-bottom:5px}
   .flagbanner p{margin:0}.flagbanner p+p{margin-top:6px}
@@ -238,7 +238,7 @@ window.BRIEFINGS = {
       var b=document.createElement("button");b.className="nav-item";b.dataset.id=s.id;
       b.innerHTML="<span class='sdot "+(s.status||"pending")+"'></span>"+
         "<span class='nav-main'><span class='nav-name'>"+s.name+"</span>"+
-        "<span class='nav-meta'>"+(s.updated?("upd "+s.updated):"pending")+" · "+churn(s.freq)+"</span></span>"+meter(s.freq);
+        "<span class='nav-meta'>"+(s.updated?("upd "+s.updated.replace(/^\d{4}-\d{2}-\d{2} /,"")):"pending")+" · "+churn(s.freq)+"</span></span>"+meter(s.freq);
       b.addEventListener("click",function(){select(s.id);});
       grp.appendChild(b);
     });
