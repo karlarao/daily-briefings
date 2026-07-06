@@ -43,6 +43,8 @@ WORKFLOW (one scheduled run, top to bottom):
               │  repeat 18×                            ▲
               └────────────────────────────────────────┘
                                         │  (loop done)
+   Step 4b SYNTHESIS ....... ONE pass over the 18 finished briefs (no web) →
+                                        │       "Today's Trends" cross-topic read
    Step 5  FINALIZE ........ set generated + summary → git add/commit/push ONCE
                                         │
    Step 5b VERIFY .......... confirm the Pages DEPLOYMENT for the pushed commit
@@ -142,7 +144,8 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
 ## WHAT THIS ROUTINE DOES (each scheduled run)
 
 You are an automated engineering-news briefing generator. In one run you:
-1. Produce up to 18 short briefings (each is a web-search digest for the past 30 days).
+1. Produce up to 18 short briefings (each is a web-search digest for the past 30 days),
+   then distill ONE cross-topic "Today's Trends" synthesis from those briefs.
 2. Render them into ONE self-contained HTML dashboard.
 3. Publish that dashboard to GitHub Pages by committing it as claude.html at the
    root of the gh-pages branch and pushing ONCE at the end of the run (one Pages
@@ -240,6 +243,28 @@ If git push fails (auth/network), send one notification saying so — that failu
    e. Do NOT push per-topic. Keep the local file current so a crash still leaves the
       latest built state staged for the single end-of-run push.
 
+4b. SYNTHESIS — "Today's Trends" (ONE extra pass; NO new web research).
+   After all topics complete, write BRIEFINGS.synthesis: a cross-topic trends read
+   whose INPUT is the 18 briefs you just wrote — do not search the web again. It
+   renders as a pinned "◆ Today's Trends" item at the top of the sidebar and is the
+   default landing view; it's the 5-minute read for someone who won't open all 18
+   briefs, so prioritize what changes decisions. Markdown structure:
+     **The 3-minute read** — 3–5 sentences: the day across all briefs.
+     ## Data layer — converging themes
+     ## Application layer — converging themes
+     ## AI, Research & Hardware — converging themes
+     ## Cross-cutting — spans all three groups
+   Rules (hold the same discipline as flag calibration):
+     - A trend = the SAME movement appearing in ≥3 briefs (≥2 within one group if
+       the echo is unmistakable). End EVERY bullet with "→ seen in: Topic · Topic ·
+       Topic" naming the exact source briefs — a convergence you can't attribute to
+       specific briefs doesn't go in.
+     - 2–4 bullets per section. Skip a section — or write "no strong cross-topic
+       trend today" — rather than manufacture a pattern. Quiet synthesis days are
+       normal and honest.
+     - JSON-encode it like `md`. Leave synthesis:"" if (and only if) the briefs
+       genuinely support no synthesis at all.
+
 5. After the loop: set generated=NOW (full "YYYY-MM-DD HH:MM TZ" timestamp) + a
    one-line summary INCLUDING TOKEN SPEND (e.g. "18 topics · 2 flagged · 1 slow ·
    ~830k tokens"). Summary rules:
@@ -303,6 +328,7 @@ with a single assignment:
     window.BRIEFINGS = {
       generated: "YYYY-MM-DD HH:MM TZ",     // full timestamp — includes time of day
       summary:   "one-line run summary",
+      synthesis: "markdown — the Today's Trends cross-topic read (see step 4b); \"\" if none",
       sections: [ /* the 18 section objects, same order & fields as the template */ ]
     };
 
@@ -801,6 +827,10 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .group{margin-top:14px}.group:first-child{margin-top:2px}
   .group-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);padding:4px 8px;display:flex;justify-content:space-between}
   .nav-item{width:100%;text-align:left;background:transparent;border:0;border-radius:8px;padding:9px 10px;margin:1px 0;cursor:pointer;display:flex;align-items:center;gap:9px;color:var(--ink);border-left:2.5px solid transparent}
+  .nav-item.trends{border:1px dashed var(--border);border-left:2.5px solid transparent;margin-bottom:10px;background:var(--surface)}
+  .nav-item.trends .nav-name{color:var(--accent)}
+  .nav-item.trends.active{border-left-color:var(--accent);background:var(--surface-2)}
+  .tdiamond{color:var(--accent);font-size:12px;flex-shrink:0;width:8px;text-align:center}
   .nav-item:hover{background:var(--surface-2)}
   .nav-item.active{background:var(--surface-2);border-left-color:var(--accent)}
   .nav-item:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
@@ -905,6 +935,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
     <p><strong>The two chips are independent.</strong> Churn (the bars) is the lane's permanent character; status is today's result. So <em>quiet + ⚑ flagged</em> means a rarely-newsy lane produced an act-now item today — pay extra attention. <em>Firehose + slow day</em> means an always-busy lane had an unusually dead day — also worth noticing. A quiet lane with a short brief is just normal.</p>
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
     <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
+    <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 18.</p>
   </div>
   <div class="helppanel" id="tokPanel" hidden>
     <div class="hp-head"><span>Token breakdown — this run</span><button class="tbtn" id="tokClose" title="Close">✕</button></div>
@@ -934,6 +965,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
 window.BRIEFINGS = {
   generated: "",
   summary: "",
+  synthesis: "",
   sections: [
     {id:"oltp",       name:"OLTP & Distributed SQL",   group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
     {id:"formats",    name:"Open Formats & CDC",       group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
@@ -1010,6 +1042,16 @@ window.BRIEFINGS = {
     }
     closeUl();return out.join("\n");
   }
+  if(B.synthesis){
+    var tnav=document.createElement("button");tnav.className="nav-item trends";tnav.dataset.id="__trends__";
+    tnav.innerHTML="<span class='tdiamond'>◆</span><span class='nav-main'><span class='nav-name'>Today's Trends</span>"+
+      "<span class='nav-meta'>cross-topic read"+(B.generated?(" · upd "+B.generated.replace(/^\d{4}-\d{2}-\d{2} /,"")):"")+"</span></span>";
+    tnav.addEventListener("click",function(){select("__trends__");});
+    rail.appendChild(tnav);
+    var tchip=document.createElement("button");tchip.className="schip";tchip.dataset.id="__trends__";
+    tchip.innerHTML="◆ Today's Trends";
+    tchip.addEventListener("click",function(){select("__trends__");});strip.appendChild(tchip);
+  }
   GROUPS.forEach(function(g){
     var items=B.sections.filter(function(s){return s.group===g;});
     if(!items.length) return;
@@ -1032,7 +1074,21 @@ window.BRIEFINGS = {
     c.addEventListener("click",function(){select(s.id);});strip.appendChild(c);
   });
   var cur=null;
+  function markActive(id){
+    document.querySelectorAll(".nav-item").forEach(function(n){n.classList.toggle("active",n.dataset.id===id);});
+    document.querySelectorAll(".schip").forEach(function(n){n.classList.toggle("active",n.dataset.id===id);});
+    document.querySelector(".panel").scrollTop=0;
+  }
   function select(id){
+    if(id==="__trends__"){
+      cur=id;
+      document.getElementById("pTitle").textContent="Today's Trends";
+      document.getElementById("eyebrow").innerHTML="<span>SYNTHESIS</span>"+
+        "<span class='chip'>across all "+B.sections.length+" briefs</span>"+
+        (B.generated?"<span>updated "+B.generated+"</span>":"");
+      document.getElementById("content").innerHTML=md2html(B.synthesis);
+      markActive(id);return;
+    }
     var s=byId[id];if(!s)return;cur=id;
     document.getElementById("pTitle").textContent=s.name;
     var st=s.status||"pending";
@@ -1047,9 +1103,7 @@ window.BRIEFINGS = {
       ? "<div class='flagbanner'><span class='fb-h'>⚑ Why this is flagged — act now</span>"+md2html(s.flag_reason)+"</div>"
       : "";
     document.getElementById("content").innerHTML=banner+md2html(s.md);
-    document.querySelectorAll(".nav-item").forEach(function(n){n.classList.toggle("active",n.dataset.id===id);});
-    document.querySelectorAll(".schip").forEach(function(n){n.classList.toggle("active",n.dataset.id===id);});
-    document.querySelector(".panel").scrollTop=0;
+    markActive(id);
   }
   function dateSlug(){return (B.generated||"").slice(0,10)||"undated";}
   function briefMd(s){
@@ -1134,19 +1188,25 @@ window.BRIEFINGS = {
   function allHtml(){
     var done=B.sections.filter(function(s){return s.status&&s.status!=="pending";});
     var head="<p class='kick'>Daily Briefings · "+esc(B.generated||"")+(B.summary?" · "+esc(B.summary):"")+"</p><h1>Daily Briefings</h1>";
+    if(B.synthesis) head+="<section>"+trendsSection()+"</section><hr>";
     var body=done.map(function(s){return "<section>"+briefSection(s)+"</section>";}).join("<hr>");
     return pageHtml("Daily Briefings — "+(B.generated||""), head+body);
   }
+  function trendsMd(){return "# Today's Trends — "+(B.generated||"")+"\n\n"+B.synthesis;}
+  function trendsSection(){return "<h1>Today's Trends</h1><p class='meta'>synthesis across all "+B.sections.length+" briefs · "+esc(B.generated||"")+"</p><article>"+md2html(B.synthesis)+"</article>";}
   document.getElementById("copyBriefBtn").addEventListener("click",function(){
+    if(cur==="__trends__"){copyMd(trendsMd()+"\n", this);return;}
     var s=byId[cur]; if(!s) return; copyMd(briefMd(s), this);
   });
   document.getElementById("copyAllBtn").addEventListener("click",function(){
     var head="# Daily Briefings — "+(B.generated||"")+"\n"+(B.summary?"\n"+B.summary+"\n":"");
+    if(B.synthesis) head+="\n"+trendsMd()+"\n\n---\n";
     var body=B.sections.filter(function(s){return s.status&&s.status!=="pending";})
       .map(function(s){return briefMd(s);}).join("\n\n---\n\n");
     copyMd(head+"\n"+body+"\n", this);
   });
   document.getElementById("htmlBriefBtn").addEventListener("click",function(){
+    if(cur==="__trends__"){exportHtml("briefing-trends-"+dateSlug()+".html", pageHtml("Today's Trends — Daily Briefings","<p class='kick'>Daily Briefings · "+esc(B.generated||"")+"</p>"+trendsSection()), this);return;}
     var s=byId[cur]; if(!s) return; exportHtml("briefing-"+s.id+"-"+dateSlug()+".html", briefHtml(s), this);
   });
   document.getElementById("htmlAllBtn").addEventListener("click",function(){
@@ -1162,8 +1222,11 @@ window.BRIEFINGS = {
   function sysDark(){return window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;}
   function curDark(){var t=root.getAttribute("data-theme");return t?t==="dark":sysDark();}
   tb.addEventListener("click",function(){var n=curDark()?"light":"dark";root.setAttribute("data-theme",n);ti.textContent=n==="dark"?"◑":"◐";});
-  var first=(urgent[0]||B.sections.filter(function(s){return s.status&&s.status!=="pending";})[0]||B.sections[0]);
-  if(first) select(first.id);
+  if(B.synthesis){ select("__trends__"); }
+  else{
+    var first=(urgent[0]||B.sections.filter(function(s){return s.status&&s.status!=="pending";})[0]||B.sections[0]);
+    if(first) select(first.id);
+  }
 })();
 </script>
 ```

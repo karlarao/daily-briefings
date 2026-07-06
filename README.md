@@ -22,6 +22,10 @@ search backend, execution model, model, and run date differ.
 
 (Also available in the dashboard itself — the **`? help`** button, top right.)
 
+- **◆ Today's Trends** (pinned at the top, default landing view) — one synthesis pass across all
+  the briefs: converging themes per group plus cross-cutting ones, each citing its source briefs
+  ("→ seen in: …"). The 5-minute read when you can't do all 18; on a day with no real convergence
+  it says so instead of inventing patterns.
 - **Refresh** — every topic is re-researched from scratch on every run; `upd <timestamp>` is when.
   Nothing is skipped, ever.
 - **Bars = churn** — how much news the lane *typically* produces, not how often it's refreshed:
