@@ -13,32 +13,39 @@ search backend, execution model, model, and run date differ.
 
 | Side | Output | Produced by | Status |
 |---|---|---|---|
-| **Claude** | [`docs/claude.html`](docs/claude.html) | Claude Code cloud routine (WebSearch) → `git push` | live |
-| **Codex** | `docs/codex.html` | GitHub Actions → OpenAI Responses API (`web_search`) | pending |
+| **Claude** | `claude.html` | Claude Code cloud routine (WebSearch) → `git push` | live |
+| **Codex** | `codex.html` | GitHub Actions → OpenAI Responses API (`web_search`) | pending |
 
-`docs/index.html` is a static landing page linking both.
+`index.html` is a static landing page linking both.
 
-## Layout
+## How Pages is served — the `gh-pages` branch
+
+This repo serves Pages from the **root of the `gh-pages` branch** (classic model). Two branches,
+two jobs:
 
 ```
-pages-briefings-routine-prompt.md   # the routine prompt (paste into ONE Claude Code cloud routine)
-docs/
-  index.html    # static Claude-vs-Codex landing page (committed once, not touched by the routine)
-  claude.html   # Claude side — REBUILT + pushed every run (placeholder until the first run)
-  codex.html    # Codex side — pending
-  .nojekyll     # tells Pages to serve the HTML verbatim
+main        (source)            gh-pages   (published site — served at the repo root)
+├── pages-briefings-...-prompt.md   ├── index.html    # static Claude-vs-Codex landing page
+└── README.md                       ├── claude.html   # Claude side — REBUILT + pushed every run
+                                     ├── codex.html    # Codex side — pending
+                                     └── .nojekyll     # serve HTML verbatim (no Jekyll)
 ```
+
+- **`main`** holds the *source*: the routine prompt and this README.
+- **`gh-pages`** IS the *site*: whatever is at its root is what `karlarao.github.io/daily-briefings/`
+  serves. `index.html` is static (edit it here directly); `claude.html` is overwritten each run.
 
 ## How the Claude routine publishes
 
 The routine runs attached to this repo (already cloned & authenticated by the GitHub App — no PAT).
-Each run it: bootstraps the repo, researches the 18 briefs, rebuilds `docs/claude.html` locally, then
-does **one** commit + `git push` at the end (one Pages build per run). It sends a single push
-notification only if the push failed, or if a brief flagged something act-now urgent.
+Each run it: checks out `gh-pages`, researches the 18 briefs, rebuilds `claude.html` locally, then
+does **one** commit + `git push origin gh-pages` at the end (one Pages build per run). It leaves
+`index.html` / `codex.html` untouched, and sends a single push notification only if the push failed
+or a brief flagged something act-now urgent.
 
 Full mechanics live in [`pages-briefings-routine-prompt.md`](pages-briefings-routine-prompt.md).
 
 ## One-time GitHub Pages setup
 
-Repo **Settings → Pages → Build and deployment → Deploy from a branch → `main` / `/docs`**.
-The `docs/.nojekyll` file is already present so Pages serves the HTML as-is.
+Repo **Settings → Pages → Build and deployment → Deploy from a branch → `gh-pages` / `(root)`**.
+The root `.nojekyll` is already present so Pages serves the HTML as-is.

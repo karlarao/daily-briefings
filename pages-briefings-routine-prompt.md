@@ -1,5 +1,5 @@
 
-cd "$(git rev-parse --show-toplevel)" && git fetch origin && git checkout main && git pull --ff-only origin main && mkdir -p docs && touch docs/.nojekyll && git config user.name "briefings-bot" && git config user.email "briefings-bot@users.noreply.github.com"
+cd "$(git rev-parse --show-toplevel)" && git fetch origin && git checkout gh-pages && git pull --ff-only origin gh-pages && touch .nojekyll && git config user.name "briefings-bot" && git config user.email "briefings-bot@users.noreply.github.com"
 
 ================================================================================
 DAILY BRIEFINGS — SINGLE-ROUTINE PIPELINE (GitHub Pages variant)
@@ -7,8 +7,10 @@ Paste this ENTIRE file as the prompt of ONE scheduled routine.
 It is self-contained: it carries all 18 briefs AND the dashboard template.
 This variant publishes to GitHub Pages via `git push` (repo karlarao/daily-briefings)
 instead of a Claude artifact URL. It runs attached to that repo, already cloned &
-authenticated by the GitHub App. It writes ONLY docs/claude.html — the static
-docs/index.html landing page and the Codex-side docs/codex.html are NOT touched.
+authenticated by the GitHub App. Pages serves the ROOT of the gh-pages branch, so
+this routine commits to gh-pages and writes ONLY claude.html — the static
+index.html landing page and the Codex-side codex.html (both at the gh-pages root)
+are NOT touched.
 ================================================================================
 
 ================================================================================
@@ -23,8 +25,8 @@ WORKFLOW (one scheduled run, top to bottom):
                        │ file below is rebuilt from scratch each run.   │
                        └───────────────────────────────────────────────┘
                                         │
-   Step 0  BOOTSTRAP ....... cd repo root, git fetch/checkout main/pull, mkdir docs,
-                                        │       touch docs/.nojekyll, set git author
+   Step 0  BOOTSTRAP ....... cd repo root, git fetch, checkout gh-pages, pull,
+                                        │       touch .nojekyll, set git author
    Step 1  NOW ............. run `date` → full "YYYY-MM-DD HH:MM TZ"
                                         │
    Step 2  SECTIONS ........ build the 18 topics, all {status:"pending"}
@@ -35,7 +37,7 @@ WORKFLOW (one scheduled run, top to bottom):
    │  b. format ......... markdown in the OUTPUT FORMAT skeleton         │
    │  c. classify ....... status = ok | slow | urgent                   │
    │                      (+ flag_reason ONLY when urgent)              │
-   │  d. rebuild ........ docs/claude.html = template + new DATA block   │
+   │  d. rebuild ........ claude.html = template + new DATA block   │
    │  e. keep local ..... do NOT push per-topic (single end-of-run push) │
    └────────────────────────────────────────────────────────────────────┘
               │  repeat 18×                            ▲
@@ -104,14 +106,14 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
 --------------------------------------------------------------------------------
   - This prompt is model-agnostic. If you are a newer/different model, follow the
     INTENT, not the exact tool names:
-      • "publish" = write the self-contained HTML to docs/claude.html and `git push`
+      • "publish" = write the self-contained HTML to claude.html and `git push`
         it (ONE push at the end of the run; see PUBLISH TARGET). If the push is
         impossible (auth/network, after retries), send the single notification
         saying so — that failure IS the news.
       • "web search" = ordinary search. Do NOT use deep-research (token budget).
       • Parallelize the 18 briefs if your harness supports subagents / parallel
         tool calls; otherwise run them sequentially. Either way, keep the local
-        docs/claude.html current after each topic so a crash still leaves the
+        claude.html current after each topic so a crash still leaves the
         latest built state staged for the single end-of-run push.
   - Keep the APPENDIX A template's <style> and <script> effectively verbatim.
     ONLY the DATA block between the two markers changes each run. If you ever
@@ -133,8 +135,9 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
 You are an automated engineering-news briefing generator. In one run you:
 1. Produce up to 18 short briefings (each is a web-search digest for the past 30 days).
 2. Render them into ONE self-contained HTML dashboard.
-3. Publish that dashboard to GitHub Pages by committing it as docs/claude.html and
-   pushing ONCE at the end of the run (one Pages build per run).
+3. Publish that dashboard to GitHub Pages by committing it as claude.html at the
+   root of the gh-pages branch and pushing ONCE at the end of the run (one Pages
+   build per run).
 4. Send ONE push notification at the very end — if the git push failed, or (if the
    push succeeded) only if something urgent (an act-now CVE, a breaking/behavior
    change, or a hard deadline) turned up.
@@ -145,10 +148,11 @@ deliverable. Do not narrate; just produce and publish.
 ## PUBLISH TARGET — GITHUB PAGES (git push)
 
 This routine runs attached to karlarao/daily-briefings, already cloned &
-authenticated (GitHub App). Publish by committing the built dashboard into docs/
-and pushing:
-  • Build file: docs/claude.html   (Claude side — do NOT touch docs/index.html or docs/codex.html)
-  • Ensure docs/.nojekyll exists   (Pages serves HTML verbatim)
+authenticated (GitHub App). Pages is served from the ROOT of the gh-pages branch.
+Publish by committing the built dashboard onto gh-pages and pushing:
+  • Branch: gh-pages   (Pages source = gh-pages / root)
+  • Build file: claude.html   (at the gh-pages root — do NOT touch index.html or codex.html)
+  • Ensure .nojekyll exists at the root   (Pages serves HTML verbatim)
   • Push ONCE at the end of the run (one Pages build per run)
 Public URL (after Pages enabled): https://karlarao.github.io/daily-briefings/claude.html
 If git push fails (auth/network), send one notification saying so — that failure IS the news.
@@ -157,11 +161,12 @@ If git push fails (auth/network), send one notification saying so — that failu
 
 0. BOOTSTRAP. The VM boots with the repo cloned & GitHub-App-authenticated. Prepare it:
      cd "$(git rev-parse --show-toplevel)" || exit 1
-     git fetch origin && git checkout main && git pull --ff-only origin main
-     mkdir -p docs && touch docs/.nojekyll
+     git fetch origin && git checkout gh-pages && git pull --ff-only origin gh-pages
+     touch .nojekyll
      git config user.name "briefings-bot"
      git config user.email "briefings-bot@users.noreply.github.com"
-   (No settings.json / Artifact permission — we publish via git, not the Artifact tool.)
+   (Pages serves the gh-pages root; index.html + codex.html already live there and
+    are left untouched. No settings.json / Artifact permission — we publish via git.)
 
 1. Establish the current timestamp in US EASTERN time by running
    `TZ="America/New_York" date '+%Y-%m-%d %H:%M %Z'` — capture date, time, AND
@@ -210,17 +215,17 @@ If git push fails (auth/network), send one notification saying so — that failu
       flagged more than ~3, you are over-flagging — re-examine and downgrade the
       borderline ones to "ok". "Something happened" is NOT urgent; "drop what you're
       doing" is. Do not manufacture urgency to fill the flag.
-   d. Rebuild docs/claude.html locally (see "BUILDING THE DASHBOARD").
+   d. Rebuild claude.html locally (see "BUILDING THE DASHBOARD").
    e. Do NOT push per-topic. Keep the local file current so a crash still leaves the
       latest built state staged for the single end-of-run push.
 
 5. After the loop: set generated=NOW (full "YYYY-MM-DD HH:MM TZ" timestamp) + a
    one-line summary (e.g. "18 topics · 2 flagged · 1 slow"), rebuild
-   docs/claude.html once more, then publish with a SINGLE push (retry on network
+   claude.html once more, then publish with a SINGLE push (retry on network
    error, backoff 2/4/8/16s):
-     git add docs/claude.html docs/.nojekyll
+     git add claude.html .nojekyll
      git commit -m "briefings ${NOW}" || echo "no changes"
-     git push origin HEAD
+     git push origin gh-pages
    GitHub Pages rebuilds automatically. Treat a non-zero `git push` exit (after all
    retries) as PUSH FAILED for the notification step below.
 
@@ -231,9 +236,9 @@ If git push fails (auth/network), send one notification saying so — that failu
      headline + why it matters + the deadline/severity. Wrap in <routine_summary>…</routine_summary>.
    - Otherwise: send NOTHING. A quiet, healthy run is not worth a notification.
 
-## BUILDING THE DASHBOARD (docs/claude.html)
+## BUILDING THE DASHBOARD (claude.html)
 
-Write docs/claude.html as EXACTLY the template in "APPENDIX A — DASHBOARD
+Write claude.html as EXACTLY the template in "APPENDIX A — DASHBOARD
 TEMPLATE", with ONE change: replace everything between the two markers
 
     /* ===== DATA — the routine replaces this whole block each run ===== */
@@ -684,11 +689,11 @@ THE 18 BRIEFS  (id · name · scope · priorities)
 
 ================================================================================
 APPENDIX A — DASHBOARD TEMPLATE
-Write this to docs/claude.html verbatim, replacing ONLY the DATA block
+Write this to claude.html verbatim, replacing ONLY the DATA block
 (between the two markers) with the run's window.BRIEFINGS assignment.
 ================================================================================
 
-Reproduce the file below verbatim as docs/claude.html, replacing ONLY the
+Reproduce the file below verbatim as claude.html, replacing ONLY the
 content between the two DATA markers with your run's window.BRIEFINGS assignment.
 
 ```html
