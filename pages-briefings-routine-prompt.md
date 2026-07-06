@@ -83,7 +83,11 @@ HOW TO ADD A NEW TOPIC
        - `group` MUST equal one of the three GROUPS strings exactly
          ("Data layer", "Application layer", "AI, Research & Hardware"), OR add a
          new group (see next section).
-       - `freq` = 1 | 2 | 3  → the meter dots (cosmetic: 1=low churn, 3=daily).
+       - `freq` = 1 | 2 | 3  → the churn meter, display-only: sets both the bars AND
+         the label the dashboard shows (3=▮▮▮ "firehose", 2=▮▮ "steady", 1=▮ "quiet"
+         — how newsy the lane typically is). It does NOT affect what runs — all
+         topics run every run. The `cadence` field still exists in the data for
+         contract stability but is no longer displayed anywhere.
        - keep the defaults: updated:"", status:"pending", md:"", flag_reason:"".
   4. If it overlaps an existing topic's lane, add a line to DEDUP BOUNDARY so they
      don't double-report.
@@ -101,7 +105,7 @@ HOW TO EDIT / REMOVE A TOPIC
 --------------------------------------------------------------------------------
   - Change Scope or Priorities only .......... edit ONLY the "THE 18 BRIEFS" entry.
   - Rename / move group / change cadence ..... edit BOTH places (must match).
-  - Change freq (meter dots) ................. edit ONLY the template DATA object.
+  - Change freq (churn bars + label) ......... edit ONLY the template DATA object.
   - Remove a topic ........................... delete it from BOTH places.
 
 --------------------------------------------------------------------------------
@@ -232,9 +236,14 @@ If git push fails (auth/network), send one notification saying so — that failu
       latest built state staged for the single end-of-run push.
 
 5. After the loop: set generated=NOW (full "YYYY-MM-DD HH:MM TZ" timestamp) + a
-   one-line summary (e.g. "18 topics · 2 flagged · 1 slow"), rebuild
-   claude.html once more, then publish with a SINGLE push (retry on network
-   error, backoff 2/4/8/16s):
+   one-line summary INCLUDING TOKEN SPEND (e.g. "18 topics · 2 flagged · 1 slow ·
+   ~830k tokens"). Token accounting: as each research subagent completes, your
+   harness reports its token usage in the completion result — keep a running total
+   across all 18 and round to the nearest ~5k for the summary. It's a volume gauge
+   (subagent tokens only; orchestration overhead not included), not a bill. If your
+   harness does not report per-agent usage, OMIT the token segment entirely —
+   never estimate it. Then rebuild claude.html once more and publish with a
+   SINGLE push (retry on network error, backoff 2/4/8/16s):
      git add claude.html .nojekyll
      git commit -m "briefings ${NOW}" || echo "no changes"
      git push origin gh-pages
@@ -825,6 +834,14 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .flagbanner .fb-h{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--urgent);font-weight:700;margin-bottom:5px}
   .flagbanner p{margin:0}.flagbanner p+p{margin-top:6px}
   .flagbanner a{color:var(--urgent);border-bottom:1px solid color-mix(in oklab,var(--urgent) 40%,transparent)}
+  .helppanel{margin:14px 22px 0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 18px;font-size:13.5px;line-height:1.55}
+  .helppanel[hidden]{display:none}
+  .helppanel .hp-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-bottom:6px}
+  .helppanel p{margin:8px 0}
+  .helppanel ul{margin:6px 0;padding-left:22px}
+  .helppanel li{margin:4px 0}
+  .helppanel code{font-family:var(--mono);font-size:.9em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+  .helppanel .sdot{display:inline-block;vertical-align:middle;margin-right:2px}
   .strip{display:none}
   @media (max-width:860px){
     .app{grid-template-columns:1fr}.rail{display:none}
@@ -849,8 +866,29 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
       <button class="tbtn" id="htmlBriefBtn" title="Open this brief as a standalone HTML page in a new tab — then Ctrl/Cmd+S to save or share">↗ brief.html</button>
       <button class="tbtn" id="htmlAllBtn" title="Open all briefs as one standalone HTML page in a new tab — then Ctrl/Cmd+S to save or share">↗ all.html</button>
       <button class="tbtn" id="themeBtn"><span id="themeIcon">◐</span> theme</button>
+      <button class="tbtn" id="helpBtn" title="How to read this dashboard">? help</button>
     </div>
   </header>
+  <div class="helppanel" id="helpPanel" hidden>
+    <div class="hp-head"><span>How to read this dashboard</span><button class="tbtn" id="helpClose" title="Close">✕</button></div>
+    <p><strong>Refresh.</strong> Every topic is re-researched from scratch on every run — <code>upd &lt;timestamp&gt;</code> is when. Nothing is skipped.</p>
+    <p><strong>Bars = how much news the lane typically produces</strong> (not how often it's refreshed):</p>
+    <ul>
+      <li><code>▮▮▮</code> <strong>firehose</strong> — news practically daily (OLTP, Frontend, DevOps, AI Daily…)</li>
+      <li><code>▮▮&nbsp;</code> <strong>steady</strong> — regular but not constant (Snowflake, Databricks, BigQuery…)</li>
+      <li><code>▮&nbsp;&nbsp;</code> <strong>quiet</strong> — slow-moving lane (Oracle, Redshift, Fabric, Mobile…)</li>
+    </ul>
+    <p><strong>Status dots = what today's research found:</strong></p>
+    <ul>
+      <li><span class="sdot ok"></span> <strong>fresh</strong> — researched, nothing act-now</li>
+      <li><span class="sdot urgent"></span> <strong>⚑ flagged</strong> — act-now item (the red banner at the top of the brief names it)</li>
+      <li><span class="sdot slow"></span> <strong>slow day</strong> — genuinely little news in this lane today</li>
+      <li><span class="sdot pending"></span> <strong>pending</strong> — not yet built this run</li>
+    </ul>
+    <p><strong>The two chips are independent.</strong> Churn (the bars) is the lane's permanent character; status is today's result. So <em>quiet + ⚑ flagged</em> means a rarely-newsy lane produced an act-now item today — pay extra attention. <em>Firehose + slow day</em> means an always-busy lane had an unusually dead day — also worth noticing. A quiet lane with a short brief is just normal.</p>
+    <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
+    <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill.</p>
+  </div>
   <div class="strip" id="strip"></div>
   <div class="app">
     <nav class="rail" id="rail"></nav>
@@ -909,6 +947,7 @@ window.BRIEFINGS = {
   document.getElementById("runFlag").textContent = urgent.length ? ("⚑ "+urgent.length+" flagged: "+urgent.map(function(s){return s.name;}).join(", ")) : "";
   document.getElementById("subline").textContent = B.generated ? ("last run "+B.generated+(B.summary?" · "+B.summary:"")) : "awaiting first run";
   function meter(f){var s="<span class='meter'>";for(var i=1;i<=3;i++)s+="<i class='"+(i<=f?"on":"")+"'></i>";return s+"</span>";}
+  function churn(f){return f===3?"firehose":(f===2?"steady":"quiet");}
   function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
   function md2html(src){
     if(!src) return "<p class='pending'>Awaiting first run…</p>";
@@ -945,7 +984,7 @@ window.BRIEFINGS = {
       var b=document.createElement("button");b.className="nav-item";b.dataset.id=s.id;
       b.innerHTML="<span class='sdot "+(s.status||"pending")+"'></span>"+
         "<span class='nav-main'><span class='nav-name'>"+s.name+"</span>"+
-        "<span class='nav-meta'>"+(s.updated?("upd "+s.updated):"pending")+" · "+s.cadence+"</span></span>"+meter(s.freq);
+        "<span class='nav-meta'>"+(s.updated?("upd "+s.updated):"pending")+" · "+churn(s.freq)+"</span></span>"+meter(s.freq);
       b.addEventListener("click",function(){select(s.id);});
       grp.appendChild(b);
     });
@@ -964,7 +1003,7 @@ window.BRIEFINGS = {
     var chipCls=st==="urgent"?"chip urgent":(st==="ok"?"chip ok":"chip");
     var stLabel=st==="urgent"?"⚑ flagged":(st==="ok"?"fresh":(st==="slow"?"slow day":"pending"));
     document.getElementById("eyebrow").innerHTML="<span>"+s.group.toUpperCase()+"</span>"+
-      "<span class='chip'>"+meter(s.freq)+" "+s.cadence+"</span>"+
+      "<span class='chip'>"+meter(s.freq)+" "+churn(s.freq)+"</span>"+
       "<span class='"+chipCls+"'>"+stLabel+"</span>"+
       (s.updated?"<span>updated "+s.updated+"</span>":"");
     var banner = (st==="urgent" && s.flag_reason)
@@ -978,7 +1017,7 @@ window.BRIEFINGS = {
   function dateSlug(){return (B.generated||"").slice(0,10)||"undated";}
   function briefMd(s){
     var parts=["# "+s.name,""];
-    var meta=[s.group, s.cadence, (s.status||"pending").toUpperCase()];
+    var meta=[s.group, churn(s.freq), (s.status||"pending").toUpperCase()];
     if(s.updated) meta.push("updated "+s.updated);
     parts.push("_"+meta.join(" · ")+"_","");
     if(s.status==="urgent" && s.flag_reason){
@@ -1045,7 +1084,7 @@ window.BRIEFINGS = {
       +"<title>"+esc(title)+"</title><style>"+DOC_CSS+"</style></head><body><main>"+inner+"</main></body></html>";
   }
   function briefSection(s){
-    var meta=[s.group,s.cadence,(s.status||"pending").toUpperCase()];
+    var meta=[s.group,churn(s.freq),(s.status||"pending").toUpperCase()];
     if(s.updated) meta.push("updated "+s.updated);
     var banner=(s.status==="urgent"&&s.flag_reason)?"<div class='flag'><strong>⚑ Act now — </strong>"+md2html(s.flag_reason)+"</div>":"";
     return "<h1>"+esc(s.name)+"</h1><p class='meta'>"+esc(meta.join(" · "))+"</p>"+banner+"<article>"+md2html(s.md)+"</article>";
@@ -1074,6 +1113,9 @@ window.BRIEFINGS = {
   document.getElementById("htmlAllBtn").addEventListener("click",function(){
     exportHtml("daily-briefings-"+dateSlug()+".html", allHtml(), this);
   });
+  var hb=document.getElementById("helpBtn"),hp=document.getElementById("helpPanel");
+  hb.addEventListener("click",function(){hp.hidden=!hp.hidden;});
+  document.getElementById("helpClose").addEventListener("click",function(){hp.hidden=true;});
   var root=document.documentElement,tb=document.getElementById("themeBtn"),ti=document.getElementById("themeIcon");
   function sysDark(){return window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;}
   function curDark(){var t=root.getAttribute("data-theme");return t?t==="dark":sysDark();}

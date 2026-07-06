@@ -18,6 +18,26 @@ search backend, execution model, model, and run date differ.
 
 `index.html` is a static landing page linking both.
 
+## How to read the dashboard
+
+(Also available in the dashboard itself — the **`? help`** button, top right.)
+
+- **Refresh** — every topic is re-researched from scratch on every run; `upd <timestamp>` is when.
+  Nothing is skipped, ever.
+- **Bars = churn** — how much news the lane *typically* produces, not how often it's refreshed:
+  `▮▮▮ firehose` (news practically daily: OLTP, Frontend, AI Daily…) · `▮▮ steady` (Snowflake,
+  Databricks, BigQuery…) · `▮ quiet` (slow-moving lane: Oracle, Redshift, Fabric, Mobile…).
+- **Status dots = what today's research found** — green `fresh` (nothing act-now), red `⚑ flagged`
+  (act-now item; the red banner in the brief names it), grey `slow day` (genuinely little news
+  today), hollow `pending` (not yet built this run).
+- **The two chips are independent.** Churn is the lane's permanent character; status is today's
+  result. `quiet + ⚑ flagged` = a rarely-newsy lane produced an act-now item — pay extra attention.
+  `firehose + slow day` = an always-busy lane had an unusually dead day — also worth noticing.
+- **⚑ Flagged** = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard
+  deadline within ~14 days. Expect 0–3 flags on a normal day.
+- **Tokens** (in the summary line) = total spent by the research subagents that run — a volume
+  gauge for cost trending, not an exact bill.
+
 ## How Pages is served — the `gh-pages` branch
 
 This repo serves Pages from the **root of the `gh-pages` branch** (classic model). Two branches,
