@@ -54,8 +54,8 @@ WORKFLOW (one scheduled run, top to bottom):
                                      ( done )
 
    Per-topic data model (one object per topic):
-     { id, name, group, cadence, freq, updated, status, md, flag_reason }
-     the run CHANGES only ──▶  updated · status · md · flag_reason
+     { id, name, group, cadence, freq, updated, status, tokens, md, flag_reason }
+     the run CHANGES only ──▶  updated · status · tokens · md · flag_reason
      id / name / group / cadence / freq  stay identical to the template defaults.
 
 --------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ HOW TO ADD A NEW TOPIC
          — how newsy the lane typically is). It does NOT affect what runs — all
          topics run every run. The `cadence` field still exists in the data for
          contract stability but is no longer displayed anywhere.
-       - keep the defaults: updated:"", status:"pending", md:"", flag_reason:"".
+       - keep the defaults: updated:"", status:"pending", tokens:0, md:"", flag_reason:"".
   4. If it overlaps an existing topic's lane, add a line to DEDUP BOUNDARY so they
      don't double-report.
   5. Cosmetic-only: the literal "18" appears in the header, "WHAT THIS ROUTINE
@@ -227,6 +227,11 @@ If git push fails (auth/network), send one notification saying so — that failu
                               top of the flagged brief so the reader sees WHAT is
                               flagged without hunting through the whole brief.
                               JSON-encode it like `md`. Leave it "" for non-urgent.
+        section.tokens  = the token usage your harness reported for this topic's
+                          research subagent when it completed (an integer). Set 0 if
+                          your harness does not report per-agent usage — the
+                          dashboard's "Σ tokens" breakdown and the per-brief token
+                          chip simply hide when the value is 0. Never estimate.
       CALIBRATION: expect 0–3 "urgent" across ALL topics on a normal day. If you
       flagged more than ~3, you are over-flagging — re-examine and downgrade the
       borderline ones to "ok". "Something happened" is NOT urgent; "drop what you're
@@ -237,12 +242,13 @@ If git push fails (auth/network), send one notification saying so — that failu
 
 5. After the loop: set generated=NOW (full "YYYY-MM-DD HH:MM TZ" timestamp) + a
    one-line summary INCLUDING TOKEN SPEND (e.g. "18 topics · 2 flagged · 1 slow ·
-   ~830k tokens"). Token accounting: as each research subagent completes, your
-   harness reports its token usage in the completion result — keep a running total
-   across all 18 and round to the nearest ~5k for the summary. It's a volume gauge
-   (subagent tokens only; orchestration overhead not included), not a bill. If your
-   harness does not report per-agent usage, OMIT the token segment entirely —
-   never estimate it. Then rebuild claude.html once more and publish with a
+   ~830k tokens"). Summary rules:
+     - The token total = sum of the per-section `tokens` values (see step 4), rounded
+       to the nearest ~5k. If no per-agent usage was reported (all zeros), OMIT the
+       token segment entirely — never estimate it.
+     - OMIT the "N slow" segment when the slow count is 0 (a zero adds noise);
+       always keep the flagged count, even when it's 0.
+   Then rebuild claude.html once more and publish with a
    SINGLE push (retry on network error, backoff 2/4/8/16s):
      git add claude.html .nojekyll
      git commit -m "briefings ${NOW}" || echo "no changes"
@@ -300,13 +306,14 @@ with a single assignment:
       sections: [ /* the 18 section objects, same order & fields as the template */ ]
     };
 
-Each section object = {id, name, group, cadence, freq, updated, status, md, flag_reason}.
-`updated` is also a full "YYYY-MM-DD HH:MM TZ" timestamp.
+Each section object = {id, name, group, cadence, freq, updated, status, tokens, md, flag_reason}.
+`updated` is also a full "YYYY-MM-DD HH:MM TZ" timestamp. `tokens` is an integer
+(the topic's research-subagent usage; 0 when unknown — the UI hides zeros).
 Keep id/name/group/cadence/freq identical to the template's defaults; only
-updated/status/md/flag_reason change per run. `md` and `flag_reason` are JavaScript
-strings — JSON-encode them (escape quotes, backslashes, and newlines) so the file
-stays valid JS. `flag_reason` is "" unless status is "urgent". Do not alter any HTML
-or the <script> logic below the DATA block.
+updated/status/tokens/md/flag_reason change per run. `md` and `flag_reason` are
+JavaScript strings — JSON-encode them (escape quotes, backslashes, and newlines) so
+the file stays valid JS. `flag_reason` is "" unless status is "urgent". Do not alter
+any HTML or the <script> logic below the DATA block.
 
 ================================================================================
 SHARED RULES  (apply to EVERY brief)
@@ -842,6 +849,15 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .helppanel li{margin:4px 0}
   .helppanel code{font-family:var(--mono);font-size:.9em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
   .helppanel .sdot{display:inline-block;vertical-align:middle;margin-right:2px}
+  .tokrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin:4px 0}
+  .tokrow .tname{flex:0 0 230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tokrow .tval{flex:0 0 56px;text-align:right;font-variant-numeric:tabular-nums}
+  .tokrow .tbar{flex:1;height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+  .tokrow .tbar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+  .tokrow .tpct{flex:0 0 46px;text-align:right;color:var(--ink-faint)}
+  .tokrow.total{border-top:1px solid var(--border);padding-top:7px;margin-top:9px;font-weight:700}
+  .tok-note{color:var(--ink-faint);font-size:12px}
+  @media (max-width:700px){.tokrow .tname{flex-basis:140px}.tokrow .tpct{display:none}}
   .strip{display:none}
   @media (max-width:860px){
     .app{grid-template-columns:1fr}.rail{display:none}
@@ -866,6 +882,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
       <button class="tbtn" id="htmlBriefBtn" title="Open this brief as a standalone HTML page in a new tab — then Ctrl/Cmd+S to save or share">↗ brief.html</button>
       <button class="tbtn" id="htmlAllBtn" title="Open all briefs as one standalone HTML page in a new tab — then Ctrl/Cmd+S to save or share">↗ all.html</button>
       <button class="tbtn" id="themeBtn"><span id="themeIcon">◐</span> theme</button>
+      <button class="tbtn" id="tokBtn" title="Per-topic token breakdown for this run">Σ tokens</button>
       <button class="tbtn" id="helpBtn" title="How to read this dashboard">? help</button>
     </div>
   </header>
@@ -887,7 +904,12 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
     </ul>
     <p><strong>The two chips are independent.</strong> Churn (the bars) is the lane's permanent character; status is today's result. So <em>quiet + ⚑ flagged</em> means a rarely-newsy lane produced an act-now item today — pay extra attention. <em>Firehose + slow day</em> means an always-busy lane had an unusually dead day — also worth noticing. A quiet lane with a short brief is just normal.</p>
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
-    <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill.</p>
+    <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
+  </div>
+  <div class="helppanel" id="tokPanel" hidden>
+    <div class="hp-head"><span>Token breakdown — this run</span><button class="tbtn" id="tokClose" title="Close">✕</button></div>
+    <div id="tokBody"></div>
+    <p class="tok-note">Research-agent tokens only (orchestration overhead not included) — a volume gauge, not a bill.</p>
   </div>
   <div class="strip" id="strip"></div>
   <div class="app">
@@ -913,24 +935,24 @@ window.BRIEFINGS = {
   generated: "",
   summary: "",
   sections: [
-    {id:"oltp",       name:"OLTP & Distributed SQL",   group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"formats",    name:"Open Formats & CDC",       group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"oracle",     name:"Oracle",                   group:"Data layer",              cadence:"Weekly",    freq:1, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"snowflake",  name:"Snowflake",                group:"Data layer",              cadence:"2–3×/week", freq:2, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"databricks", name:"Databricks",               group:"Data layer",              cadence:"2–3×/week", freq:2, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"bigquery",   name:"BigQuery",                 group:"Data layer",              cadence:"2×/week",   freq:2, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"redshift",   name:"Redshift",                 group:"Data layer",              cadence:"Weekly",    freq:1, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"fabric",     name:"Microsoft Fabric / Synapse",group:"Data layer",             cadence:"Weekly",    freq:1, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"challengers",name:"Cloud DW Challengers",     group:"Data layer",              cadence:"2×/week",   freq:2, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"dbhw",       name:"Database Hardware",        group:"Data layer",              cadence:"2×/week",   freq:2, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"appdev",     name:"App Dev (Backend)",        group:"Application layer",        cadence:"Daily",     freq:3, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"aiappdev",   name:"AI App Dev",               group:"Application layer",        cadence:"Daily",     freq:3, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"frontend",   name:"Frontend & Web Platform",  group:"Application layer",        cadence:"Daily",     freq:3, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"devops",     name:"Platform & DevOps",        group:"Application layer",        cadence:"Daily",     freq:3, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"mobile",     name:"Mobile Development",       group:"Application layer",        cadence:"Weekly",    freq:1, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"aidaily",    name:"AI Daily",                 group:"AI, Research & Hardware",  cadence:"Daily",     freq:3, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"nl2sql",     name:"NL2SQL / Text-to-SQL",     group:"AI, Research & Hardware",  cadence:"Daily",     freq:3, updated:"", status:"pending", md:"", flag_reason:""},
-    {id:"aihw",       name:"AI Hardware",              group:"AI, Research & Hardware",  cadence:"Daily",     freq:3, updated:"", status:"pending", md:"", flag_reason:""}
+    {id:"oltp",       name:"OLTP & Distributed SQL",   group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"formats",    name:"Open Formats & CDC",       group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"oracle",     name:"Oracle",                   group:"Data layer",              cadence:"Weekly",    freq:1, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"snowflake",  name:"Snowflake",                group:"Data layer",              cadence:"2–3×/week", freq:2, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"databricks", name:"Databricks",               group:"Data layer",              cadence:"2–3×/week", freq:2, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"bigquery",   name:"BigQuery",                 group:"Data layer",              cadence:"2×/week",   freq:2, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"redshift",   name:"Redshift",                 group:"Data layer",              cadence:"Weekly",    freq:1, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"fabric",     name:"Microsoft Fabric / Synapse",group:"Data layer",             cadence:"Weekly",    freq:1, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"challengers",name:"Cloud DW Challengers",     group:"Data layer",              cadence:"2×/week",   freq:2, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"dbhw",       name:"Database Hardware",        group:"Data layer",              cadence:"2×/week",   freq:2, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"appdev",     name:"App Dev (Backend)",        group:"Application layer",        cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"aiappdev",   name:"AI App Dev",               group:"Application layer",        cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"frontend",   name:"Frontend & Web Platform",  group:"Application layer",        cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"devops",     name:"Platform & DevOps",        group:"Application layer",        cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"mobile",     name:"Mobile Development",       group:"Application layer",        cadence:"Weekly",    freq:1, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"aidaily",    name:"AI Daily",                 group:"AI, Research & Hardware",  cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"nl2sql",     name:"NL2SQL / Text-to-SQL",     group:"AI, Research & Hardware",  cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"aihw",       name:"AI Hardware",              group:"AI, Research & Hardware",  cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""}
   ]
 };
 /* ===== end DATA ===== */
@@ -948,6 +970,20 @@ window.BRIEFINGS = {
   document.getElementById("subline").textContent = B.generated ? ("last run "+B.generated+(B.summary?" · "+B.summary:"")) : "awaiting first run";
   function meter(f){var s="<span class='meter'>";for(var i=1;i<=3;i++)s+="<i class='"+(i<=f?"on":"")+"'></i>";return s+"</span>";}
   function churn(f){return f===3?"firehose":(f===2?"steady":"quiet");}
+  function fmtTok(n){return n>=99500?Math.round(n/1000)+"k":(n>=1000?(n/1000).toFixed(1)+"k":""+n);}
+  function buildTok(){
+    var rows=B.sections.filter(function(s){return (s.tokens||0)>0;}).slice().sort(function(a,b){return (b.tokens||0)-(a.tokens||0);});
+    var body=document.getElementById("tokBody");
+    if(!rows.length){body.innerHTML="<p class='tok-note'>No per-topic token data recorded this run.</p>";return;}
+    var total=rows.reduce(function(t,s){return t+s.tokens;},0), max=rows[0].tokens||1;
+    var h=rows.map(function(s){
+      return "<div class='tokrow'><span class='tname'>"+s.name+"</span><span class='tval'>"+fmtTok(s.tokens)+"</span>"+
+        "<span class='tbar'><i style='width:"+(100*s.tokens/max).toFixed(1)+"%'></i></span>"+
+        "<span class='tpct'>"+(100*s.tokens/total).toFixed(1)+"%</span></div>";
+    }).join("");
+    h+="<div class='tokrow total'><span class='tname'>TOTAL ("+rows.length+" topics)</span><span class='tval'>"+fmtTok(total)+"</span><span class='tbar'></span><span class='tpct'></span></div>";
+    body.innerHTML=h;
+  }
   function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
   function md2html(src){
     if(!src) return "<p class='pending'>Awaiting first run…</p>";
@@ -1005,7 +1041,8 @@ window.BRIEFINGS = {
     document.getElementById("eyebrow").innerHTML="<span>"+s.group.toUpperCase()+"</span>"+
       "<span class='chip'>"+meter(s.freq)+" "+churn(s.freq)+"</span>"+
       "<span class='"+chipCls+"'>"+stLabel+"</span>"+
-      (s.updated?"<span>updated "+s.updated+"</span>":"");
+      (s.updated?"<span>updated "+s.updated+"</span>":"")+
+      ((s.tokens||0)>0?"<span>"+fmtTok(s.tokens)+" tok</span>":"");
     var banner = (st==="urgent" && s.flag_reason)
       ? "<div class='flagbanner'><span class='fb-h'>⚑ Why this is flagged — act now</span>"+md2html(s.flag_reason)+"</div>"
       : "";
@@ -1019,6 +1056,7 @@ window.BRIEFINGS = {
     var parts=["# "+s.name,""];
     var meta=[s.group, churn(s.freq), (s.status||"pending").toUpperCase()];
     if(s.updated) meta.push("updated "+s.updated);
+    if((s.tokens||0)>0) meta.push(fmtTok(s.tokens)+" tok");
     parts.push("_"+meta.join(" · ")+"_","");
     if(s.status==="urgent" && s.flag_reason){
       parts.push("> ⚑ **Act now:** "+s.flag_reason.replace(/\n+/g," "),"");
@@ -1086,6 +1124,7 @@ window.BRIEFINGS = {
   function briefSection(s){
     var meta=[s.group,churn(s.freq),(s.status||"pending").toUpperCase()];
     if(s.updated) meta.push("updated "+s.updated);
+    if((s.tokens||0)>0) meta.push(fmtTok(s.tokens)+" tok");
     var banner=(s.status==="urgent"&&s.flag_reason)?"<div class='flag'><strong>⚑ Act now — </strong>"+md2html(s.flag_reason)+"</div>":"";
     return "<h1>"+esc(s.name)+"</h1><p class='meta'>"+esc(meta.join(" · "))+"</p>"+banner+"<article>"+md2html(s.md)+"</article>";
   }
@@ -1114,8 +1153,11 @@ window.BRIEFINGS = {
     exportHtml("daily-briefings-"+dateSlug()+".html", allHtml(), this);
   });
   var hb=document.getElementById("helpBtn"),hp=document.getElementById("helpPanel");
-  hb.addEventListener("click",function(){hp.hidden=!hp.hidden;});
+  var kb=document.getElementById("tokBtn"),kp=document.getElementById("tokPanel");
+  hb.addEventListener("click",function(){hp.hidden=!hp.hidden;kp.hidden=true;});
   document.getElementById("helpClose").addEventListener("click",function(){hp.hidden=true;});
+  kb.addEventListener("click",function(){if(kp.hidden)buildTok();kp.hidden=!kp.hidden;hp.hidden=true;});
+  document.getElementById("tokClose").addEventListener("click",function(){kp.hidden=true;});
   var root=document.documentElement,tb=document.getElementById("themeBtn"),ti=document.getElementById("themeIcon");
   function sysDark(){return window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;}
   function curDark(){var t=root.getAttribute("data-theme");return t?t==="dark":sysDark();}

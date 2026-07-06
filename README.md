@@ -35,8 +35,10 @@ search backend, execution model, model, and run date differ.
   `firehose + slow day` = an always-busy lane had an unusually dead day — also worth noticing.
 - **⚑ Flagged** = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard
   deadline within ~14 days. Expect 0–3 flags on a normal day.
-- **Tokens** (in the summary line) = total spent by the research subagents that run — a volume
-  gauge for cost trending, not an exact bill.
+- **Tokens** = spend by the research subagents that run — a volume gauge for cost trending, not
+  an exact bill. The summary line carries the total, each brief's header shows its own count, and
+  the **`Σ tokens`** button opens a sorted per-topic breakdown with share bars. The "N slow"
+  segment appears in the summary only when at least one lane had a slow day.
 
 ## How Pages is served — the `gh-pages` branch
 
