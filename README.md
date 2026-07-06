@@ -4,7 +4,7 @@ Auto-generated engineering-news dashboard — **18 topics** researched daily thr
 software / performance-engineer lens, rendered to one self-contained HTML page and published to
 **GitHub Pages** via `git push`.
 
-**Public site:** https://karlarao.github.io/daily-briefings/
+**Public site:** https://karlarao.github.io/daily-briefings/ · **Claude:** [`/claude.html`](https://karlarao.github.io/daily-briefings/claude.html)
 
 ## Head-to-head — same prompt, two agents
 
