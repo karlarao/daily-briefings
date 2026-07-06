@@ -88,6 +88,14 @@
   .flagbanner .fb-h{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--urgent);font-weight:700;margin-bottom:5px}
   .flagbanner p{margin:0}.flagbanner p+p{margin-top:6px}
   .flagbanner a{color:var(--urgent);border-bottom:1px solid color-mix(in oklab,var(--urgent) 40%,transparent)}
+  .helppanel{margin:14px 22px 0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 18px;font-size:13.5px;line-height:1.55}
+  .helppanel[hidden]{display:none}
+  .helppanel .hp-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-bottom:6px}
+  .helppanel p{margin:8px 0}
+  .helppanel ul{margin:6px 0;padding-left:22px}
+  .helppanel li{margin:4px 0}
+  .helppanel code{font-family:var(--mono);font-size:.9em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+  .helppanel .sdot{display:inline-block;vertical-align:middle;margin-right:2px}
   .strip{display:none}
   @media (max-width:860px){
     .app{grid-template-columns:1fr}.rail{display:none}
@@ -112,8 +120,29 @@
       <button class="tbtn" id="htmlBriefBtn" title="Open this brief as a standalone HTML page in a new tab — then Ctrl/Cmd+S to save or share">↗ brief.html</button>
       <button class="tbtn" id="htmlAllBtn" title="Open all briefs as one standalone HTML page in a new tab — then Ctrl/Cmd+S to save or share">↗ all.html</button>
       <button class="tbtn" id="themeBtn"><span id="themeIcon">◐</span> theme</button>
+      <button class="tbtn" id="helpBtn" title="How to read this dashboard">? help</button>
     </div>
   </header>
+  <div class="helppanel" id="helpPanel" hidden>
+    <div class="hp-head"><span>How to read this dashboard</span><button class="tbtn" id="helpClose" title="Close">✕</button></div>
+    <p><strong>Refresh.</strong> Every topic is re-researched from scratch on every run — <code>upd &lt;timestamp&gt;</code> is when. Nothing is skipped.</p>
+    <p><strong>Bars = how much news the lane typically produces</strong> (not how often it's refreshed):</p>
+    <ul>
+      <li><code>▮▮▮</code> <strong>firehose</strong> — news practically daily (OLTP, Frontend, DevOps, AI Daily…)</li>
+      <li><code>▮▮&nbsp;</code> <strong>steady</strong> — regular but not constant (Snowflake, Databricks, BigQuery…)</li>
+      <li><code>▮&nbsp;&nbsp;</code> <strong>quiet</strong> — slow-moving lane (Oracle, Redshift, Fabric, Mobile…)</li>
+    </ul>
+    <p><strong>Status dots = what today's research found:</strong></p>
+    <ul>
+      <li><span class="sdot ok"></span> <strong>fresh</strong> — researched, nothing act-now</li>
+      <li><span class="sdot urgent"></span> <strong>⚑ flagged</strong> — act-now item (the red banner at the top of the brief names it)</li>
+      <li><span class="sdot slow"></span> <strong>slow day</strong> — genuinely little news in this lane today</li>
+      <li><span class="sdot pending"></span> <strong>pending</strong> — not yet built this run</li>
+    </ul>
+    <p><strong>The two chips are independent.</strong> Churn (the bars) is the lane's permanent character; status is today's result. So <em>quiet + ⚑ flagged</em> means a rarely-newsy lane produced an act-now item today — pay extra attention. <em>Firehose + slow day</em> means an always-busy lane had an unusually dead day — also worth noticing. A quiet lane with a short brief is just normal.</p>
+    <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
+    <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill.</p>
+  </div>
   <div class="strip" id="strip"></div>
   <div class="app">
     <nav class="rail" id="rail"></nav>
@@ -136,7 +165,7 @@
 /* ===== DATA — the routine replaces this whole block each run ===== */
 window.BRIEFINGS = {
   generated: "2026-07-06 09:30 EDT",
-  summary:   "18 topics \u00b7 3 flagged \u00b7 0 slow",
+  summary:   "18 topics \u00b7 3 flagged \u00b7 0 slow \u00b7 ~825k tokens",
   sections: [
     {id:"oltp", name:"OLTP & Distributed SQL", group:"Data layer", cadence:"Daily", freq:3, updated:"2026-07-06 09:30 EDT", status:"ok", md:"**TL;DR** \u2014 A quiet window for core engines (no new PostgreSQL/MySQL/TiDB minors), but pgvector shipped two back-to-back fixes for HNSW index corruption during vacuum, YugabyteDB cut a new major (2026.1), and Microsoft put a brand-new distributed Postgres (Azure HorizonDB) into public preview. The loudest security item \u2014 a CVSS 10.0 MariaDB Galera RCE \u2014 is patched but worth confirming on any wsrep-clustered fleet.\n\n## PostgreSQL & extensions\n- **pgvector 0.8.3 (Jun 17) \u2192 0.8.4 (Jun 30): fix HNSW index corruption during vacuum.** 0.8.3 corrects potential HNSW index corruption tied to vacuuming (plus a Hamming/Jaccard perf regression on PG 18); 0.8.4 follows up with the \"hnsw graph not repaired\" error and insert failures during HNSW vacuum, and caps IVFFlat build memory to `maintenance_work_mem`. If you run pgvector with autovacuum on HNSW indexes, upgrade \u2014 this is a correctness bug, not just perf. [source](https://github.com/pgvector/pgvector/blob/master/CHANGELOG.md)\n- **Postgres core was quiet this window.** No new minors Jun\u2013Jul; the next scheduled batch lands ~August. The 11-CVE May 14 batch (18.4/17.10/16.14/15.18/14.23) is still the one to be patched to if you skipped it \u2014 see Heads up. [source](https://www.postgresql.org/about/news/postgresql-184-1710-1614-1518-and-1423-released-3297/)\n\n## Distributed SQL\n- **YugabyteDB 2026.1.0.0 (Jun 29) \u2014 new major line.** Substantive bits under the AI-marketing (\"AMP / Agentic Multitenant Postgres\", scale-to-zero, MCP control plane): the YBA Kubernetes Operator reaches near-parity with VM workflows \u2014 live universe import without downtime, multi-region CRDs, declarative read replicas / xCluster DR / PITR \u2014 plus OIDC/JWT auth for YCQL. [source](https://www.yugabyte.com/latest-release/)\n- **Vitess 24.0.2 and 23.0.5 (both Jun 24) \u2014 maintenance patches.** ~34 and ~35 merged PRs respectively across the two supported lines; routine bug-fix roll-ups, no schema/behavior surprises flagged. [source](https://github.com/vitessio/vitess/releases)\n- **CockroachDB v25.4 is the current LTS line.** Released May 1 with ongoing patches; value separation (KV blob separation, ~50\u201360% throughput on wide-row write-heavy workloads) that landed as preview in 25.3 continues to mature. No net-new GA release in-window. [source](https://www.cockroachlabs.com/docs/releases/v25.4)\n- **TiDB quiet:** v8.5.6 (Apr) remains the latest LTS patch; v9.0 is still beta. Nothing shipped in-window. [source](https://github.com/pingcap/tidb/releases)\n\n## Managed Postgres/MySQL\n- **Azure HorizonDB enters public preview (Jun 2, Build 2026).** Microsoft's cloud-native, PostgreSQL-compatible, horizontally-scalable service with a Rust-based storage engine and DiskANN vector search \u2014 a direct Aurora/AlloyDB competitor. Preview across 5 regions. Architecturally the interesting part is another disaggregated-storage Postgres with a from-scratch Rust engine; worth watching for how compute/storage separation and vector latency actually benchmark. [source](https://techcommunity.microsoft.com/blog/adforpostgresql/azure-horizondb-enterprise-ready-postgres-engineered-for-the-ai-era/4524094)\n\n## Heads up\n- **MariaDB CVE-2026-49261 \u2014 CVSS 10.0 RCE via `wsrep_notify_cmd` (Galera).** Peer-supplied `wsrep_node_name`/`wsrep_node_incoming_address` are interpolated into the notify command without sanitization \u2192 arbitrary shell execution from a joining node. Only exploitable when `wsrep_notify_cmd` is set (Galera clusters). Fixed in 10.6.27, 10.11.18, 11.4.12, 11.8.8, 12.3.2 (fix shipped late May; advisories circulated into June). Mitigation if you can't patch: disable `wsrep_notify_cmd`. [source](https://www.csa.gov.sg/alerts-and-advisories/alerts/al-2026-078/)\n- **PostgreSQL May 14 batch \u2014 patch if you haven't.** 11 CVEs, several CVSS 8.8: `ALTER SUBSCRIPTION ... REFRESH PUBLICATION` SQL injection on the publisher (CVE-2026-6476), pg_basebackup/pg_rewind path traversal (CVE-2026-6477), and an SSL/GSS-alternation backend-crash DoS (CVE-2026-6479). Fixed in 18.4/17.10/16.14/15.18/14.23. [source](https://www.postgresql.org/about/news/postgresql-184-1710-1614-1518-and-1423-released-3297/)\n- **MySQL 8.0 is EOL (since April 2026); 8.0.46 was the final release.** If you're still on 8.0, plan the move \u2014 8.4 LTS or the new 9.7 LTS (GA Apr 21, first LTS since 8.4, brings dynamic data masking, hypergraph optimizer, OpenID auth to Community). [source](https://blogs.oracle.com/mysql/mysql-9-7-0-lts-is-now-available-expanded-community-capabilities-and-dynamic-data-masking-for-enterprise)\n\n## Worth your weekend\n- **Re-test HNSW vacuum on pgvector.** If you're on 0.8.x with HNSW, upgrade to 0.8.4 and check existing indexes for the \"graph not repaired\" symptom \u2014 this was silent corruption, so a `REINDEX` on hot vector indexes may be prudent.\n- **Benchmark HorizonDB's DiskANN vs pgvector HNSW** if you're vector-in-OLTP curious \u2014 it's the first mainstream managed Postgres shipping DiskANN as the default vector path against a custom Rust engine.\n- **Audit Galera clusters** for `wsrep_notify_cmd` usage before assuming CVE-2026-49261 doesn't apply \u2014 the default-off nature makes it easy to miss in config sprawl.\n\n## Signals worth watching\n- **Every distributed-Postgres vendor is rebranding around \"agents\"/MCP** (Yugabyte AMP, HorizonDB \"agentic\", AlloyDB agent tooling). Strip the marketing and the real engineering trend is per-tenant scale-to-zero isolation and MCP-exposed control planes \u2014 useful for fleets of ephemeral DBs, irrelevant to steady-state OLTP.\n- **Rust storage engines as the new baseline for cloud-native Postgres** (HorizonDB's engine; the broader disaggregated-storage pattern). Watch whether compute/storage separation costs tail-latency on write-heavy OLTP vs classic local-NVMe deployments.\n- **The LTS reshuffle continues:** MySQL 9.7 LTS + 8.0 EOL, CockroachDB 25.4 LTS, TiDB 8.5 LTS through 2030 \u2014 several stacks want you off innovation/older lines this year.\n\n## Filtered out\n- Google Cloud Next '26 AlloyDB AI-agent features (ScaNN 10B-vector search, observability agents) \u2014 mostly out-of-window and marketing-heavy.\n- Supabase-vs-Neon-vs-PlanetScale comparison blogspam \u2014 no primary engineering signal.\n- CDC/table-format items (Debezium/Iceberg) \u2014 deferred to the formats brief per scope.\n- libSQL/SQLite: no verifiable in-window release found; omitted rather than guessed.", flag_reason:""},
     {id:"formats", name:"Open Formats & CDC", group:"Data layer", cadence:"Daily", freq:3, updated:"2026-07-06 09:30 EDT", status:"ok", md:"**TL;DR** \u2014 Summit season drove the news: Databricks (DAIS, Jun 15\u201318) took Iceberg v3 and Managed Iceberg to GA and floated an Iceberg-v4/Delta-5.0 metadata convergence, while Snowflake wired Horizon onto Apache Polaris \u2014 the catalog war is now a convergence story. On the release side, Delta Lake 4.3.0 (Jun 22) and Debezium 3.6.0.CR1 (Jun 24) shipped concrete correctness and throughput fixes.\n\n## Table formats & specs\n- **Delta Lake 4.3.0 shipped (Jun 22).** Fixes catalog-managed/DV correctness for streaming over NULLs and complex types (ARRAY/MAP/STRUCT/VARIANT), makes DELETE with VARIANT/INTERVAL/ARRAY + deletion vectors behave, adds VARIANT column statistics on write (shredded-table skipping), Unity Catalog Delta REST API integration (server-side commit validation), Delta Sharing CDF streaming, and V2-checkpoint perf work. Practical: if you run DV + catalog-managed Delta, this is the correctness bump you want. [delta.io](https://delta.io/blog/2026-06-22-delta-4-3-release/)\n- **Iceberg v3 hits GA on Databricks; Managed Iceberg GA (DAIS).** Row lineage, deletion vectors, VARIANT and geospatial (geometry/geography) types now GA across Delta and Iceberg v3 on Databricks; external engines (Spark/Flink) can now create/write UC managed Delta tables (public preview). Iceberg v3 already went GA on Snowflake in May. [Databricks](https://www.databricks.com/blog/whats-new-unity-catalog-data-ai-summit-2026)\n\n## Catalogs & the catalog war\n- **Snowflake Horizon now runs interop on Apache Polaris (Summit, early June).** Bi-directional read/write to Snowflake-managed Iceberg tables via Polaris \u2014 the major vendors converging on one REST-catalog substrate rather than competing catalogs. [State of Iceberg Catalogs, Jun 2026](https://dev.to/alexmercedcoder/the-state-of-apache-iceberg-catalogs-in-june-2026-265e)\n- **Unity Catalog OSS converging Delta-first.** Recent merges enable the Delta REST API and managed tables by default, add column default values, enforce case-insensitive Delta column names, and default credential-scoped filesystem access in the Spark connector \u2014 while keeping the Iceberg REST path. [Databricks June 2026 notes](https://docs.databricks.com/aws/en/release-notes/product/2026/june)\n\n## CDC & ingestion\n- **Debezium 3.6.0.CR1 (Jun 24; Beta2 Jun 15).** Off-heap RocksDB storage for table/schema history (tames heap on wide-schema fleets), MySQL poll-path allocation/CPU reductions, JDBC sink + monitoring REST API/dashboard in Debezium Platform, Spanner Omni support. Bug fixes worth noting: a KafkaSchemaHistory recovery race, PostgreSQL varbit handling, and NanoTimestamp overflow on extreme dates. [Debezium blog](https://debezium.io/blog/2026/06/24/debezium-3-6-cr1-released/)\n\n## Governance & security\n- **CVE-2026-42812 \u2014 Apache Polaris, CVSS 9.9 (critical), FIXED in 1.4.1.** An authenticated user able to alter table settings could change `write.metadata.path` to bypass storage-location validation, forcing Polaris to write metadata to an attacker-chosen location and potentially vend temp cloud credentials for it. Published May 4 (pre-window) but still the item to verify you've patched. Upgrade Polaris to \u22651.4.1. [NVD](https://nvd.nist.gov/vuln/detail/CVE-2026-42812) \u00b7 [GHSA](https://github.com/advisories/ghsa-w76p-3cgp-qfcm)\n\n## Worth your weekend\n- Test Delta 4.3.0's VARIANT+DV DELETE path and variant write-stats skipping on a shredded table \u2014 the 4.x line had correctness gaps here that this release closes.\n- Try Debezium 3.6 Beta/CR with RocksDB off-heap schema history on a high-cardinality-schema source and watch connector heap.\n\n## Heads up\n- **Polaris < 1.4.1 is exposed to a CVSS 9.9 metadata-write/credential-vending bypass** \u2014 patch it.\n- **Iceberg-v4 / Delta-5.0 convergence is being floated** (shared \"adaptive metadata tree\"). Directional, not a spec yet \u2014 don't build on it, but factor it into 2026 format-strategy bets. [DAIS recap](https://dev.to/alexmercedcoder/the-state-of-apache-iceberg-catalogs-in-june-2026-265e)\n\n## Signals worth watching\n- **Catalog war \u2192 catalog convergence.** Snowflake-on-Polaris and Databricks pushing Iceberg v3 GA + UC-as-universal both point at REST-catalog + write-once/read-anywhere becoming table stakes; the differentiation moves up to governance (ABAC, credential vending) and metadata performance.\n- **Format convergence at the metadata layer.** The Iceberg-v4/Delta-5.0 \"one metadata layout\" pitch would end the interop-vs-performance trade-off UniForm/XTable paper over today \u2014 worth tracking whether it lands in the specs or stays a vendor proposal.\n- **CDC memory pressure is a first-class concern.** Debezium moving schema/table history off-heap (RocksDB) signals that wide-schema, high-throughput CDC fleets are hitting JVM heap walls in practice.\n\n## Filtered out\n- Iceberg 1.11.0 (REST catalog + encryption) \u2014 released May 19, just outside the window. [Google OSS blog](https://opensource.googleblog.com/2026/05/announcing-apache-iceberg-1110.html)\n- DuckLake 1.0 production-ready (SQL-catalog lakehouse, Iceberg-compatible DVs) \u2014 April, out of window. [ducklake.select](https://ducklake.select/2026/04/13/ducklake-10/)\n- Fivetran/Airbyte/Estuary comparison churn \u2014 marketing, no substantive in-window release notes surfaced.\n- Parquet-Java RCE CVEs (CVE-2025-30065 / CVE-2025-46762) \u2014 2025, long patched (1.15.1/1.15.2).", flag_reason:""},
@@ -172,6 +201,7 @@ window.BRIEFINGS = {
   document.getElementById("runFlag").textContent = urgent.length ? ("⚑ "+urgent.length+" flagged: "+urgent.map(function(s){return s.name;}).join(", ")) : "";
   document.getElementById("subline").textContent = B.generated ? ("last run "+B.generated+(B.summary?" · "+B.summary:"")) : "awaiting first run";
   function meter(f){var s="<span class='meter'>";for(var i=1;i<=3;i++)s+="<i class='"+(i<=f?"on":"")+"'></i>";return s+"</span>";}
+  function churn(f){return f===3?"firehose":(f===2?"steady":"quiet");}
   function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
   function md2html(src){
     if(!src) return "<p class='pending'>Awaiting first run…</p>";
@@ -208,7 +238,7 @@ window.BRIEFINGS = {
       var b=document.createElement("button");b.className="nav-item";b.dataset.id=s.id;
       b.innerHTML="<span class='sdot "+(s.status||"pending")+"'></span>"+
         "<span class='nav-main'><span class='nav-name'>"+s.name+"</span>"+
-        "<span class='nav-meta'>"+(s.updated?("upd "+s.updated):"pending")+" · "+s.cadence+"</span></span>"+meter(s.freq);
+        "<span class='nav-meta'>"+(s.updated?("upd "+s.updated):"pending")+" · "+churn(s.freq)+"</span></span>"+meter(s.freq);
       b.addEventListener("click",function(){select(s.id);});
       grp.appendChild(b);
     });
@@ -227,7 +257,7 @@ window.BRIEFINGS = {
     var chipCls=st==="urgent"?"chip urgent":(st==="ok"?"chip ok":"chip");
     var stLabel=st==="urgent"?"⚑ flagged":(st==="ok"?"fresh":(st==="slow"?"slow day":"pending"));
     document.getElementById("eyebrow").innerHTML="<span>"+s.group.toUpperCase()+"</span>"+
-      "<span class='chip'>"+meter(s.freq)+" "+s.cadence+"</span>"+
+      "<span class='chip'>"+meter(s.freq)+" "+churn(s.freq)+"</span>"+
       "<span class='"+chipCls+"'>"+stLabel+"</span>"+
       (s.updated?"<span>updated "+s.updated+"</span>":"");
     var banner = (st==="urgent" && s.flag_reason)
@@ -241,7 +271,7 @@ window.BRIEFINGS = {
   function dateSlug(){return (B.generated||"").slice(0,10)||"undated";}
   function briefMd(s){
     var parts=["# "+s.name,""];
-    var meta=[s.group, s.cadence, (s.status||"pending").toUpperCase()];
+    var meta=[s.group, churn(s.freq), (s.status||"pending").toUpperCase()];
     if(s.updated) meta.push("updated "+s.updated);
     parts.push("_"+meta.join(" · ")+"_","");
     if(s.status==="urgent" && s.flag_reason){
@@ -308,7 +338,7 @@ window.BRIEFINGS = {
       +"<title>"+esc(title)+"</title><style>"+DOC_CSS+"</style></head><body><main>"+inner+"</main></body></html>";
   }
   function briefSection(s){
-    var meta=[s.group,s.cadence,(s.status||"pending").toUpperCase()];
+    var meta=[s.group,churn(s.freq),(s.status||"pending").toUpperCase()];
     if(s.updated) meta.push("updated "+s.updated);
     var banner=(s.status==="urgent"&&s.flag_reason)?"<div class='flag'><strong>⚑ Act now — </strong>"+md2html(s.flag_reason)+"</div>":"";
     return "<h1>"+esc(s.name)+"</h1><p class='meta'>"+esc(meta.join(" · "))+"</p>"+banner+"<article>"+md2html(s.md)+"</article>";
@@ -337,6 +367,9 @@ window.BRIEFINGS = {
   document.getElementById("htmlAllBtn").addEventListener("click",function(){
     exportHtml("daily-briefings-"+dateSlug()+".html", allHtml(), this);
   });
+  var hb=document.getElementById("helpBtn"),hp=document.getElementById("helpPanel");
+  hb.addEventListener("click",function(){hp.hidden=!hp.hidden;});
+  document.getElementById("helpClose").addEventListener("click",function(){hp.hidden=true;});
   var root=document.documentElement,tb=document.getElementById("themeBtn"),ti=document.getElementById("themeIcon");
   function sysDark(){return window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;}
   function curDark(){var t=root.getAttribute("data-theme");return t?t==="dark":sysDark();}
