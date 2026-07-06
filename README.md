@@ -24,14 +24,15 @@ This repo serves Pages from the **root of the `gh-pages` branch** (classic model
 two jobs:
 
 ```
-main        (source)            gh-pages   (published site — served at the repo root)
-├── pages-briefings-...-prompt.md   ├── index.html    # static Claude-vs-Codex landing page
-└── README.md                       ├── claude.html   # Claude side — REBUILT + pushed every run
-                                     ├── codex.html    # Codex side — pending
-                                     └── .nojekyll     # serve HTML verbatim (no Jekyll)
+main        (source, default branch)    gh-pages   (published site — served at the repo root)
+├── pages-briefings-...-prompt.md       ├── index.html    # static Claude-vs-Codex landing page
+├── GITHUB-PAGES-RUNBOOK.md             ├── claude.html   # Claude side — REBUILT + pushed every run
+└── README.md                           └── .nojekyll     # serve HTML verbatim (no Jekyll)
+                                        (codex.html — Codex side, pending; not on the branch yet)
 ```
 
-- **`main`** holds the *source*: the routine prompt and this README.
+- **`main`** holds the *source*: the routine prompt, the [Pages ops runbook](GITHUB-PAGES-RUNBOOK.md),
+  and this README.
 - **`gh-pages`** IS the *site*: whatever is at its root is what `karlarao.github.io/daily-briefings/`
   serves. `index.html` is static (edit it here directly); `claude.html` is overwritten each run.
 
@@ -39,9 +40,11 @@ main        (source)            gh-pages   (published site — served at the rep
 
 The routine runs attached to this repo (already cloned & authenticated by the GitHub App — no PAT).
 Each run it: checks out `gh-pages`, researches the 18 briefs, rebuilds `claude.html` locally, then
-does **one** commit + `git push origin gh-pages` at the end (one Pages build per run). It leaves
-`index.html` / `codex.html` untouched, and sends a single push notification only if the push failed
-or a brief flagged something act-now urgent.
+does **one** commit + `git push origin gh-pages` at the end (one Pages build per run), and finally
+**verifies the Pages deployment actually succeeded** (re-triggering with an empty commit if the
+deploy failed or stalled — GitHub Pages deploys flake intermittently). It leaves `index.html` /
+`codex.html` untouched, and sends a single push notification only if the publish (push **or** Pages
+deploy) failed or a brief flagged something act-now urgent.
 
 Full mechanics live in [`pages-briefings-routine-prompt.md`](pages-briefings-routine-prompt.md).
 

@@ -170,6 +170,11 @@ real downsides are human-facing:
 (can't be done via API/`gh` in the sandbox — it's a manual UI step), then delete the stale
 `claude/*` branches (GitHub blocks deleting the *default* branch, so reorder first).
 
+> **Status 2026-07-06: DONE.** Default branch switched to `main` (manual UI step). The stale
+> `claude/*` session branches were force-pointed at `main`'s HEAD (zero-diff aliases; the
+> sandbox's git gateway 403s ref-*deletion*, so the branch *names* need one manual trash-icon
+> click on the Branches page — content-wise there is nothing left on them).
+
 ---
 
 ## 7. Checklist for the LLM running the routine
