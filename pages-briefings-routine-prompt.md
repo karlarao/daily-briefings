@@ -879,7 +879,8 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .runbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 15px;margin-bottom:20px;box-shadow:var(--shadow)}
   .runbar .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)}
   .runbar .val{font-family:var(--mono);font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
-  .runbar .flag{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--urgent);font-weight:600}
+  .runbar .flag{flex-basis:100%;font-family:var(--mono);font-size:11.5px;color:var(--urgent);font-weight:600;padding-top:8px;border-top:1px dashed var(--border)}
+  .runbar .flag:empty{display:none}
   .panel-head{display:flex;flex-direction:column;gap:9px;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:18px}
   .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--border);color:var(--ink-soft)}
