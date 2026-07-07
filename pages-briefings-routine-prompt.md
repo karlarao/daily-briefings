@@ -148,8 +148,9 @@ You are an automated engineering-news briefing generator. In one run you:
    then distill ONE cross-topic "Today's Trends" synthesis from those briefs.
 2. Render them into ONE self-contained HTML dashboard.
 3. Publish that dashboard to GitHub Pages by committing it as claude.html at the
-   root of the gh-pages branch and pushing ONCE at the end of the run (one Pages
-   build per run), THEN verifying the Pages deployment actually succeeded.
+   root of the gh-pages branch — plus a frozen copy in archive/<date>.html for the
+   date picker — and pushing ONCE at the end of the run (one Pages build per run),
+   THEN verifying the Pages deployment actually succeeded.
 4. Send ONE push notification at the very end — if the git push failed OR the Pages
    deployment failed, or (if the publish succeeded) only if something urgent (an
    act-now CVE, a breaking/behavior change, or a hard deadline) turned up.
@@ -164,6 +165,9 @@ authenticated (GitHub App). Pages is served from the ROOT of the gh-pages branch
 Publish by committing the built dashboard onto gh-pages and pushing:
   • Branch: gh-pages   (Pages source = gh-pages / root)
   • Build file: claude.html   (at the gh-pages root — do NOT touch index.html or codex.html)
+  • Archive: also copy each run to archive/<YYYY-MM-DD>.html and keep archive/index.json
+    (JSON array of dates) current — this feeds the dashboard's 📅 date picker. Same-day
+    reruns overwrite that date's file. The archive/ dir belongs to this routine.
   • Ensure .nojekyll exists at the root   (Pages serves HTML verbatim)
   • Push ONCE at the end of the run (one Pages build per run)
   • Publishing is NOT complete when `git push` succeeds — it is complete only when the
@@ -273,9 +277,22 @@ If git push fails (auth/network), send one notification saying so — that failu
        token segment entirely — never estimate it.
      - OMIT the "N slow" segment when the slow count is 0 (a zero adds noise);
        always keep the flagged count, even when it's 0.
-   Then rebuild claude.html once more and publish with a
-   SINGLE push (retry on network error, backoff 2/4/8/16s):
-     git add claude.html .nojekyll
+   Then rebuild claude.html once more, ARCHIVE a frozen copy for the date picker,
+   and publish with a SINGLE push (retry on network error, backoff 2/4/8/16s):
+     DATE=$(TZ="America/New_York" date '+%Y-%m-%d')
+     mkdir -p archive
+     cp claude.html "archive/${DATE}.html"
+     # keep archive/index.json = sorted JSON array of "YYYY-MM-DD" strings; add
+     # DATE if absent (same-day reruns overwrite the html — each date = that
+     # day's LATEST run). e.g.:
+     python3 - <<PYEOF
+     import json,os
+     p="archive/index.json"
+     d=json.load(open(p)) if os.path.exists(p) else []
+     if "${DATE}" not in d: d.append("${DATE}")
+     json.dump(sorted(d), open(p,"w")); open(p,"a").write("\n")
+     PYEOF
+     git add claude.html .nojekyll archive/
      git commit -m "briefings ${NOW}" || echo "no changes"
      git push origin gh-pages
      DEPLOY_SHA=$(git rev-parse HEAD)   # remember which commit must go live
@@ -822,6 +839,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .tbtn{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 11px;cursor:pointer}
   .tbtn:hover{border-color:var(--accent);color:var(--ink)}
   .tbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  select.tbtn{cursor:pointer;max-width:170px}
   .app{display:grid;grid-template-columns:290px 1fr;flex:1;min-height:0}
   .rail{border-right:1px solid var(--border);padding:14px 12px 40px;overflow:auto}
   .group{margin-top:14px}.group:first-child{margin-top:2px}
@@ -914,6 +932,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
       <button class="tbtn" id="themeBtn"><span id="themeIcon">◐</span> theme</button>
       <button class="tbtn" id="tokBtn" title="Per-topic token breakdown for this run">Σ tokens</button>
       <button class="tbtn" id="helpBtn" title="How to read this dashboard">? help</button>
+      <select class="tbtn" id="histSel" hidden title="View a past day's briefing"></select>
     </div>
   </header>
   <div class="helppanel" id="helpPanel" hidden>
@@ -936,6 +955,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
     <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
     <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 18.</p>
+    <p><strong>📅 Date picker</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; pick a date to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
   </div>
   <div class="helppanel" id="tokPanel" hidden>
     <div class="hp-head"><span>Token breakdown — this run</span><button class="tbtn" id="tokClose" title="Close">✕</button></div>
@@ -1227,6 +1247,29 @@ window.BRIEFINGS = {
     var first=(urgent[0]||B.sections.filter(function(s){return s.status&&s.status!=="pending";})[0]||B.sections[0]);
     if(first) select(first.id);
   }
+  // Archive date picker: reads archive/index.json (a JSON array of "YYYY-MM-DD").
+  // The same template serves the live page (root) AND the frozen copies in archive/,
+  // so paths are resolved relative to where this page lives.
+  (function(){
+    var inArch=/\/archive\//.test(location.pathname);
+    var base=inArch?"":"archive/";
+    fetch(base+"index.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(list){
+      if(!list||!list.length) return;
+      var sel=document.getElementById("histSel");
+      var curDate=(B.generated||"").slice(0,10);
+      var o0=document.createElement("option");o0.value="";
+      o0.textContent="📅 "+(curDate||"—")+(inArch?" (archived)":" (latest)");
+      sel.appendChild(o0);
+      if(inArch){var ol=document.createElement("option");ol.value="../claude.html";ol.textContent="← back to latest";sel.appendChild(ol);}
+      list.slice().sort().reverse().forEach(function(d){
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+        var o=document.createElement("option");o.value=base+d+".html";o.textContent=d;sel.appendChild(o);
+      });
+      if(sel.options.length>1){ sel.hidden=false;
+        sel.addEventListener("change",function(){ if(this.value) location.href=this.value; });
+      }
+    }).catch(function(){});
+  })();
 })();
 </script>
 ```
