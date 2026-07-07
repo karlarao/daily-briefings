@@ -43,7 +43,15 @@
   .tbtn{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 11px;cursor:pointer}
   .tbtn:hover{border-color:var(--accent);color:var(--ink)}
   .tbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  select.tbtn{cursor:pointer;max-width:170px}
+  .calpanel{max-width:340px}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin:6px 0 10px;font-family:var(--mono);font-weight:700;font-size:13px}
+  .cal-nav .tbtn{padding:4px 10px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-dow{font-family:var(--mono);font-size:10px;color:var(--ink-faint);text-align:center;padding:2px 0;text-transform:uppercase}
+  .cal-cell{font-family:var(--mono);font-size:12px;text-align:center;padding:7px 0;border-radius:6px;color:var(--ink-faint);border:1px solid transparent}
+  .cal-cell.has{background:var(--accent-tint);color:var(--accent);font-weight:700;cursor:pointer;border-color:color-mix(in oklab,var(--accent) 35%,var(--border))}
+  .cal-cell.has:hover{background:var(--accent);color:var(--surface)}
+  .cal-cell.cur{outline:2px solid var(--accent);outline-offset:-1px}
   .app{display:grid;grid-template-columns:290px 1fr;flex:1;min-height:0}
   .rail{border-right:1px solid var(--border);padding:14px 12px 40px;overflow:auto}
   .group{margin-top:14px}.group:first-child{margin-top:2px}
@@ -136,7 +144,7 @@
       <button class="tbtn" id="themeBtn"><span id="themeIcon">◐</span> theme</button>
       <button class="tbtn" id="tokBtn" title="Per-topic token breakdown for this run">Σ tokens</button>
       <button class="tbtn" id="helpBtn" title="How to read this dashboard">? help</button>
-      <select class="tbtn" id="histSel" hidden title="View a past day's briefing"></select>
+      <button class="tbtn" id="calBtn" hidden title="Browse past briefings">📅 <span id="calLbl"></span></button>
     </div>
   </header>
   <div class="helppanel" id="helpPanel" hidden>
@@ -159,12 +167,18 @@
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
     <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
     <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 18.</p>
-    <p><strong>📅 Date picker</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; pick a date to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
+    <p><strong>📅 Calendar</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; highlighted dates in the calendar have a run — click one to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
   </div>
   <div class="helppanel" id="tokPanel" hidden>
-    <div class="hp-head"><span>Token breakdown — this run</span><button class="tbtn" id="tokClose" title="Close">✕</button></div>
+    <div class="hp-head"><span id="tokTitle">Token breakdown — this run</span><button class="tbtn" id="tokClose" title="Close">✕</button></div>
     <div id="tokBody"></div>
-    <p class="tok-note">Research-agent tokens only (orchestration overhead not included) — a volume gauge, not a bill.</p>
+    <p class="tok-note" id="tokNote">Research-agent tokens only (orchestration overhead not included) — a volume gauge, not a bill.</p>
+  </div>
+  <div class="helppanel calpanel" id="calPanel" hidden>
+    <div class="hp-head"><span>Browse past briefings</span><button class="tbtn" id="calClose" title="Close">✕</button></div>
+    <div class="cal-nav"><button class="tbtn" id="calPrev" title="Previous month">‹</button><span id="calTitle"></span><button class="tbtn" id="calNext" title="Next month">›</button></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <p class="tok-note" id="calNote">Highlighted dates have an archived run — click one to open that day's dashboard exactly as it was. History accumulates from 2026-07-06.</p>
   </div>
   <div class="strip" id="strip"></div>
   <div class="app">
@@ -189,6 +203,7 @@
 window.BRIEFINGS = {
   generated: "2026-07-06 15:31 EDT",
   summary:   "18 topics · 3 flagged · ~820k tokens",
+  model:     "",
   synthesis: "**The 3-minute read** — This cycle's through-line is trust in the software supply chain: three separate act-now security items (a MariaDB Galera CVSS 10 RCE, the actively-exploited \"Copy Fail\" Kubernetes container escape, and a wave of nation-state npm worms) all landed in the same month, and even valid SLSA provenance no longer proves a package is clean. Underneath the incidents, two slower forces are re-pricing infrastructure: a DRAM/NAND/HBM shortage that makes any 2024-based BOM wrong, and ARM/Graviton5 quietly becoming the default price/perf lever from RDS to EKS. In the data layer, Iceberg v3 plus single-copy Delta/Iceberg interop is the clearest convergence — the format war is now about catalogs and shared Parquet, not table formats. And across both AI briefs, the agent itself is now the attack surface: prompt injection in MCP/tool output is being treated as a remote-code-execution vector, not a content bug.\n\n## Data layer — converging themes\n- **Iceberg v3 + single-copy interop is the format endgame** — managed Iceberg v3 tables went GA at Databricks with Delta and Iceberg now sharing the *same* Parquet files; BigQuery added v3 read (preview) and a GA Iceberg REST catalog; Snowflake shipped dynamic-Iceberg replication; the fight has moved to catalogs and credential vending. → seen in: Open Formats & CDC · Databricks · BigQuery · Snowflake\n- **Behavior-change churn demands pre-cutover testing** — opt-out/enablement-dated behavior bundles (Snowflake 2026_05), breaking DBR 19 defaults (JDK-21-only, ~90 removed packages), ClickHouse 26.6's two data-loss/dedup breaking changes, and post-RU plan-regression risk in Oracle all push the same discipline: test defaults before they flip. → seen in: Snowflake · Databricks · Cloud DW Challengers · Oracle\n- **Hardware, not engine tuning, is the new price/perf lever** — Graviton5 reached RDS while GPU offload entered the warehouse itself (Fabric CoddSpeed, RAPIDS/Bodo for cuDF), and fresh audited TPC-H points are all hardware-config-driven. → seen in: Database Hardware · Microsoft Fabric / Synapse · Redshift\n\n## Application layer — converging themes\n- **The npm supply chain is under sustained, install-script-driven attack** — the Mastra (North Korea), node-gyp worm, and Red Hat \"Miasma\" campaigns all executed via pre/postinstall hooks, some with valid provenance; the shared mitigation is `--ignore-scripts` + pinned lockfiles + hardware 2FA. → seen in: App Dev (Backend) · Frontend & Web Platform\n- **EOL/deadline pressure is stacking up** — Spring Boot 3.x / Framework 6.x hit OSS end-of-life (Jun 30) and Node 20 / .NET 8-9 have firm dates, while mobile faces the Aug 31 Play API-36 mandate and the already-live iOS 26 SDK build requirement. → seen in: App Dev (Backend) · Mobile Development · Frontend & Web Platform\n- **Native rewrites (Rust/Go) are going mainstream in the toolchain** — TypeScript 7's Go compiler hit RC (~10x), Astro 7 shipped a Rust compiler on Vite 8/Rolldown, and Prisma moved its engine off Rust to TS/WASM — build/type-check speed is the competitive axis. → seen in: Frontend & Web Platform · App Dev (Backend)\n\n## AI, Research & Hardware — converging themes\n- **The agent is the attack surface** — GuardFall showed 10 of 11 open-source coding agents bypassable via decades-old shell tricks, Cursor's \"DuneSlide\" prompt-injection sandbox escape (CVSS 9.8) weaponizes MCP/web output into RCE, and NL2SQL research is independently arguing agentic DB exploration needs sandboxing — treat tool output as untrusted input. → seen in: AI Daily · AI App Dev · NL2SQL\n- **Model + tokenizer churn is a live cost/compat risk** — Claude Sonnet 5 landed with breaking API behaviors and a tokenizer that emits ~30% more tokens, alongside Sonnet-4/Opus-4 retirements and gated GPT-5.6 pricing — re-budget token costs and re-pin model IDs. → seen in: AI App Dev · AI Daily\n- **Compute cost is escalating, not commoditizing** — AWS raised reserved-GPU Capacity Block prices ~38% in six months and SK Hynix stripped price caps from HBM long-term deals; independent per-megawatt benchmarking (AA-AgentPerf) is emerging precisely because FLOPS no longer predict cost. → seen in: AI Hardware · AI Daily\n\n## Cross-cutting — spans all three groups\n- **Three actively-exploited act-now items in one cycle** — MariaDB Galera `wsrep_notify_cmd` RCE (CVSS 10), the Copy Fail Kubernetes container escape (CISA KEV), and the npm worm wave are all \"patch this week,\" not \"read later.\" → seen in: OLTP & Distributed SQL · Platform & DevOps · App Dev (Backend)\n- **Package/tool trust is the universal 2026 attack surface** — the same failure mode recurs across ecosystems: npm install hooks (backend/frontend), MCP/tool-output prompt injection (AI builder tools), and unsandboxed agentic DB access — provenance signatures and denylists are proving insufficient. → seen in: App Dev (Backend) · Frontend & Web Platform · AI App Dev · AI Daily · NL2SQL\n- **A memory/component shortage is re-pricing every infrastructure BOM** — server DRAM/NAND are still climbing into Q3 (enterprise SSD ~4x in nine months) and HBM4 is the gating constraint on GPU volume; both push the same action — model memory/storage as an escalating, not fixed, line item. → seen in: Database Hardware · AI Hardware\n- **ARM/Graviton5 is becoming the default price/perf choice across the stack** — Graviton5 reached RDS (DB), GA'd as M9g for EKS/Fargate (platform), and Redshift's Graviton-based RG instances are steering users off RA3. → seen in: Redshift · Database Hardware · Platform & DevOps",
   sections: [
     {id:"oltp", name:"OLTP & Distributed SQL", group:"Data layer", cadence:"Daily", freq:3, updated:"2026-07-06 15:31 EDT", status:"urgent", tokens:51516, md:"**TL;DR** — Quiet window for the transactional side: the marquee item is PostgreSQL 19 Beta 1 (parallel autovacuum, planner-advice, REPACK). The one thing to ACT on is a CVSS 10.0 RCE in MariaDB Galera (`wsrep_notify_cmd`) — patch or disable now — coinciding with MariaDB 10.6 reaching end-of-life today.\n\n## PostgreSQL\n- **PostgreSQL 19 Beta 1 (June 4)** — First 19 beta is out; GA expected ~Sept/Oct 2026. Headline items for perf/ops engineers: parallel autovacuum (`autovacuum_max_parallel_workers`) plus a new autovacuum scoring/prioritization system; `pg_plan_advice`/`pg_stash_advice` for stabilizing planner decisions by query id; a native `REPACK` command; AIO `io_method=worker` now autoscales via `io_min_workers`/`io_max_workers`; `ON CONFLICT DO SELECT`; SQL/PGQ property-graph queries; JSON output for `COPY TO`. All subject to change — worth testing against your workload, not production.\n  [PG19 Beta 1 news](https://www.postgresql.org/about/news/postgresql-19-beta-1-released-3313/) · [PG19 release notes](https://www.postgresql.org/docs/19/release-19.html)\n- **No new PostgreSQL CVEs this window.** The large security batch (18.4/17.10/16.14/15.18/14.23, eleven CVEs incl. three CVSS 8.8 RCEs, plus MD5-timing CVE-2026-6478 and pg_createsubscriber SQL-injection CVE-2026-6476) shipped **May 14**, just outside the 30-day window. If you skipped it, treat it as still-open work — next scheduled minor set is ~August.\n  [oss-sec announce](https://seclists.org/oss-sec/2026/q2/550) · [thebuild write-up](https://thebuild.com/blog/2026/05/14/eleven-cves-walk-into-a-release/)\n\n## MySQL / MariaDB\n- **CVE-2026-49261 — CVSS 10.0 RCE in MariaDB Galera (`wsrep_notify_cmd`).** A joiner-node name is interpolated into a shell command without escaping, so an attacker who can join/notify the cluster gets arbitrary shell execution as the `mariadbd` uid. Fix EXISTS: upgrade to 10.6.27 / 10.11.18 / 11.4.12 / 11.8.8 / 12.3.2 (community corrective releases dated 2026-05-27; Enterprise 11.8.6-4 on 2026-06-02). Interim mitigation: disable `wsrep_notify_cmd`. Two related Galera SST CVEs (CVE-2026-48165, CVE-2026-48163) rated 8.0. No confirmed in-the-wild exploitation yet.\n  [MariaDB corrective releases](https://mariadb.org/mariadb-community-server-corrective-releases/) · [CSA advisory](https://www.csa.gov.sg/alerts-and-advisories/alerts/al-2026-078/)\n- **MySQL:** No Oracle MySQL security release this window — the next CPU lands ~July 21 (Oracle's quarterly cadence). One MySQL-only CVE cross-referenced by MariaDB (CVE-2026-46863) as not affecting MariaDB.\n  [MariaDB CVE list](https://mariadb.com/docs/server/security/cve/community-server)\n\n## Distributed SQL\n- **CockroachDB v26.2 (June 5) + LTS patches (June 26).** v26.2 is a required Regular release: drops the overly restrictive P-256-only TLS curve preference (now uses Go native FIPS curve selection) and adds `security.provisioning.oidc.enabled` for auto-provisioning users on first OIDC login. v24.3/v24.1 LTS patches on June 26 reportedly address a certificate tenant-scope check (I could not confirm a CVE ID on the advisories page — verify before citing).\n  [v26.2 notes](https://www.cockroachlabs.com/docs/releases/v26.2) · [CRDB advisories](https://www.cockroachlabs.com/docs/advisories/)\n- **YugabyteDB stable patches (June 3-4):** v2025.2.3.2 and v2024.2.9.1 point releases — routine bug/fix maintenance, no headline feature.\n  [YB releases](https://docs.yugabyte.com/stable/releases/ybdb-releases/)\n- **TiDB Cloud change (eff. June 9):** newly created TiDB Cloud Essential instances now deploy single-AZ with no regional HA / cross-AZ failover — you must choose Premium for that. Pre-June-9 Essential instances unaffected. A deployment-topology gotcha if you provision Essential expecting HA.\n  [TiDB Cloud release notes](https://docs.pingcap.com/tidbcloud/tidb-cloud-release-notes/)\n\n## Managed & tooling\n- **PlanetScale changelog (mid-June):** Terraform-managed backups/policies for Vitess and Postgres (June 16); `pscale branch connections top` for a live sorted view of active sessions on Postgres/Vitess branches (June 12); MCP `planetscale_get_insights` now surfaces query patterns by CPU for debugging Postgres CPU spikes (June 16). Console/CLI ergonomics, not an engine change (latest major is still Vitess 23).\n  [PlanetScale changelog](https://planetscale.com/changelog)\n\n## Worth your weekend\n- Pull **PG19 Beta 1** and benchmark parallel autovacuum vs. your current vacuum windows, and kick the tires on `pg_plan_advice` for plan stability on your worst-offender queries.\n- If you run **MariaDB Galera**, audit every cluster for `wsrep_notify_cmd` and confirm you're on a patched build (or disabled) — this is a CVSS 10.\n\n## Heads up\n- **MariaDB 10.6 EOL — 2026-07-06 (today).** 10.6.27 is effectively the final corrective release for that branch (and carries the CVE-2026-49261 fix). Plan migration to a newer LTS.\n- **PostgreSQL 14 EOL — 2026-11-12.** Last fixes then; start upgrade planning if still on 14.\n- **pgvector 0.8.2** fixes a buffer overflow in parallel HNSW index builds (CVE-2026-3172, can leak data across relations or crash the server). Exact release date not confirmed as in-window, but if you run pgvector with parallel builds, verify you're on 0.8.2+.\n  [pgvector releases](https://github.com/pgvector/pgvector/releases)\n\n## Signals worth watching\n- **Galera's operational surface is the recurring MariaDB weak spot** — three of this batch's CVEs (49261/48165/48163) are all `wsrep_*` shell-command-injection paths. If you run multi-writer MariaDB, treat SST/notify config as security-critical, not just tuning.\n- **PG19's autovacuum overhaul (parallel workers + scoring) is the shift to watch** — the long-standing single-threaded autovacuum bottleneck on large, hot tables may finally ease; hold benchmark claims until GA.\n- **Managed-Postgres consolidation continues** (Neon under Databricks, Supabase's agentic \"Lite\" push, AlloyDB managed pooling GA) — the competitive axis is now agent-created/scale-to-zero workloads rather than raw OLTP throughput.\n\n## Filtered out\n- Connection-pooler landscape pieces (PgBouncer 1.25.1 / CVE-2025-12819 fix is Dec 2025; PgCat/Supavisor comparisons) — no in-window releases. [Tembo benchmark](https://legacy.tembo.io/blog/postgres-connection-poolers/)\n- Vitess 23 (Nov 2025), Aurora DSQL GA, VectorChord 1.0/1.1 — all pre-window context, deferred.\n- SQLite/libSQL/Turso — only 2026 explainer/marketing posts surfaced, no concrete release in-window. [Turso repo](https://github.com/tursodatabase/turso)\n- CDC/table-format items deferred to the Open Formats & CDC brief per scope.", flag_reason:"**MariaDB Galera CVSS 10.0 RCE (CVE-2026-49261):** unescaped joiner-node name in `wsrep_notify_cmd` yields arbitrary shell execution. If you run MariaDB with Galera, upgrade to 10.6.27 / 10.11.18 / 11.4.12 / 11.8.8 / 12.3.2 or disable `wsrep_notify_cmd` now — compounded by MariaDB 10.6 reaching EOL today (2026-07-06). Detail in the *MySQL / MariaDB* category."},
@@ -223,11 +238,15 @@ window.BRIEFINGS = {
   document.getElementById("runCount").textContent = done+" / "+B.sections.length;
   var urgent = B.sections.filter(function(s){return s.status==="urgent";});
   document.getElementById("runFlag").textContent = urgent.length ? ("⚑ "+urgent.length+" flagged: "+urgent.map(function(s){return s.name;}).join(", ")) : "";
-  document.getElementById("subline").textContent = B.generated ? ("last run "+B.generated+(B.summary?" · "+B.summary:"")) : "awaiting first run";
+  document.getElementById("subline").textContent = B.generated ? ("last run "+B.generated+(B.model?" · by "+B.model:"")+(B.summary?" · "+B.summary:"")) : "awaiting first run";
   function meter(f){var s="<span class='meter'>";for(var i=1;i<=3;i++)s+="<i class='"+(i<=f?"on":"")+"'></i>";return s+"</span>";}
   function churn(f){return f===3?"firehose":(f===2?"steady":"quiet");}
   function fmtTok(n){return n>=99500?Math.round(n/1000)+"k":(n>=1000?(n/1000).toFixed(1)+"k":""+n);}
   function buildTok(){
+    if(B.model){
+      document.getElementById("tokTitle").textContent="Token breakdown — this run · "+B.model;
+      document.getElementById("tokNote").textContent="Run by "+B.model+" — research-agent tokens only (orchestration overhead not included); a volume gauge, not a bill.";
+    }
     var rows=B.sections.filter(function(s){return (s.tokens||0)>0;}).slice().sort(function(a,b){return (b.tokens||0)-(a.tokens||0);});
     var body=document.getElementById("tokBody");
     if(!rows.length){body.innerHTML="<p class='tok-note'>No per-topic token data recorded this run.</p>";return;}
@@ -438,9 +457,9 @@ window.BRIEFINGS = {
   });
   var hb=document.getElementById("helpBtn"),hp=document.getElementById("helpPanel");
   var kb=document.getElementById("tokBtn"),kp=document.getElementById("tokPanel");
-  hb.addEventListener("click",function(){hp.hidden=!hp.hidden;kp.hidden=true;});
+  hb.addEventListener("click",function(){hp.hidden=!hp.hidden;kp.hidden=true;document.getElementById("calPanel").hidden=true;});
   document.getElementById("helpClose").addEventListener("click",function(){hp.hidden=true;});
-  kb.addEventListener("click",function(){if(kp.hidden)buildTok();kp.hidden=!kp.hidden;hp.hidden=true;});
+  kb.addEventListener("click",function(){if(kp.hidden)buildTok();kp.hidden=!kp.hidden;hp.hidden=true;document.getElementById("calPanel").hidden=true;});
   document.getElementById("tokClose").addEventListener("click",function(){kp.hidden=true;});
   var root=document.documentElement,tb=document.getElementById("themeBtn"),ti=document.getElementById("themeIcon");
   function sysDark(){return window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;}
@@ -451,27 +470,50 @@ window.BRIEFINGS = {
     var first=(urgent[0]||B.sections.filter(function(s){return s.status&&s.status!=="pending";})[0]||B.sections[0]);
     if(first) select(first.id);
   }
-  // Archive date picker: reads archive/index.json (a JSON array of "YYYY-MM-DD").
+  // Archive calendar: reads archive/index.json (a JSON array of "YYYY-MM-DD").
   // The same template serves the live page (root) AND the frozen copies in archive/,
-  // so paths are resolved relative to where this page lives.
+  // so paths are resolved relative to where this page lives. Native <input type=date>
+  // can't highlight specific days, so this is a small custom month grid: dates with
+  // an archived run are highlighted/clickable, everything else is muted.
   (function(){
     var inArch=/\/archive\//.test(location.pathname);
     var base=inArch?"":"archive/";
+    var curDate=(B.generated||"").slice(0,10);
     fetch(base+"index.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(list){
       if(!list||!list.length) return;
-      var sel=document.getElementById("histSel");
-      var curDate=(B.generated||"").slice(0,10);
-      var o0=document.createElement("option");o0.value="";
-      o0.textContent="📅 "+(curDate||"—")+(inArch?" (archived)":" (latest)");
-      sel.appendChild(o0);
-      if(inArch){var ol=document.createElement("option");ol.value="../claude.html";ol.textContent="← back to latest";sel.appendChild(ol);}
-      list.slice().sort().reverse().forEach(function(d){
-        if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
-        var o=document.createElement("option");o.value=base+d+".html";o.textContent=d;sel.appendChild(o);
-      });
-      if(sel.options.length>1){ sel.hidden=false;
-        sel.addEventListener("change",function(){ if(this.value) location.href=this.value; });
+      var have={}; list.forEach(function(d){ if(/^\d{4}-\d{2}-\d{2}$/.test(d)) have[d]=true; });
+      if(!Object.keys(have).length) return;
+      var cb=document.getElementById("calBtn"), cp=document.getElementById("calPanel");
+      document.getElementById("calLbl").textContent=(curDate||"")+(inArch?" (archived)":"");
+      cb.hidden=false;
+      var latest=Object.keys(have).sort().pop();
+      var view=(curDate||latest).slice(0,7);   // "YYYY-MM"
+      function pad(n){return (n<10?"0":"")+n;}
+      function render(){
+        var y=+view.slice(0,4), m=+view.slice(5,7);
+        document.getElementById("calTitle").textContent=view;
+        var g=document.getElementById("calGrid"); g.innerHTML="";
+        ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(function(d){var e=document.createElement("div");e.className="cal-dow";e.textContent=d;g.appendChild(e);});
+        var firstDow=new Date(y,m-1,1).getDay(), days=new Date(y,m,0).getDate();
+        for(var i=0;i<firstDow;i++){var b=document.createElement("div");b.className="cal-cell";g.appendChild(b);}
+        for(var d=1;d<=days;d++){
+          var ds=y+"-"+pad(m)+"-"+pad(d);
+          var c=document.createElement("div");c.className="cal-cell";c.textContent=d;
+          if(have[ds]) c.className+=" has";
+          if(ds===curDate) c.className+=" cur";
+          if(have[ds])(function(ds){c.addEventListener("click",function(){
+            if(!inArch&&ds===curDate){cp.hidden=true;return;}   // already viewing this day's latest
+            location.href=(inArch&&ds===curDate)?"../claude.html":(base+ds+".html");
+          });})(ds);
+          g.appendChild(c);
+        }
+        if(inArch) document.getElementById("calNote").innerHTML="Highlighted dates have an archived run. <a href='../claude.html'>← back to latest</a>";
       }
+      function shift(n){var y=+view.slice(0,4), m=+view.slice(5,7)+n; if(m<1){m=12;y--;} if(m>12){m=1;y++;} view=y+"-"+pad(m); render();}
+      document.getElementById("calPrev").addEventListener("click",function(){shift(-1);});
+      document.getElementById("calNext").addEventListener("click",function(){shift(1);});
+      cb.addEventListener("click",function(){render();cp.hidden=!cp.hidden;hp.hidden=true;kp.hidden=true;});
+      document.getElementById("calClose").addEventListener("click",function(){cp.hidden=true;});
     }).catch(function(){});
   })();
 })();
