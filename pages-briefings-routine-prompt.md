@@ -345,6 +345,11 @@ with a single assignment:
     window.BRIEFINGS = {
       generated: "YYYY-MM-DD HH:MM TZ",     // full timestamp — includes time of day
       summary:   "one-line run summary",
+      model:     "the exact model ID this run is executing as — read it from your own
+                  runtime/environment identity (system prompt / configured model id),
+                  NEVER guessed from training data; \"\" if genuinely unknown. Shown in
+                  the subline ('by <model>') and the Σ tokens panel; archived days keep
+                  their own label so model changes stay visible across history.",
       synthesis: "markdown — the Today's Trends cross-topic read (see step 4b); \"\" if none",
       sections: [ /* the 18 section objects, same order & fields as the template */ ]
     };
@@ -839,7 +844,15 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .tbtn{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 11px;cursor:pointer}
   .tbtn:hover{border-color:var(--accent);color:var(--ink)}
   .tbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  select.tbtn{cursor:pointer;max-width:170px}
+  .calpanel{max-width:340px}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin:6px 0 10px;font-family:var(--mono);font-weight:700;font-size:13px}
+  .cal-nav .tbtn{padding:4px 10px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-dow{font-family:var(--mono);font-size:10px;color:var(--ink-faint);text-align:center;padding:2px 0;text-transform:uppercase}
+  .cal-cell{font-family:var(--mono);font-size:12px;text-align:center;padding:7px 0;border-radius:6px;color:var(--ink-faint);border:1px solid transparent}
+  .cal-cell.has{background:var(--accent-tint);color:var(--accent);font-weight:700;cursor:pointer;border-color:color-mix(in oklab,var(--accent) 35%,var(--border))}
+  .cal-cell.has:hover{background:var(--accent);color:var(--surface)}
+  .cal-cell.cur{outline:2px solid var(--accent);outline-offset:-1px}
   .app{display:grid;grid-template-columns:290px 1fr;flex:1;min-height:0}
   .rail{border-right:1px solid var(--border);padding:14px 12px 40px;overflow:auto}
   .group{margin-top:14px}.group:first-child{margin-top:2px}
@@ -932,7 +945,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
       <button class="tbtn" id="themeBtn"><span id="themeIcon">◐</span> theme</button>
       <button class="tbtn" id="tokBtn" title="Per-topic token breakdown for this run">Σ tokens</button>
       <button class="tbtn" id="helpBtn" title="How to read this dashboard">? help</button>
-      <select class="tbtn" id="histSel" hidden title="View a past day's briefing"></select>
+      <button class="tbtn" id="calBtn" hidden title="Browse past briefings">📅 <span id="calLbl"></span></button>
     </div>
   </header>
   <div class="helppanel" id="helpPanel" hidden>
@@ -955,12 +968,18 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
     <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
     <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 18.</p>
-    <p><strong>📅 Date picker</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; pick a date to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
+    <p><strong>📅 Calendar</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; highlighted dates in the calendar have a run — click one to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
   </div>
   <div class="helppanel" id="tokPanel" hidden>
-    <div class="hp-head"><span>Token breakdown — this run</span><button class="tbtn" id="tokClose" title="Close">✕</button></div>
+    <div class="hp-head"><span id="tokTitle">Token breakdown — this run</span><button class="tbtn" id="tokClose" title="Close">✕</button></div>
     <div id="tokBody"></div>
-    <p class="tok-note">Research-agent tokens only (orchestration overhead not included) — a volume gauge, not a bill.</p>
+    <p class="tok-note" id="tokNote">Research-agent tokens only (orchestration overhead not included) — a volume gauge, not a bill.</p>
+  </div>
+  <div class="helppanel calpanel" id="calPanel" hidden>
+    <div class="hp-head"><span>Browse past briefings</span><button class="tbtn" id="calClose" title="Close">✕</button></div>
+    <div class="cal-nav"><button class="tbtn" id="calPrev" title="Previous month">‹</button><span id="calTitle"></span><button class="tbtn" id="calNext" title="Next month">›</button></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <p class="tok-note" id="calNote">Highlighted dates have an archived run — click one to open that day's dashboard exactly as it was. History accumulates from 2026-07-06.</p>
   </div>
   <div class="strip" id="strip"></div>
   <div class="app">
@@ -985,6 +1004,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
 window.BRIEFINGS = {
   generated: "",
   summary: "",
+  model: "",
   synthesis: "",
   sections: [
     {id:"oltp",       name:"OLTP & Distributed SQL",   group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
@@ -1019,11 +1039,15 @@ window.BRIEFINGS = {
   document.getElementById("runCount").textContent = done+" / "+B.sections.length;
   var urgent = B.sections.filter(function(s){return s.status==="urgent";});
   document.getElementById("runFlag").textContent = urgent.length ? ("⚑ "+urgent.length+" flagged: "+urgent.map(function(s){return s.name;}).join(", ")) : "";
-  document.getElementById("subline").textContent = B.generated ? ("last run "+B.generated+(B.summary?" · "+B.summary:"")) : "awaiting first run";
+  document.getElementById("subline").textContent = B.generated ? ("last run "+B.generated+(B.model?" · by "+B.model:"")+(B.summary?" · "+B.summary:"")) : "awaiting first run";
   function meter(f){var s="<span class='meter'>";for(var i=1;i<=3;i++)s+="<i class='"+(i<=f?"on":"")+"'></i>";return s+"</span>";}
   function churn(f){return f===3?"firehose":(f===2?"steady":"quiet");}
   function fmtTok(n){return n>=99500?Math.round(n/1000)+"k":(n>=1000?(n/1000).toFixed(1)+"k":""+n);}
   function buildTok(){
+    if(B.model){
+      document.getElementById("tokTitle").textContent="Token breakdown — this run · "+B.model;
+      document.getElementById("tokNote").textContent="Run by "+B.model+" — research-agent tokens only (orchestration overhead not included); a volume gauge, not a bill.";
+    }
     var rows=B.sections.filter(function(s){return (s.tokens||0)>0;}).slice().sort(function(a,b){return (b.tokens||0)-(a.tokens||0);});
     var body=document.getElementById("tokBody");
     if(!rows.length){body.innerHTML="<p class='tok-note'>No per-topic token data recorded this run.</p>";return;}
@@ -1234,9 +1258,9 @@ window.BRIEFINGS = {
   });
   var hb=document.getElementById("helpBtn"),hp=document.getElementById("helpPanel");
   var kb=document.getElementById("tokBtn"),kp=document.getElementById("tokPanel");
-  hb.addEventListener("click",function(){hp.hidden=!hp.hidden;kp.hidden=true;});
+  hb.addEventListener("click",function(){hp.hidden=!hp.hidden;kp.hidden=true;document.getElementById("calPanel").hidden=true;});
   document.getElementById("helpClose").addEventListener("click",function(){hp.hidden=true;});
-  kb.addEventListener("click",function(){if(kp.hidden)buildTok();kp.hidden=!kp.hidden;hp.hidden=true;});
+  kb.addEventListener("click",function(){if(kp.hidden)buildTok();kp.hidden=!kp.hidden;hp.hidden=true;document.getElementById("calPanel").hidden=true;});
   document.getElementById("tokClose").addEventListener("click",function(){kp.hidden=true;});
   var root=document.documentElement,tb=document.getElementById("themeBtn"),ti=document.getElementById("themeIcon");
   function sysDark(){return window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;}
@@ -1247,27 +1271,50 @@ window.BRIEFINGS = {
     var first=(urgent[0]||B.sections.filter(function(s){return s.status&&s.status!=="pending";})[0]||B.sections[0]);
     if(first) select(first.id);
   }
-  // Archive date picker: reads archive/index.json (a JSON array of "YYYY-MM-DD").
+  // Archive calendar: reads archive/index.json (a JSON array of "YYYY-MM-DD").
   // The same template serves the live page (root) AND the frozen copies in archive/,
-  // so paths are resolved relative to where this page lives.
+  // so paths are resolved relative to where this page lives. Native <input type=date>
+  // can't highlight specific days, so this is a small custom month grid: dates with
+  // an archived run are highlighted/clickable, everything else is muted.
   (function(){
     var inArch=/\/archive\//.test(location.pathname);
     var base=inArch?"":"archive/";
+    var curDate=(B.generated||"").slice(0,10);
     fetch(base+"index.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(list){
       if(!list||!list.length) return;
-      var sel=document.getElementById("histSel");
-      var curDate=(B.generated||"").slice(0,10);
-      var o0=document.createElement("option");o0.value="";
-      o0.textContent="📅 "+(curDate||"—")+(inArch?" (archived)":" (latest)");
-      sel.appendChild(o0);
-      if(inArch){var ol=document.createElement("option");ol.value="../claude.html";ol.textContent="← back to latest";sel.appendChild(ol);}
-      list.slice().sort().reverse().forEach(function(d){
-        if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
-        var o=document.createElement("option");o.value=base+d+".html";o.textContent=d;sel.appendChild(o);
-      });
-      if(sel.options.length>1){ sel.hidden=false;
-        sel.addEventListener("change",function(){ if(this.value) location.href=this.value; });
+      var have={}; list.forEach(function(d){ if(/^\d{4}-\d{2}-\d{2}$/.test(d)) have[d]=true; });
+      if(!Object.keys(have).length) return;
+      var cb=document.getElementById("calBtn"), cp=document.getElementById("calPanel");
+      document.getElementById("calLbl").textContent=(curDate||"")+(inArch?" (archived)":"");
+      cb.hidden=false;
+      var latest=Object.keys(have).sort().pop();
+      var view=(curDate||latest).slice(0,7);   // "YYYY-MM"
+      function pad(n){return (n<10?"0":"")+n;}
+      function render(){
+        var y=+view.slice(0,4), m=+view.slice(5,7);
+        document.getElementById("calTitle").textContent=view;
+        var g=document.getElementById("calGrid"); g.innerHTML="";
+        ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(function(d){var e=document.createElement("div");e.className="cal-dow";e.textContent=d;g.appendChild(e);});
+        var firstDow=new Date(y,m-1,1).getDay(), days=new Date(y,m,0).getDate();
+        for(var i=0;i<firstDow;i++){var b=document.createElement("div");b.className="cal-cell";g.appendChild(b);}
+        for(var d=1;d<=days;d++){
+          var ds=y+"-"+pad(m)+"-"+pad(d);
+          var c=document.createElement("div");c.className="cal-cell";c.textContent=d;
+          if(have[ds]) c.className+=" has";
+          if(ds===curDate) c.className+=" cur";
+          if(have[ds])(function(ds){c.addEventListener("click",function(){
+            if(!inArch&&ds===curDate){cp.hidden=true;return;}   // already viewing this day's latest
+            location.href=(inArch&&ds===curDate)?"../claude.html":(base+ds+".html");
+          });})(ds);
+          g.appendChild(c);
+        }
+        if(inArch) document.getElementById("calNote").innerHTML="Highlighted dates have an archived run. <a href='../claude.html'>← back to latest</a>";
       }
+      function shift(n){var y=+view.slice(0,4), m=+view.slice(5,7)+n; if(m<1){m=12;y--;} if(m>12){m=1;y++;} view=y+"-"+pad(m); render();}
+      document.getElementById("calPrev").addEventListener("click",function(){shift(-1);});
+      document.getElementById("calNext").addEventListener("click",function(){shift(1);});
+      cb.addEventListener("click",function(){render();cp.hidden=!cp.hidden;hp.hidden=true;kp.hidden=true;});
+      document.getElementById("calClose").addEventListener("click",function(){cp.hidden=true;});
     }).catch(function(){});
   })();
 })();

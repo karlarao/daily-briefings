@@ -43,9 +43,12 @@ search backend, execution model, model, and run date differ.
   an exact bill. The summary line carries the total, each brief's header shows its own count, and
   the **`Σ tokens`** button opens a sorted per-topic breakdown with share bars. The "N slow"
   segment appears in the summary only when at least one lane had a slow day.
-- **📅 Date picker** (top right) — every run archives a frozen copy of the full dashboard to
+- **📅 Calendar** (top right) — every run archives a frozen copy of the full dashboard to
   `archive/<date>.html` on `gh-pages` (same-day reruns overwrite, so each date = that day's
-  latest). Pick a date to reopen that day exactly as it was. History accumulates from 2026-07-06.
+  latest). Dates with a run are highlighted in the calendar; click one to reopen that day exactly
+  as it was. History accumulates from 2026-07-06.
+- **Model attribution** — each run records the model ID it executed as (subline "by <model>" and
+  the Σ tokens panel); archived days keep their own label, so model changes stay visible.
 
 ## How Pages is served — the `gh-pages` branch
 
