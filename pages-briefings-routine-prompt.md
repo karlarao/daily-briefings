@@ -930,7 +930,6 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .nav-item.whatsnew .nav-name{color:var(--amber)}
   .nav-item.whatsnew.active{border-left-color:var(--amber);background:var(--surface-2)}
   .wndiamond{color:var(--amber);font-size:12px;flex-shrink:0;width:8px;text-align:center}
-  .nav-item.whatsnew .meter{visibility:hidden}
   .tdiamond{color:var(--accent);font-size:12px;flex-shrink:0;width:8px;text-align:center}
   .nav-item:hover{background:var(--surface-2)}
   .nav-item.active{background:var(--surface-2);border-left-color:var(--accent)}
@@ -1234,7 +1233,7 @@ window.BRIEFINGS = {
     var w=B.whatsnew;
     if(!w) return "<p class='wn-empty'>No day-over-day comparison for this run — nothing to diff against yet.</p>";
     var n=((w.new||[]).length)+((w.changed||[]).length)+((w.ongoing||[]).length);
-    if(!n) return "<p class='wn-empty'>Nothing new, changed, or still-ongoing versus "+(w.prev_date||"the previous run")+".</p>";
+    if(!n) return "<p class='wn-empty'>Nothing new, changed, or still-ongoing versus "+(w.prev_date||"the previous run")+"."+(w.aged_out?(" "+w.aged_out+" item"+(w.aged_out===1?"":"s")+" aged out of the 30-day window."):"")+"</p>";
     var h="<div class='wnwrap'>"+wnList(w.new,"new")+wnList(w.changed,"changed")+wnList(w.ongoing,"ongoing");
     if(w.aged_out) h+="<p class='wn-aged'>⤵ "+w.aged_out+" item"+(w.aged_out===1?"":"s")+" aged out of the 30-day window since "+(w.prev_date||"last run")+".</p>";
     return h+"</div>";
@@ -1366,13 +1365,13 @@ window.BRIEFINGS = {
   function trendsMd(){return "# Today's Trends — "+(B.generated||"")+"\n\n"+B.synthesis;}
   function trendsSection(){return "<h1>Today's Trends</h1><p class='meta'>synthesis across all "+B.sections.length+" briefs · "+esc(B.generated||"")+"</p><article>"+md2html(B.synthesis)+"</article>";}
   function whatsnewMd(){
-    var w=B.whatsnew; if(!w) return "# Since yesterday — "+(B.generated||"")+"\n\n_No prior run to compare against._\n";
-    var out=["# Since yesterday — "+(B.generated||""),"","_day-over-day diff vs "+(w.prev_date||"previous run")+"_",""];
+    var w=B.whatsnew; if(!w) return "# Since yesterday — "+(B.generated||"")+"\n\n*No prior run to compare against.*\n";
+    var out=["# Since yesterday — "+(B.generated||""),"","*day-over-day diff vs "+(w.prev_date||"previous run")+"*",""];
     function sec(title,arr,fmt){ if(arr&&arr.length){ out.push("## "+title,""); arr.forEach(function(it){ out.push("- "+fmt(it)); }); out.push(""); } }
     sec("🆕 New", w.new, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"");});
     sec("🔺 Changed", w.changed, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.note?" ("+it.note+")":"");});
     sec("➰ Still ongoing", w.ongoing, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.days?" (day "+it.days+")":"");});
-    if(w.aged_out) out.push("_"+w.aged_out+" item(s) aged out of the 30-day window since "+(w.prev_date||"last run")+"._","");
+    if(w.aged_out) out.push("*"+w.aged_out+" item(s) aged out of the 30-day window since "+(w.prev_date||"last run")+".*","");
     return out.join("\n");
   }
   document.getElementById("copyBriefBtn").addEventListener("click",function(){
