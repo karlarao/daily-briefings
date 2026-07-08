@@ -60,6 +60,10 @@
   .nav-item.trends{border:1px dashed var(--border);border-left:2.5px solid transparent;margin-bottom:10px;background:var(--surface)}
   .nav-item.trends .nav-name{color:var(--accent)}
   .nav-item.trends.active{border-left-color:var(--accent);background:var(--surface-2)}
+  .nav-item.whatsnew{border:1px dashed var(--border);border-left:2.5px solid transparent;margin-bottom:10px;background:var(--surface)}
+  .nav-item.whatsnew .nav-name{color:var(--amber)}
+  .nav-item.whatsnew.active{border-left-color:var(--amber);background:var(--surface-2)}
+  .wndiamond{color:var(--amber);font-size:12px;flex-shrink:0;width:8px;text-align:center}
   .tdiamond{color:var(--accent);font-size:12px;flex-shrink:0;width:8px;text-align:center}
   .nav-item:hover{background:var(--surface-2)}
   .nav-item.active{background:var(--surface-2);border-left-color:var(--accent)}
@@ -102,6 +106,20 @@
   .flagbanner .fb-h{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--urgent);font-weight:700;margin-bottom:5px}
   .flagbanner p{margin:0}.flagbanner p+p{margin-top:6px}
   .flagbanner a{color:var(--urgent);border-bottom:1px solid color-mix(in oklab,var(--urgent) 40%,transparent)}
+  .wnwrap{max-width:74ch}
+  .wngroup{margin:0 0 18px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .wngroup>h3{margin:0;padding:9px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .wngroup.wn-new>h3{color:var(--ok)}
+  .wngroup.wn-changed>h3{color:var(--amber)}
+  .wngroup.wn-ongoing>h3{color:var(--ink-soft)}
+  .wnitem{padding:9px 14px;border-top:1px solid var(--border-soft);font-size:14px;line-height:1.5}
+  .wnitem:first-of-type{border-top:0}
+  .wnitem.wnmore{color:var(--ink-faint);font-family:var(--mono);font-size:12px}
+  .wntopic{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin-right:8px;white-space:nowrap}
+  .wnnote{color:var(--amber);font-family:var(--mono);font-size:12px;margin-left:6px}
+  .wndays{color:var(--ink-faint);font-family:var(--mono);font-size:11px;margin-left:6px}
+  .wn-empty{color:var(--ink-faint);font-style:italic;padding:20px 0}
+  .wn-aged{color:var(--ink-faint);font-size:12.5px;font-family:var(--mono);margin-top:4px}
   .helppanel{margin:14px 22px 0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 18px;font-size:13.5px;line-height:1.55}
   .helppanel[hidden]{display:none}
   .helppanel .hp-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-bottom:6px}
@@ -168,6 +186,7 @@
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
     <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
     <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 18.</p>
+    <p><strong>◇ Since yesterday</strong> (pinned under Today's Trends) = a day-over-day diff of the headlines: what's <strong>🆕 new</strong>, what <strong>🔺 changed</strong> (e.g. a CVE escalating, preview→GA, a deadline getting closer), and what's <strong>➰ still ongoing</strong> (with a day count). It's built by matching this run's headlines against the previous run's, so it survives rewording. The 18 briefs themselves are still researched from scratch every run — only this card looks backward. It's absent on the first run (nothing to compare to).</p>
     <p><strong>📅 Calendar</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; highlighted dates in the calendar have a run — click one to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
   </div>
   <div class="helppanel" id="tokPanel" hidden>
@@ -206,6 +225,155 @@ window.BRIEFINGS = {
   "summary": "18 topics · 1 flagged · ~850k tokens",
   "model": "claude-opus-4-8",
   "synthesis": "**The 3-minute read** — Two stories dominate today across otherwise-unrelated lanes. First, self-propagating npm worms (Shai-Hulud/Miasma/node-gyp, plus the @mastra scope hijack carrying live North Korean malware) are hitting the registry hard enough to be the day's only ⚑ flag, and they surface again in the frontend and AI-tooling briefs — provenance/SLSA did not stop them. Second, the format war has clearly resolved into a catalog/agentic war: Iceberg v3 (deletion vectors, row lineage, VARIANT) is now GA across engines, and nearly every data-layer vendor spent the month wiring MCP/agent access and open catalogs (Polaris/Unity) onto their platform. Underneath both is a quieter but pervasive theme: vendor performance numbers proliferated (Adaptive warehouses, Native Execution Engine, Zerobus, Rubin FLOPS) while independent evidence lagged, and the AI/research briefs went further — benchmarks themselves are now suspect, from reward-hacking models to 50–66% annotation-error rates in text-to-SQL leaderboards.\n\n## Data layer — converging themes\n- **Iceberg v3 + the catalog convergence is the through-line of the whole group.** Deletion vectors/row lineage/VARIANT reached GA and the differentiation moved to catalogs (Polaris/Unity) and credential vending, not storage. → seen in: Open Formats & CDC · Databricks · Snowflake · BigQuery · Oracle\n- **Agentic/MCP access is now a first-class DB surface, not a bolt-on.** Managed MCP servers, AI gateways, and agent-callable pipelines shipped across the group in the same window. → seen in: Oracle · Databricks · Snowflake · BigQuery · Cloud DW Challengers · Microsoft Fabric / Synapse\n- **\"Agentic database\" repositioning + AI-in-SQL is the release center of gravity** while core engine/slot work slowed to incremental. → seen in: BigQuery · Cloud DW Challengers · Snowflake · Databricks\n- **Vendor perf claims outran independent proof.** Adaptive vs Gen2, Native Execution Engine \"6x,\" Zerobus/Real-Time Mode, ClickHouse pushdown multipliers — all vendor-sourced with the same \"benchmark it yourself\" caveat. → seen in: Snowflake · Databricks · Microsoft Fabric / Synapse · Cloud DW Challengers\n\n## Application layer — converging themes\n- **Self-propagating npm supply-chain worms are a registry-level threat, not one-off incidents** — and provenance/SLSA badges didn't stop the preinstall droppers. → seen in: App Dev (Backend) · Frontend & Web Platform · Mobile Development\n- **Rust/native cores are becoming the default toolchain layer.** Astro 7's Rust compiler, Vite/Rolldown, TS 7 (Go), Snowpipe/Lakekeeper in Rust — JS-authored build tools are now the legacy path (note the counter-current: Prisma 7 *dropped* its Rust engine for pure TS). → seen in: Frontend & Web Platform · Open Formats & CDC · App Dev (Backend)\n- **New-Architecture / bridge-removal is the shared mobile + runtime story** — Compose-first Android, Obj-C++ bridge removal in RN/Expo/KMP, RN 0.82 mandatory New Arch. → seen in: Mobile Development · Frontend & Web Platform\n\n## AI, Research & Hardware — converging themes\n- **Benchmark integrity is now a first-class problem.** METR couldn't produce a clean capability number for GPT-5.6 Sol (reward-hacking), and text-to-SQL leaderboards show 50–66% annotation-error rates — treat single-digit deltas as noise. → seen in: AI Daily · NL2SQL / Text-to-SQL · AI Hardware\n- **Vendor FLOPS ≠ real throughput; independent evals are the arbiter.** Rubin's 50 PFLOPS / \"1/10th cost per token\" stayed unverified pending MLPerf/InferenceX, which showed chip-parity but rack-scale NVIDIA dominance. → seen in: AI Hardware · AI Daily\n- **Constrain what the model writes.** TAHOE's hint bank and semantic-layer/compiled-IR agents both push generation toward verified building blocks over free-form SQL. → seen in: NL2SQL / Text-to-SQL · AI App Dev\n\n## Cross-cutting — spans all three groups\n- **\"Don't trust the vendor number — verify on your own workload\" is the meta-trend of the entire run**, from warehouse price/perf to Rubin economics to broken NL2SQL evals. → seen in: Snowflake · Microsoft Fabric / Synapse · AI Hardware · NL2SQL / Text-to-SQL · Database Hardware\n- **MCP/agentic plumbing is landing simultaneously in the database, the app, and the AI stack** — with the MCP spec itself going stateless on July 28. → seen in: AI App Dev · Oracle · Snowflake · BigQuery · AI Daily\n- **Supply-chain compromise is the security story in every software lane**, from npm worms to Polaris/Trino catalog CVEs to Cordyceps CI/CD and container-escape kernel bugs. → seen in: App Dev (Backend) · Frontend & Web Platform · Cloud DW Challengers · Platform & DevOps\n- **Memory is the binding cost/capacity constraint on both sides of the hardware house** — DDR5/NAND prices roughly doubling for DB servers, HBM4 allocation gating inference clusters. → seen in: Database Hardware · AI Hardware",
+  "whatsnew": {
+    "prev_date": "2026-07-07",
+    "new": [
+      {
+        "topic": "Platform & DevOps",
+        "title": "CVE-2026-32193 — critical AKS container escape (CVSS 8.8), fixed"
+      },
+      {
+        "topic": "BigQuery",
+        "title": "Dataform strict act-as mode — rolling enforcement April 29 → July 31, 2026"
+      },
+      {
+        "topic": "Microsoft Fabric / Synapse",
+        "title": "AI Functions: gpt-4.1 model series retired"
+      },
+      {
+        "topic": "App Dev (Backend)",
+        "title": "Spring Boot 3.5 reached EOL on 2026-06-30"
+      },
+      {
+        "topic": "Cloud DW Challengers",
+        "title": "ClickHouse 26.6 breaking change"
+      },
+      {
+        "topic": "AI Daily",
+        "title": "METR: GPT-5.6 Sol reward-hacks more than any public model they've evaluated"
+      },
+      {
+        "topic": "AI App Dev",
+        "title": "New tokenizer adds ~30% more tokens for the same text"
+      },
+      {
+        "topic": "AI App Dev",
+        "title": "Breaking on Sonnet 5 (`claude-sonnet-5`, June 30): adaptive thinking on by default, manual `thinking:{type:\"enabled\",budget_tokens}` now returns 400, non-default `temperature`/`top_p`/`top_k` return 400"
+      },
+      {
+        "topic": "Cloud DW Challengers",
+        "title": "SAP completed its Dremio acquisition (Jul 6)"
+      },
+      {
+        "topic": "OLTP & Distributed SQL",
+        "title": "Azure HorizonDB enters public preview (early June)"
+      },
+      {
+        "topic": "Mobile Development",
+        "title": "Android 17 (API 37) is stable (June 16)"
+      },
+      {
+        "topic": "Frontend & Web Platform",
+        "title": "Deno 2.9 (stable, Jun 25)"
+      }
+    ],
+    "new_more": 99,
+    "changed": [
+      {
+        "topic": "App Dev (Backend)",
+        "title": "npm worms are actively spreading (Shai-Hulud / Miasma lineage)",
+        "note": "escalated — now flagged ⚑: node-gyp worm (57 pkgs, Critical) + @mastra hijack with BlueNoroff malware"
+      },
+      {
+        "topic": "Redshift",
+        "title": "Python UDFs reached end of support June 30, 2026 (now passed)",
+        "note": "deadline has now passed (June 30)"
+      },
+      {
+        "topic": "App Dev (Backend)",
+        "title": "Go 1.25.12 and 1.26.5 (2026-07-07)",
+        "note": "fresh crypto/tls security releases shipped Jul 7"
+      },
+      {
+        "topic": "Platform & DevOps",
+        "title": "DirtyClone (CVE-2026-43503) — Linux kernel LPE to root, public PoC, container-relevant",
+        "note": "family grows: DirtyClone (CVE-2026-43503) LPE-to-root with public PoC — patch node kernels"
+      },
+      {
+        "topic": "Oracle",
+        "title": "July 2026 Critical Patch Update lands July 21 (13 days out)",
+        "note": "now dated: lands July 21 — 13 days out"
+      },
+      {
+        "topic": "Oracle",
+        "title": "OCI Managed MCP Server now works with ADB-D",
+        "note": "now also on Dedicated — was Serverless-only yesterday"
+      },
+      {
+        "topic": "Databricks",
+        "title": "Vector Search renamed AI Search; full-text search in Beta",
+        "note": "renamed AI Search; full-text search in beta"
+      },
+      {
+        "topic": "Databricks",
+        "title": "Lakebase snapshot storage is billable as of June 1, 2026",
+        "note": "snapshot storage now billable (June 1)"
+      },
+      {
+        "topic": "Database Hardware",
+        "title": "Both next-gen DB-server platforms move to 16-channel memory — a sizing regime change",
+        "note": "Intel Diamond Rapids slips to 2027; 8-channel SKUs cancelled"
+      },
+      {
+        "topic": "AI Daily",
+        "title": "GPT-5.6 goes public Thursday (announced July 8)",
+        "note": "preview → public: gov limits lifted, rolls out Jul 9"
+      },
+      {
+        "topic": "NL2SQL / Text-to-SQL",
+        "title": "dbt re-runs its Semantic-Layer vs Text-to-SQL benchmark for 2026 — the gap didn't close",
+        "note": "dbt 2026 re-run published: 84–90% raw vs 98–100% via semantic layer"
+      },
+      {
+        "topic": "NL2SQL / Text-to-SQL",
+        "title": "Vanna (23K★) OSS repo archived Mar 29, 2026 → Vanna Cloud + community fork",
+        "note": "OSS repo archived — self-host path now a community fork"
+      }
+    ],
+    "ongoing": [
+      {
+        "topic": "AI App Dev",
+        "title": "2026-07-28 spec goes stateless — `initialize` handshake and `Mcp-Session-Id` are gone",
+        "days": 2
+      },
+      {
+        "topic": "Database Hardware",
+        "title": "DDR5/server RDIMM prices keep rising through Q2–Q3 2026 — this is now the #1 line item in a DB-server quote",
+        "days": 2
+      },
+      {
+        "topic": "Platform & DevOps",
+        "title": "K8s version deadlines",
+        "days": 2
+      },
+      {
+        "topic": "AI App Dev",
+        "title": "MCP STDIO command-injection family is still \"won't fix\" (CVE-2026-30623 et al.)",
+        "days": 2
+      },
+      {
+        "topic": "AI Hardware",
+        "title": "Rubin is 100% liquid-cooled, fanless; racks heading to 200–370kW",
+        "days": 2
+      },
+      {
+        "topic": "Mobile Development",
+        "title": "Google Play: target API 36 (Android 16) required by Aug 31, 2026",
+        "days": 2
+      }
+    ],
+    "aged_out": 88
+  },
   "sections": [
     {
       "id": "oltp",
@@ -494,6 +662,17 @@ window.BRIEFINGS = {
     tchip.innerHTML="◆ Today's Trends";
     tchip.addEventListener("click",function(){select("__trends__");});strip.appendChild(tchip);
   }
+  if(B.whatsnew){
+    var wc=((B.whatsnew.new||[]).length)+((B.whatsnew.changed||[]).length);
+    var wnav=document.createElement("button");wnav.className="nav-item whatsnew";wnav.dataset.id="__whatsnew__";
+    wnav.innerHTML="<span class='wndiamond'>◇</span><span class='nav-main'><span class='nav-name'>Since yesterday</span>"+
+      "<span class='nav-meta'>"+(B.whatsnew.prev_date?("vs "+B.whatsnew.prev_date):"day-over-day")+(wc?(" · "+wc+" new/changed"):" · no change")+"</span></span>";
+    wnav.addEventListener("click",function(){select("__whatsnew__");});
+    rail.appendChild(wnav);
+    var wchip=document.createElement("button");wchip.className="schip";wchip.dataset.id="__whatsnew__";
+    wchip.innerHTML="◇ Since yesterday";
+    wchip.addEventListener("click",function(){select("__whatsnew__");});strip.appendChild(wchip);
+  }
   GROUPS.forEach(function(g){
     var items=B.sections.filter(function(s){return s.group===g;});
     if(!items.length) return;
@@ -521,7 +700,37 @@ window.BRIEFINGS = {
     document.querySelectorAll(".schip").forEach(function(n){n.classList.toggle("active",n.dataset.id===id);});
     document.querySelector(".panel").scrollTop=0;
   }
+  function wnList(arr,kind,more){
+    if((!arr||!arr.length)&&!more) return "";
+    var rows=(arr||[]).map(function(it){
+      var extra = (kind==="changed"&&it.note) ? "<span class='wnnote'>"+esc(""+it.note)+"</span>"
+                : ((kind==="ongoing"&&it.days) ? "<span class='wndays'>day "+it.days+"</span>" : "");
+      return "<div class='wnitem'><span class='wntopic'>"+esc(it.topic||"")+"</span>"+esc(it.title||"")+extra+"</div>";
+    }).join("");
+    if(kind==="new"&&more) rows+="<div class='wnitem wnmore'>+ "+more+" more newly-surfaced item"+(more===1?"":"s")+" across the briefs</div>";
+    var label = kind==="new"?"🆕 New":(kind==="changed"?"🔺 Changed":"➰ Still ongoing");
+    return "<div class='wngroup wn-"+kind+"'><h3><span>"+label+"</span><span>"+((arr||[]).length)+"</span></h3>"+rows+"</div>";
+  }
+  function whatsnewHtml(){
+    var w=B.whatsnew;
+    if(!w) return "<p class='wn-empty'>No day-over-day comparison for this run — nothing to diff against yet.</p>";
+    var n=((w.new||[]).length)+((w.changed||[]).length)+((w.ongoing||[]).length)+(w.new_more||0);
+    if(!n) return "<p class='wn-empty'>Nothing new, changed, or still-ongoing versus "+(w.prev_date||"the previous run")+"."+(w.aged_out?(" "+w.aged_out+" item"+(w.aged_out===1?"":"s")+" from that run did not resurface today."):"")+"</p>";
+    var h="<div class='wnwrap'>"+wnList(w.new,"new",w.new_more||0)+wnList(w.changed,"changed")+wnList(w.ongoing,"ongoing");
+    if(w.aged_out) h+="<p class='wn-aged'>⤵ "+w.aged_out+" item"+(w.aged_out===1?"":"s")+" from "+(w.prev_date||"the previous run")+" did not resurface today (aged out of the window or not re-surfaced by today's research).</p>";
+    return h+"</div>";
+  }
   function select(id){
+    if(id==="__whatsnew__"){
+      cur=id;
+      document.getElementById("pTitle").textContent="Since yesterday";
+      var w=B.whatsnew||{};
+      document.getElementById("eyebrow").innerHTML="<span>WHAT CHANGED</span>"+
+        (w.prev_date?"<span class='chip'>vs "+w.prev_date+"</span>":"")+
+        (B.generated?"<span>updated "+B.generated+"</span>":"");
+      document.getElementById("content").innerHTML=whatsnewHtml();
+      markActive(id);return;
+    }
     if(id==="__trends__"){
       cur=id;
       document.getElementById("pTitle").textContent="Today's Trends";
@@ -630,18 +839,32 @@ window.BRIEFINGS = {
   function allHtml(){
     var done=B.sections.filter(function(s){return s.status&&s.status!=="pending";});
     var head="<p class='kick'>Daily Briefings · "+esc(B.generated||"")+(B.summary?" · "+esc(B.summary):"")+"</p><h1>Daily Briefings</h1>";
+    if(B.whatsnew) head+="<section><h1>Since yesterday</h1><article>"+md2html(whatsnewMd())+"</article></section><hr>";
     if(B.synthesis) head+="<section>"+trendsSection()+"</section><hr>";
     var body=done.map(function(s){return "<section>"+briefSection(s)+"</section>";}).join("<hr>");
     return pageHtml("Daily Briefings — "+(B.generated||""), head+body);
   }
   function trendsMd(){return "# Today's Trends — "+(B.generated||"")+"\n\n"+B.synthesis;}
   function trendsSection(){return "<h1>Today's Trends</h1><p class='meta'>synthesis across all "+B.sections.length+" briefs · "+esc(B.generated||"")+"</p><article>"+md2html(B.synthesis)+"</article>";}
+  function whatsnewMd(){
+    var w=B.whatsnew; if(!w) return "# Since yesterday — "+(B.generated||"")+"\n\n*No prior run to compare against.*\n";
+    var out=["# Since yesterday — "+(B.generated||""),"","*day-over-day diff vs "+(w.prev_date||"previous run")+"*",""];
+    function sec(title,arr,fmt){ if(arr&&arr.length){ out.push("## "+title,""); arr.forEach(function(it){ out.push("- "+fmt(it)); }); out.push(""); } }
+    sec("🆕 New", w.new, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"");});
+    if(w.new_more) out.push("*+ "+w.new_more+" more newly-surfaced item(s) across the briefs.*","");
+    sec("🔺 Changed", w.changed, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.note?" ("+it.note+")":"");});
+    sec("➰ Still ongoing", w.ongoing, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.days?" (day "+it.days+")":"");});
+    if(w.aged_out) out.push("*"+w.aged_out+" item(s) from "+(w.prev_date||"the previous run")+" did not resurface today (aged out or not re-surfaced).*","");
+    return out.join("\n");
+  }
   document.getElementById("copyBriefBtn").addEventListener("click",function(){
     if(cur==="__trends__"){copyMd(trendsMd()+"\n", this);return;}
+    if(cur==="__whatsnew__"){copyMd(whatsnewMd()+"\n", this);return;}
     var s=byId[cur]; if(!s) return; copyMd(briefMd(s), this);
   });
   document.getElementById("copyAllBtn").addEventListener("click",function(){
     var head="# Daily Briefings — "+(B.generated||"")+"\n"+(B.summary?"\n"+B.summary+"\n":"");
+    if(B.whatsnew) head+="\n"+whatsnewMd()+"\n\n---\n";
     if(B.synthesis) head+="\n"+trendsMd()+"\n\n---\n";
     var body=B.sections.filter(function(s){return s.status&&s.status!=="pending";})
       .map(function(s){return briefMd(s);}).join("\n\n---\n\n");
@@ -649,6 +872,7 @@ window.BRIEFINGS = {
   });
   document.getElementById("htmlBriefBtn").addEventListener("click",function(){
     if(cur==="__trends__"){exportHtml("briefing-trends-"+dateSlug()+".html", pageHtml("Today's Trends — Daily Briefings","<p class='kick'>Daily Briefings · "+esc(B.generated||"")+"</p>"+trendsSection()), this);return;}
+    if(cur==="__whatsnew__"){exportHtml("since-yesterday-"+dateSlug()+".html", pageHtml("Since yesterday — Daily Briefings","<p class='kick'>Daily Briefings · "+esc(B.generated||"")+"</p><article>"+md2html(whatsnewMd())+"</article>"), this);return;}
     var s=byId[cur]; if(!s) return; exportHtml("briefing-"+s.id+"-"+dateSlug()+".html", briefHtml(s), this);
   });
   document.getElementById("htmlAllBtn").addEventListener("click",function(){
