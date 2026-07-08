@@ -307,8 +307,11 @@ If git push fails (auth/network), send one notification saying so — that failu
                       materially advanced; include a short `note` (e.g. "high → critical",
                       "preview → GA", "deadline now 13 days out").
          - ONGOING  = matched, sev unchanged, still in-window; carry the day count.
-         - AGED OUT = a prior item with no match today (fell outside the 30-day window);
-                      count them, don't list each.
+         - AGED OUT = a prior item with no match today; count them, don't list each.
+                      NOTE: because each day's research re-surfaces a DIFFERENT SUBSET of
+                      the same 30-day window, most of these were simply not re-surfaced
+                      today rather than literally window-expired — the dashboard words it
+                      that way; don't treat the number as an expiry count.
        Hold the same discipline as flag calibration — don't invent movement. A quiet
        day-over-day (few or zero new/changed) is normal and honest.
 
@@ -317,14 +320,24 @@ If git push fails (auth/network), send one notification saying so — that failu
        first_seen = today and days_seen = 1. Then assemble BRIEFINGS.whatsnew:
          { "prev_date": "<the prior ledger's date>",
            "new":     [ {"topic":"<Display Name>","title":"..."} ],
+           "new_more": <int>,
            "changed": [ {"topic":"<Display Name>","title":"...","note":"high → critical"} ],
            "ongoing": [ {"topic":"<Display Name>","title":"...","days": <days_seen>} ],
            "aged_out": <int> }
        Use each topic's DISPLAY NAME (e.g. "App Dev (Backend)") in the whatsnew rows.
-       Order new/changed by severity (urgent first). Keep ongoing to the items that still
-       matter (skip stale "normal" noise). JSON-encode strings like `md`. It renders as a
-       pinned "◇ Since yesterday" card in the sidebar. Leave whatsnew=null only when there
-       is no prior ledger to diff against.
+       CURATION — the card must stay a 60-second read; the raw "no prior match" set is
+       large (often 100+) and mostly "newly SURFACED", not "newly happened":
+         - `new` lists ONLY the items a reader should actually notice — cap ≈10–15 across
+           all topics, ordered by severity/impact — and `new_more` carries the count of
+           the remaining genuinely-new items (0 if none were held back).
+         - Exclude meta/context bullets ("Quiet elsewhere", naming reminders) and
+           same-story duplicates (e.g. a Heads-up bullet restating a CVE item) from both
+           the lists and the counts.
+         - Keep `changed` to real movement (≈≤10) and `ongoing` to the items that still
+           matter (skip stale "normal" noise).
+       Order new/changed by severity (urgent first). JSON-encode strings like `md`. It
+       renders as a pinned "◇ Since yesterday" card in the sidebar. Leave whatsnew=null
+       only when there is no prior ledger to diff against.
 
 5. After the loop: set generated=NOW (full "YYYY-MM-DD HH:MM TZ" timestamp) + a
    one-line summary INCLUDING TOKEN SPEND (e.g. "18 topics · 2 flagged · 1 slow ·
@@ -414,7 +427,8 @@ with a single assignment:
                   their own label so model changes stay visible across history.",
       synthesis: "markdown — the Today's Trends cross-topic read (see step 4b); \"\" if none",
       whatsnew:  { /* the Since-yesterday diff object from step 4c; null if no prior ledger.
-                     { prev_date, new:[{topic,title}], changed:[{topic,title,note}],
+                     { prev_date, new:[{topic,title}], new_more:<int>,
+                       changed:[{topic,title,note}],
                        ongoing:[{topic,title,days}], aged_out:<int> } */ },
       sections: [ /* the 18 section objects, same order & fields as the template */ ]
     };
@@ -980,6 +994,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .wngroup.wn-ongoing>h3{color:var(--ink-soft)}
   .wnitem{padding:9px 14px;border-top:1px solid var(--border-soft);font-size:14px;line-height:1.5}
   .wnitem:first-of-type{border-top:0}
+  .wnitem.wnmore{color:var(--ink-faint);font-family:var(--mono);font-size:12px}
   .wntopic{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin-right:8px;white-space:nowrap}
   .wnnote{color:var(--amber);font-family:var(--mono);font-size:12px;margin-left:6px}
   .wndays{color:var(--ink-faint);font-family:var(--mono);font-size:11px;margin-left:6px}
@@ -1219,23 +1234,24 @@ window.BRIEFINGS = {
     document.querySelectorAll(".schip").forEach(function(n){n.classList.toggle("active",n.dataset.id===id);});
     document.querySelector(".panel").scrollTop=0;
   }
-  function wnList(arr,kind){
-    if(!arr||!arr.length) return "";
-    var rows=arr.map(function(it){
+  function wnList(arr,kind,more){
+    if((!arr||!arr.length)&&!more) return "";
+    var rows=(arr||[]).map(function(it){
       var extra = (kind==="changed"&&it.note) ? "<span class='wnnote'>"+esc(""+it.note)+"</span>"
                 : ((kind==="ongoing"&&it.days) ? "<span class='wndays'>day "+it.days+"</span>" : "");
       return "<div class='wnitem'><span class='wntopic'>"+esc(it.topic||"")+"</span>"+esc(it.title||"")+extra+"</div>";
     }).join("");
+    if(kind==="new"&&more) rows+="<div class='wnitem wnmore'>+ "+more+" more newly-surfaced item"+(more===1?"":"s")+" across the briefs</div>";
     var label = kind==="new"?"🆕 New":(kind==="changed"?"🔺 Changed":"➰ Still ongoing");
-    return "<div class='wngroup wn-"+kind+"'><h3><span>"+label+"</span><span>"+arr.length+"</span></h3>"+rows+"</div>";
+    return "<div class='wngroup wn-"+kind+"'><h3><span>"+label+"</span><span>"+((arr||[]).length)+"</span></h3>"+rows+"</div>";
   }
   function whatsnewHtml(){
     var w=B.whatsnew;
     if(!w) return "<p class='wn-empty'>No day-over-day comparison for this run — nothing to diff against yet.</p>";
-    var n=((w.new||[]).length)+((w.changed||[]).length)+((w.ongoing||[]).length);
-    if(!n) return "<p class='wn-empty'>Nothing new, changed, or still-ongoing versus "+(w.prev_date||"the previous run")+"."+(w.aged_out?(" "+w.aged_out+" item"+(w.aged_out===1?"":"s")+" aged out of the 30-day window."):"")+"</p>";
-    var h="<div class='wnwrap'>"+wnList(w.new,"new")+wnList(w.changed,"changed")+wnList(w.ongoing,"ongoing");
-    if(w.aged_out) h+="<p class='wn-aged'>⤵ "+w.aged_out+" item"+(w.aged_out===1?"":"s")+" aged out of the 30-day window since "+(w.prev_date||"last run")+".</p>";
+    var n=((w.new||[]).length)+((w.changed||[]).length)+((w.ongoing||[]).length)+(w.new_more||0);
+    if(!n) return "<p class='wn-empty'>Nothing new, changed, or still-ongoing versus "+(w.prev_date||"the previous run")+"."+(w.aged_out?(" "+w.aged_out+" item"+(w.aged_out===1?"":"s")+" from that run did not resurface today."):"")+"</p>";
+    var h="<div class='wnwrap'>"+wnList(w.new,"new",w.new_more||0)+wnList(w.changed,"changed")+wnList(w.ongoing,"ongoing");
+    if(w.aged_out) h+="<p class='wn-aged'>⤵ "+w.aged_out+" item"+(w.aged_out===1?"":"s")+" from "+(w.prev_date||"the previous run")+" did not resurface today (aged out of the window or not re-surfaced by today's research).</p>";
     return h+"</div>";
   }
   function select(id){
@@ -1369,9 +1385,10 @@ window.BRIEFINGS = {
     var out=["# Since yesterday — "+(B.generated||""),"","*day-over-day diff vs "+(w.prev_date||"previous run")+"*",""];
     function sec(title,arr,fmt){ if(arr&&arr.length){ out.push("## "+title,""); arr.forEach(function(it){ out.push("- "+fmt(it)); }); out.push(""); } }
     sec("🆕 New", w.new, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"");});
+    if(w.new_more) out.push("*+ "+w.new_more+" more newly-surfaced item(s) across the briefs.*","");
     sec("🔺 Changed", w.changed, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.note?" ("+it.note+")":"");});
     sec("➰ Still ongoing", w.ongoing, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.days?" (day "+it.days+")":"");});
-    if(w.aged_out) out.push("*"+w.aged_out+" item(s) aged out of the 30-day window since "+(w.prev_date||"last run")+".*","");
+    if(w.aged_out) out.push("*"+w.aged_out+" item(s) from "+(w.prev_date||"the previous run")+" did not resurface today (aged out or not re-surfaced).*","");
     return out.join("\n");
   }
   document.getElementById("copyBriefBtn").addEventListener("click",function(){
