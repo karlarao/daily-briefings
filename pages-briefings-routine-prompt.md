@@ -45,7 +45,11 @@ WORKFLOW (one scheduled run, top to bottom):
                                         │  (loop done)
    Step 4b SYNTHESIS ....... ONE pass over the 18 finished briefs (no web) →
                                         │       "Today's Trends" cross-topic read
+   Step 4c SINCE-YESTERDAY .. build today's headline ledger, diff it vs the prior run's
+                                        │       ledger (LLM-matched, robust to rewording) →
+                                        │       "What's new / changed / still ongoing"
    Step 5  FINALIZE ........ set generated + summary → git add/commit/push ONCE
+                                        │       (also writes archive/ledger/<date>.json)
                                         │
    Step 5b VERIFY .......... confirm the Pages DEPLOYMENT for the pushed commit
                                         │       succeeded; re-trigger (empty commit) if
@@ -145,7 +149,9 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
 
 You are an automated engineering-news briefing generator. In one run you:
 1. Produce up to 18 short briefings (each is a web-search digest for the past 30 days),
-   then distill ONE cross-topic "Today's Trends" synthesis from those briefs.
+   then distill ONE cross-topic "Today's Trends" synthesis from those briefs, and diff
+   this run's headlines against the previous run to produce a "Since yesterday"
+   (what's new / changed / still ongoing) card.
 2. Render them into ONE self-contained HTML dashboard.
 3. Publish that dashboard to GitHub Pages by committing it as claude.html at the
    root of the gh-pages branch — plus a frozen copy in archive/<date>.html for the
@@ -269,6 +275,57 @@ If git push fails (auth/network), send one notification saying so — that failu
      - JSON-encode it like `md`. Leave synthesis:"" if (and only if) the briefs
        genuinely support no synthesis at all.
 
+4c. SINCE YESTERDAY — cross-day diff (NO new web research; ONE reasoning pass).
+   Goal: tell a daily reader WHAT CHANGED since the last run, without letting yesterday's
+   prose contaminate today's briefs. The 18 research subagents stay 100% stateless — they
+   NEVER see prior runs. Only this step, at the very end, touches history. Steps:
+
+   (i) BUILD TODAY'S LEDGER — a small, titles-only structured index of this run. For each
+       of the 18 briefs, extract its headline items (the bold "**Headline**" bullets across
+       its categories; skip "Filtered out"). For each item emit:
+         { "key": "<stable-kebab-slug>", "title": "<the headline, plain text>",
+           "sev": "urgent" | "high" | "normal",
+           "first_seen": "YYYY-MM-DD", "days_seen": <int> }
+       - `key` = a stable kebab slug of the item's core nouns (e.g. "npm-worm-node-gyp").
+       - `sev` = "urgent" if this is the topic's flagged act-now item; "high" for a CVE or a
+         hard-dated deprecation/deadline; else "normal".
+       - `first_seen`/`days_seen` are filled in step (iv) after matching.
+       Group items under their topic id. This ledger is titles/keys ONLY — never full `md`.
+
+   (ii) LOAD THE PRIOR LEDGER — read the most recent archive/ledger/<date>.json whose date
+       is BEFORE today (list archive/ledger/, pick the latest earlier date). If none exists
+       (first run with this feature, or the dir is missing/malformed), set whatsnew=null and
+       SKIP the rest of 4c — a first run legitimately has nothing to diff.
+
+   (iii) MATCH & DIFF — Option 2, LLM-matched (robust to rewording). In ONE reasoning pass
+       (no web, no subagent), align each of today's items to a prior item when they are the
+       SAME underlying story even if the wording changed (e.g. "node-gyp worm hits 57 pkgs"
+       ≈ "node-gyp supply-chain worm still spreading"). Match within the same topic first;
+       only cross topics if the story clearly moved lanes. Then categorize:
+         - NEW      = today's item with no matching prior item.
+         - CHANGED  = matched, but `sev`/status moved (e.g. high→urgent) OR the substance
+                      materially advanced; include a short `note` (e.g. "high → critical",
+                      "preview → GA", "deadline now 13 days out").
+         - ONGOING  = matched, sev unchanged, still in-window; carry the day count.
+         - AGED OUT = a prior item with no match today (fell outside the 30-day window);
+                      count them, don't list each.
+       Hold the same discipline as flag calibration — don't invent movement. A quiet
+       day-over-day (few or zero new/changed) is normal and honest.
+
+   (iv) STAMP THE LEDGER & BUILD whatsnew. For each of today's items: if matched to a prior
+       item, first_seen = prior.first_seen and days_seen = prior.days_seen + 1; if NEW,
+       first_seen = today and days_seen = 1. Then assemble BRIEFINGS.whatsnew:
+         { "prev_date": "<the prior ledger's date>",
+           "new":     [ {"topic":"<Display Name>","title":"..."} ],
+           "changed": [ {"topic":"<Display Name>","title":"...","note":"high → critical"} ],
+           "ongoing": [ {"topic":"<Display Name>","title":"...","days": <days_seen>} ],
+           "aged_out": <int> }
+       Use each topic's DISPLAY NAME (e.g. "App Dev (Backend)") in the whatsnew rows.
+       Order new/changed by severity (urgent first). Keep ongoing to the items that still
+       matter (skip stale "normal" noise). JSON-encode strings like `md`. It renders as a
+       pinned "◇ Since yesterday" card in the sidebar. Leave whatsnew=null only when there
+       is no prior ledger to diff against.
+
 5. After the loop: set generated=NOW (full "YYYY-MM-DD HH:MM TZ" timestamp) + a
    one-line summary INCLUDING TOKEN SPEND (e.g. "18 topics · 2 flagged · 1 slow ·
    ~830k tokens"). Summary rules:
@@ -280,8 +337,13 @@ If git push fails (auth/network), send one notification saying so — that failu
    Then rebuild claude.html once more, ARCHIVE a frozen copy for the date picker,
    and publish with a SINGLE push (retry on network error, backoff 2/4/8/16s):
      DATE=$(TZ="America/New_York" date '+%Y-%m-%d')
-     mkdir -p archive
+     mkdir -p archive archive/ledger
      cp claude.html "archive/${DATE}.html"
+     # Write today's headline ledger built in step 4c to archive/ledger/${DATE}.json
+     # (titles/keys only — this is tomorrow's diff input; same-day reruns overwrite it).
+     # It stays under version control via the `git add archive/` below. It is NOT the
+     # rendered dashboard — it holds only {topics:{<id>:{status,items:[{key,title,sev,
+     # first_seen,days_seen}]}}} plus a top-level "date".
      # keep archive/index.json = sorted JSON array of "YYYY-MM-DD" strings; add
      # DATE if absent (same-day reruns overwrite the html — each date = that
      # day's LATEST run). e.g.:
@@ -351,6 +413,9 @@ with a single assignment:
                   the subline ('by <model>') and the Σ tokens panel; archived days keep
                   their own label so model changes stay visible across history.",
       synthesis: "markdown — the Today's Trends cross-topic read (see step 4b); \"\" if none",
+      whatsnew:  { /* the Since-yesterday diff object from step 4c; null if no prior ledger.
+                     { prev_date, new:[{topic,title}], changed:[{topic,title,note}],
+                       ongoing:[{topic,title,days}], aged_out:<int> } */ },
       sections: [ /* the 18 section objects, same order & fields as the template */ ]
     };
 
@@ -861,6 +926,11 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .nav-item.trends{border:1px dashed var(--border);border-left:2.5px solid transparent;margin-bottom:10px;background:var(--surface)}
   .nav-item.trends .nav-name{color:var(--accent)}
   .nav-item.trends.active{border-left-color:var(--accent);background:var(--surface-2)}
+  .nav-item.whatsnew{border:1px dashed var(--border);border-left:2.5px solid transparent;margin-bottom:10px;background:var(--surface)}
+  .nav-item.whatsnew .nav-name{color:var(--amber)}
+  .nav-item.whatsnew.active{border-left-color:var(--amber);background:var(--surface-2)}
+  .wndiamond{color:var(--amber);font-size:12px;flex-shrink:0;width:8px;text-align:center}
+  .nav-item.whatsnew .meter{visibility:hidden}
   .tdiamond{color:var(--accent);font-size:12px;flex-shrink:0;width:8px;text-align:center}
   .nav-item:hover{background:var(--surface-2)}
   .nav-item.active{background:var(--surface-2);border-left-color:var(--accent)}
@@ -903,6 +973,19 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .flagbanner .fb-h{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--urgent);font-weight:700;margin-bottom:5px}
   .flagbanner p{margin:0}.flagbanner p+p{margin-top:6px}
   .flagbanner a{color:var(--urgent);border-bottom:1px solid color-mix(in oklab,var(--urgent) 40%,transparent)}
+  .wnwrap{max-width:74ch}
+  .wngroup{margin:0 0 18px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .wngroup>h3{margin:0;padding:9px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .wngroup.wn-new>h3{color:var(--ok)}
+  .wngroup.wn-changed>h3{color:var(--amber)}
+  .wngroup.wn-ongoing>h3{color:var(--ink-soft)}
+  .wnitem{padding:9px 14px;border-top:1px solid var(--border-soft);font-size:14px;line-height:1.5}
+  .wnitem:first-of-type{border-top:0}
+  .wntopic{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin-right:8px;white-space:nowrap}
+  .wnnote{color:var(--amber);font-family:var(--mono);font-size:12px;margin-left:6px}
+  .wndays{color:var(--ink-faint);font-family:var(--mono);font-size:11px;margin-left:6px}
+  .wn-empty{color:var(--ink-faint);font-style:italic;padding:20px 0}
+  .wn-aged{color:var(--ink-faint);font-size:12.5px;font-family:var(--mono);margin-top:4px}
   .helppanel{margin:14px 22px 0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 18px;font-size:13.5px;line-height:1.55}
   .helppanel[hidden]{display:none}
   .helppanel .hp-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-bottom:6px}
@@ -969,6 +1052,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
     <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
     <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 18.</p>
+    <p><strong>◇ Since yesterday</strong> (pinned under Today's Trends) = a day-over-day diff of the headlines: what's <strong>🆕 new</strong>, what <strong>🔺 changed</strong> (e.g. a CVE escalating, preview→GA, a deadline getting closer), and what's <strong>➰ still ongoing</strong> (with a day count). It's built by matching this run's headlines against the previous run's, so it survives rewording. The 18 briefs themselves are still researched from scratch every run — only this card looks backward. It's absent on the first run (nothing to compare to).</p>
     <p><strong>📅 Calendar</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; highlighted dates in the calendar have a run — click one to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
   </div>
   <div class="helppanel" id="tokPanel" hidden>
@@ -1007,6 +1091,7 @@ window.BRIEFINGS = {
   summary: "",
   model: "",
   synthesis: "",
+  whatsnew: null,
   sections: [
     {id:"oltp",       name:"OLTP & Distributed SQL",   group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
     {id:"formats",    name:"Open Formats & CDC",       group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
@@ -1097,6 +1182,17 @@ window.BRIEFINGS = {
     tchip.innerHTML="◆ Today's Trends";
     tchip.addEventListener("click",function(){select("__trends__");});strip.appendChild(tchip);
   }
+  if(B.whatsnew){
+    var wc=((B.whatsnew.new||[]).length)+((B.whatsnew.changed||[]).length);
+    var wnav=document.createElement("button");wnav.className="nav-item whatsnew";wnav.dataset.id="__whatsnew__";
+    wnav.innerHTML="<span class='wndiamond'>◇</span><span class='nav-main'><span class='nav-name'>Since yesterday</span>"+
+      "<span class='nav-meta'>"+(B.whatsnew.prev_date?("vs "+B.whatsnew.prev_date):"day-over-day")+(wc?(" · "+wc+" new/changed"):" · no change")+"</span></span>";
+    wnav.addEventListener("click",function(){select("__whatsnew__");});
+    rail.appendChild(wnav);
+    var wchip=document.createElement("button");wchip.className="schip";wchip.dataset.id="__whatsnew__";
+    wchip.innerHTML="◇ Since yesterday";
+    wchip.addEventListener("click",function(){select("__whatsnew__");});strip.appendChild(wchip);
+  }
   GROUPS.forEach(function(g){
     var items=B.sections.filter(function(s){return s.group===g;});
     if(!items.length) return;
@@ -1124,7 +1220,36 @@ window.BRIEFINGS = {
     document.querySelectorAll(".schip").forEach(function(n){n.classList.toggle("active",n.dataset.id===id);});
     document.querySelector(".panel").scrollTop=0;
   }
+  function wnList(arr,kind){
+    if(!arr||!arr.length) return "";
+    var rows=arr.map(function(it){
+      var extra = (kind==="changed"&&it.note) ? "<span class='wnnote'>"+esc(""+it.note)+"</span>"
+                : ((kind==="ongoing"&&it.days) ? "<span class='wndays'>day "+it.days+"</span>" : "");
+      return "<div class='wnitem'><span class='wntopic'>"+esc(it.topic||"")+"</span>"+esc(it.title||"")+extra+"</div>";
+    }).join("");
+    var label = kind==="new"?"🆕 New":(kind==="changed"?"🔺 Changed":"➰ Still ongoing");
+    return "<div class='wngroup wn-"+kind+"'><h3><span>"+label+"</span><span>"+arr.length+"</span></h3>"+rows+"</div>";
+  }
+  function whatsnewHtml(){
+    var w=B.whatsnew;
+    if(!w) return "<p class='wn-empty'>No day-over-day comparison for this run — nothing to diff against yet.</p>";
+    var n=((w.new||[]).length)+((w.changed||[]).length)+((w.ongoing||[]).length);
+    if(!n) return "<p class='wn-empty'>Nothing new, changed, or still-ongoing versus "+(w.prev_date||"the previous run")+".</p>";
+    var h="<div class='wnwrap'>"+wnList(w.new,"new")+wnList(w.changed,"changed")+wnList(w.ongoing,"ongoing");
+    if(w.aged_out) h+="<p class='wn-aged'>⤵ "+w.aged_out+" item"+(w.aged_out===1?"":"s")+" aged out of the 30-day window since "+(w.prev_date||"last run")+".</p>";
+    return h+"</div>";
+  }
   function select(id){
+    if(id==="__whatsnew__"){
+      cur=id;
+      document.getElementById("pTitle").textContent="Since yesterday";
+      var w=B.whatsnew||{};
+      document.getElementById("eyebrow").innerHTML="<span>WHAT CHANGED</span>"+
+        (w.prev_date?"<span class='chip'>vs "+w.prev_date+"</span>":"")+
+        (B.generated?"<span>updated "+B.generated+"</span>":"");
+      document.getElementById("content").innerHTML=whatsnewHtml();
+      markActive(id);return;
+    }
     if(id==="__trends__"){
       cur=id;
       document.getElementById("pTitle").textContent="Today's Trends";
@@ -1233,18 +1358,31 @@ window.BRIEFINGS = {
   function allHtml(){
     var done=B.sections.filter(function(s){return s.status&&s.status!=="pending";});
     var head="<p class='kick'>Daily Briefings · "+esc(B.generated||"")+(B.summary?" · "+esc(B.summary):"")+"</p><h1>Daily Briefings</h1>";
+    if(B.whatsnew) head+="<section><h1>Since yesterday</h1><article>"+md2html(whatsnewMd())+"</article></section><hr>";
     if(B.synthesis) head+="<section>"+trendsSection()+"</section><hr>";
     var body=done.map(function(s){return "<section>"+briefSection(s)+"</section>";}).join("<hr>");
     return pageHtml("Daily Briefings — "+(B.generated||""), head+body);
   }
   function trendsMd(){return "# Today's Trends — "+(B.generated||"")+"\n\n"+B.synthesis;}
   function trendsSection(){return "<h1>Today's Trends</h1><p class='meta'>synthesis across all "+B.sections.length+" briefs · "+esc(B.generated||"")+"</p><article>"+md2html(B.synthesis)+"</article>";}
+  function whatsnewMd(){
+    var w=B.whatsnew; if(!w) return "# Since yesterday — "+(B.generated||"")+"\n\n_No prior run to compare against._\n";
+    var out=["# Since yesterday — "+(B.generated||""),"","_day-over-day diff vs "+(w.prev_date||"previous run")+"_",""];
+    function sec(title,arr,fmt){ if(arr&&arr.length){ out.push("## "+title,""); arr.forEach(function(it){ out.push("- "+fmt(it)); }); out.push(""); } }
+    sec("🆕 New", w.new, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"");});
+    sec("🔺 Changed", w.changed, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.note?" ("+it.note+")":"");});
+    sec("➰ Still ongoing", w.ongoing, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.days?" (day "+it.days+")":"");});
+    if(w.aged_out) out.push("_"+w.aged_out+" item(s) aged out of the 30-day window since "+(w.prev_date||"last run")+"._","");
+    return out.join("\n");
+  }
   document.getElementById("copyBriefBtn").addEventListener("click",function(){
     if(cur==="__trends__"){copyMd(trendsMd()+"\n", this);return;}
+    if(cur==="__whatsnew__"){copyMd(whatsnewMd()+"\n", this);return;}
     var s=byId[cur]; if(!s) return; copyMd(briefMd(s), this);
   });
   document.getElementById("copyAllBtn").addEventListener("click",function(){
     var head="# Daily Briefings — "+(B.generated||"")+"\n"+(B.summary?"\n"+B.summary+"\n":"");
+    if(B.whatsnew) head+="\n"+whatsnewMd()+"\n\n---\n";
     if(B.synthesis) head+="\n"+trendsMd()+"\n\n---\n";
     var body=B.sections.filter(function(s){return s.status&&s.status!=="pending";})
       .map(function(s){return briefMd(s);}).join("\n\n---\n\n");
@@ -1252,6 +1390,7 @@ window.BRIEFINGS = {
   });
   document.getElementById("htmlBriefBtn").addEventListener("click",function(){
     if(cur==="__trends__"){exportHtml("briefing-trends-"+dateSlug()+".html", pageHtml("Today's Trends — Daily Briefings","<p class='kick'>Daily Briefings · "+esc(B.generated||"")+"</p>"+trendsSection()), this);return;}
+    if(cur==="__whatsnew__"){exportHtml("since-yesterday-"+dateSlug()+".html", pageHtml("Since yesterday — Daily Briefings","<p class='kick'>Daily Briefings · "+esc(B.generated||"")+"</p><article>"+md2html(whatsnewMd())+"</article>"), this);return;}
     var s=byId[cur]; if(!s) return; exportHtml("briefing-"+s.id+"-"+dateSlug()+".html", briefHtml(s), this);
   });
   document.getElementById("htmlAllBtn").addEventListener("click",function(){
