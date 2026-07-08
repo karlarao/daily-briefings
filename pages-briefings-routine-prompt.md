@@ -4,7 +4,7 @@ cd "$(git rev-parse --show-toplevel)" && git fetch origin && git checkout gh-pag
 ================================================================================
 DAILY BRIEFINGS — SINGLE-ROUTINE PIPELINE (GitHub Pages variant)
 Paste this ENTIRE file as the prompt of ONE scheduled routine.
-It is self-contained: it carries all 18 briefs AND the dashboard template.
+It is self-contained: it carries all 19 briefs AND the dashboard template.
 This variant publishes to GitHub Pages via `git push` (repo karlarao/daily-briefings)
 instead of a Claude artifact URL. It runs attached to that repo, already cloned &
 authenticated by the GitHub App. Pages serves the ROOT of the gh-pages branch, so
@@ -29,7 +29,7 @@ WORKFLOW (one scheduled run, top to bottom):
                                         │       touch .nojekyll, set git author
    Step 1  NOW ............. run `date` → full "YYYY-MM-DD HH:MM TZ"
                                         │
-   Step 2  SECTIONS ........ build the 18 topics, all {status:"pending"}
+   Step 2  SECTIONS ........ build the 19 topics, all {status:"pending"}
                                         │
    Step 3/4  THE LOOP  — once per topic, daily/high-churn first:
    ┌────────────────────────────────────────────────────────────────────┐
@@ -40,10 +40,10 @@ WORKFLOW (one scheduled run, top to bottom):
    │  d. rebuild ........ claude.html = template + new DATA block   │
    │  e. keep local ..... do NOT push per-topic (single end-of-run push) │
    └────────────────────────────────────────────────────────────────────┘
-              │  repeat 18×                            ▲
+              │  repeat 19×                            ▲
               └────────────────────────────────────────┘
                                         │  (loop done)
-   Step 4b SYNTHESIS ....... ONE pass over the 18 finished briefs (no web) →
+   Step 4b SYNTHESIS ....... ONE pass over the 19 finished briefs (no web) →
                                         │       "Today's Trends" cross-topic read
    Step 4c SINCE-YESTERDAY .. build today's headline ledger, diff it vs the prior run's
                                         │       ledger (LLM-matched, robust to rewording) →
@@ -69,7 +69,7 @@ THE "TWO PLACES" RULE  (the one thing to get right when editing)
 --------------------------------------------------------------------------------
 Every topic lives in TWO places that MUST stay in sync:
 
-  (1) "THE 18 BRIEFS" list below  → the RESEARCH spec
+  (1) "THE 19 BRIEFS" list below  → the RESEARCH spec
       carries: id · name · group · cadence  +  Scope  +  Priorities
   (2) APPENDIX A template DATA block → the RENDER spec
       carries: id · name · group · cadence · freq  +  default fields
@@ -82,7 +82,7 @@ Every topic lives in TWO places that MUST stay in sync:
 HOW TO ADD A NEW TOPIC
 --------------------------------------------------------------------------------
   1. Choose a unique lowercase `id` (no spaces), e.g. "streaming".
-  2. Add a numbered entry to "THE 18 BRIEFS" with:  id · "Name" · group · cadence
+  2. Add a numbered entry to "THE 19 BRIEFS" with:  id · "Name" · group · cadence
      then a Scope: line and a Priorities: line (copy an existing entry's shape).
   3. Add ONE section object to the template DATA block (copy an existing line,
      change id/name/group/cadence/freq). Rules:
@@ -97,10 +97,10 @@ HOW TO ADD A NEW TOPIC
        - keep the defaults: updated:"", status:"pending", tokens:0, md:"", flag_reason:"".
   4. If it overlaps an existing topic's lane, add a line to DEDUP BOUNDARY so they
      don't double-report.
-  5. Cosmetic-only: the literal "18" appears in the header, "WHAT THIS ROUTINE
-     DOES", the template kicker, and the summary example. The code counts topics
-     dynamically (B.sections.length), so nothing breaks if you forget — but update
-     them so the copy stays honest.
+  5. Cosmetic-only: the literal topic count ("19") appears in the header, "WHAT THIS
+     ROUTINE DOES", the template kicker, and the summary example. The code counts
+     topics dynamically (B.sections.length), so nothing breaks if you forget — but
+     update them so the copy stays honest.
 
 HOW TO ADD A NEW SIDEBAR GROUP (category):
   - Add the exact new group string to BOTH: the `GROUPS` array in the template
@@ -109,7 +109,7 @@ HOW TO ADD A NEW SIDEBAR GROUP (category):
 --------------------------------------------------------------------------------
 HOW TO EDIT / REMOVE A TOPIC
 --------------------------------------------------------------------------------
-  - Change Scope or Priorities only .......... edit ONLY the "THE 18 BRIEFS" entry.
+  - Change Scope or Priorities only .......... edit ONLY the "THE 19 BRIEFS" entry.
   - Rename / move group / change cadence ..... edit BOTH places (must match).
   - Change freq (churn bars + label) ......... edit ONLY the template DATA object.
   - Remove a topic ........................... delete it from BOTH places.
@@ -126,7 +126,7 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
         Pages deploy keeps failing after re-triggers (auth/network/Pages outage),
         send the single notification saying so — that failure IS the news.
       • "web search" = ordinary search. Do NOT use deep-research (token budget).
-      • Parallelize the 18 briefs if your harness supports subagents / parallel
+      • Parallelize the 19 briefs if your harness supports subagents / parallel
         tool calls; otherwise run them sequentially. Either way, keep the local
         claude.html current after each topic so a crash still leaves the
         latest built state staged for the single end-of-run push.
@@ -148,7 +148,7 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
 ## WHAT THIS ROUTINE DOES (each scheduled run)
 
 You are an automated engineering-news briefing generator. In one run you:
-1. Produce up to 18 short briefings (each is a web-search digest for the past 30 days),
+1. Produce up to 19 short briefings (each is a web-search digest for the past 30 days),
    then distill ONE cross-topic "Today's Trends" synthesis from those briefs, and diff
    this run's headlines against the previous run to produce a "Since yesterday"
    (what's new / changed / still ongoing) card.
@@ -208,10 +208,10 @@ If git push fails (auth/network), send one notification saying so — that failu
    the date) for `generated` and for each section's `updated`, so the dashboard's
    "Last run" indicator shows the Eastern time of day, not only the date.
 
-2. Build an in-memory `sections` array = the 18 topics in "THE 18 BRIEFS" below,
+2. Build an in-memory `sections` array = the 19 topics in "THE 19 BRIEFS" below,
    in that order, each starting {status:"pending", md:"", updated:"", flag_reason:""}.
 
-3. Run ALL 18 topics every run (the cadence gate is OFF by request). Note: the AI
+3. Run ALL 19 topics every run (the cadence gate is OFF by request). Note: the AI
    Daily brief uses a 24–48h window; every other brief uses the past 30 days.
 
 4. FOR EACH topic, in listed order (daily/high-churn first):
@@ -255,9 +255,9 @@ If git push fails (auth/network), send one notification saying so — that failu
 
 4b. SYNTHESIS — "Today's Trends" (ONE extra pass; NO new web research).
    After all topics complete, write BRIEFINGS.synthesis: a cross-topic trends read
-   whose INPUT is the 18 briefs you just wrote — do not search the web again. It
+   whose INPUT is the 19 briefs you just wrote — do not search the web again. It
    renders as a pinned "◆ Today's Trends" item at the top of the sidebar and is the
-   default landing view; it's the 5-minute read for someone who won't open all 18
+   default landing view; it's the 5-minute read for someone who won't open all 19
    briefs, so prioritize what changes decisions. Markdown structure:
      **The 3-minute read** — 3–5 sentences: the day across all briefs.
      ## Data layer — converging themes
@@ -277,11 +277,11 @@ If git push fails (auth/network), send one notification saying so — that failu
 
 4c. SINCE YESTERDAY — cross-day diff (NO new web research; ONE reasoning pass).
    Goal: tell a daily reader WHAT CHANGED since the last run, without letting yesterday's
-   prose contaminate today's briefs. The 18 research subagents stay 100% stateless — they
+   prose contaminate today's briefs. The 19 research subagents stay 100% stateless — they
    NEVER see prior runs. Only this step, at the very end, touches history. Steps:
 
    (i) BUILD TODAY'S LEDGER — a small, titles-only structured index of this run. For each
-       of the 18 briefs, extract its headline items (the bold "**Headline**" bullets across
+       of the 19 briefs, extract its headline items (the bold "**Headline**" bullets across
        its categories; skip "Filtered out"). For each item emit:
          { "key": "<stable-kebab-slug>", "title": "<the headline, plain text>",
            "sev": "urgent" | "high" | "normal",
@@ -340,7 +340,7 @@ If git push fails (auth/network), send one notification saying so — that failu
        only when there is no prior ledger to diff against.
 
 5. After the loop: set generated=NOW (full "YYYY-MM-DD HH:MM TZ" timestamp) + a
-   one-line summary INCLUDING TOKEN SPEND (e.g. "18 topics · 2 flagged · 1 slow ·
+   one-line summary INCLUDING TOKEN SPEND (e.g. "19 topics · 2 flagged · 1 slow ·
    ~830k tokens"). Summary rules:
      - The token total = sum of the per-section `tokens` values (see step 4), rounded
        to the nearest ~5k. If no per-agent usage was reported (all zeros), OMIT the
@@ -430,7 +430,7 @@ with a single assignment:
                      { prev_date, new:[{topic,title}], new_more:<int>,
                        changed:[{topic,title,note}],
                        ongoing:[{topic,title,days}], aged_out:<int> } */ },
-      sections: [ /* the 18 section objects, same order & fields as the template */ ]
+      sections: [ /* the 19 section objects, same order & fields as the template */ ]
     };
 
 Each section object = {id, name, group, cadence, freq, updated, status, tokens, md, flag_reason}.
@@ -488,6 +488,10 @@ DEDUP BOUNDARY (so topics don't repeat each other):
   directly changes that engine's own behavior.
 - "OLTP & Distributed SQL" owns the transactional/serving side; the warehouse
   briefs own OLAP.
+- "MongoDB" owns MongoDB/Atlas and the Mongo-compatible ecosystem (Percona PSMDB,
+  FerretDB, AWS DocumentDB, Cosmos DB for MongoDB); "OLTP & Distributed SQL" keeps
+  the relational side. Debezium/CDC-tooling news stays with "Open Formats & CDC" —
+  the MongoDB brief covers CDC only when change-stream/oplog behavior itself changes.
 - The DATABASE briefs (the whole "Data layer" group) collectively replace a single
   generic "databases" sweep — do NOT also write a catch-all DB brief.
 - "AI Daily" OWNS frontier-model releases/pricing/benchmarks, coding agents & dev
@@ -520,14 +524,14 @@ DEDUP BOUNDARY (so topics don't repeat each other):
   briefs defer NL2SQL-specific papers to it.
 
 ================================================================================
-CADENCE GATE  (DISABLED — kept for reference only; default is run all 18)
+CADENCE GATE  (DISABLED — kept for reference only; default is run all 19)
 ================================================================================
 
 Not in use: every topic runs every run. (If you ever re-enable mixed cadence, run a
 topic only on its days by TODAY's weekday; skipped topics keep their prior state.)
 
 ================================================================================
-THE 18 BRIEFS  (id · name · scope · priorities)
+THE 19 BRIEFS  (id · name · scope · priorities)
 ================================================================================
 
 1. id=oltp · "OLTP & Distributed SQL" · group=Data layer · Daily
@@ -868,6 +872,34 @@ THE 18 BRIEFS  (id · name · scope · priorities)
     marketing, "Nx faster") stay in the relevant engine brief. Test: hardware-driven →
     Database Hardware; engine-driven → engine brief.
 
+19. id=mongodb · "MongoDB" · group=Data layer · 2×/week
+    Scope: MongoDB server (7.x/8.x, rapid releases), Atlas (dedicated/serverless/Flex),
+    replication & sharding, WiredTiger, aggregation pipeline/SBE, Atlas Search + Atlas
+    Vector Search, Queryable Encryption/CSFLE, change streams, time-series collections,
+    drivers/ODMs (pymongo, mongoose, motor, Java/Go/C# drivers), mongosh/Compass/ops
+    tooling (mongosync, mongodump, Ops/Cloud Manager); the Mongo-compatible ecosystem
+    (Percona Server for MongoDB, FerretDB, AWS DocumentDB, Azure Cosmos DB for MongoDB).
+    Priorities: 1) server releases & lifecycle (majors, rapid releases, EOL dates) —
+    breaking/default/behavior changes, upgrade gotchas 2) WiredTiger/storage internals,
+    checkpointing, compaction, TTL, time-series perf, oplog sizing 3) query/aggregation
+    engine (SBE rollout), index types (compound/wildcard/partial/TTL), explain/profiler
+    output changes, plan-cache regressions 4) replication/elections, sharded-cluster
+    balancing, resharding/moveCollection, migration throughput 5) Atlas platform: cluster
+    tiers/autoscaling, serverless/Flex pricing changes, Atlas Search (Lucene), Vector
+    Search (HNSW, quantization, hybrid), Stream Processing, Online Archive/Data Federation
+    — distinguish self-managed vs Atlas (a feature in one is not automatically in the
+    other) 6) change streams & oplog behavior changes (resumability, pre/post-images)
+    7) CVEs with severity + fixed versions, auth (SCRAM/x.509/LDAP/OIDC/Workload
+    Identity), Queryable Encryption/CSFLE, network/TLS 8) backup/PITR, mongosync,
+    observability ($currentOp, profiler, Atlas metrics/alerts) 9) drivers/ODMs — pooling,
+    BSON perf, breaking driver releases 10) benchmarks vs Postgres/FerretDB/DocumentDB
+    (flag vendor-run numbers) and licensing (SSPL) / compat-ecosystem moves.
+    DEDUP: OWNS MongoDB/Atlas and the Mongo-compatible ecosystem (Percona PSMDB, FerretDB,
+    AWS DocumentDB, Cosmos DB for MongoDB). "OLTP & Distributed SQL" keeps the relational
+    side. Debezium/CDC-tooling releases stay with "Open Formats & CDC" — this brief
+    mentions CDC only when change-stream/oplog behavior itself changes. Atlas VECTOR
+    search internals belong here (a database brief), not to the AI briefs.
+
 ================================================================================
 APPENDIX A — DASHBOARD TEMPLATE
 Write this to claude.html verbatim, replacing ONLY the DATA block
@@ -1031,7 +1063,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
 <div class="wrap">
   <header class="masthead">
     <div class="brand">
-      <span class="kicker">🗞️ Auto-generated · one routine, 18 briefs</span>
+      <span class="kicker">🗞️ Auto-generated · one routine, 19 briefs</span>
       <h1 class="title">Daily Briefings</h1>
       <span class="sub" id="subline">awaiting first run</span>
     </div>
@@ -1065,8 +1097,8 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
     <p><strong>The two chips are independent.</strong> Churn (the bars) is the lane's permanent character; status is today's result. So <em>quiet + ⚑ flagged</em> means a rarely-newsy lane produced an act-now item today — pay extra attention. <em>Firehose + slow day</em> means an always-busy lane had an unusually dead day — also worth noticing. A quiet lane with a short brief is just normal.</p>
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
     <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
-    <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 18.</p>
-    <p><strong>◇ Since yesterday</strong> (pinned under Today's Trends) = a day-over-day diff of the headlines: what's <strong>🆕 new</strong>, what <strong>🔺 changed</strong> (e.g. a CVE escalating, preview→GA, a deadline getting closer), and what's <strong>➰ still ongoing</strong> (with a day count). It's built by matching this run's headlines against the previous run's, so it survives rewording. The 18 briefs themselves are still researched from scratch every run — only this card looks backward. It's absent on the first run (nothing to compare to).</p>
+    <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 19.</p>
+    <p><strong>◇ Since yesterday</strong> (pinned under Today's Trends) = a day-over-day diff of the headlines: what's <strong>🆕 new</strong>, what <strong>🔺 changed</strong> (e.g. a CVE escalating, preview→GA, a deadline getting closer), and what's <strong>➰ still ongoing</strong> (with a day count). It's built by matching this run's headlines against the previous run's, so it survives rewording. The 19 briefs themselves are still researched from scratch every run — only this card looks backward. It's absent on the first run (nothing to compare to).</p>
     <p><strong>📅 Calendar</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; highlighted dates in the calendar have a run — click one to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
   </div>
   <div class="helppanel" id="tokPanel" hidden>
@@ -1108,6 +1140,7 @@ window.BRIEFINGS = {
   whatsnew: null,
   sections: [
     {id:"oltp",       name:"OLTP & Distributed SQL",   group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
+    {id:"mongodb",    name:"MongoDB",                  group:"Data layer",              cadence:"2×/week",   freq:2, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
     {id:"formats",    name:"Open Formats & CDC",       group:"Data layer",              cadence:"Daily",     freq:3, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
     {id:"oracle",     name:"Oracle",                   group:"Data layer",              cadence:"Weekly",    freq:1, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
     {id:"snowflake",  name:"Snowflake",                group:"Data layer",              cadence:"2–3×/week", freq:2, updated:"", status:"pending", tokens:0, md:"", flag_reason:""},
