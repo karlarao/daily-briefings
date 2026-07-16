@@ -201,7 +201,9 @@ If git push fails (auth/network), send one notification saying so — that failu
      git config user.name "briefings-bot"
      git config user.email "briefings-bot@users.noreply.github.com"
    (Pages serves the gh-pages root; index.html + codex.html already live there and
-    are left untouched. No settings.json / Artifact permission — we publish via git.)
+    are left untouched. The public dashboard publishes via git; .claude/settings.json
+    on main and gh-pages allowlists the Artifact tool for the private addendum
+    deliverable (step 5c) — do not remove that allow rule.)
 
 1. Establish the current timestamp in US EASTERN time by running
    `TZ="America/New_York" date '+%Y-%m-%d %H:%M %Z'` — capture date, time, AND
