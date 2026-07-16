@@ -130,6 +130,12 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
         tool calls; otherwise run them sequentially. Either way, keep the local
         claude.html current after each topic so a crash still leaves the
         latest built state staged for the single end-of-run push.
+  - RESILIENCE: if the Artifact call fails with a transient error ("permission
+    stream closed", AbortError, network), retry up to 3× with 2/4/8s backoff
+    before falling back to the action:"list" recovery path. The Artifact tool is
+    allowlisted in .claude/settings.json on both main and gh-pages — a first-call
+    failure is transient plumbing, not a permission denial; never skip 5c on the
+    first error.
   - Keep the APPENDIX A template's <style> and <script> effectively verbatim.
     ONLY the DATA block between the two markers changes each run. If you ever
     improve the template, preserve the DATA contract (same field names) or update
