@@ -277,6 +277,11 @@ If git push fails (auth/network), send one notification saying so — that failu
        the echo is unmistakable). End EVERY bullet with "→ seen in: Topic · Topic ·
        Topic" naming the exact source briefs — a convergence you can't attribute to
        specific briefs doesn't go in.
+     - VERIFIABILITY: a bullet that cites a specific fact (a CVE, a GA, a price or
+       date change) SHOULD carry an inline [source](url) markdown link REUSED from
+       the source brief's own citation — never a newly-invented URL. The "→ seen in:"
+       topic names become clickable navigation in the dashboard automatically; the
+       inline links are for primary sources.
      - 2–4 bullets per section. Skip a section — or write "no strong cross-topic
        trend today" — rather than manufacture a pattern. Quiet synthesis days are
        normal and honest.
@@ -327,12 +332,18 @@ If git push fails (auth/network), send one notification saying so — that failu
        item, first_seen = prior.first_seen and days_seen = prior.days_seen + 1; if NEW,
        first_seen = today and days_seen = 1. Then assemble BRIEFINGS.whatsnew:
          { "prev_date": "<the prior ledger's date>",
-           "new":     [ {"topic":"<Display Name>","title":"..."} ],
+           "new":     [ {"topic":"<Display Name>","title":"...","url":"<primary source>"} ],
            "new_more": <int>,
-           "changed": [ {"topic":"<Display Name>","title":"...","note":"high → critical"} ],
-           "ongoing": [ {"topic":"<Display Name>","title":"...","days": <days_seen>} ],
+           "changed": [ {"topic":"<Display Name>","title":"...","note":"high → critical","url":"<primary source>"} ],
+           "ongoing": [ {"topic":"<Display Name>","title":"...","days": <days_seen>,"url":"<primary source>"} ],
            "aged_out": <int> }
        Use each topic's DISPLAY NAME (e.g. "App Dev (Backend)") in the whatsnew rows.
+       VERIFIABILITY — every new/changed/ongoing row SHOULD carry "url": the item's
+       primary source link, mined from that topic's `md` (the first link of the
+       best-matching **Headline** bullet). Reuse links already present in the briefs —
+       NEVER invent or guess a URL; omit the field only when the brief genuinely has
+       no link for the item. The dashboard renders it as a [src] anchor and makes the
+       topic label click through to the full brief.
        CURATION — the card must stay a 60-second read; the raw "no prior match" set is
        large (often 100+) and mostly "newly SURFACED", not "newly happened":
          - `new` lists ONLY the items a reader should actually notice — cap ≈10–15 across
@@ -435,9 +446,9 @@ with a single assignment:
                   their own label so model changes stay visible across history.",
       synthesis: "markdown — the Today's Trends cross-topic read (see step 4b); \"\" if none",
       whatsnew:  { /* the Since-yesterday diff object from step 4c; null if no prior ledger.
-                     { prev_date, new:[{topic,title}], new_more:<int>,
-                       changed:[{topic,title,note}],
-                       ongoing:[{topic,title,days}], aged_out:<int> } */ },
+                     { prev_date, new:[{topic,title,url}], new_more:<int>,
+                       changed:[{topic,title,note,url}],
+                       ongoing:[{topic,title,days,url}], aged_out:<int> } */ },
       sections: [ /* the 19 section objects, same order & fields as the template */ ]
     };
 
@@ -449,6 +460,15 @@ updated/status/tokens/md/flag_reason change per run. `md` and `flag_reason` are
 JavaScript strings — JSON-encode them (escape quotes, backslashes, and newlines) so
 the file stays valid JS. `flag_reason` is "" unless status is "urgent". Do not alter
 any HTML or the <script> logic below the DATA block.
+
+ENCODING — NEVER DOUBLE-ESCAPE: `md`, `synthesis`, and `flag_reason` must contain
+REAL newlines, encoded exactly ONCE by your JSON writer (in the file they appear as
+\n escapes; the parsed strings contain actual newline characters). Hand-writing
+"\\n" into an already-encoded string renders literal "\n" text in the UI instead of
+line breaks. Before publishing, parse the DATA block back as JSON and assert that
+`synthesis` contains newline characters and no literal backslash-n sequence. (The
+template's md2html now carries a repair guard for this failure mode — do not rely
+on it.)
 
 ================================================================================
 SHARED RULES  (apply to EVERY brief)
@@ -1036,6 +1056,9 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
   .wnitem:first-of-type{border-top:0}
   .wnitem.wnmore{color:var(--ink-faint);font-family:var(--mono);font-size:12px}
   .wntopic{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em;margin-right:8px;white-space:nowrap}
+  .content a.wntopic{color:var(--accent);border-bottom:none}
+  .content a.wntopic:hover{border-bottom:1px solid var(--accent)}
+  .content a.wnsrc{font-family:var(--mono);font-size:12px;white-space:nowrap}
   .wnnote{color:var(--amber);font-family:var(--mono);font-size:12px;margin-left:6px}
   .wndays{color:var(--ink-faint);font-family:var(--mono);font-size:11px;margin-left:6px}
   .wn-empty{color:var(--ink-faint);font-style:italic;padding:20px 0}
@@ -1105,8 +1128,8 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
     <p><strong>The two chips are independent.</strong> Churn (the bars) is the lane's permanent character; status is today's result. So <em>quiet + ⚑ flagged</em> means a rarely-newsy lane produced an act-now item today — pay extra attention. <em>Firehose + slow day</em> means an always-busy lane had an unusually dead day — also worth noticing. A quiet lane with a short brief is just normal.</p>
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
     <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
-    <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 19.</p>
-    <p><strong>◇ Since yesterday</strong> (pinned under Today's Trends) = a day-over-day diff of the headlines: what's <strong>🆕 new</strong>, what <strong>🔺 changed</strong> (e.g. a CVE escalating, preview→GA, a deadline getting closer), and what's <strong>➰ still ongoing</strong> (with a day count). It's built by matching this run's headlines against the previous run's, so it survives rewording. The 19 briefs themselves are still researched from scratch every run — only this card looks backward. It's absent on the first run (nothing to compare to).</p>
+    <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 19. Topic names in each "→ seen in:" line are clickable — they open that brief; bullets citing a specific fact carry an inline source link.</p>
+    <p><strong>◇ Since yesterday</strong> (pinned under Today's Trends) = a day-over-day diff of the headlines: what's <strong>🆕 new</strong>, what <strong>🔺 changed</strong> (e.g. a CVE escalating, preview→GA, a deadline getting closer), and what's <strong>➰ still ongoing</strong> (with a day count). It's built by matching this run's headlines against the previous run's, so it survives rewording. The 19 briefs themselves are still researched from scratch every run — only this card looks backward. It's absent on the first run (nothing to compare to). Each row carries a <code>[src]</code> link to the item's primary source (when the day's brief has one), and the topic label is clickable — it opens the full brief where the item lives with its full context.</p>
     <p><strong>📅 Calendar</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; highlighted dates in the calendar have a run — click one to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
   </div>
   <div class="helppanel" id="tokPanel" hidden>
@@ -1204,6 +1227,7 @@ window.BRIEFINGS = {
   function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
   function md2html(src){
     if(!src) return "<p class='pending'>Awaiting first run…</p>";
+    if(src.indexOf("\\n")>-1&&src.indexOf("\n")===-1) src=src.split("\\n").join("\n");
     var lines=src.replace(/\r/g,"").split("\n"), out=[], i=0, inUl=false;
     function inline(t){
       t=esc(t);
@@ -1270,17 +1294,36 @@ window.BRIEFINGS = {
     c.addEventListener("click",function(){select(s.id);});strip.appendChild(c);
   });
   var cur=null;
+  document.getElementById("content").addEventListener("click",function(e){
+    var t=e.target&&e.target.closest?e.target.closest("[data-goto]"):null;
+    if(t){e.preventDefault();select(t.getAttribute("data-goto"));}
+  });
   function markActive(id){
     document.querySelectorAll(".nav-item").forEach(function(n){n.classList.toggle("active",n.dataset.id===id);});
     document.querySelectorAll(".schip").forEach(function(n){n.classList.toggle("active",n.dataset.id===id);});
     document.querySelector(".panel").scrollTop=0;
+  }
+  function topicIdByName(n){var s=B.sections.filter(function(x){return x.name===n;})[0];return s?s.id:null;}
+  function linkifySeenIn(html){
+    return html.replace(/→ seen in:([^<]*)/g,function(mm,names){
+      var parts=names.split("·").map(function(p){
+        var nm=p.trim().replace(/&amp;/g,"&");
+        var tid=topicIdByName(nm);
+        return tid?" <a href='#' data-goto='"+tid+"'>"+esc(nm)+"</a>":p;
+      });
+      return "→ seen in:"+parts.join(" ·");
+    });
   }
   function wnList(arr,kind,more){
     if((!arr||!arr.length)&&!more) return "";
     var rows=(arr||[]).map(function(it){
       var extra = (kind==="changed"&&it.note) ? "<span class='wnnote'>"+esc(""+it.note)+"</span>"
                 : ((kind==="ongoing"&&it.days) ? "<span class='wndays'>day "+it.days+"</span>" : "");
-      return "<div class='wnitem'><span class='wntopic'>"+esc(it.topic||"")+"</span>"+esc(it.title||"")+extra+"</div>";
+      var src = it.url ? " <a class='wnsrc' href='"+esc(""+it.url)+"' target='_blank' rel='noopener'>[src]</a>" : "";
+      var tid = topicIdByName(it.topic||"");
+      var chip = tid ? "<a href='#' class='wntopic' data-goto='"+tid+"'>"+esc(it.topic||"")+"</a>"
+                     : "<span class='wntopic'>"+esc(it.topic||"")+"</span>";
+      return "<div class='wnitem'>"+chip+esc(it.title||"")+extra+src+"</div>";
     }).join("");
     if(kind==="new"&&more) rows+="<div class='wnitem wnmore'>+ "+more+" more newly-surfaced item"+(more===1?"":"s")+" across the briefs</div>";
     var label = kind==="new"?"🆕 New":(kind==="changed"?"🔺 Changed":"➰ Still ongoing");
@@ -1312,7 +1355,7 @@ window.BRIEFINGS = {
       document.getElementById("eyebrow").innerHTML="<span>SYNTHESIS</span>"+
         "<span class='chip'>across all "+B.sections.length+" briefs</span>"+
         (B.generated?"<span>updated "+B.generated+"</span>":"");
-      document.getElementById("content").innerHTML=md2html(B.synthesis);
+      document.getElementById("content").innerHTML=linkifySeenIn(md2html(B.synthesis));
       markActive(id);return;
     }
     var s=byId[id];if(!s)return;cur=id;
@@ -1425,10 +1468,10 @@ window.BRIEFINGS = {
     var w=B.whatsnew; if(!w) return "# Since yesterday — "+(B.generated||"")+"\n\n*No prior run to compare against.*\n";
     var out=["# Since yesterday — "+(B.generated||""),"","*day-over-day diff vs "+(w.prev_date||"previous run")+"*",""];
     function sec(title,arr,fmt){ if(arr&&arr.length){ out.push("## "+title,""); arr.forEach(function(it){ out.push("- "+fmt(it)); }); out.push(""); } }
-    sec("🆕 New", w.new, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"");});
+    sec("🆕 New", w.new, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.url?" ["+it.url+"]":"");});
     if(w.new_more) out.push("*+ "+w.new_more+" more newly-surfaced item(s) across the briefs.*","");
-    sec("🔺 Changed", w.changed, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.note?" ("+it.note+")":"");});
-    sec("➰ Still ongoing", w.ongoing, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.days?" (day "+it.days+")":"");});
+    sec("🔺 Changed", w.changed, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.note?" ("+it.note+")":"")+(it.url?" ["+it.url+"]":"");});
+    sec("➰ Still ongoing", w.ongoing, function(it){return "**"+(it.topic||"")+"** — "+(it.title||"")+(it.days?" (day "+it.days+")":"")+(it.url?" ["+it.url+"]":"");});
     if(w.aged_out) out.push("*"+w.aged_out+" item(s) from "+(w.prev_date||"the previous run")+" did not resurface today (aged out or not re-surfaced).*","");
     return out.join("\n");
   }
