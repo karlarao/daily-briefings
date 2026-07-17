@@ -1,6 +1,6 @@
 # daily-briefings
 
-Auto-generated engineering-news dashboard — **18 topics** researched daily through a working
+Auto-generated engineering-news dashboard — **19 topics** researched daily through a working
 software / performance engineer lens, rendered to one self-contained HTML page and published to
 **GitHub Pages** via `git push`.
 
@@ -8,7 +8,7 @@ software / performance engineer lens, rendered to one self-contained HTML page a
 
 ## Head-to-head — same prompt, two agents
 
-Both sides run the *identical* 18-brief spec and the *identical* dashboard template; only the
+Both sides run the *identical* 19-brief spec and the *identical* dashboard template; only the
 search backend, execution model, model, and run date differ.
 
 | Side | Output | Produced by | Status |
@@ -24,7 +24,7 @@ search backend, execution model, model, and run date differ.
 
 - **◆ Today's Trends** (pinned at the top, default landing view) — one synthesis pass across all
   the briefs: converging themes per group plus cross-cutting ones, each citing its source briefs
-  ("→ seen in: …"). The 5-minute read when you can't do all 18; on a day with no real convergence
+  ("→ seen in: …"). The 5-minute read when you can't do all 19; on a day with no real convergence
   it says so instead of inventing patterns.
 - **Refresh** — every topic is re-researched from scratch on every run; `upd <timestamp>` is when.
   Nothing is skipped, ever.
@@ -71,7 +71,7 @@ main        (source, default branch)    gh-pages   (published site — served at
 ## How the Claude routine publishes
 
 The routine runs attached to this repo (already cloned & authenticated by the GitHub App — no PAT).
-Each run it: checks out `gh-pages`, researches the 18 briefs, rebuilds `claude.html` locally, then
+Each run it: checks out `gh-pages`, researches the 19 briefs, rebuilds `claude.html` locally, then
 does **one** commit + `git push origin gh-pages` at the end (one Pages build per run), and finally
 **verifies the Pages deployment actually succeeded** (re-triggering with an empty commit if the
 deploy failed or stalled — GitHub Pages deploys flake intermittently). It leaves `index.html` /
