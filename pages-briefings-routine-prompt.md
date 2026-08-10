@@ -136,6 +136,16 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
     allowlisted in .claude/settings.json on both main and gh-pages — a first-call
     failure is transient plumbing, not a permission denial; never skip 5c on the
     first error.
+  - STALE PARENT (step 5c only): the lens is built by INHERITANCE — you fetch the
+    published edition and splice into it — so a stale fetch silently reverts a day
+    of append-only ledger state instead of erroring. This has happened: on
+    2026-08-10 the fetch returned the 2026-08-08 page despite a 15-minute cache TTL.
+    Before building, confirm the fetched edition's date/edition against the
+    Artifact action:"list" metadata (authoritative — the page will happily confirm
+    its own stale date), and never let an append-only section (Promise Tracker,
+    Patch Radar, Benchmarks, Gaps) come back smaller than the parent's. Guards and
+    the full write-up: tools/lens/lens_guard.py and
+    docs/lens-build-failure-modes.md on main.
   - Keep the APPENDIX A template's <style> and <script> effectively verbatim.
     ONLY the DATA block between the two markers changes each run. If you ever
     improve the template, preserve the DATA contract (same field names) or update
