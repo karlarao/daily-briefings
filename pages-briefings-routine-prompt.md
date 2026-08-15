@@ -45,8 +45,8 @@ WORKFLOW (one scheduled run, top to bottom):
                                         │  (loop done)
    Step 4b SYNTHESIS ....... ONE pass over the 19 finished briefs (no web) →
                                         │       "Today's Trends" cross-topic read
-   Step 4c SINCE-YESTERDAY .. build today's headline ledger, diff it vs the prior run's
-                                        │       ledger (LLM-matched, robust to rewording) →
+   Step 4c SINCE-YESTERDAY .. build today's headline ledger, match it against the
+                                        │       canonical key dictionary (keys.json, 45d window) →
                                         │       "What's new / changed / still ongoing"
    Step 5  FINALIZE ........ set generated + summary → git add/commit/push ONCE
                                         │       (also writes archive/ledger/<date>.json)
@@ -305,42 +305,74 @@ If git push fails (auth/network), send one notification saying so — that failu
 
    (i) BUILD TODAY'S LEDGER — a small, titles-only structured index of this run. For each
        of the 19 briefs, extract its headline items (the bold "**Headline**" bullets across
-       its categories; skip "Filtered out"). For each item emit:
-         { "key": "<stable-kebab-slug>", "title": "<the headline, plain text>",
+       its categories; skip "Filtered out"). For each item emit a DRAFT key plus:
+         { "key": "<draft-kebab-slug>", "title": "<the headline, plain text>",
            "sev": "urgent" | "high" | "normal",
            "first_seen": "YYYY-MM-DD", "days_seen": <int> }
-       - `key` = a stable kebab slug of the item's core nouns (e.g. "npm-worm-node-gyp").
+       - draft `key` = a kebab slug of the item's core nouns (e.g. "npm-worm-node-gyp").
+         It is a CANDIDATE — step (iii) may replace it with an existing canonical key.
        - `sev` = "urgent" if this is the topic's flagged act-now item; "high" for a CVE or a
          hard-dated deprecation/deadline; else "normal".
        - `first_seen`/`days_seen` are filled in step (iv) after matching.
        Group items under their topic id. This ledger is titles/keys ONLY — never full `md`.
 
-   (ii) LOAD THE PRIOR LEDGER — read the most recent archive/ledger/<date>.json whose date
-       is BEFORE today (list archive/ledger/, pick the latest earlier date). If none exists
-       (first run with this feature, or the dir is missing/malformed), set whatsnew=null and
-       SKIP the rest of 4c — a first run legitimately has nothing to diff.
+   (ii) LOAD THE DICTIONARY + PRIOR LEDGER — read archive/ledger/keys.json, the
+       accumulating canonical-key dictionary:
+         { "entries": { "<key>": { "title", "topics": [], "first_seen",
+           "last_seen", "seen_count", "aliases": [] } } }
+       If it is missing or malformed, REBUILD it conservatively from all
+       archive/ledger/*.json (one entry per exact key string, no merging;
+       seen_count = max(distinct dates seen, any days_seen stamped on items);
+       treat a non-date first_seen — e.g. the literal "carried" in the
+       2026-07-25 ledger — as that ledger's date), write it, and continue.
+       Also read the most recent archive/ledger/<date>.json whose date is BEFORE
+       today (for sev-change detection). If no prior ledger exists, set
+       whatsnew=null and SKIP the rest of 4c — a first run legitimately has
+       nothing to diff.
 
-   (iii) MATCH & DIFF — Option 2, LLM-matched (robust to rewording). In ONE reasoning pass
-       (no web, no subagent), align each of today's items to a prior item when they are the
-       SAME underlying story even if the wording changed (e.g. "node-gyp worm hits 57 pkgs"
-       ≈ "node-gyp supply-chain worm still spreading"). Match within the same topic first;
-       only cross topics if the story clearly moved lanes. Then categorize:
-         - NEW      = today's item with no matching prior item.
-         - CHANGED  = matched, but `sev`/status moved (e.g. high→urgent) OR the substance
-                      materially advanced; include a short `note` (e.g. "high → critical",
-                      "preview → GA", "deadline now 13 days out").
-         - ONGOING  = matched, sev unchanged, still in-window; carry the day count.
-         - AGED OUT = a prior item with no match today; count them, don't list each.
-                      NOTE: because each day's research re-surfaces a DIFFERENT SUBSET of
-                      the same 30-day window, most of these were simply not re-surfaced
-                      today rather than literally window-expired — the dashboard words it
-                      that way; don't treat the number as an expiry count.
+   (iii) MATCH & DIFF — match each of today's items against the DICTIONARY (not
+       just yesterday's ledger), in this order:
+         1. DETERMINISTIC: draft key equals an entry key or appears in any
+            entry's aliases → that entry. No LLM needed.
+         2. LLM MATCH (one reasoning pass, no web, no subagent): candidates are
+            dictionary entries with last_seen within 45 days, SAME TOPIC first —
+            only consider cross-topic candidates when the story clearly moved
+            lanes. Same underlying story even if the wording changed (e.g.
+            "node-gyp worm hits 57 pkgs" ≈ "node-gyp supply-chain worm still
+            spreading") → use the EXISTING entry's key as the item's key, and
+            append today's draft key to that entry's aliases if it differs.
+            Every merge must leave an alias — that is the audit trail that makes
+            a wrong merge findable and reversible.
+         3. CONSERVATIVE MERGE RULE: when unsure, DO NOT merge — a missed match
+            costs one day of "new" noise; a wrong merge poisons days_seen
+            forever. Never merge two items that both appear in TODAY'S run.
+       Then categorize:
+         - NEW      = no matching entry, OR the matched entry's last_seen is
+                      older than 7 days (a returning story presents as new; its
+                      true first_seen still comes from the entry).
+         - CHANGED  = matched, but `sev`/status moved vs the prior ledger (e.g.
+                      high→urgent) OR the substance materially advanced; include
+                      a short `note` (e.g. "high → critical", "preview → GA",
+                      "deadline now 13 days out").
+         - ONGOING  = matched, sev unchanged; carry the day count.
+         - AGED OUT = count of dictionary entries whose last_seen is exactly
+                      7 days before today — stories that just went a full week
+                      without being re-surfaced. (This replaces the old "no
+                      match vs yesterday" count, which was mostly resampling
+                      noise; the dashboard wording already reflects that.)
        Hold the same discipline as flag calibration — don't invent movement. A quiet
        day-over-day (few or zero new/changed) is normal and honest.
 
-   (iv) STAMP THE LEDGER & BUILD whatsnew. For each of today's items: if matched to a prior
-       item, first_seen = prior.first_seen and days_seen = prior.days_seen + 1; if NEW,
-       first_seen = today and days_seen = 1. Then assemble BRIEFINGS.whatsnew:
+   (iv) STAMP, WRITE BACK & BUILD whatsnew. For each of today's items:
+         - matched → item key = the entry's canonical key; first_seen =
+           entry.first_seen; entry.last_seen = today; entry.seen_count += 1;
+           days_seen = entry.seen_count; entry.title = today's title; add
+           today's topic to entry.topics if absent.
+         - unmatched → new dictionary entry { title, topics: [topic],
+           first_seen: today, last_seen: today, seen_count: 1, aliases: [] };
+           first_seen = today and days_seen = 1.
+       Write archive/ledger/keys.json back (step 5's existing `git add archive/`
+       commits it alongside the day's ledger). Then assemble BRIEFINGS.whatsnew:
          { "prev_date": "<the prior ledger's date>",
            "new":     [ {"topic":"<Display Name>","title":"...","url":"<primary source>"} ],
            "new_more": <int>,
@@ -354,8 +386,8 @@ If git push fails (auth/network), send one notification saying so — that failu
        NEVER invent or guess a URL; omit the field only when the brief genuinely has
        no link for the item. The dashboard renders it as a [src] anchor and makes the
        topic label click through to the full brief.
-       CURATION — the card must stay a 60-second read; the raw "no prior match" set is
-       large (often 100+) and mostly "newly SURFACED", not "newly happened":
+       CURATION — the card must stay a 60-second read; the raw "no dictionary match"
+       set is smaller than the old day-over-day noise but still needs judgment:
          - `new` lists ONLY the items a reader should actually notice — cap ≈10–15 across
            all topics, ordered by severity/impact — and `new_more` carries the count of
            the remaining genuinely-new items (0 if none were held back).
@@ -1139,7 +1171,7 @@ content between the two DATA markers with your run's window.BRIEFINGS assignment
     <p><strong>⚑ Flagged</strong> = drop-what-you're-doing: an actively-exploited CVE on a stack you run, or a hard deadline within ~14 days. Expect 0–3 flags on a normal day.</p>
     <p><strong>Tokens</strong> (in the summary line) = total spent by the research agents this run — a volume gauge for cost trending, not an exact bill. The <strong>Σ tokens</strong> button shows the per-topic breakdown.</p>
     <p><strong>◆ Today's Trends</strong> (pinned at the top of the sidebar) = one synthesis pass across all the briefs — the converging themes per group plus cross-cutting ones. Every trend cites the briefs it came from ("→ seen in: …"); a trend needs the same movement in several briefs, so a quiet day says so instead of inventing patterns. It's the 5-minute read when you can't do all 19. Topic names in each "→ seen in:" line are clickable — they open that brief; bullets citing a specific fact carry an inline source link.</p>
-    <p><strong>◇ Since yesterday</strong> (pinned under Today's Trends) = a day-over-day diff of the headlines: what's <strong>🆕 new</strong>, what <strong>🔺 changed</strong> (e.g. a CVE escalating, preview→GA, a deadline getting closer), and what's <strong>➰ still ongoing</strong> (with a day count). It's built by matching this run's headlines against the previous run's, so it survives rewording. The 19 briefs themselves are still researched from scratch every run — only this card looks backward. It's absent on the first run (nothing to compare to). Each row carries a <code>[src]</code> link to the item's primary source (when the day's brief has one), and the topic label is clickable — it opens the full brief where the item lives with its full context.</p>
+    <p><strong>◇ Since yesterday</strong> (pinned under Today's Trends) = a day-over-day diff of the headlines: what's <strong>🆕 new</strong>, what <strong>🔺 changed</strong> (e.g. a CVE escalating, preview→GA, a deadline getting closer), and what's <strong>➰ still ongoing</strong> (with a day count). It's built by matching this run's headlines against a persistent key dictionary (<code>archive/ledger/keys.json</code>, 45-day window), so it survives rewording and day counts stay honest; “aged out” means a story went a full week without being re-surfaced. The 19 briefs themselves are still researched from scratch every run — only this card looks backward. It's absent on the first run (nothing to compare to). Each row carries a <code>[src]</code> link to the item's primary source (when the day's brief has one), and the topic label is clickable — it opens the full brief where the item lives with its full context.</p>
     <p><strong>📅 Calendar</strong> (top right) = browse past days. Each run archives a frozen copy of the full dashboard to <code>archive/&lt;date&gt;.html</code>; highlighted dates in the calendar have a run — click one to open that day exactly as it was (trends, tokens, briefs all work). Same-day reruns overwrite, so each date holds that day's latest run. History accumulates from 2026-07-06 onward.</p>
   </div>
   <div class="helppanel" id="tokPanel" hidden>
