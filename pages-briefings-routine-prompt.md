@@ -136,23 +136,39 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
     allowlisted in .claude/settings.json on both main and gh-pages — a first-call
     failure is transient plumbing, not a permission denial; never skip 5c on the
     first error.
-  - STALE PARENT (step 5c only): the lens is built by INHERITANCE — you fetch the
-    published edition and splice into it — so a stale fetch silently reverts a day
-    of append-only ledger state instead of erroring. This has happened: on
-    2026-08-10 the fetch returned the 2026-08-08 page despite a 15-minute cache TTL.
-    Before building, confirm the fetched edition's date/edition against the
-    Artifact action:"list" metadata (authoritative — the page will happily confirm
-    its own stale date), and never let an append-only section (Promise Tracker,
-    Patch Radar, Benchmarks, Gaps) come back smaller than the parent's.
-    ON MISMATCH (page older than the list metadata says): refetch up to 3×; if it
-    is still stale, SKIP 5c this run — never build on a stale parent — and fold
-    one line into the step-6 notification. If the fetched page MATCHES the list
-    metadata but is older than yesterday (a prior run failed to publish), it IS
-    the legitimate latest: build on it normally; the diff simply spans the gap.
-    Recovery from a past stale build is a MANUAL step, not this routine's job:
-    the overwritten edition survives in the artifact's version history — pull the
-    lost rows from there in an interactive session. Guards and the full write-up:
-    tools/lens/lens_guard.py and docs/lens-build-failure-modes.md on main.
+  - LENS BUILD GUARDS (step 5c only): the lens is built by INHERITANCE — you
+    fetch the published edition and splice into it — so build defects are SILENT:
+    the page renders fine and the damage only shows when diffing an edition
+    nobody re-reads. FOUR failure modes have actually occurred, all in one build
+    (2026-08-10); guard against each, every run:
+      1) STALE PARENT — the fetch returned the 2026-08-08 page instead of
+         2026-08-09, despite a 15-minute cache TTL; building on it would have
+         silently reverted 21 append-only rows. Before building, confirm the
+         fetched edition's date/edition against the Artifact action:"list"
+         metadata (authoritative — the page will happily confirm its own stale
+         date), and refuse a parent dated on or after today.
+         ON MISMATCH: refetch up to 3×; if still stale, SKIP 5c this run —
+         never build on a stale parent — and fold one line into the step-6
+         notification. If the fetched page MATCHES the list metadata but is
+         older than yesterday (a prior run failed to publish), it IS the
+         legitimate latest: build on it normally; the diff simply spans the gap.
+      2) SHRINKING LEDGER — never let an append-only section (Promise Tracker,
+         Patch Radar, Benchmarks, Gaps) come back smaller than the parent's;
+         a row leaves only by an explicit retire rule, never by omission.
+      3) UNSPLICED SECTION — splice by section id and ASSERT the count of
+         replaced sections equals the count intended; never string-match
+         class="view" literally (the active section carries class="view active"
+         and will silently keep the previous day's text).
+      4) HOST WRAPPER — the served artifact page carries an injected
+         frame-runtime <script> and an extra trailing </body></html>; strip
+         them before splicing or they compound on every subsequent edition.
+    Recovery from a past bad build is a MANUAL step, not this routine's job:
+    every edition survives in the artifact's version history — pull lost rows
+    from there in an interactive session. Reference implementation and full
+    write-up live on main (the run is checked out on gh-pages — read them with
+    `git show origin/main:tools/lens/lens_guard.py` and
+    `git show origin/main:docs/lens-build-failure-modes.md`); running the
+    guard functions themselves is encouraged, not just re-implementing them.
   - Keep the APPENDIX A template's <style> and <script> effectively verbatim.
     ONLY the DATA block between the two markers changes each run. If you ever
     improve the template, preserve the DATA contract (same field names) or update
