@@ -143,9 +143,16 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
     Before building, confirm the fetched edition's date/edition against the
     Artifact action:"list" metadata (authoritative — the page will happily confirm
     its own stale date), and never let an append-only section (Promise Tracker,
-    Patch Radar, Benchmarks, Gaps) come back smaller than the parent's. Guards and
-    the full write-up: tools/lens/lens_guard.py and
-    docs/lens-build-failure-modes.md on main.
+    Patch Radar, Benchmarks, Gaps) come back smaller than the parent's.
+    ON MISMATCH (page older than the list metadata says): refetch up to 3×; if it
+    is still stale, SKIP 5c this run — never build on a stale parent — and fold
+    one line into the step-6 notification. If the fetched page MATCHES the list
+    metadata but is older than yesterday (a prior run failed to publish), it IS
+    the legitimate latest: build on it normally; the diff simply spans the gap.
+    Recovery from a past stale build is a MANUAL step, not this routine's job:
+    the overwritten edition survives in the artifact's version history — pull the
+    lost rows from there in an interactive session. Guards and the full write-up:
+    tools/lens/lens_guard.py and docs/lens-build-failure-modes.md on main.
   - Keep the APPENDIX A template's <style> and <script> effectively verbatim.
     ONLY the DATA block between the two markers changes each run. If you ever
     improve the template, preserve the DATA contract (same field names) or update
