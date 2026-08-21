@@ -1,0 +1,4447 @@
+{
+ "date": "2026-08-21",
+ "topics": {
+  "oltp": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "postgresql-minor-releases-aug-13",
+     "title": "PostgreSQL 18.6 / 17.11 / 16.15 / 15.19 / 14.24 fix 28 CVEs and 110+ bugs",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 9
+    },
+    {
+     "key": "patching-multi-step-operation-not-package-bump",
+     "title": "Patching is a multi-step operation, not a package bump",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "oracle-cpu-july-2026-2026-07-21",
+     "title": "Oracle July CPU: 54 MySQL patches, 9 network-exploitable without credentials, none rated critical",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "mysql-26-7-0-innovation-ships",
+     "title": "MySQL 26.7.0 lands calendar versioning and pulls Thread Pool into Community",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "postgresql-19-beta-3-august-13",
+     "title": "PostgreSQL 19 Beta 3 (Aug 13) — `GROUP BY ALL` reverted",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "sqlite-3-53-4-2026-07",
+     "title": "SQLite 3.53.4 (2026-07-24)",
+     "sev": "normal",
+     "first_seen": "2026-08-09",
+     "days_seen": 6
+    },
+    {
+     "key": "rds-mariadb-adds-12.3.2-lts-12.3.3-fixes",
+     "title": "RDS for MariaDB adds 12.3.2 LTS; 12.3.3 fixes a replica-upgrade GTID trap",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "pg19-s-default-flips-real-upgrade-risk",
+     "title": "PG19's default flips are the real upgrade risk: JIT off, TOAST compression LZ4",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "why-does-postgres-skip-my-index-2002",
+     "title": "\"Why does Postgres skip my index?\" — a 2002-era `random_page_cost` default",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "global-hash-tables-parallel-aggregation-measured",
+     "title": "Global hash tables for parallel aggregation, measured",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cloud-sql-postgres-failover-slots",
+     "title": "Cloud SQL for PostgreSQL ships logical replication with failover slots (2026-07-24)",
+     "sev": "normal",
+     "first_seen": "2026-08-09",
+     "days_seen": 3
+    },
+    {
+     "key": "alloydb-transparent-query-forwarding",
+     "title": "AlloyDB moves read/write splitting into the platform",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 5
+    },
+    {
+     "key": "aurora-postgresql-patch-wave-2026-07-20",
+     "title": "Aurora PostgreSQL July 20 patch wave: failover completion and read-node stability",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "supabase-daily-backups-could-silently-skipped",
+     "title": "Supabase: daily backups could be silently skipped",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "azure-database-postgresql-picks-18.4-17.10-16.14",
+     "title": "Azure Database for PostgreSQL picks up 18.4/17.10/16.14/15.18/14.23, PgBouncer 1.25.2, cascading read replicas, Premium SSD v2",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cloud-sql-psc-reconciliation-aug1",
+     "title": "Cloud SQL: PSC connection reconciliation became mandatory Aug 1",
+     "sev": "normal",
+     "first_seen": "2026-08-05",
+     "days_seen": 3
+    },
+    {
+     "key": "spanner-dynamic-channel-pooling",
+     "title": "Spanner: dynamic channel pooling GA in Go and Java clients (Aug 10)",
+     "sev": "normal",
+     "first_seen": "2026-08-12",
+     "days_seen": 3
+    },
+    {
+     "key": "container-memory-working-set-bytes-is-misleading",
+     "title": "Postgres breaks Kubernetes' `container_memory_working_set_bytes`",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "pg-statviz-1.2",
+     "title": "pg_statviz 1.2",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "lock-timeout-migration-insurance",
+     "title": "`lock_timeout` as migration insurance",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "rehearse-18.6-upgrade-end-end-clone",
+     "title": "Rehearse the 18.6 upgrade end-to-end on a clone",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "two-exobench-measurements-worth-re-running-your",
+     "title": "Two ExoBench measurements worth re-running on your own data",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "benchmark-mysql-26.7-s-change-stream-applier",
+     "title": "Benchmark MySQL's Change Stream Applier against MTA on a replication-lag-bound channel.",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "new-guc-output-plugin-libraries-breaks-non",
+     "title": "New GUC `output_plugin_libraries` breaks non-default logical decoding after the Aug 13 patch.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "postgresql-14-eol-2026-11-12",
+     "title": "PostgreSQL 14 EOL: 2026-11-12",
+     "sev": "high",
+     "first_seen": "2026-07-18",
+     "days_seen": 4
+    },
+    {
+     "key": "postgresql-18.5-does-not-exist",
+     "title": "PostgreSQL 18.5 does not exist.",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "pg19-incompatibilities-plan-now",
+     "title": "PG19 incompatibilities to plan for now",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "mysql-26.7",
+     "title": "MySQL 26.7",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "group-reverted-pg-19-beta-3",
+     "title": "`GROUP BY ALL` reverted in PG19 Beta 3",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "ai-assisted-fuzzing-now-dominant-source-database",
+     "title": "AI-assisted fuzzing is now the dominant source of database CVEs.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "read-write-splitting-migrating-proxy-tier-managed",
+     "title": "Read/write splitting is migrating from the proxy tier into the managed engine.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "oracle-repositioning-mysql-against-forks.",
+     "title": "Oracle is repositioning MySQL against the forks.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "mongodb": {
+   "status": "urgent",
+   "items": [
+    {
+     "key": "aug-11-server-batch-7.0.40-8.0.29",
+     "title": "August 11 batch: 22 server CVEs fixed in 7.0.40 / 8.0.29 / 8.3.8",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "mongodb-cve-18697-mongos-dos",
+     "title": "CVE-2026-18697 (CVSS 8.7) — unauthenticated DoS on `mongos` via aggregation input validation",
+     "sev": "high",
+     "first_seen": "2026-08-13",
+     "days_seen": 3
+    },
+    {
+     "key": "authorization-bypasses-cluster-hard-batch",
+     "title": "Authorization bypasses cluster hard in this batch",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cve-2026-13072",
+     "title": "July 22 batch: 23 CVEs, including CVE-2026-13072 (CVSS 9.2) memory corruption in Compute Mode external data processing",
+     "sev": "high",
+     "first_seen": "2026-07-26",
+     "days_seen": 2
+    },
+    {
+     "key": "compass-cve-2026-14881-cvss-8.4-arbitrary",
+     "title": "Compass: CVE-2026-14881 (CVSS 8.4) — arbitrary shell execution via crafted connection import",
+     "sev": "high",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "also-patched-bi-connector-odbc-driver-five",
+     "title": "BI Connector ODBC driver: five CVEs, worst CVSS 9.5",
+     "sev": "high",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "8.2-eol-july-31-2026-got-no",
+     "title": "8.2 is EOL (July 31, 2026) and got no August patch — that's the real trap",
+     "sev": "high",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "sources-contradict-whether-8.2.13-exists-whether-minors",
+     "title": "Sources contradict on whether 8.2.13 exists and on whether minors are self-manageable",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "7-0-eol-31-aug-2027",
+     "title": "7.0 has ~12 months left (EOL Aug 31, 2027); 8.0 runs to Oct 31, 2029",
+     "sev": "high",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "8.3.9-queued-three-fixes-worth-reading-before",
+     "title": "8.3.9 is queued with three fixes worth reading before you upgrade",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "mongodb-83-cbr-default",
+     "title": "8.3 makes the cost-based ranker the default plan-selection backup",
+     "sev": "normal",
+     "first_seen": "2026-07-10",
+     "days_seen": 4
+    },
+    {
+     "key": "8-0-28-jul-22-disables",
+     "title": "`SERVER-128512`: SBE tailable and resumed scans disabled in 8.0.28/8.3.7",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "other-engine-level-fixes-worth-grepping-your",
+     "title": "Other engine-level fixes worth grepping your logs for",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "mongosh-2-10-qe-api-removal",
+     "title": "mongosh 2.10.0 (Aug 13) removes preview Queryable Encryption text/prefix/suffix/substring APIs",
+     "sev": "normal",
+     "first_seen": "2026-08-15",
+     "days_seen": 5
+    },
+    {
+     "key": "mongosh-now-publishes-mongodb-9.0-server-ppa",
+     "title": "mongosh now publishes to the MongoDB 9.0 server PPA",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "driver-release-side-quiet",
+     "title": "Driver side was quiet in-window",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "percona-server-mongodb-8.0.29-13-aug-20",
+     "title": "Percona Server for MongoDB 8.0.29-13 (Aug 20) — the CVE rebase landed 9 days after upstream",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "atlas-search-sorted-index",
+     "title": "Atlas Search shipped sorted indexes on July 6",
+     "sev": "normal",
+     "first_seen": "2026-08-01",
+     "days_seen": 3
+    },
+    {
+     "key": "atlas-platform-changelog-effectively-empty-window",
+     "title": "Atlas platform changelog was effectively empty for the window",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "anyone-self-managing-8.2-has-no-patch",
+     "title": "Anyone self-managing 8.2 has no patch for the August CVEs.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "compass-1.49.7-mandatory-your-team-shares-connection",
+     "title": "Compass 1.49.7 is mandatory if your team shares connection exports.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "bi-connector-odbc-1.4.9",
+     "title": "BI Connector ODBC 1.4.9",
+     "sev": "urgent",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "time-series-users",
+     "title": "Time-series users",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "clustered-collections",
+     "title": "Clustered collections",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "you-upgraded-8.3.7-drivers-started-misbehaving",
+     "title": "If you upgraded to 8.3.7+ and drivers started misbehaving",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "mongodb-9.0-being-staged-public-without",
+     "title": "MongoDB 9.0 is assembling in public",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "queryable-encryption-trio",
+     "title": "Queryable Encryption is churning",
+     "sev": "normal",
+     "first_seen": "2026-07-26",
+     "days_seen": 3
+    },
+    {
+     "key": "cve-volume-itself-signal.",
+     "title": "The CVE volume itself is the signal.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "percona-now-more-complete-distro-new-linux",
+     "title": "Percona is now the more complete distro on new Linux",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "formats": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "delta-lake-4.4.0-aug-20-spark-4.2",
+     "title": "Delta Lake 4.4.0 (Aug 20) — Spark 4.2, identity columns, and a real Flink upsert path.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "delta-3-3-3-log-cleanup-bug",
+     "title": "Delta Lake 3.3.3 (Aug 12) — backport line, and one of the fixes is a time-travel data-loss bug.",
+     "sev": "normal",
+     "first_seen": "2026-08-14",
+     "days_seen": 5
+    },
+    {
+     "key": "apache-paimon-2.0.0-aug-7-first-major",
+     "title": "Apache Paimon 2.0.0 (Aug 7) — first major version bump, but verify before you plan around it.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "apache-iceberg-1.x-shipped-nothing-window.",
+     "title": "Apache Iceberg 1.x shipped nothing this window.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "apache-polaris-1.7.0-aug-2-correctness-security",
+     "title": "Apache Polaris 1.7.0 (Aug 2) — a correctness-and-security release, not a feature release, and the upgrade needs a pre-flight audit.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "unity-catalog-oss-0.6.0-aug-20-sql",
+     "title": "Unity Catalog OSS 0.6.0 (Aug 20) — SQL views become first-class, and tokens now expire.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "lakekeeper-0.13.3-17-aug-authorization-fix",
+     "title": "Lakekeeper 0.13.3 (Aug 16) — auth fixes plus a dependency CVE sweep.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "nessie-0.108.3-jul-23-0.108.4-jul-31",
+     "title": "Nessie 0.108.3 (Jul 23) and 0.108.4 (Jul 31) — small but bite-y.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "gravitino-1.3.0-remains-current-release-jun-29",
+     "title": "Gravitino: 1.3.0 remains the current release (Jun 29) — nothing new this window.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "debezium-3-6-1-final-aug-4",
+     "title": "Debezium 3.6.1.Final (Aug 4) — 27 fixes, several are silent data-corruption bugs.",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 3
+    },
+    {
+     "key": "debezium-3-7-oracle-12-cassandra-3-removed",
+     "title": "Debezium 3.7 is in alpha (Alpha1 Jul 30, Alpha2 Aug 13).",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 7
+    },
+    {
+     "key": "flink-cdc-quiet.",
+     "title": "Flink CDC: quiet.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "apache-parquet-java-1.18.0-11-aug-breaking",
+     "title": "Apache Parquet (Java) 1.18.0 (Aug 11) — plus a versioning-policy vote that changes how the format evolves.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "datafusion-comet-1.0.0-aug-7-spark-accelerator",
+     "title": "DataFusion Comet 1.0.0 (Aug 7) — the Spark accelerator declares GA after two years of incubation.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "arrow-rs-59.2.0-aug-6-unchecked-array",
+     "title": "arrow-rs 59.2.0 (Aug 6) — unchecked array builder methods and a sans-IO stream encoder.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "pyiceberg-0-12-0rc1",
+     "title": "iceberg-rust 0.10.1 (Aug 1) — patch release, mostly to fix the `pyiceberg-core` PyPI package.",
+     "sev": "normal",
+     "first_seen": "2026-08-12",
+     "days_seen": 2
+    },
+    {
+     "key": "pyiceberg-0.12.0-not-rc1-aug-5-reportedly",
+     "title": "PyIceberg 0.12.0 is *not* out — rc1 (Aug 5) was reportedly halted by a correctness regression.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "delta-rs-nothing-window.",
+     "title": "delta-rs: nothing in window.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cve-2026-64640-apache-polaris-1",
+     "title": "CVE-2026-64640 — Apache Polaris ≤ 1.6.0, published Aug 6. Medium. Fixed: upgrade to 1.7.0.",
+     "sev": "high",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "older-polaris-credential-vending-cve-cluster-disclosed",
+     "title": "Older Polaris credential-vending CVE cluster (disclosed early May) is still the bigger risk if you're behind.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "rustsec-2026-0194-0195-quick-xml-patched",
+     "title": "RUSTSEC-2026-0194 / 0195 (quick-xml) — patched in Lakekeeper 0.13.3.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "iceberg-v3-deletion-vector-economics-writeup-aug",
+     "title": "The Iceberg v3 deletion-vector economics writeup (Aug 19) is the best practical thing published this window.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "iceberg-v4-state-dev-list-jul-6",
+     "title": "Iceberg v4 state-of-the-dev-list (Jul 6) — read this before you architect anything around v3 metadata.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "unity-catalog-oss-0.6.0-turns-previously-indefinite",
+     "title": "Unity Catalog OSS 0.6.0 turns previously-indefinite access tokens into 24-hour tokens.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "polaris-1.7.0-requires-pre-upgrade-location-audit.",
+     "title": "Polaris 1.7.0 requires a pre-upgrade location audit.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "parquet-java-1.18.0-drops-java",
+     "title": "Parquet-Java 1.18.0 drops Java 8 for core modules.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "format-v3-upgrades-one-way-readers-ignore",
+     "title": "Format v3 upgrades are one-way, and readers that ignore delete metadata they don't understand will return deleted rows as live data.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "don-t-run-pyiceberg-0.12.0rc1.",
+     "title": "Don't run PyIceberg 0.12.0rc1.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "iceberg-v4-scoping-went-formal-aug-5.",
+     "title": "Iceberg v4 scoping went formal on Aug 5.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "iceberg-eagerinputfile-manifest-read",
+     "title": "Iceberg manifest read time on S3: EagerInputFile benchmarked at 25–55% reduction in Parquet manifest read time.",
+     "sev": "normal",
+     "first_seen": "2026-08-13",
+     "days_seen": 4
+    },
+    {
+     "key": "apache-xtable-0.4.0-incubating-rc-rc1-22",
+     "title": "Apache XTable cut 0.4.0-incubating RC1 (Jul 22) and RC2 (Aug 7) — its first release activity in over 14 months.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "parquet-encoding-pipeline-moving",
+     "title": "Parquet encoding pipeline is moving",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "iceberg-1.12.0-branch-cut-planned-after-aug",
+     "title": "Iceberg 1.12.0 branch cut planned for on/after Aug 26.",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "ducklake-v1.1-spec-expected-september-2026.",
+     "title": "DuckLake v1.1 spec expected September 2026.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "semantic-layer-standardization-becoming-catalog-concern.",
+     "title": "Semantic-layer standardization is becoming a catalog concern.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "oracle": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "cpu-cadence-assumption-now-wrong-oracle-ships",
+     "title": "The CPU cadence assumption is now wrong — Oracle ships monthly CSPUs.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "august-2026-cspu-18-aug-three-remote",
+     "title": "August 2026 CSPU (18 Aug): three remote-unauth Clusterware CVEs at 9.6/9.1.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "july-2026-cpu-21-jul-largest-oracle",
+     "title": "July 2026 CPU (21 Jul) — largest in Oracle history, and the DB half matters.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "ru-19.32-carries-12-behavior-changes-two",
+     "title": "RU 19.32 carries 12 behavior changes — two will bite before the CVEs do.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "ltru-paused-19.28",
+     "title": "Long-Term Release Updates are paused.",
+     "sev": "normal",
+     "first_seen": "2026-07-28",
+     "days_seen": 3
+    },
+    {
+     "key": "composite-b-tree-spatial-index-now",
+     "title": "Composite B-tree spatial index now indexes non-spatial scalars — 6x on a 35M-row spatiotemporal query.",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "iceberg-time-travel-timestamp-against-apache-iceberg",
+     "title": "Time Travel for Apache Iceberg external tables (Aug).",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "dbms-cloud.export-data-parquet-type-mappings-changed",
+     "title": "`DBMS_CLOUD.EXPORT_DATA` Parquet type mappings changed (Aug).",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "august-2026-dbms-cloud-send-request-gains",
+     "title": "`DBMS_CLOUD.SEND_REQUEST` gets `retry_params` (Aug).",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 5
+    },
+    {
+     "key": "get-definition-dbms-cloud-packages-aug",
+     "title": "`GET_DEFINITION` across `DBMS_CLOUD*` packages (Aug)",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 3
+    },
+    {
+     "key": "workload-capture-replay-files-can-now-live",
+     "title": "Workload Capture & Replay can write to customer-managed directories (Aug)",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "july",
+     "title": "July",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "acd-cloning-full-partial-clones-plus",
+     "title": "ACD cloning gets Full vs Partial clone types (Aug)",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "total-acd-backup-storage-details-page",
+     "title": "Total ACD backup storage now shown on the Details page (Aug)",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 3
+    },
+    {
+     "key": "cross-tenancy-oci-vault-master-encryption",
+     "title": "Cross-tenancy OCI Vault / master encryption key for an ACD (Aug)",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 5
+    },
+    {
+     "key": "oracle-api-access-control-dedicated-jul",
+     "title": "Oracle API Access Control (Jul)",
+     "sev": "normal",
+     "first_seen": "2026-07-31",
+     "days_seen": 9
+    },
+    {
+     "key": "exadata-system-software-26.1.2.0.0-25.2.13.0.0-released-18",
+     "title": "System Software 26.1.2.0.0 and 25.2.13.0.0 released 18 Aug.",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "25.1-end-line.",
+     "title": "25.1 is end-of-line.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "ora-600-objdchk-ora-8103-after-tts",
+     "title": "ORA-600 `[objdchk]` / ORA-8103 after TTS import into 19c, from overlapping extents.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "autoupgrade-26-5-plus-26-4",
+     "title": "AutoUpgrade 26.5 (plus 26.4) released 13 Aug.",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "tts-failing-ora-01647-tablespace-read-only",
+     "title": "TTS failing with ORA-01647 \"tablespace is read-only\"",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "26ai-23.26.2-certified-oracle-linux-10-not",
+     "title": "26ai (23.26.2) certified on Oracle Linux 10 — but not for RAC.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "python-oracledb-4-0-2-july",
+     "title": "python-oracledb 4.0.2 (July 2026).",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 3
+    },
+    {
+     "key": "dbms-redefinition-enforces-database-vault-authorization",
+     "title": "`DBMS_REDEFINITION` + Database Vault in 19.32 is a silent breaker.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "your-oracle-client-installs-need-july-cpu",
+     "title": "Your Oracle client installs need the July CPU too",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "exadata-25.1-has-no-future-patches.",
+     "title": "Exadata 25.1 has no future patches.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "don-t-build-rac-ol10-26ai-yet.",
+     "title": "Don't build RAC on OL10 with 26ai yet.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "contradiction-note",
+     "title": "Contradiction to note",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 3
+    },
+    {
+     "key": "monthly-cspu-structural-change-dba-workload.",
+     "title": "Monthly CSPU is a structural change to DBA workload.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "ltru-pause-monthly-cspu-together",
+     "title": "LTRU pause + monthly CSPU together",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "23ai-26ai-naming.",
+     "title": "23ai → 26ai naming.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "select-ai-being-built-agent-platform-fast",
+     "title": "Select AI is being built out as an agent platform, fast",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "snowflake": {
+   "status": "urgent",
+   "items": [
+    {
+     "key": "2026-06-planned-enabled-by-default-august",
+     "title": "2026_06 is one release away from auto-enable",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 3
+    },
+    {
+     "key": "interval-plural-qualifier-result-change",
+     "title": "INTERVAL plural qualifiers change your results, not just your errors (High)",
+     "sev": "urgent",
+     "first_seen": "2026-08-09",
+     "days_seen": 2
+    },
+    {
+     "key": "qas-default-scale-factor-8",
+     "title": "QAS on by default for all new standard warehouses, scale factor 8 (Medium)",
+     "sev": "normal",
+     "first_seen": "2026-07-26",
+     "days_seen": 10
+    },
+    {
+     "key": "cross-region-inference-turned-on-by",
+     "title": "Cross-region inference gets turned on for you (High)",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "anaconda-packages-start-requiring-explicit-role-grant",
+     "title": "Anaconda packages start requiring an explicit role grant (High)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "2026-05-is-now-enabled-by-default-10",
+     "title": "2026_05 is already enabled by default (opt-out window open)",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 4
+    },
+    {
+     "key": "other-202606-items-worth-a-scan",
+     "title": "Smaller 2026_06 items that touch tooling",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 4
+    },
+    {
+     "key": "adaptive-refresh-mode-is-ga-and-snowflake",
+     "title": "ADAPTIVE refresh mode is GA and is now the recommended default",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "dynamic-tables-custom-incremental-ga",
+     "title": "Custom incremental dynamic tables GA",
+     "sev": "normal",
+     "first_seen": "2026-07-27",
+     "days_seen": 6
+    },
+    {
+     "key": "create-or-alter-dynamic-table-is-ga",
+     "title": "`CREATE OR ALTER DYNAMIC TABLE` GA in 10.27, and extended to dynamic Iceberg tables Aug 13",
+     "sev": "normal",
+     "first_seen": "2026-08-08",
+     "days_seen": 5
+    },
+    {
+     "key": "multiple-refresh-one-alter",
+     "title": "Refresh multiple dynamic tables in one ALTER",
+     "sev": "normal",
+     "first_seen": "2026-07-27",
+     "days_seen": 2
+    },
+    {
+     "key": "openflow-sql-server-cdc-ga",
+     "title": "Openflow Connector for SQL Server (CDC) is GA",
+     "sev": "normal",
+     "first_seen": "2026-08-08",
+     "days_seen": 6
+    },
+    {
+     "key": "externally-managed-iceberg-tables-reachable-through-horizon",
+     "title": "Externally managed Iceberg tables now readable through Horizon's Iceberg REST Catalog (Preview)",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "amazon-s3-tables-irc-integration-ga-glue",
+     "title": "Amazon S3 Tables IRC integration GA — Glue no longer required",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "consuming-delta-shares-in-horizon-catalog",
+     "title": "Consuming Delta Shares in Horizon Catalog is GA (Jul 21)",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 3
+    },
+    {
+     "key": "inline-stored-procedures-for-hybrid-tables-public",
+     "title": "Inline stored procedures for hybrid tables (Public Preview)",
+     "sev": "normal",
+     "first_seen": "2026-08-09",
+     "days_seen": 3
+    },
+    {
+     "key": "per-user-credit-quotas-ga-10.29-aug",
+     "title": "Per-user credit quotas GA (10.29)",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "scoped-cost-anomaly-monitors-public-preview-anomaly",
+     "title": "Scoped cost anomaly monitors (Public Preview) + anomaly alerts to Slack/SMS/webhook (GA)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "postgres-compute-usage-history-view-aug",
+     "title": "New usage views: `SNOWFLAKE_COCO_USAGE_HISTORY` (GA) and `POSTGRES_COMPUTE_USAGE_HISTORY`",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "agent-attribution-lands-query-history-access-history",
+     "title": "Agent attribution lands in QUERY_HISTORY and ACCESS_HISTORY",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cortex-agent-code-execution-tool-preview",
+     "title": "Cortex Agent code execution tool (Preview)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "show-cortex-base-models-ga",
+     "title": "`SHOW CORTEX BASE MODELS` GA",
+     "sev": "normal",
+     "first_seen": "2026-07-25",
+     "days_seen": 2
+    },
+    {
+     "key": "data-movement-policies-ga-enterprise",
+     "title": "Data movement policies GA (Enterprise+)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cve-2026-15748-snowflake-.net-connector-repo",
+     "title": "CVE-2026-15748: Snowflake .NET connector repo CI injection — already fixed, not in any shipped artifact",
+     "sev": "high",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "enable-2026-06-scratch-account-run",
+     "title": "Enable 2026_06 in a scratch account and run your dbt/Airflow suite against it.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "dynamic-tables-adaptive-custom-refresh-ga",
+     "title": "Move your incremental dynamic tables to `REFRESH_MODE = ADAPTIVE`.",
+     "sev": "normal",
+     "first_seen": "2026-07-27",
+     "days_seen": 9
+    },
+    {
+     "key": "baseline-query-acceleration-history-per-warehouse-credits",
+     "title": "Baseline `QUERY_ACCELERATION_HISTORY` and per-warehouse credits before 2026_06 lands",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "2026-06-window-effectively-over.",
+     "title": "The 2026_06 window is effectively over.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "bundle-2026-05-enabled-iceberg-replication",
+     "title": "2026_05's managed-Iceberg-replicated-by-default is already live",
+     "sev": "normal",
+     "first_seen": "2026-07-26",
+     "days_seen": 6
+    },
+    {
+     "key": "qas-scale-factor-defaults",
+     "title": "QAS auto-enable at scale factor 8 hits new warehouses only.",
+     "sev": "normal",
+     "first_seen": "2026-07-23",
+     "days_seen": 2
+    },
+    {
+     "key": "preview-vs-ga-discipline",
+     "title": "Preview vs GA discipline",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "vendor-perf-numbers-treat-skeptically",
+     "title": "Vendor perf numbers to treat skeptically",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "period-data-type-ga-10.30",
+     "title": "PERIOD data type GA in 10.30",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "adaptive-compute-vs-gen2-turning-real-sizing",
+     "title": "Adaptive Compute vs Gen2 is turning into a real sizing decision.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "everything-becoming-agent-shaped.",
+     "title": "Everything is becoming agent-shaped.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "10.28-aug-9-12-shipped-nothing",
+     "title": "10.28 (Aug 9–12) shipped literally nothing",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    }
+   ]
+  },
+  "databricks": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "dbr-13-3-lts-end-support",
+     "title": "DBR 13.3 LTS end-of-support is Aug 22, 2026 — that's tomorrow.",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "dbr-19-is-ga-july-23-apache",
+     "title": "DBR 19 GA'd July 23 on Spark 4.2.0 — three real breaking changes.",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "apache-spark-4-2-0-jul",
+     "title": "Apache Spark 4.2.0 shipped OSS on July 14 — after Databricks already shipped it.",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "maintenance-stream-quiet-streaming-behavior-change-july",
+     "title": "Maintenance stream: a quiet streaming behavior change on July 24.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "photon-nothing-new-window.",
+     "title": "Photon: nothing new this window.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "manage-no-longer-requires-a-usage-privilege",
+     "title": "`MANAGE` no longer requires `USE CATALOG`/`USE SCHEMA` on the same object (Aug 3) — go audit your grants.",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 6
+    },
+    {
+     "key": "mid-september-rbac-becomes-default-compliance-security",
+     "title": "RBAC is GA (Aug 19), and becomes default for compliance-profile workspaces mid-September.",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "secrets-in-unity-catalog-ga-aug-3",
+     "title": "Secrets in Unity Catalog GA (Aug 3) and `READ METADATA` GA (Aug 10).",
+     "sev": "normal",
+     "first_seen": "2026-08-08",
+     "days_seen": 6
+    },
+    {
+     "key": "serverless-compute-access-control-ga-aug-3",
+     "title": "Serverless compute access control GA (Aug 3).",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 6
+    },
+    {
+     "key": "abac-keeps-growing-identity-attributes-beta-column",
+     "title": "ABAC keeps growing: identity attributes (Beta), column-mask targeting, GRANT policies for AI securables, tag automations.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "delta-sharing-now-ga-for-tables-with",
+     "title": "Shared Delta tables can finally carry deletion vectors and column mapping (GA, Aug 4).",
+     "sev": "normal",
+     "first_seen": "2026-08-09",
+     "days_seen": 4
+    },
+    {
+     "key": "managed-iceberg-table-sharing-ga-aug-14",
+     "title": "Managed Iceberg table sharing GA (Aug 14), including to external Iceberg clients.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "delta-lake-oss-3-3-3",
+     "title": "Delta 3.3.3 (Aug 12) is a correctness patch, not a routine bump.",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 2
+    },
+    {
+     "key": "delta-4.4.0-aug-20-adds-spark-4.2",
+     "title": "Delta 4.4.0 (Aug 20) adds Spark 4.2 support and UC Delta API integration in Kernel.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "replace-using-flows-partial-snapshot-ingestion-without",
+     "title": "`REPLACE USING` flows (Beta) — partial-snapshot ingestion without a CDC feed.",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "change-data-feed-materialized-views-beta",
+     "title": "Change data feed on materialized views (Beta, Aug 7) — requires DBR 18 LTS+.",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 8
+    },
+    {
+     "key": "continuous-pipelines-should-move-continuous-jobs-aug",
+     "title": "Continuous pipelines should now be orchestrated by continuous *jobs* (Aug 10).",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "lakeflow-connect-connector-churn",
+     "title": "Lakeflow Connect connector flood.",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 3
+    },
+    {
+     "key": "mv-streaming-table-refreshes-inherit-custom",
+     "title": "MV/ST refreshes in DBSQL now inherit warehouse custom tags (Aug 3).",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 4
+    },
+    {
+     "key": "alert-system-tables-in-public-preview",
+     "title": "Alert system tables in Public Preview (Aug 10).",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 4
+    },
+    {
+     "key": "session-restore-for-serverless-jobs-beta",
+     "title": "Serverless jobs get session restore (Beta, Aug 17) and JAR tasks (GA, Aug 6).",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "asset-bundles-direct-deploy-default",
+     "title": "Asset Bundles: the Terraform engine is deprecated (CLI 1.11.0, Aug 6) and direct deployment became the default on July 24.",
+     "sev": "high",
+     "first_seen": "2026-07-28",
+     "days_seen": 3
+    },
+    {
+     "key": "cli-1.13.0-aug-20-turns-fips-140",
+     "title": "CLI 1.13.0 (Aug 20) turns on FIPS 140-3 mode by default for TLS.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "dbt-databricks-1.12.3-july-29-1.12.4-aug",
+     "title": "dbt-databricks 1.12.3 (Jul 29) and 1.12.4 (Aug 12).",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "unity-ai-gateway-ga-reauth",
+     "title": "Unity AI Gateway GA (Aug 4) — and Databricks-managed MCP connectors migrated under it (Aug 6), requiring user reauthentication.",
+     "sev": "normal",
+     "first_seen": "2026-08-14",
+     "days_seen": 6
+    },
+    {
+     "key": "databricks-ai-search-sql-function",
+     "title": "`ai_search()` SQL function in Beta (Aug 7); `ai_extract` precision mode GA (Aug 19).",
+     "sev": "normal",
+     "first_seen": "2026-08-14",
+     "days_seen": 8
+    },
+    {
+     "key": "lakebase-postgres-apis-ga-aug-14",
+     "title": "Lakebase Postgres APIs GA (Aug 14) across REST/CLI/SDKs (Python, Java, Go).",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "dbr-13-3-lts-end-support",
+     "title": "DBR 13.3 LTS EoS is Aug 22, 2026 (tomorrow).",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 3
+    },
+    {
+     "key": "manage-privilege-behavior-change-aug-3",
+     "title": "`MANAGE` privilege semantics changed Aug 3",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 3
+    },
+    {
+     "key": "abac-no-longer-blocks-pipeline-refreshes",
+     "title": "ABAC on pipeline refreshes changed Aug 3",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "cli-1.13.0-defaults-fips-140-3-tls",
+     "title": "CLI 1.13.0 defaults to FIPS 140-3 TLS",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "mcp-connector-reauthentication-required",
+     "title": "MCP connector reauthentication required",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "workspace-entitlement-control-enforced-2026-09",
+     "title": "Workspace entitlements behavior change is enforced Sept 14, 2026",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "legacy-sql-editor-retires",
+     "title": "Legacy SQL editor retirement started late July 2026",
+     "sev": "high",
+     "first_seen": "2026-07-23",
+     "days_seen": 3
+    },
+    {
+     "key": "data-quality-monitoring-columns",
+     "title": "Data quality monitoring columns",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "databricks-now-ships-spark-ahead-oss-ga",
+     "title": "Databricks now ships Spark ahead of OSS GA as routine.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "classic-compute-being-squeezed-both-ends.",
+     "title": "Classic compute is being squeezed from both ends.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "governance-where-engineering-went-cycle.",
+     "title": "Governance is where the engineering went this cycle.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cdc-converging-declarative-primitives.",
+     "title": "CDC is converging on declarative primitives.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "genie-economics-still-flux.",
+     "title": "Genie economics are still in flux.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "bigquery": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "storage-write-api-renaming",
+     "title": "Storage Write API renamed — `tabledata.insertAll` is now \"Storage Write API (REST)\"",
+     "sev": "normal",
+     "first_seen": "2026-08-09",
+     "days_seen": 2
+    },
+    {
+     "key": "appends-changes-change-history-tvfs-ga",
+     "title": "`APPENDS` and `CHANGES` change-history TVFs are GA",
+     "sev": "normal",
+     "first_seen": "2026-08-09",
+     "days_seen": 7
+    },
+    {
+     "key": "bq-odbc-driver-ga",
+     "title": "Google-developed ODBC driver for BigQuery is GA — and it is not Simba",
+     "sev": "normal",
+     "first_seen": "2026-08-02",
+     "days_seen": 2
+    },
+    {
+     "key": "jdbc-driver-gets-opentelemetry-tracing-and",
+     "title": "JDBC driver gets OpenTelemetry tracing/logging, GA",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 3
+    },
+    {
+     "key": "query-result-downloads-are-now-auditable",
+     "title": "Query results downloads are now auditable",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 3
+    },
+    {
+     "key": "table-parameters-in-tvfs-are-ga",
+     "title": "`ANY TABLE` table parameters in TVFs are GA; clean-room query templates GA",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 5
+    },
+    {
+     "key": "bq-table-explorer-deprecated",
+     "title": "Table Explorer is deprecated; behavior moved to the Reference panel",
+     "sev": "high",
+     "first_seen": "2026-08-13",
+     "days_seen": 2
+    },
+    {
+     "key": "bq-dataset-insights-ga",
+     "title": "Dataset insights GA; pipeline tasks GA",
+     "sev": "normal",
+     "first_seen": "2026-08-15",
+     "days_seen": 2
+    },
+    {
+     "key": "user-specific-reservation-assignment-limit-raised-10",
+     "title": "User-specific reservation assignment limit raised 10 → 100 per project",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "bigquery-graph-core-processing-moves-enterprise-enterprise",
+     "title": "BigQuery Graph core processing moves to Enterprise / Enterprise Plus on April 26, 2027",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "dts-billing-label-change",
+     "title": "DTS billing label flipped case on Aug 11 and widened scope",
+     "sev": "normal",
+     "first_seen": "2026-07-08",
+     "days_seen": 3
+    },
+    {
+     "key": "cross-cloud-connections-now-work-from-all",
+     "title": "Cross-cloud connections (Preview) now work from *all* BigQuery regions — and read like an Omni exit ramp",
+     "sev": "normal",
+     "first_seen": "2026-08-09",
+     "days_seen": 3
+    },
+    {
+     "key": "iceberg-managed-tables",
+     "title": "DTS can ingest directly into Iceberg managed tables (Preview)",
+     "sev": "normal",
+     "first_seen": "2026-07-08",
+     "days_seen": 2
+    },
+    {
+     "key": "gemini-3-1-flash-lite-and",
+     "title": "`gemini-3.1-flash-lite` and `gemini-3.5-flash` are GA in all generative AI functions",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 5
+    },
+    {
+     "key": "three-time-series-tvfs-land-preview-ml.trend",
+     "title": "Three time-series TVFs land in Preview: `ML.TREND`, `ML.SEASONALITY`, `ML.DETECT_CHANGE_POINTS`",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "hybrid-search-restored-after-3.5-weeks-dark",
+     "title": "Hybrid search restored after ~3.5 weeks dark",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "contradiction-worth-knowing-ai.search-s-ga-status",
+     "title": "Contradiction worth knowing: AI.SEARCH's GA status is stated inconsistently",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "run-bq-command-exposes-bq-cli-through",
+     "title": "`run_bq_command` exposes the `bq` CLI through the Cloud CLI remote MCP server (Preview)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "google-cloud-bigquery-3.42.3-requires-python-3.10-grpcio",
+     "title": "`google-cloud-bigquery` 3.42.3 (Jul 30) raises the Python floor to 3.10 and grpcio to 1.59.0",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "bigframes-2.47.0-aug-2.48.0-aug-12",
+     "title": "bigframes 2.47.0 (Aug 3) and 2.48.0 (Aug 12)",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "dataform-remote-mcp-server-ga-metadata-enrichment",
+     "title": "Dataform remote MCP server GA; metadata enrichment in SQLX (Preview)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cve-2026-14934-gcp-2026-047-critical",
+     "title": "CVE-2026-14934 / GCP-2026-047 — Critical (CVSS 9.4), already patched server-side, no action required",
+     "sev": "high",
+     "first_seen": "2026-08-06",
+     "days_seen": 6
+    },
+    {
+     "key": "grep-your-codebase-tabledata.insertall-insertall-.",
+     "title": "Grep your codebase for `tabledata.insertAll` and `insertAll`.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "replace-one-hand-rolled-incremental-diff-appends",
+     "title": "Replace one hand-rolled incremental diff with `APPENDS`.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "try-principal-scoped-reservation-assignments.",
+     "title": "Try principal-scoped reservation assignments.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "april-26-2027-bigquery-graph-core-processing",
+     "title": "April 26, 2027 — BigQuery Graph core processing leaves Standard edition and on-demand.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "dts-billing-label-change",
+     "title": "The DTS billing label already flipped (Aug 11).",
+     "sev": "normal",
+     "first_seen": "2026-07-08",
+     "days_seen": 4
+    },
+    {
+     "key": "google-cloud-bigquery-3.42.3-requires-python-3.10-grpcio",
+     "title": "`google-cloud-bigquery` ≥3.42.3 drops Python 3.9.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 3
+    },
+    {
+     "key": "two-odbc-drivers-now-ship.",
+     "title": "Two ODBC drivers now ship.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "hybrid-search-has-outage-track-record.",
+     "title": "Hybrid search has an outage track record.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "price-cross-cloud-connections-omni",
+     "title": "Cross-cloud connections vs. BigQuery Omni.",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "project-caps-scheduling-policies-preview-jul-13",
+     "title": "Project caps / scheduling policies (Preview, Jul 13, just outside this window).",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 2
+    },
+    {
+     "key": "mcp-being-wired-everything.",
+     "title": "MCP is being wired into everything.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "no-engine-pricing-optimizer-news-all.",
+     "title": "No engine, pricing, or optimizer news at all.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "redshift": {
+   "status": "urgent",
+   "items": [
+    {
+     "key": "patch-204-1.0.394035-aug-11-current-track",
+     "title": "Patch 204 (1.0.394035, Aug 11) is the substantive release of the window",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "iceberg-v3-upgrade-silently-changes-your-timestamp",
+     "title": "Iceberg v3 upgrade silently changes your timestamp mapping",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "p203-builds-kept-shipping-through-aug-17",
+     "title": "P203 builds kept shipping through Aug 17 (1.0.400034), after P204 landed Aug 11",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "tls-12-floor-aug2026",
+     "title": "TLS 1.2 minimum enforced from Aug 30, 2026 — provisioned *and* Serverless",
+     "sev": "urgent",
+     "first_seen": "2026-08-03",
+     "days_seen": 5
+    },
+    {
+     "key": "aug-17-2026-already-live-serverless",
+     "title": "Serverless KMS authorization check went live Aug 17",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "redshift-user-lockout-default-patch-204",
+     "title": "User lockout is on by default in P204",
+     "sev": "normal",
+     "first_seen": "2026-08-12",
+     "days_seen": 9
+    },
+    {
+     "key": "odbc-1x-eos-sep30",
+     "title": "ODBC 1.x end-of-support pushed from Jun 30 to Sep 30, 2026",
+     "sev": "normal",
+     "first_seen": "2026-07-07",
+     "days_seen": 10
+    },
+    {
+     "key": "python-udf-enforcement-begun-patch-203",
+     "title": "Python UDF end-of-support enforcement has begun",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 6
+    },
+    {
+     "key": "autoremediation-option-on-zero-etl-databases",
+     "title": "`AUTO_REMEDIATION` on zero-ETL integration databases (P204)",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 3
+    },
+    {
+     "key": "redshift-dynamodb-zero-etl-charset",
+     "title": "DynamoDB zero-ETL now honors `ACCEPTINVCHARS` and `TRUNCATECOLUMNS`",
+     "sev": "normal",
+     "first_seen": "2026-08-14",
+     "days_seen": 3
+    },
+    {
+     "key": "concurrency-scaling-now-covers-kds-connected-streaming",
+     "title": "Concurrency scaling for Kinesis Data Streams streaming-MV refreshes (P203)",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "redshift-serverless-3yr-all-upfront",
+     "title": "3-year All Upfront Serverless Reservations (Jul 24)",
+     "sev": "normal",
+     "first_seen": "2026-08-06",
+     "days_seen": 12
+    },
+    {
+     "key": "snapshot-billing-dedup",
+     "title": "Manual snapshot billing now dedupes shared blocks (Serverless + RG)",
+     "sev": "normal",
+     "first_seen": "2026-07-23",
+     "days_seen": 2
+    },
+    {
+     "key": "mv-auto-refresh-user-query",
+     "title": "MV auto-refresh priority change is still provisioned-only",
+     "sev": "normal",
+     "first_seen": "2026-07-25",
+     "days_seen": 3
+    },
+    {
+     "key": "rg-graviton-fills-size-range-reaches-govcloud",
+     "title": "RG (Graviton) fills out its size range and reaches GovCloud",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "trailing-track-availability-real-unlock",
+     "title": "Trailing-track availability is the real unlock",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "late-binding-view-parsing-moved-consumer-cluster",
+     "title": "Late-binding view parsing moved to the consumer (P204)",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "data-sharing-backend-skips-extra-copy-multi",
+     "title": "Data sharing backend skips an extra copy; multi-warehouse writes support more consumer sizes",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "data-api-longpolling-sessions-batch",
+     "title": "Data API gets long polling, `ListSessions`, and per-statement batch commits (Jul 29)",
+     "sev": "normal",
+     "first_seen": "2026-08-04",
+     "days_seen": 5
+    },
+    {
+     "key": "query-uuid-tracing-primitive-you-ve-faking",
+     "title": "`query_uuid` is the tracing primitive you've been faking",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "automating-redshift-patch-testing",
+     "title": "Automating Redshift patch testing",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "ai-powered-performance-recommendations-redshift",
+     "title": "AI-powered performance recommendations for Redshift",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "rg-deep-dive-faster-lower-cost-graviton",
+     "title": "RG deep dive: faster and lower cost, Graviton-powered",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "nine-days-tls-1.2.",
+     "title": "Nine days to TLS 1.2.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "serverless-restore",
+     "title": "Serverless snapshot restore preserves zero-ETL and S3 event integrations (P202+) — but only to the *same* namespace.",
+     "sev": "normal",
+     "first_seen": "2026-07-26",
+     "days_seen": 3
+    },
+    {
+     "key": "patch202-iceberg-lf-delete-permission",
+     "title": "Iceberg DELETE on Lake Formation tables now needs the DELETE permission (P202+).",
+     "sev": "normal",
+     "first_seen": "2026-07-12",
+     "days_seen": 4
+    },
+    {
+     "key": "automatic-distkey-assignment-now-reaches-tables-you",
+     "title": "Automatic DISTKEY assignment now reaches tables you may have deliberately hand-tuned.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "rg-positioning-ra3-successor-not-sibling.",
+     "title": "RG is positioning as the RA3 successor, not a sibling.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "serverless-provisioned-continue-diverge-autonomics.",
+     "title": "Serverless and provisioned continue to diverge on autonomics.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "iceberg-v3-landing-native-engine-not-spectrum",
+     "title": "Iceberg v3 landing in the native engine (not Spectrum)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "zero-etl-shifting-does-work-can-you",
+     "title": "Zero-ETL is shifting from \"does it work\" to \"can you operate it\"",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "fabric": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "fabric-runtime-2-0-ga",
+     "title": "Fabric Runtime 2.0 is GA — Spark 4.1, Delta Lake 4.2, Python 3.13, Java 21, Scala 2.13, Azure Linux 3.0, R 4.5.2",
+     "sev": "normal",
+     "first_seen": "2026-08-13",
+     "days_seen": 6
+    },
+    {
+     "key": "runtime-2.0-breaking-change-active-today",
+     "title": "Breaking change on Runtime 2.0 rollout: republish your Environments",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "native-execution-engine-python-scala-udfs-complex",
+     "title": "Native Execution Engine: Python/Scala UDFs and complex types now GA, plus vectorized CSV",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "several-nee-correctness-divergences-jvm-spark-are",
+     "title": "A pile of NEE correctness bugs are fixed only on Runtime 2.0",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "fabric-capacity-overview-events-ga",
+     "title": "Fabric capacity overview events are GA in Real-Time Hub — throttling telemetry as a stream",
+     "sev": "normal",
+     "first_seen": "2026-08-13",
+     "days_seen": 9
+    },
+    {
+     "key": "delivery-best-effort-dedupe-handle-gaps-yourself",
+     "title": "Delivery is best-effort — dedupe and handle gaps yourself",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "capacity-overage-preview-3-pay-you-go",
+     "title": "Capacity overage (preview): 3× pay-as-you-go to dodge throttling, not to go faster",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "onelake-storage-tiers-lifecycle-management-ga",
+     "title": "OneLake storage tiers and lifecycle management GA — the CU math is the trap, not the storage price",
+     "sev": "normal",
+     "first_seen": "2026-08-05",
+     "days_seen": 9
+    },
+    {
+     "key": "gateway-version-affects-mirroring-cu-cost",
+     "title": "Gateway version now affects your mirroring bill",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "custom-sql-pools-warehouse",
+     "title": "Custom SQL pools (preview) let you carve up warehouse compute by application name",
+     "sev": "normal",
+     "first_seen": "2026-07-14",
+     "days_seen": 2
+    },
+    {
+     "key": "downscaling-capacity-custom-sql-pools-can-strand",
+     "title": "Downscaling a capacity with custom SQL pools on can strand a pool at zero nodes",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "sql-endpoint-time-travel",
+     "title": "Time travel via the SQL analytics endpoint (preview) — with a real gating condition",
+     "sev": "normal",
+     "first_seen": "2026-07-26",
+     "days_seen": 2
+    },
+    {
+     "key": "usage-based-resource-estimations-ga",
+     "title": "Usage-based resource estimations GA",
+     "sev": "normal",
+     "first_seen": "2026-08-05",
+     "days_seen": 11
+    },
+    {
+     "key": "direct-lake-overview-substantially-refreshed-july-31",
+     "title": "The Direct Lake overview was substantially refreshed (July 31) — read the fallback table again",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "fabric-calculated-tables-direct-lake",
+     "title": "Calculated tables on Direct Lake on OneLake are now in preview",
+     "sev": "normal",
+     "first_seen": "2026-08-15",
+     "days_seen": 3
+    },
+    {
+     "key": "chris-webb-s-honest-direct-lake",
+     "title": "Chris Webb's case for Direct Lake (and the counterpoint for DirectQuery)",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 3
+    },
+    {
+     "key": "fabric-august-patch-tuesday-azure-sql",
+     "title": "CVE-2026-56162 — Azure SQL Database improper authentication, CVSS 10.0, already mitigated",
+     "sev": "high",
+     "first_seen": "2026-08-15",
+     "days_seen": 4
+    },
+    {
+     "key": "power-bi-rce-august-update-reporting-contradicts",
+     "title": "Power BI RCE in the August update — but the reporting contradicts itself on the CVE ID",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "still-no-retirement-date-synapse-dedicated-sql",
+     "title": "Still no retirement date for Synapse dedicated SQL pools",
+     "sev": "high",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "ai-assisted-synapse-fabric-migration-skills",
+     "title": "AI-assisted Synapse→Fabric migration skills and a Data Factory migration assessment are both preview",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 3
+    },
+    {
+     "key": "aws-glue-iceberg-catalog-dremio-iceberg-rest-catalog",
+     "title": "Mirroring preview surface expanded again: AWS Glue, Azure Monitor, Dremio catalog, Azure DB for MySQL, Google BigQuery",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 2
+    },
+    {
+     "key": "fabric-rti-july-ga-wave",
+     "title": "RTI: Real-Time Dashboards, Eventhouse folders, and update policies over accelerated shortcuts all GA",
+     "sev": "normal",
+     "first_seen": "2026-08-12",
+     "days_seen": 5
+    },
+    {
+     "key": "dbt-job-data-factory",
+     "title": "Data Factory: dbt Job, SSIS package invocation, conditional retries and approval gates — all preview",
+     "sev": "normal",
+     "first_seen": "2026-07-11",
+     "days_seen": 4
+    },
+    {
+     "key": "late-september-2026-runtime-2.0-becomes-default",
+     "title": "Late September 2026: Runtime 2.0 becomes the default",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "october-2026-power-bi-desktop-builds-march",
+     "title": "October 2026: Power BI Desktop builds from March 2026 or earlier lose save and publish.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "delta-lake-4.2-features-spark-experiences-only",
+     "title": "Delta Lake 4.2 features are experimental and Spark-only.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "doc-contradiction-aware",
+     "title": "Doc contradiction to be aware of",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "upgrade-premises-data-gateways-june-2026-build",
+     "title": "Upgrade on-premises data gateways to the June 2026 build or later",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "efficient-scaledown-with-remote-shuffle-manager-preview",
+     "title": "Efficient Scaledown (preview)",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "spark-live-pools-scaledown-livy",
+     "title": "Custom Live Pools and High Concurrency for Livy API (both preview)",
+     "sev": "normal",
+     "first_seen": "2026-07-11",
+     "days_seen": 2
+    },
+    {
+     "key": "fabric-core-mcp-server-preview",
+     "title": "Fabric Core MCP Server (preview)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "fabric-iq-plan-ga",
+     "title": "Fabric IQ / Ontology (preview) and Plan (GA)",
+     "sev": "normal",
+     "first_seen": "2026-07-30",
+     "days_seen": 3
+    }
+   ]
+  },
+  "challengers": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "v2-0-cyanoptera-preview-published-today",
+     "title": "v2.0 \"Cyanoptera\" preview — ~10,000 commits since 1.5, shipping this fall",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 3
+    },
+    {
+     "key": "storage-format-v2.0-becomes-default-icu-gone",
+     "title": "Storage format v2.0 becomes the default; ICU is gone",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "postgresql-derived-parser-replaced-custom-peg-parser",
+     "title": "PostgreSQL-derived parser replaced with a custom PEG parser — explicitly no user-facing breakage",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "stable-versioned-c-extension-api-abi-guarantees",
+     "title": "Stable, versioned C extension API with ABI guarantees + self-hosted extension repos",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "duckdb-1-5-5-jul-22-is",
+     "title": "1.5.5 (Jul 22) is a pure bugfix/perf patch — take it",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "async-i-o-deep-dive-jul-31",
+     "title": "Async I/O deep-dive (Jul 31) is the one to read if you query S3",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "aug-14-motherduck-cli-preview-windows-duckdb",
+     "title": "Aug 14: MotherDuck CLI (preview), Windows DuckDB CLI installer, `CREATE DATABASE` from remote `.duckdb` files",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "motherduck-create-share-default",
+     "title": "Aug 5: DuckDB 1.5.5 support, Flights in Sydney (ap-southeast-2) and Tokyo (ap-northeast-1); `CREATE SHARE` now defaults to auto-update on 1.5.5+",
+     "sev": "normal",
+     "first_seen": "2026-08-13",
+     "days_seen": 5
+    },
+    {
+     "key": "jul-23-platform-rbac-business-enterprise-cloudflare",
+     "title": "Jul 23: platform RBAC (Business/Enterprise), Cloudflare R2 read/write for persisted Iceberg catalogs, configurable Flight runtime limits",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "no-spec-release-window-v1.1-calendared-september",
+     "title": "No spec release in the window; v1.1 is calendared for September 2026",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "26.7-jul-22-carries-genuine-backward-incompatible",
+     "title": "26.7 (Jul 22) carries genuine backward-incompatible changes — read before upgrading",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "clickhouse-runtime-filters-granule-pruning",
+     "title": "Optimizer/runtime work worth benchmarking: JOIN runtime filters now prune granules via the primary key index",
+     "sev": "normal",
+     "first_seen": "2026-08-14",
+     "days_seen": 2
+    },
+    {
+     "key": "explain-analyze-finally-lands",
+     "title": "`EXPLAIN ANALYZE` finally lands, alongside vector-search additions",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "patch-cadence-heavy-26.7.3.19-aug-6-26.7.4.58",
+     "title": "Patch cadence is heavy: 26.7.3.19 (Aug 6) and 26.7.4.58 (Aug 19) inside four weeks",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "aug-17-credit-expiry-non-payment-notifications",
+     "title": "Aug 17: credit-expiry and non-payment notifications in the Notification Center",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "sticky-replica-routing-over-plain-https-private",
+     "title": "Jul 13: sticky replica routing via `?session_id=` (private preview, Enterprise/Scale)",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 3
+    },
+    {
+     "key": "4.0.8-aug-14-closes-unauthenticated-internal",
+     "title": "Doris 4.0.8 (Aug 14) closes several unauthenticated internal endpoints — patch this",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "doris-4.0.8-changes-defaults-upgrade-3.x",
+     "title": "4.0.8 behavior changes that will bite on upgrade from 3.x",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "4.0.8-correctness-fixes-group-rewrites-window-function",
+     "title": "4.0.8 correctness fixes in GROUP BY rewrites and window-function optimization",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "velodb-native-postgresql-cdc-doris-one-sql",
+     "title": "VeloDB: native PostgreSQL CDC into Doris in one SQL statement (Aug 21)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "4.1.x-got-no-patch-window-4.1.3-jul",
+     "title": "4.1.x got no patch in the window — 4.1.3 (Jul 13) is still the head of that line",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "4.0.14-aug-11-correctness-fix-you-should",
+     "title": "4.0.14 (Aug 11): a correctness fix you should read as a data-quality bug, not a feature",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "dependency-cve-cleanup-in-4-0-13",
+     "title": "Dependency CVE sweep across 4.0.13/4.0.14",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "4.1-ga-apr-13-shipped-no-patch",
+     "title": "4.1 (GA Apr 13) shipped no patch in the window; 4.1.3 (Jul 14) remains head",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "trino-is-quiet-483-jul-17-is",
+     "title": "Trino shipped nothing in the window — 483 (Jul 17–18) is still current",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "starburst-enterprise-482-e-sts-aug-18",
+     "title": "Starburst Enterprise 482-e STS (Aug 18) — SEP is a full OSS release behind",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "both-low-latency-serving-engines-silent-window",
+     "title": "Both low-latency serving engines were silent in the window",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "imply-java-17-removal-timeline-contradictory-imply",
+     "title": "Imply: Java 17 removal timeline is contradictory in Imply's own docs",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "26.1.10-august-26.1.9-july-maintenance-only-no",
+     "title": "26.1.10 (August) and 26.1.9 (July) are maintenance-only — no CVEs listed in either",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "still-no-stable-v1.3-v2.0-v1.2-nightly",
+     "title": "Still no stable v1.3/v2.0 — the v1.2 nightly + patch train continues",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "july-helios-notes-only-nothing-published-august",
+     "title": "July Helios notes only; nothing published for August as of today",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "doris-4.0.8-s-auth-hardening-has-no",
+     "title": "Doris 4.0.8's auth hardening has no CVE IDs.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "doris-upgrades-3.x-now-default-nereids-distribute",
+     "title": "Doris upgrades from 3.x now default to the Nereids distribute planner.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "starrocks-pre-4.0.14-could-return-wrong-results",
+     "title": "StarRocks pre-4.0.14 could return wrong results",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "clickhouse-26.7-breaks-server-credential-inheritance-s3.",
+     "title": "ClickHouse 26.7 breaks server-credential inheritance for S3.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "motherduck-create-share-defaults-auto-update",
+     "title": "MotherDuck `CREATE SHARE` now auto-updates by default",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "duckdb-2.0-changes-default-storage-format.",
+     "title": "DuckDB 2.0 changes the default storage format.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "celerdata-s-domain-now-301-redirects-phoenixdata.ai",
+     "title": "CelerData's domain now 301-redirects to phoenixdata.ai",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "clickhouse-s-public-security-changelog-https-clickhouse.com",
+     "title": "ClickHouse's public [security changelog](https://clickhouse.com/docs/whats-new/security-changelog) still has no 2026 entries",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "maintenance-attention-splitting-across-branches",
+     "title": "Maintenance attention is splitting across branches",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "starburst-trailing-trino-full-release",
+     "title": "Starburst trailing Trino by a full release",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "velodb-s-kwai-case-study-claims-145",
+     "title": "VeloDB's Kwai case study claims 145× faster A/B metrics and 72% less resource use vs Spark",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "dbhw": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "amd-epyc-venice-launch",
+     "title": "AMD EPYC 9006 \"Venice\" launched July 22–23 — 256 cores, 16 memory channels, PCIe 6.0, but you can't buy one until Q4.",
+     "sev": "normal",
+     "first_seen": "2026-07-16",
+     "days_seen": 2
+    },
+    {
+     "key": "every-venice-db-number-so-far",
+     "title": "Every Venice performance number in circulation is AMD's own — including the \"3.4× vs Xeon 6980P\" figure.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "intel-s-answer-now-2027-problem.",
+     "title": "Intel's answer is now a 2027 problem.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cost-performance-shift-ddr4-spot-now-nearly",
+     "title": "Cost/performance shift: DDR4 spot is now nearly 70% *more expensive per bit* than DDR5.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "server-dram-contract-prices-set-to-rise",
+     "title": "Server DRAM contract prices projected +13–18% QoQ in 3Q26, with RDIMM bit supply growing only 15–20% YoY.",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "nand-repricing-just-hard-top-5-vendor",
+     "title": "NAND is repricing just as hard: top-5 vendor revenue +77% QoQ in 2Q26 to $68.87 B, driven by enterprise SSD shortage.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "oem-list-prices-have-already-moved.",
+     "title": "OEM list prices have already moved.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "pcie6-enterprise-ssd",
+     "title": "FMS 2026 (Aug 4–6) was the PCIe 6.0 enterprise SSD coming-out party.",
+     "sev": "normal",
+     "first_seen": "2026-07-27",
+     "days_seen": 5
+    },
+    {
+     "key": "10m-random-read-iops-single-drive-now",
+     "title": "10M random-read IOPS on a single drive is now a shipping-ish product.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "liquid-cooled-ssds-arrived-fadu-showed-first",
+     "title": "Liquid-cooled SSDs arrived, and FADU showed the first complete working Gen6 drive.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "two-audited-tpc-ds-v4-100-tb",
+     "title": "Two audited TPC-DS v4 @ 100 TB results landed in-window — and the leaderboard moved ~5.6× on price/performance in under a year.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "no-tpc-h-tpc-c-results-window",
+     "title": "No new TPC-H or TPC-C results published in the window.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "cudf-26.08-shipped-aug-5-pandas-3.0",
+     "title": "cuDF 26.08 shipped Aug 5 with the pandas 3.0 branch merged into main.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "xnvme-nvmefs-work-duckdb-most-directly-actionable",
+     "title": "The xNVMe/nvmefs work on DuckDB is the most directly actionable storage research right now.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "rebuild-your-db-server-bom-spreadsheet-today",
+     "title": "Rebuild your DB server BOM spreadsheet with today's memory prices.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "don-t-let-venice-s-announcement-stall",
+     "title": "Don't let Venice's announcement stall a needed refresh.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "per-socket-rdimm-capacity-being-squeezed-market",
+     "title": "Per-socket RDIMM capacity is being squeezed by the market, not the silicon.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "i-could-not-complete-cve-sweep-cycle",
+     "title": "I could not complete a CVE sweep this cycle",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "vldb-2026-boston",
+     "title": "VLDB 2026 is Aug 31 – Sep 4 in Boston",
+     "sev": "normal",
+     "first_seen": "2026-08-15",
+     "days_seen": 3
+    },
+    {
+     "key": "cxl-fms-2026-still-all-panels-no",
+     "title": "CXL at FMS 2026 was still all panels, no products for DB workloads.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "kioxia-s-cxl-memory-module-built-xl",
+     "title": "Kioxia's CXL memory module built on XL-FLASH, and its AiSAQ vector-index software, were both shown at FMS",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "graviton5-memory-optimized-instances-ga",
+     "title": "AWS R9g (Graviton5 memory-optimized) still hasn't gone GA.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    }
+   ]
+  },
+  "appdev": {
+   "status": "urgent",
+   "items": [
+    {
+     "key": "go-1-27-rc-generic-methods-json-v2",
+     "title": "Go 1.27 ships `encoding/json/v2`, generic methods, and 30% cheaper small allocations",
+     "sev": "normal",
+     "first_seen": "2026-08-01",
+     "days_seen": 2
+    },
+    {
+     "key": "rust-1.98-adds-algebraic-float-methods-buffered",
+     "title": "Rust 1.98 adds algebraic float methods and buffered integer formatting",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "bun-1.4-first-release-rust-rewrite",
+     "title": "Bun 1.4 is the first release of the Rust rewrite",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "free-threading-gets-stable-abi-3",
+     "title": "Python 3.15.0rc1 is out; free-threading gets a stable ABI",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "net-11-preview-7-aug-11",
+     "title": ".NET 11 Preview 7 (Aug 11)",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 5
+    },
+    {
+     "key": "deno-2-9-2-2-9-5",
+     "title": "Deno 2.9.5 (Aug 6) adds an experimental QuickJS backend",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 3
+    },
+    {
+     "key": "npm-shai-hulud-worm-poisons-keyv",
+     "title": "npm worm (\"ChainDrop\"/Shai-Hulud lineage) hit keyv, cacheable, flat-cache — 1,300+ package versions",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 3
+    },
+    {
+     "key": "arrayref-0.3.10-crates.io-executed-remote-payload-build",
+     "title": "`arrayref` 0.3.10 on crates.io executed a remote payload at build time",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "go-1.26.6-1.25.13-fixed-10-cves-including",
+     "title": "Go 1.26.6 / 1.25.13 fixed 10 CVEs — including two GOPROXY/sumdb transparency-log bypasses",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "tls-patch-broke-h2c-six-days-later",
+     "title": "…and that TLS patch broke h2c six days later",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "nodejs-july-2026-11-cves",
+     "title": "Node.js July 29 security release: 11 CVEs, 3 high",
+     "sev": "normal",
+     "first_seen": "2026-07-28",
+     "days_seen": 10
+    },
+    {
+     "key": "valkey-patched-tls-use-after-free-enabling",
+     "title": "Valkey patched a TLS use-after-free enabling RCE",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "prisma-8-0-0-rc-2",
+     "title": "Prisma 8.0.0 is in RC with real breaking changes",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 2
+    },
+    {
+     "key": "sqlalchemy-2052-update-misalignment",
+     "title": "SQLAlchemy 2.0.52 (Aug 11) adds Python 3.15 support and fixes an ORM UPDATE correctness bug",
+     "sev": "normal",
+     "first_seen": "2026-08-12",
+     "days_seen": 5
+    },
+    {
+     "key": "otel-collector-queuebatch",
+     "title": "OTel Collector is migrating off the batch processor",
+     "sev": "normal",
+     "first_seen": "2026-08-09",
+     "days_seen": 4
+    },
+    {
+     "key": "npm-v12-install-scripts",
+     "title": "npm v12 disables install scripts by default",
+     "sev": "urgent",
+     "first_seen": "2026-07-09",
+     "days_seen": 8
+    },
+    {
+     "key": "uv-0120-breaking-changes",
+     "title": "uv 0.12.0 (Jul 28) is a breaking release",
+     "sev": "normal",
+     "first_seen": "2026-08-12",
+     "days_seen": 7
+    },
+    {
+     "key": "nuget-365-day-api-keys-gone",
+     "title": "NuGet API keys drop to 30-day max; all old keys die Nov 1",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "pypi-14-day-file-rejection",
+     "title": "PyPI now rejects new files on releases older than 14 days",
+     "sev": "normal",
+     "first_seen": "2026-08-14",
+     "days_seen": 2
+    },
+    {
+     "key": "h2c-users-who-patched-go-aug-13",
+     "title": "h2c users who patched Go on Aug 13 must go to 1.26.7/1.25.14 or 1.27.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "prisma-8-s-prisma.config.ts-requirement-bigint-aggregate",
+     "title": "Prisma 8's `prisma.config.ts` requirement and `bigint` aggregate returns",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "otel-collector",
+     "title": "OTel Collector batching defaults are shifting",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 3
+    },
+    {
+     "key": "nuget-publishers-nov-1-key-expiry.",
+     "title": "NuGet publishers: Nov 1 key expiry.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "jdk-27-ga-sep-14",
+     "title": "JDK 27 GA is September 14, 2026",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 3
+    },
+    {
+     "key": "free-threading-gets-stable-abi-3",
+     "title": "Python free-threading's stable ABI (PEP 803)",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 3
+    },
+    {
+     "key": "bun-rust-rewrite",
+     "title": "Bun's Zig→Rust rewrite",
+     "sev": "normal",
+     "first_seen": "2026-07-23",
+     "days_seen": 2
+    },
+    {
+     "key": "dprk-linked-actors-now-hitting-crates.io",
+     "title": "DPRK-linked actors are now hitting crates.io",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "aiappdev": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "mcp-rc-stateless-breaking",
+     "title": "MCP 2026-07-28 makes the protocol stateless — and this one really breaks things.",
+     "sev": "normal",
+     "first_seen": "2026-07-09",
+     "days_seen": 2
+    },
+    {
+     "key": "server-initiated-requests-are-replaced-by-multi",
+     "title": "Server-initiated requests are replaced by Multi Round-Trip Requests (MRTR).",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 5
+    },
+    {
+     "key": "roots-sampling-logging-and-oauth-dynamic-client",
+     "title": "Roots, Sampling, and Logging are formally deprecated; so is Dynamic Client Registration.",
+     "sev": "high",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "caching-routing-primitives-you-should-actually-use.",
+     "title": "Caching and routing primitives you should actually use.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "auth-hardening-worth-code-review.",
+     "title": "Auth hardening worth a code review.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "python-sdk-v2-0-0-renames",
+     "title": "MCP Python SDK v2.0.0 (Jul 28) — `FastMCP` is now `MCPServer`.",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "fastmcp-4-still-beta-top-sdk-v2.",
+     "title": "FastMCP 4 is still in beta on top of SDK v2.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "anthropic-mid-conversation-tool-changes-in-beta",
+     "title": "Anthropic: mid-conversation tool changes without blowing the prompt cache (beta).",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 4
+    },
+    {
+     "key": "anthropic-new-model-context-window-exceeded-stop",
+     "title": "Anthropic: new `model_context_window_exceeded` stop reason (SDK v0.119.0, Jul 23).",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "anthropic-files-api-agent-skills-skills-api",
+     "title": "Anthropic: Files API, Agent Skills/Skills API, and computer use all went GA on Aug 19 — and GA changes the wire format.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "anthropic-fallbacks-gains-a-default-mode",
+     "title": "Anthropic: `fallbacks` gets a `\"default\"` mode.",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 4
+    },
+    {
+     "key": "programmatic-tool-calling-claude-openai",
+     "title": "OpenAI: Programmatic Tool Calling in the Responses API.",
+     "sev": "normal",
+     "first_seen": "2026-07-31",
+     "days_seen": 2
+    },
+    {
+     "key": "openai-prompt-caching-dashboard-inline-moderation-scores.",
+     "title": "OpenAI: prompt-caching dashboard and inline moderation scores.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "gemini-deprecates-temperature-top-p-top",
+     "title": "Gemini deprecated `temperature`, `top_p`, and `top_k` on its latest models (Jul 21).",
+     "sev": "high",
+     "first_seen": "2026-08-09",
+     "days_seen": 6
+    },
+    {
+     "key": "pydantic-ai-v2.33.0-aug-20-requires-anthropic",
+     "title": "Pydantic AI v2.33.0 (Aug 20) requires `anthropic>=1.0.0` and httpx2.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "openai-agents-sdk-v0-20-mcp-v2",
+     "title": "OpenAI Agents SDK v0.20.0–v0.22.0: MCP v1+v2 dual support, and two quiet breaking changes.",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 3
+    },
+    {
+     "key": "claude-agent-sdk-python-0.2.140-aug",
+     "title": "Claude Agent SDK (Python) added MCP 2.x for in-process SDK servers.",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "langgraph-shipped-incrementally-trace-policy-add-node",
+     "title": "LangGraph shipped incrementally: `trace_policy` on `add_node` (1.2.11, Aug 11) and checkpoint TTL.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "quiet-month-say-plainly.",
+     "title": "Quiet month — say it plainly.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "otel-genai-semantic-conventions-still-not-stable",
+     "title": "OTel GenAI semantic conventions are still not stable, and they no longer live where you think.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "langfuse-v4.9-v4.16-shipped-v3-api-sunset",
+     "title": "Langfuse v4.9–v4.16 shipped, with a v3 API sunset date now on the calendar.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "litellm-quietly-building-eval-router.",
+     "title": "LiteLLM is quietly building eval into the router.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "vllm-v0-27-0-aug-10",
+     "title": "vLLM v0.27.0 (Aug 10) deleted PagedAttention.",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "sglang-v0.5.17-aug-8-moved-network-layer",
+     "title": "SGLang v0.5.17 (Aug 8) moved its network layer from Python to multi-threaded Rust and added session-reference-aware radix caching.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "ollama-repeat-penalty-default-change",
+     "title": "Ollama changed a sampling default: repeat penalty 1.1 → 1.0 (off) in v0.32.10.",
+     "sev": "normal",
+     "first_seen": "2026-08-14",
+     "days_seen": 2
+    },
+    {
+     "key": "litellm-v1.97.0-current-stable-aug-16-.",
+     "title": "LiteLLM v1.97.0 is the current stable (Aug 16).",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "pydantic-ai-ghsa-h4xc-3qfq-jf93-cvss",
+     "title": "Pydantic AI dev web UI: High-severity RCE-adjacent flaw, patched (GHSA-h4xc-3qfq-jf93, CVSS 7.6, Aug 12).",
+     "sev": "high",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "same-ui-second-bug-dns-rebinding-ghsa",
+     "title": "Same UI, second bug: DNS rebinding (GHSA-q2xc-rrxj-58x9, CVSS 6.4, Aug 14).",
+     "sev": "high",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "three-more-pydantic-ai-advisories-landed-same",
+     "title": "Three more Pydantic AI advisories worth a glance.",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "anthropic-ships-inference-hooks-beta-for",
+     "title": "Anthropic shipped inference hooks (beta, Enterprise).",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 3
+    },
+    {
+     "key": "httpx2-coming-your-lockfile.",
+     "title": "httpx2 is coming for your lockfile.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "anthropic-beta-headers-now-change-response-shapes",
+     "title": "Anthropic beta headers now change response shapes on removal, not just on addition.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "anthropic-thinking-type-disabled-now-400s-at",
+     "title": "Claude Opus 5 rejects `thinking: {\"type\": \"disabled\"}` at effort `xhigh` or `max` with a 400",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 6
+    },
+    {
+     "key": "two-silent-behavior-changes-will-move-your",
+     "title": "Two silent behavior changes that will move your eval numbers",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "gemini-robotics-er-shutdown-aug-31",
+     "title": "`gemini-robotics-er-1.6-preview` shuts down Aug 31, 2026",
+     "sev": "normal",
+     "first_seen": "2026-08-15",
+     "days_seen": 2
+    },
+    {
+     "key": "stateless-turn-bigger-mcp.",
+     "title": "The stateless turn is bigger than MCP.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "tool-orchestration-moving-sandbox.",
+     "title": "Tool orchestration is moving into a sandbox.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "llm-judge-migrating-offline-eval-request-path",
+     "title": "LLM-as-judge is migrating from offline eval into the request path",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "otel-genai-conventions-separate-repo-no-tagged",
+     "title": "OTel GenAI conventions in a separate repo with no tagged release",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "langfuse-v3-api-sunset-nov-16-2026",
+     "title": "Langfuse v3 API sunset Nov 16, 2026",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "pydantic-ai-2-29-adds-fastmcp",
+     "title": "MCP SDK v2 / FastMCP 4 lag.",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 3
+    }
+   ]
+  },
+  "frontend": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "next.js-one-critical-cve-ships-aug-26",
+     "title": "Next.js: one critical CVE ships Aug 26 (16.3.3 / 15.5.24)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "nextjs-july-9-cves",
+     "title": "Next.js July release: 9 CVEs, 4 HIGH — fixed in 16.2.11 / 15.5.21",
+     "sev": "normal",
+     "first_seen": "2026-07-27",
+     "days_seen": 3
+    },
+    {
+     "key": "chaindrop-shai-hulud-worm-444-npm-packages",
+     "title": "ChainDrop / Shai-Hulud worm: 444 npm packages, 2,212 versions, ~2B monthly downloads",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "nuxt-4-5-1-3-21",
+     "title": "Nuxt 4.5.1 / 3.21.10 — 8 advisories, plus a CRITICAL dev-only RCE in @nuxt/devtools",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "next.js-16.3-aug-3-biggest-release-since",
+     "title": "Next.js 16.3 (Aug 3) — the biggest release since 16.0, and it telegraphs the next major",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "sveltekit-3-hits-public-preview-remote-functions",
+     "title": "SvelteKit 3 hits public preview — remote functions become a first-class RPC layer",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "astro-7-2-0-aug-6",
+     "title": "Astro 7.2 (Aug 6): experimental incremental static builds",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 4
+    },
+    {
+     "key": "nuxt-4-5-vite8-rspack2",
+     "title": "Nuxt 4.5 (Jul 18): Vite 8 + Rspack 2, experimental SSR streaming",
+     "sev": "normal",
+     "first_seen": "2026-07-23",
+     "days_seen": 2
+    },
+    {
+     "key": "typescript-7-go-native-ga",
+     "title": "TypeScript 7.0 is GA (Jul 8) — the Go-native compiler, and it is not a drop-in",
+     "sev": "normal",
+     "first_seen": "2026-07-16",
+     "days_seen": 5
+    },
+    {
+     "key": "bun-1.4-aug-20-zig-rust-rewrite",
+     "title": "Bun 1.4 (Aug 20): the Zig→Rust rewrite shipped",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "playwright-1-62-component-testing",
+     "title": "Playwright 1.62 (Jul 24): component testing rebuilt around stories and galleries",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 6
+    },
+    {
+     "key": "vitest-5.0-rc-aug-17",
+     "title": "Vitest 5.0 is in RC",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "node.js-26.7.0-current-aug-5-24.19.0-lts",
+     "title": "Node.js: 26.7.0 Current (Aug 5), 24.19.0 LTS (Aug 3)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "chrome-151-jul-28-ships-soft",
+     "title": "Chrome 151 (Jul 28)",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 3
+    },
+    {
+     "key": "firefox-154-aug-18-tree-counting-css",
+     "title": "Firefox 154 (Aug 18): tree-counting CSS goes stable",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "firefox-153-jul-21-wasm-js-promise",
+     "title": "Firefox 153 (Jul 21): WASM JS Promise Integration ships",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "safari-26.6-jul-27-maintenance-drop",
+     "title": "Safari 26.6 (Jul 27) is a maintenance drop",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "chrome-151-stable-jul-28-ships-real",
+     "title": "Chrome 151 ships SPA performance measurement as stable",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "turn-next-js-16-3-s",
+     "title": "Next.js 16.3's Instant Insights turns navigation latency into a lint error",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "tc39-115th-meeting-jul-20-23",
+     "title": "TC39's 115th meeting ran Jul 20–23",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "baseline-2026-far-declarative-shadow-dom-trusted",
+     "title": "Baseline 2026 so far: Declarative Shadow DOM, Trusted Types, zstd, Navigation API, container style queries, `field-sizing`, `:open`, WebTransport, shared workers",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "aug-26-next.js-critical-patch.",
+     "title": "Aug 26: Next.js critical patch.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "chrome-142-view-transition-position",
+     "title": "`::view-transition` moved from `position: fixed` to `absolute` in Chrome 151.",
+     "sev": "normal",
+     "first_seen": "2026-08-01",
+     "days_seen": 2
+    },
+    {
+     "key": "nuxt-devtools-3.3.0-critical-local-rce.",
+     "title": "`@nuxt/devtools` ≤3.3.0 is a critical local RCE.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "typescript-7-s-types-default-breaks-global",
+     "title": "TypeScript 7's `types: []` default breaks global type declarations silently.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "vitest-5-s-test-name-separator",
+     "title": "Vitest 5's `>` test-name separator",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "angular-22-requires-typescript-6-drops-node",
+     "title": "Angular 22 requires TypeScript 6 and drops Node 20",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "rust-rewrites-now-toolchain-default-posture.",
+     "title": "Rust rewrites are now the toolchain default posture.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "agent-facing-tooling-has-become-first-class",
+     "title": "Agent-facing tooling has become a first-class release feature.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "llm-assisted-vulnerability-discovery-reshaping-release-cadence.",
+     "title": "LLM-assisted vulnerability discovery is reshaping release cadence.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "rpc-shaped-data-layers-converging.",
+     "title": "RPC-shaped data layers are converging.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cloudflare-access-workers",
+     "title": "Cloudflare Access for Workers",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "devops": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "gateway-api-16-tcproute-udproute-standard",
+     "title": "Gateway API v1.6 — TCPRoute and UDPRoute are now Standard `v1`",
+     "sev": "normal",
+     "first_seen": "2026-08-08",
+     "days_seen": 9
+    },
+    {
+     "key": "gateway-api-1-6",
+     "title": "Gateway API experimental resources moved to `gateway.networking.x-k8s.io` with an `X` prefix",
+     "sev": "normal",
+     "first_seen": "2026-07-30",
+     "days_seen": 4
+    },
+    {
+     "key": "v1-37-sneak-peek-kube-proxy",
+     "title": "K8s v1.37 sneak peek: kube-proxy IPVS mode deprecated",
+     "sev": "high",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "v1-37-removes-static-pod-api",
+     "title": "v1.37 removes static Pod references to Secrets/ConfigMaps",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "cgroup-v1-phase-continues-failcgroupv1-still",
+     "title": "cgroup v1 phase-out continues to bite",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "kyaml-gets-an-explainer",
+     "title": "KYAML gets an explainer — a strict YAML subset for manifests",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "crossplane-v2.4.0-aug-20-ships-four-breaking",
+     "title": "Crossplane v2.4.0 (Aug 20) ships four breaking changes",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "crossplane-2.4-adds-safe-start-providers-scale",
+     "title": "Crossplane 2.4 adds safe-start providers that scale to zero",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "terraform-1.15.9-fixes-cve-2026-14978-go",
+     "title": "Terraform 1.15.9 fixes CVE-2026-14978 in go-slug",
+     "sev": "high",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "terraform-1.16.0-rc2-aug-19-import-blocks",
+     "title": "Terraform 1.16.0-rc2 (Aug 19) — import blocks inside modules, resource action triggers, `store` block",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "opentofu-1.12.6-1.11.14-aug-19-two-init",
+     "title": "OpenTofu 1.12.6 / 1.11.14 (Aug 19) fix two security issues; v1.11 is now EOL",
+     "sev": "high",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "pulumi-shipped-9-releases-window-3.252-3.259",
+     "title": "Pulumi shipped ~9 releases in the window (3.252 → 3.259)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "argo-cd-v3-5-0-aug-4",
+     "title": "Argo CD v3.5.0 (Aug 4) migrates from Helm 3 to Helm 4",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "argocd-350-helm-4",
+     "title": "Argo CD 3.5.1 / 3.4.7 / 3.3.14 (Aug 12) harden secret masking",
+     "sev": "normal",
+     "first_seen": "2026-08-13",
+     "days_seen": 6
+    },
+    {
+     "key": "flux-v2.9.4-aug-7-security-fixes-plus",
+     "title": "Flux v2.9.4 (Aug 7) — security fixes plus a CRD schema update you must apply",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "github-actions-windows-11-arm64-vs2026-runner",
+     "title": "GitHub Actions: Windows 11 arm64 VS2026 runner image is GA",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "containerd-checkpoint-restore-disabled",
+     "title": "containerd 2.3.4 / 2.2.7 (Aug 12) disable checkpoint restore in `CreateContainer` by default",
+     "sev": "normal",
+     "first_seen": "2026-08-13",
+     "days_seen": 4
+    },
+    {
+     "key": "containerd-2-4-0-beta-0",
+     "title": "containerd 2.4.0-beta.0 (Aug 10) contains breaking changes",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "buildkit-032-oci-attestations",
+     "title": "BuildKit v0.32.0 (Jul 29): attestations now default to OCI artifact descriptors",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 7
+    },
+    {
+     "key": "docker-2970-embedded-containerd",
+     "title": "Docker Engine 29.7.0 (Jul 30) — experimental embedded containerd, `--mount type=image` now stable",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 3
+    },
+    {
+     "key": "docker-25.0.17-aug-13-backports-may",
+     "title": "Docker 25.0.17 (Aug 13) backports three High symlink/`docker cp` CVEs to the old LTS branch",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "cilium-1.20.0-jul-29-gateway-api-v1.6.1",
+     "title": "Cilium 1.20.0 (Jul 29) — Gateway API v1.6.1, automatic netkit selection, datapath plugins",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cilium-1.20.0-jul-29-then-1.20.1-1.19.7",
+     "title": "Cilium 1.20.1 / 1.19.7 / 1.18.13 (Aug 18) fix a silent CIDR policy bypass",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "otel-collector-v1-64-0-v0-158",
+     "title": "OTel Collector v0.158.0 (Aug 4): `processor/queuebatch` replaces the legacy batch processor",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "otel-collector-0-157-histogram",
+     "title": "OTel Collector v0.157.0 changed histogram bucket boundaries for batch send size metrics",
+     "sev": "normal",
+     "first_seen": "2026-07-25",
+     "days_seen": 3
+    },
+    {
+     "key": "prometheus-3.14.0-aug-17-oci-service-discovery",
+     "title": "Prometheus 3.14.0 (Aug 17) — OCI service discovery, plus a TSDB data-loss fix",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "prometheus-3.13.2-lts-jul-29-preallocates-active",
+     "title": "Prometheus 3.13.2 LTS (Jul 29) preallocates the active query tracker file",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "grafana-13-2-0-aug-18",
+     "title": "Grafana 13.2.0 and a five-branch patch train (Aug 18) address CVE-2026-17183",
+     "sev": "high",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "eks-control-plane-parameters",
+     "title": "EKS adds advanced Kubernetes control plane configuration (Aug 12)",
+     "sev": "normal",
+     "first_seen": "2026-08-13",
+     "days_seen": 5
+    },
+    {
+     "key": "eks-certificate-authority-rotation-now-managed-non",
+     "title": "EKS certificate authority rotation is now a managed, non-disruptive lifecycle",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "karpenter-1-9-2-lts",
+     "title": "ARC zonal shift now supports EKS Auto Mode and Karpenter (Jul 23)",
+     "sev": "normal",
+     "first_seen": "2026-08-13",
+     "days_seen": 3
+    },
+    {
+     "key": "eks-auto-mode-node-failure-detection-repair",
+     "title": "EKS Auto Mode node failure detection, repair and diagnosis explained (Aug 5)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "migrate-one-gateway-off-v1alpha2-tcproute-udproute.",
+     "title": "Migrate one Gateway off `v1alpha2` TCPRoute/UDPRoute.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "audit-your-kube-proxy-mode-cgroup-version",
+     "title": "Audit your kube-proxy mode and cgroup version across every node pool.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "try-kyaml-output-your-noisiest-manifest.",
+     "title": "Try KYAML output on your noisiest manifest.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "k8s-1-34-maintenance-aug-27",
+     "title": "Kubernetes v1.34 enters maintenance mode Aug 27, 2026 — six days out.",
+     "sev": "normal",
+     "first_seen": "2026-08-13",
+     "days_seen": 4
+    },
+    {
+     "key": "kubernetes-v1-37-0-rc-0-aug",
+     "title": "Kubernetes v1.37.0 GA lands Wednesday Aug 26, 2026.",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "helm-3-s-final-feature-release-sept",
+     "title": "Helm 3's final feature release is Sept 9, 2026; security patches end February 2027.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "crossplane-2.4-will-churn-every-package-revision",
+     "title": "Crossplane 2.4 will churn every package revision on upgrade.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "opentofu-v1.11-end-line-1.11.14.",
+     "title": "OpenTofu v1.11 is end-of-line as of 1.11.14.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "docker-2970-embedded-containerd",
+     "title": "Docker's experimental embedded-containerd",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 4
+    },
+    {
+     "key": "cilium-1-20-0-jul-29-2026",
+     "title": "Cilium's extensible datapath plugins",
+     "sev": "normal",
+     "first_seen": "2026-08-07",
+     "days_seen": 3
+    },
+    {
+     "key": "otel-collector-config-schema-roadmap-phase-1",
+     "title": "OTel Collector config schema roadmap (Phase 1)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "karpenter-v1.14-s-dra-allocator-balanced-consolidation",
+     "title": "Karpenter v1.14's DRA allocator and balanced consolidation policy",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "contradiction-flag",
+     "title": "Contradiction to flag",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "mobile": {
+   "status": "urgent",
+   "items": [
+    {
+     "key": "google-play-api36-deadline",
+     "title": "Google Play: target API 36 required Aug 31, 2026",
+     "sev": "normal",
+     "first_seen": "2026-07-07",
+     "days_seen": 12
+    },
+    {
+     "key": "2026-09-30-register-every-app-in",
+     "title": "Google Play: register every app in Play Console by Sept 30, 2026",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "google-play-anonymous-random-chat-rules",
+     "title": "Google Play: age-restricted content policy extends to anonymous/random chat, Aug 26",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "apple-eu-core-technology-fee-replaced-5",
+     "title": "Apple EU: Core Technology Fee replaced by a 5% Core Technology Commission, Oct 1, 2026",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "apple-korea-grac-age-rating-overrides-now",
+     "title": "Apple: Korea GRAC age-rating overrides now available",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "xcode-27-beta-5-aug-10-ios",
+     "title": "iOS 27 beta 6 and Xcode 27 beta 5 are out — GM season starts now",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "uiscene-lifecycle-looks-mandatory-ios-27",
+     "title": "UIScene lifecycle looks mandatory on iOS 27",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "xcode-266-stable",
+     "title": "Swift 6.3.3 is the current stable; 6.4 previews focus on Embedded",
+     "sev": "normal",
+     "first_seen": "2026-07-09",
+     "days_seen": 3
+    },
+    {
+     "key": "android17-beta-breaking",
+     "title": "Android 17 (API 37) behavior changes are the real work item behind the deadline",
+     "sev": "high",
+     "first_seen": "2026-07-12",
+     "days_seen": 2
+    },
+    {
+     "key": "agp-9-3-optimization-dsl",
+     "title": "AGP 9.3.0 (July) — Gradle 9.5 and JDK 17 minimums, max API 37",
+     "sev": "normal",
+     "first_seen": "2026-08-04",
+     "days_seen": 4
+    },
+    {
+     "key": "android-studio-quail-3-went-stable-july",
+     "title": "Android Studio Quail 3 went stable July 30; Quail 4 is at RC",
+     "sev": "normal",
+     "first_seen": "2026-08-09",
+     "days_seen": 3
+    },
+    {
+     "key": "kotlin-2-4-10-jul-14",
+     "title": "Kotlin 2.4.10 is current stable (July 14); 2.4.20 tooling release due September",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "compose-bom-2026-08-00-hard",
+     "title": "Compose BOM 2026.08.00 lands with compileSdk 37 and an AGP 9.1.1 floor",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "two-compose-items-worth-acting",
+     "title": "Two Compose items worth acting on",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "react-native-0.87-aug-11-strict-typescript",
+     "title": "React Native 0.87 (Aug 11) — strict TypeScript API is now the default",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "rn-0.87-also-ships-experimental-swiftpm-agp",
+     "title": "RN 0.87 also ships experimental SwiftPM and AGP 9 support",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "flutter-3-47-stable-aug-12",
+     "title": "Flutter 3.47 (Aug 12) — Material and Cupertino move out of the SDK",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "compose-multiplatform-111",
+     "title": "Compose Multiplatform 1.11.1 — native iOS text input, and real breaking changes",
+     "sev": "normal",
+     "first_seen": "2026-07-13",
+     "days_seen": 2
+    },
+    {
+     "key": "android-17-enforces-per-app-memory-limits",
+     "title": "Android 17 enforces per-app memory limits — and will kill you for exceeding them",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "r8-configuration-analyzer-tinder-cut-cold-start",
+     "title": "R8 Configuration Analyzer: Tinder cut cold start 47% and APK size 29%",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "expo-eas-observe-reaches-general-availability-today",
+     "title": "EAS Observe hit general availability Aug 20",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "expo-sdk-57-stable-rn086",
+     "title": "Expo SDK 57 remains the current SDK (June 30, RN 0.86) with explicitly no breaking changes",
+     "sev": "normal",
+     "first_seen": "2026-07-21",
+     "days_seen": 3
+    },
+    {
+     "key": "aug-26",
+     "title": "Aug 26",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "aug-31-2026-20-days",
+     "title": "Aug 31",
+     "sev": "urgent",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "sept-30-2026-50-days",
+     "title": "Sept 30",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "oct-1",
+     "title": "Oct 1",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "november",
+     "title": "November",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "jetpack-xr-core-libraries-hit-beta-aug",
+     "title": "Jetpack XR SDK core libraries reached beta",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    }
+   ]
+  },
+  "aidaily": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "anthropic-ships-ga-wave-computer-use-browser",
+     "title": "Anthropic ships a GA wave: computer use, browser use, Files API, Skills API (Aug 19)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "ox-alpha-anonymous-1m-context-reasoning-model",
+     "title": "\"Ox Alpha\" — anonymous 1M-context reasoning model, free on OpenRouter (Aug 20)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "deepseek-vision-model-surfaces-deepseek-v4-flash",
+     "title": "DeepSeek vision model surfaces: `deepseek-v4-flash-vision-exp`",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "glm-5.2-turbo-lands-gateways-breaking-now",
+     "title": "GLM-5.2 Turbo lands on gateways (breaking now, released Aug 17)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "openai-prompt-caching-dashboard-transparent-background-images",
+     "title": "OpenAI: prompt-caching dashboard + transparent-background images (Aug 20)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "codex-cli-0.149.0-aug-20-0.148.0-aug",
+     "title": "Codex CLI 0.149.0 (Aug 20) and 0.148.0 (Aug 18)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cursor-builds-cloud-agents-aug-13",
+     "title": "Cursor Cloud Agents get long-running semantics (Aug 19)",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "claude-code-2.1.238-fixes-unbounded-memory-leak",
+     "title": "Claude Code 2.1.238 fixes an unbounded memory leak in long sessions",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "zed-1.16.1-aug-19-1.15.1-aug-18",
+     "title": "Zed 1.16.1 (Aug 19), 1.15.1 (Aug 18)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "copilot-jetbrains-gets-enterprise-managed-settings-codeql",
+     "title": "Copilot for JetBrains gets enterprise managed settings (Aug 18)",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "llama.cpp-only-major-serving-project-shipping-window",
+     "title": "llama.cpp is the only major serving project shipping in this window",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "vllm-sglang-quiet",
+     "title": "vLLM and SGLang were quiet",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "every-model-cheats-21-22-frontier-models",
+     "title": "\"Every Model Cheats\" — 21 of 22 frontier models cheated on Cybench",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "google-diffusiongemma-report",
+     "title": "DiffusionGemma technical report",
+     "sev": "normal",
+     "first_seen": "2026-08-06",
+     "days_seen": 2
+    },
+    {
+     "key": "huzzah",
+     "title": "Huzzah",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "125m-model-autocompletes-piano-device",
+     "title": "A 125M model that autocompletes piano on-device",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "vomit",
+     "title": "`vomit`",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "you-migrate-computer-use-computer-toolset-20260801",
+     "title": "If you migrate computer use to `computer_toolset_20260801`, read the migration note first.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "files-api-ga-changes-response-format-header",
+     "title": "Files API GA changes response format for header-less requests.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "anthropic-sonnet-5-price-increase-cancelled",
+     "title": "Sonnet 5's Sept 1 price increase is cancelled",
+     "sev": "normal",
+     "first_seen": "2026-08-12",
+     "days_seen": 5
+    },
+    {
+     "key": "no-api-deprecation-cutoffs-land-next-14",
+     "title": "No API deprecation cutoffs land in the next 14 days",
+     "sev": "high",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "agents.md-pressure-claude-code-back.",
+     "title": "AGENTS.md pressure on Claude Code is back.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "gemini-s-last-real-dev-facing-change",
+     "title": "Gemini's last real dev-facing change was Aug 13",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "openai-s-gpt-5.6-safety-page-carries",
+     "title": "OpenAI's GPT-5.6 safety page carries a self-harm eval regression",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "reported-unconfirmed",
+     "title": "Reported but unconfirmed",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "nl2sql": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "attnlink-attention-schema-linking",
+     "title": "AttnLink turns the model's own attention into schema-link scores",
+     "sev": "normal",
+     "first_seen": "2026-08-04",
+     "days_seen": 7
+    },
+    {
+     "key": "mdb-link-multi-database",
+     "title": "MDB-Link: schema linking when you don't know which database to hit",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 6
+    },
+    {
+     "key": "rosetta-recovering-column-meaning-when-names-garbage",
+     "title": "Rosetta: recovering column meaning when the names are garbage",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "polaris-table-descriptions-retrieval-feedback-arxiv",
+     "title": "Polaris trains table descriptions against retrieval, not fluency",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "mira-reuse-repairs-item-level-gated-database",
+     "title": "MIRA — reuse repairs at the item level, gated on database evidence",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "crystallization-controlled-measurement-whether-stored-repairs-actually",
+     "title": "\"Crystallization\" — a controlled measurement of whether stored repairs actually transfer",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "acts-sql-agentic-and-critic-oriented",
+     "title": "ACTS-SQL — training-free correction as tree search with backtracking",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 3
+    },
+    {
+     "key": "safeql-make-dbms-active-participant-refinement",
+     "title": "SafeQL makes the DBMS an active participant in repair",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "tracesql-reference-free-verification-you-can-actually",
+     "title": "TraceSQL — reference-free verification you can actually debug",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "bounded-semantic-planning-move-stochastic-boundary-don",
+     "title": "Bounded Semantic Planning: move the stochastic boundary, don't try to make the LLM careful",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "business-truth-sql-accuracy-2608-09254",
+     "title": "\"Business Truth, not SQL Accuracy\" — the failure taxonomy no execution-match metric can score",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "semplan-says-semantic-layer-trade-off-not",
+     "title": "SemPlan says the semantic layer is a trade-off, not a win",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "never-the-number-structural-abstention-2608",
+     "title": "\"Never the Number\" — structural abstention as an architecture pattern",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 3
+    },
+    {
+     "key": "three-number-spread-whole-story",
+     "title": "The three-number spread is the whole story",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "plsqlbench-oracle-first-benchmark-executable-procedural-database",
+     "title": "PLSQLBench (Oracle) — the first benchmark for executable procedural database code",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "spider2-aifunc",
+     "title": "Spider 2.0-AIFunc — LLM functions inside SQL, and agent scaffolds that don't transfer",
+     "sev": "normal",
+     "first_seen": "2026-07-21",
+     "days_seen": 5
+    },
+    {
+     "key": "text-to-sql-rbac-benchmark",
+     "title": "Text-to-SQL under role-based access control",
+     "sev": "normal",
+     "first_seen": "2026-07-31",
+     "days_seen": 3
+    },
+    {
+     "key": "abiss-evaluating-against-simulated-users-who-ask",
+     "title": "ABISS — evaluating against simulated users who ask bad questions",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "dataclaweval-100-end-end-data-engineering",
+     "title": "DataClawEval — 100 end-to-end data engineering tasks from production code, deterministically graded",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "dblifebench-specialized-text-sql-models-catastrophically",
+     "title": "DBLifeBench: specialized text-to-SQL models catastrophically forget everything else",
+     "sev": "normal",
+     "first_seen": "2026-08-08",
+     "days_seen": 5
+    },
+    {
+     "key": "agentic-sql-revisited-2608-15389",
+     "title": "Agentic-SQL Revisited — a provenance-tracked leaderboard aggregation",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 4
+    },
+    {
+     "key": "vanna-archived",
+     "title": "Vanna is archived",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "tytan-auto-constructing-semantic-layer-instead-hand",
+     "title": "Tytan — auto-constructing the semantic layer instead of hand-writing it",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "read-crystallization-paper-2608.07213-https-arxiv.org-abs",
+     "title": "Read the crystallization paper ([2608.07213](https://arxiv.org/abs/2608.07213)) and MIRA ([2608.06950](https://arxiv.org/abs/2608.06950)) back to back.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "run-attnlink-idea-against-your-own-schema.",
+     "title": "Then run the AttnLink idea against your own schema.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "spider-2-0-snow-evaluation-degraded",
+     "title": "Spider 2.0-Snow evaluation is down.",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 3
+    },
+    {
+     "key": "semantic-layer-contradiction-unresolved-s-decision-you",
+     "title": "The semantic-layer contradiction is unresolved and it's the decision you're probably making this quarter.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "rl-sql-getting-more-surgical-about-credit",
+     "title": "RL for SQL is getting more surgical about credit assignment.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "budget-first-class-planning-variable.",
+     "title": "Budget as a first-class planning variable.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "small-model-economics-being-measured-properly.",
+     "title": "Small-model economics are being measured properly.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "access-control-safety-becoming-benchmarkable",
+     "title": "Access control and safety are becoming benchmarkable",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  },
+  "aihw": {
+   "status": "ok",
+   "items": [
+    {
+     "key": "amd-mi455x-specs-public-they-capacity-rubin",
+     "title": "AMD MI455X specs are public and they out-capacity Rubin on memory",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "vera-rubin-nvl72-vs-gb200-nvl72-2",
+     "title": "Vera Rubin NVL72 vs GB200 NVL72: 2–4× output tokens per megawatt, 1.5–3× lower cost per million output tokens",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cerebras-cs-4-nexus-wse-3-turbo-doubles",
+     "title": "Cerebras doubles WSE-3 clock to ~2.8 GHz and ships rack-scale \"Nexus\" CS-4",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "amd-buys-taalas-weights-burned-into-cmos",
+     "title": "AMD buys Taalas — model weights baked into ROM",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 3
+    },
+    {
+     "key": "hbm4-scarcity-now-bending-nvidia-s-roadmap",
+     "title": "HBM4 scarcity is now bending NVIDIA's roadmap, not just its lead times",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "hbm4-12-hi-36gb-running-500-600",
+     "title": "HBM4 12-Hi 36GB is running $500–600+ per stack, ~55–70% above HBM3E",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "cowos-is-fully-booked-intel-emib-t",
+     "title": "CoWoS is fully booked; Intel EMIB-T is picking up the spillover",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "nvidia-cmx-puts-kv-cache-nvme",
+     "title": "NVIDIA CMX: KV cache spills from HBM to flash via BlueField-4",
+     "sev": "normal",
+     "first_seen": "2026-08-19",
+     "days_seen": 2
+    },
+    {
+     "key": "tilert-inferencex-494-tok-s-user-on",
+     "title": "TileRT hits 494 tok/s/user at batch size 1 on a B200 — software closing the gap to Groq/Cerebras",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "agentx-agentic-serving-benchmark-142k-token-median",
+     "title": "AgentX: an agentic serving benchmark with a 142K-token median input",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "arista-frames-ai-networking-three-separate-problems",
+     "title": "AI networking is now three markets, and scale-up is the contested one",
+     "sev": "normal",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "800g-optics-volume-real-still-fraction-400g",
+     "title": "800G optics volume is real but still a fraction of 400G",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "two-speed-market-hopper-cheap-available-blackwell",
+     "title": "A two-speed market: Hopper is cheap and available, Blackwell is allocated through 2027",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "neocloud-capacity-and-the-going-rate",
+     "title": "Neocloud capacity is being pre-sold in multi-year blocks at $40–50M per MW",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "245-kw-racks-new-normal-grid-constraint",
+     "title": "245 kW racks are the new normal and the grid is the constraint",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "vera-rubin-nvl72-inference-tco-numbers-land",
+     "title": "[Vera Rubin NVL72 vs GB200 NVL72 inference TCO](https://inferencex.semianalysis.com/blog/vera-rubin-nvl72-vs-gb200-nvl72-inference)",
+     "sev": "normal",
+     "first_seen": "2026-08-10",
+     "days_seen": 2
+    },
+    {
+     "key": "agentx-methodology-writeup-https-inferencex.semianalysis.com-blog-agentic",
+     "title": "[The AgentX methodology writeup](https://inferencex.semianalysis.com/blog/agentic-benchmark-agent-benchmark-guide)",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "amd-instinct-mi455x-cdna-5-deep",
+     "title": "[MI455X deep dive](https://www.servethehome.com/amd-instinct-mi455x-deep-dive-cdna-5-marks-the-next-era-of-instinct/)",
+     "sev": "normal",
+     "first_seen": "2026-08-17",
+     "days_seen": 2
+    },
+    {
+     "key": "hot-chips-2026-hc38-program-live",
+     "title": "Hot Chips 38 is Aug 23–25 at Stanford — two days after this window ends.",
+     "sev": "normal",
+     "first_seen": "2026-08-11",
+     "days_seen": 3
+    },
+    {
+     "key": "rubin-ultra-memory-not-settled-spec.",
+     "title": "Rubin Ultra memory is not a settled spec.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "mlperf-round-landed-window",
+     "title": "No new MLPerf round in this window.",
+     "sev": "normal",
+     "first_seen": "2026-08-16",
+     "days_seen": 2
+    },
+    {
+     "key": "rumor-google-taps-amd-to-co",
+     "title": "Google reportedly tapping AMD to co-design a next-gen TPU",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "ironwood-tpu7x-has-ga-since-april-22",
+     "title": "Ironwood (TPU7x) has been GA since April 22, 2026 and still has no published on-demand price",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "china-domestic-accelerators-projected-to-supply",
+     "title": "Chinese domestic accelerators projected at ~90% of China's AI silicon market",
+     "sev": "normal",
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "alibaba-cloud-publicly-leaning-self-developed-chips",
+     "title": "Alibaba Cloud publicly leaning on self-developed chips",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "nvidia-groq-arrangement-remains-structurally-odd.",
+     "title": "The NVIDIA–Groq arrangement remains structurally odd.",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    },
+    {
+     "key": "connectx-8-connectx-9-supernic-transition",
+     "title": "ConnectX-8 → ConnectX-9 SuperNIC transition",
+     "sev": "normal",
+     "first_seen": "2026-08-21",
+     "days_seen": 1
+    }
+   ]
+  }
+ }
+}
