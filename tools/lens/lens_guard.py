@@ -5,7 +5,7 @@ The lens is not rebuilt from scratch each day. It is produced by fetching the
 previous edition's published page and splicing today's sections into it, which
 means every run inherits the previous run's state — including its mistakes.
 
-Four failure modes have actually occurred. Each one is silent: the page renders,
+Five failure modes have actually occurred. Each one is silent: the page renders,
 the assertions of the day pass, and the damage is only visible by diffing against
 an edition nobody re-reads. The functions here are the guards that catch them.
 
@@ -29,6 +29,16 @@ an edition nobody re-reads. The functions here are the guards that catch them.
                        compound on every subsequent edition.
                        -> strip_host_wrapper()
 
+  5. VERIFIABILITY     Cards and table rows drifted from inline source links to
+     DRIFT             prose attributions ("Seen in: <topic>") that nothing can
+                       click. Found 2026-08-20 at edition 040: 14 links across
+                       ~15 sections, all but one in Claim Watch — inheritance had
+                       copied the linkless style forward for weeks while the help
+                       panel still documented the citation policy. Every factual
+                       unit must carry a primary <a href>, an "archive MM-DD"
+                       fallback link, or an explicit "(unsourced — verify)".
+                       -> assert_link_coverage() / archive_link()
+
 Usage sketch:
 
     parent_html = strip_host_wrapper(fetched_page)
@@ -50,6 +60,8 @@ __all__ = [
     "LensBuildError", "strip_host_wrapper", "load_ledger", "assert_parent_fresh",
     "merge_parent", "assert_no_regression", "splice_sections", "refresh_nav",
     "rewrite_identity", "ACCUMULATING",
+    "ARCHIVE_BASE", "UNSOURCED", "LINK_POLICY", "archive_link",
+    "assert_link_coverage", "assert_page_link_coverage",
 ]
 
 
@@ -250,6 +262,138 @@ def rewrite_identity(html: str, edition: str, dslug: str, gen: str) -> str:
     return html
 
 
+# -------------------------------------------------------- link coverage ---
+# Guard 5: VERIFIABILITY DRIFT. The lens's citation rule (every factual item
+# carries a primary link, an "archive MM-DD" fallback, or an explicit unsourced
+# marker) has no renderer to enforce it, so inheritance happily propagates
+# linkless prose ("Seen in: <topic>") forever. This guard makes the rule fatal.
+#
+# Citation fallback order for any item:
+#   1. primary URL mined from that day's briefs      -> <a>src</a> (or named label)
+#   2. dated public-dashboard archive page where the  -> archive_link(first_seen)
+#      item surfaced (ledger rows carry first_seen /
+#      date / announced, so this is derivable)
+#   3. genuinely no source in hand                    -> the literal UNSOURCED text
+#
+# New ledger rows should also persist the mined primary URL in a "url" field so
+# tomorrow's carried rows keep their citation without re-mining.
+
+ARCHIVE_BASE = "https://karlarao.github.io/daily-briefings/archive/"
+UNSOURCED = "(unsourced — verify)"
+
+# What counts as one citable factual unit in each view. A unit passes when it
+# contains an <a href> or the UNSOURCED marker. "section" = one link anywhere
+# in the view is enough (used where rows are pure aggregates of linked data).
+LINK_POLICY = {
+    "v-read":         "li",       # attention bullets; the lede prose is exempt
+    "v-wn":           "li",
+    "v-claims":       "card",
+    "v-mirror":       "card",
+    "v-questions":    "talk",
+    "v-gaps":         "gap",
+    "v-events":       "tr",
+    "v-perf":         "li",
+    "v-patch":        "tr",
+    "v-bench":        "tr",
+    "v-promises":     "tr",
+    "v-longitudinal": "section",  # links the raw ledger dir; per-day rows are derived
+    "v-build":        "card",
+    "v-skills":       "card",
+    "v-dossiers":     "tr",
+}
+
+_POV_RE = re.compile(r'(<script type="application/json" id="povContent">)(.*?)(</script>)', re.S)
+
+
+def archive_link(date: str, base: str = ARCHIVE_BASE) -> str:
+    """Fallback citation anchor: the dated dashboard archive, labeled 'archive MM-DD'."""
+    _dt.date.fromisoformat(date)  # raises on a non-date (e.g. the literal "carried")
+    return (f'<a href="{base}{date}.html" target="_blank" rel="noopener">'
+            f'archive {date[5:]}</a>')
+
+
+def _units(body: str, kind: str):
+    """Yield (index, chunk) citation units of `kind` from a section/view body."""
+    if kind == "section":
+        yield 0, body
+    elif kind == "card":
+        # chunk from each card open to the next card (nesting-tolerant)
+        starts = [m.start() for m in re.finditer(r'<div class="card">', body)]
+        for i, s in enumerate(starts):
+            yield i, body[s:starts[i + 1] if i + 1 < len(starts) else len(body)]
+    elif kind == "gap":
+        starts = [m.start() for m in re.finditer(r'<div class="gap">', body)]
+        for i, s in enumerate(starts):
+            yield i, body[s:starts[i + 1] if i + 1 < len(starts) else len(body)]
+    elif kind == "tr":
+        for i, m in enumerate(re.finditer(r"<tr>(.*?)</tr>", body, re.S)):
+            if "<td" in m.group(1):          # skip header rows
+                yield i, m.group(1)
+    elif kind == "li":
+        for i, m in enumerate(re.finditer(r"<li>(.*?)</li>", body, re.S)):
+            yield i, m.group(1)
+    elif kind == "talk":
+        for i, m in enumerate(re.finditer(r'<p class="talk">(.*?)</p>', body, re.S)):
+            yield i, m.group(1)
+    else:
+        raise LensBuildError(f"unknown link-policy kind {kind!r}")
+
+
+def _bare_units(bodies: dict, policy: dict, label: str = ""):
+    """Return (units_checked, [descriptions of units with no citation])."""
+    bad, checked = [], 0
+    for sid, body in bodies.items():
+        kind = policy.get(sid)
+        if kind is None:
+            continue
+        for i, chunk in _units(body, kind):
+            checked += 1
+            if "<a href=" in chunk or UNSOURCED in chunk:
+                continue
+            text = " ".join(re.sub(r"<[^>]+>", " ", chunk).split())[:70]
+            bad.append(f"{label}{sid}[{kind} #{i}]: {text}")
+    return checked, bad
+
+
+def _raise_drift(bad: list) -> None:
+    head = "\n  ".join(bad[:25])
+    more = f"\n  ... and {len(bad) - 25} more" if len(bad) > 25 else ""
+    raise LensBuildError(
+        f"VERIFIABILITY DRIFT: {len(bad)} factual units carry no source link, "
+        f"no archive fallback, and no {UNSOURCED!r} marker:\n  {head}{more}")
+
+
+def assert_link_coverage(bodies: dict, policy: dict = LINK_POLICY,
+                         label: str = "") -> int:
+    """Every citation unit in every supplied view body must carry a citation.
+
+    `bodies` maps view id -> body HTML. Returns the number of units checked.
+    """
+    checked, bad = _bare_units(bodies, policy, label)
+    if bad:
+        _raise_drift(bad)
+    return checked
+
+
+def assert_page_link_coverage(html: str, policy: dict = LINK_POLICY) -> int:
+    """assert_link_coverage over the whole page — in-page sections plus every
+    chair's flipped view bodies inside #povContent — reported as ONE error so a
+    build sees the full damage, not just the first section. Returns units checked."""
+    bodies = {sid: inner for _tag, sid, inner in _SECTION_RE.findall(html)}
+    checked, bad = _bare_units(bodies, policy)
+    m = _POV_RE.search(html)
+    if m:
+        pov = json.loads(m.group(2))
+        for chair, views in pov.get("content", {}).items():
+            chair_bodies = {sid: v.get("h", "") for sid, v in views.items()}
+            c, b = _bare_units(chair_bodies, policy, label=f"{chair}/")
+            checked += c
+            bad += b
+    if bad:
+        _raise_drift(bad)
+    return checked
+
+
 # ------------------------------------------------------------- self-test ---
 if __name__ == "__main__":
     page = (
@@ -324,4 +468,36 @@ if __name__ == "__main__":
     except LensBuildError:
         raise SystemExit("identity rewrite should still match a well-formed page")
 
-    print("lens_guard self-test OK — all 4 failure modes trip their guard")
+    # guard 5: verifiability drift
+    good_card = ('<div class="card"><p class="card-basis">claim · '
+                 '<a href="https://example.com/x">src</a></p></div>')
+    marked_card = f'<div class="card"><p>claim {UNSOURCED}</p></div>'
+    bare_card = '<div class="card"><p>claim with nothing</p></div>'
+    n = assert_link_coverage({"v-claims": good_card + marked_card,
+                              "v-events": "<tr><th>h</th></tr><tr><td>e · "
+                                          + archive_link("2026-01-01") + "</td></tr>"})
+    assert n == 3, n  # two cards + one data row; the header row is exempt
+    try:
+        assert_link_coverage({"v-claims": good_card + bare_card})
+    except LensBuildError as e:
+        assert "VERIFIABILITY DRIFT" in str(e) and "card #1" in str(e)
+    else:
+        raise SystemExit("link-coverage guard failed to trip")
+    try:
+        archive_link("carried")
+    except ValueError:
+        pass
+    else:
+        raise SystemExit("archive_link must reject non-dates")
+    pov_page = (page.replace("OLD READ", '<ul class="sig"><li>bare bullet</li></ul>')
+                + '<script type="application/json" id="povContent">'
+                  '{"content":{"oracle":{"v-claims":{"h":"' + bare_card.replace('"', '\\"') + '"}}}}'
+                  '</script>')
+    try:
+        assert_page_link_coverage(pov_page)
+    except LensBuildError as e:
+        assert "v-read[li #0]" in str(e) and "oracle/v-claims" in str(e)
+    else:
+        raise SystemExit("page-wide link-coverage guard failed to trip")
+
+    print("lens_guard self-test OK — all 5 failure modes trip their guard")

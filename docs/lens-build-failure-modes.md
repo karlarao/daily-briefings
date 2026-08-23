@@ -1,9 +1,10 @@
 # Lens build — failure modes and guards
 
-Record of four silent failure modes found on 2026-08-10 while rebuilding the Oracle
-Competitive Lens, and the guards added to catch them. All four were found in a single
-build. None of them would have raised an error, and none are visible on the rendered
-page — that is what makes them worth writing down.
+Record of five silent failure modes found while rebuilding the Oracle Competitive
+Lens, and the guards added to catch them. The first four were found in a single
+build on 2026-08-10; the fifth on 2026-08-20, after weeks of accumulation. None of
+them would have raised an error, and none are visible on the rendered page — that
+is what makes them worth writing down.
 
 ## Why this class of bug exists
 
@@ -108,6 +109,41 @@ it is safe on a page that is already clean.
 
 ---
 
+## 5. Verifiability drift
+
+**What happened.** The routine's citation rule says every factual item in every lens
+section carries an inline source link — the primary URL from the day's briefs, a
+dated archive-page fallback, or an explicit "(unsourced — verify)" marker. The help
+panel documented the policy. But no renderer enforced it, so the daily builds drifted
+into prose attributions ("Seen in: *topic*") that nothing can click, and inheritance
+copied the linkless style forward faithfully. Found on 2026-08-20 at edition 040: **14
+links across ~15 sections**, all but one of them in Claim Watch — Events (21 rows),
+Patch Radar (19), Benchmarks (11), Promises (35), Dossiers (40), Mirror, Gaps,
+Questions, Skills, Build, Today's Read and Since-yesterday had none at all. The owner
+could not verify a single carried row without hunting manually.
+
+Two structural causes compounded it. The ledger schema was titles-only (`{k, t,
+dates}`), so a carried row had no URL anywhere in machine-readable state to render.
+And the primary URLs live in the day's brief markdowns, which exist only in the
+run's ephemeral scratchpad — a link not captured on the day an item first appears
+was simply gone.
+
+**Guard.** `assert_page_link_coverage(html)` — walks every in-page section *and*
+every chair's flipped view bodies inside `#povContent`, chunks each into citation
+units per `LINK_POLICY` (cards, gaps, table rows, sig bullets, talk tracks), and
+fails the build listing every unit that carries neither an `<a href>` nor the
+literal unsourced marker. All failures are reported in one error so a build sees
+the full damage, not just the first section.
+
+**Constructive half.** `tools/lens/lens_links.py` — mines `(headline, url, topic)`
+from the day's briefs, resolves each item same-topic-first with IDF-weighted token
+matching (precision over recall: a wrong primary link is worse than the archive
+fallback), and `cite(url, *dates)` renders the fallback chain
+`primary → archive MM-DD → (unsourced — verify)`. New ledger rows persist the mined
+URL in a `url` field so carried rows keep their citation without re-mining.
+
+---
+
 ## Related: static nav metadata
 
 Not a build bug so much as a missing step. The left-rail `meta:` strings are
@@ -141,3 +177,5 @@ published editions after the fact. Concretely:
 - assert monotonicity on anything append-only
 - assert that each rewrite **took**, counting matches, not just that it ran
 - never verify with the same pattern that performed the operation
+- make every editorial rule a machine-checked rule — a citation policy that lives
+  only in the help panel is a policy inheritance will erode (failure mode 5)
