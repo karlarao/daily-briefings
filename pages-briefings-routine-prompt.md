@@ -139,8 +139,9 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
   - LENS BUILD GUARDS (step 5c only): the lens is built by INHERITANCE — you
     fetch the published edition and splice into it — so build defects are SILENT:
     the page renders fine and the damage only shows when diffing an edition
-    nobody re-reads. FOUR failure modes have actually occurred, all in one build
-    (2026-08-10); guard against each, every run:
+    nobody re-reads. FIVE failure modes have actually occurred — four in one
+    build (2026-08-10), the fifth found 2026-08-20 after weeks of silent
+    accumulation; guard against each, every run:
       1) STALE PARENT — the fetch returned the 2026-08-08 page instead of
          2026-08-09, despite a 15-minute cache TTL; building on it would have
          silently reverted 21 append-only rows. Before building, confirm the
@@ -162,11 +163,22 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
       4) HOST WRAPPER — the served artifact page carries an injected
          frame-runtime <script> and an extra trailing </body></html>; strip
          them before splicing or they compound on every subsequent edition.
+      5) VERIFIABILITY DRIFT — cards and table rows decay from inline source
+         links into prose attributions ("Seen in: <topic>") that nothing can
+         click, and inheritance copies the linkless style forward (found at
+         edition 040: 14 links across ~15 sections). After assembly, run
+         assert_page_link_coverage() — every factual unit must carry a
+         primary <a href>, a dated "archive MM-DD" fallback (archive_link()),
+         or the literal "(unsourced — verify)". Mine primary links from the
+         day's briefs with tools/lens/lens_links.py (same-topic-first;
+         precision over recall) and persist each new ledger row's link in a
+         "url" field so carried rows keep their citation without re-mining.
     Recovery from a past bad build is a MANUAL step, not this routine's job:
     every edition survives in the artifact's version history — pull lost rows
     from there in an interactive session. Reference implementation and full
     write-up live on main (the run is checked out on gh-pages — read them with
-    `git show origin/main:tools/lens/lens_guard.py` and
+    `git show origin/main:tools/lens/lens_guard.py`,
+    `git show origin/main:tools/lens/lens_links.py` and
     `git show origin/main:docs/lens-build-failure-modes.md`); running the
     guard functions themselves is encouraged, not just re-implementing them.
   - Keep the APPENDIX A template's <style> and <script> effectively verbatim.
