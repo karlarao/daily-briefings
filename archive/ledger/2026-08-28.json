@@ -599,12 +599,12 @@
      "days_seen": 2
     },
     {
-     "key": "iceberg-rust-0-10-0-jul-21",
+     "key": "iceberg-rust-0-10-0-0-10-1",
      "title": "iceberg-rust 0.10.1 (Aug 1); equality-delete read path being fixed to use RowFilter \u2014 Stephan Berger (Hansetag) filed a Rust fix mirroring the Java `RowFilter` strategy for equality deletes. If you're...",
      "sev": "normal",
      "url": "https://github.com/apache/iceberg-rust/releases",
-     "first_seen": "2026-08-10",
-     "days_seen": 2
+     "first_seen": "2026-08-07",
+     "days_seen": 5
     },
     {
      "key": "datafusion-comet-1-0-0",
@@ -2838,19 +2838,235 @@
    ]
   },
   "aiappdev": {
-   "status": "pending",
+   "status": "urgent",
    "items": [
     {
-     "key": "no-ai-app-dev-brief-today",
-     "title": "No AI App Dev brief today. \u2014 The other 18 topics ran normally. Nothing here should be read as \"a quiet day in this lane\" \u2014 the lane simply was not covered.",
+     "key": "2026-07-28-spec-goes-stateless-initialize",
+     "title": "The 2026-07-28 spec makes MCP stateless \u2014 this breaks nearly every custom server \u2014 Protocol-level sessions and the `Mcp-Session-Id` header are gone; so is the `initialize`/`notifications/initialized` ...",
      "sev": "normal",
-     "url": null,
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+     "first_seen": "2026-07-07",
+     "days_seen": 5
+    },
+    {
+     "key": "server-initiated-requests-replaced-multi-round",
+     "title": "Server-initiated requests are replaced by Multi Round-Trip Requests (MRTR) \u2014 `roots/list`, `sampling/createMessage`, and `elicitation/create` as server\u2192client calls are out. A server now returns `Inpu...",
+     "sev": "normal",
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+     "first_seen": "2026-08-07",
+     "days_seen": 7
+    },
+    {
+     "key": "mcp-sse-resumability-removed",
+     "title": "Streamable HTTP loses SSE resumability; notifications move to `subscriptions/listen` \u2014 `Last-Event-ID` and SSE event IDs are removed, so a dropped response stream loses the in-flight request and the c...",
+     "sev": "normal",
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+     "first_seen": "2026-08-13",
+     "days_seen": 2
+    },
+    {
+     "key": "list-results-require-ttlms-cachescope-tools",
+     "title": "List results now require `ttlMs` and `cacheScope`, and tools/list SHOULD be deterministically ordered \u2014 A new `CacheableResult` interface makes `tools/list`, `prompts/list`, `resources/list`, `resourc...",
+     "sev": "normal",
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
      "first_seen": "2026-08-28",
      "days_seen": 1
     },
     {
-     "key": "where-adjacent-coverage-went",
-     "title": "Where the adjacent coverage went. \u2014 Model releases, pricing and coding-agent news are owned by **AI Daily**, which ran normally today (GLM-5.3-Flash, Gemini Omni 1.1 / 3.5 Transcribe, Claude Code `--r...",
+     "key": "authorization-hardening-dcr-is-deprecated-in",
+     "title": "Auth hardening: DCR deprecated in favor of Client ID Metadata Documents \u2014 Clients MUST validate a present RFC 9207 `iss` against the recorded issuer before redeeming an auth code, MUST key persisted c...",
+     "sev": "urgent",
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+     "first_seen": "2026-08-18",
+     "days_seen": 3
+    },
+    {
+     "key": "cve-2026-75130-context7-prompt-injection-credential-exfil",
+     "title": "CVE-2026-75130: unpatched prompt injection in Context7 MCP (CVSS 3.1 9.0 / CVSS 4.0 6.4) \u2014 Published 2026-08-18. Context7's \"Custom AI Instructions\" feature injects unsanitised instructions into any c...",
+     "sev": "high",
+     "url": "https://www.digitalapplied.com/blog/context7-mcp-prompt-injection-cve-2026-75130",
+     "first_seen": "2026-08-19",
+     "days_seen": 5
+    },
+    {
+     "key": "mcp-stdio-command-injection-remains-dominant",
+     "title": "MCP STDIO command injection remains the dominant CVE class \u2014 Roughly 43% of a 30-CVE batch filed against MCP servers in a 60-day window were command-injection patterns, typically shelling out with uns...",
+     "sev": "normal",
+     "url": "https://www.ox.security/blog/mcp-supply-chain-advisory-rce-vulnerabilities-across-the-ai-ecosystem/",
+     "first_seen": "2026-08-28",
+     "days_seen": 1
+    },
+    {
+     "key": "files-api-agent-skills-went-ga-drop",
+     "title": "Anthropic pulled computer use, Files API, and Agent Skills out of beta (2026-08-19) \u2014 beta headers no longer needed, but shapes changed \u2014 Computer use is now the `computer_toolset_20260801` toolset wi...",
+     "sev": "normal",
+     "url": "https://platform.claude.com/docs/en/release-notes/overview",
+     "first_seen": "2026-08-20",
+     "days_seen": 2
+    },
+    {
+     "key": "browser-toolset-20260801-drives-browser-app",
+     "title": "New `browser_toolset_20260801`: a client-side browser tool that reads the accessibility tree, not just screenshots \u2014 Unlike computer use, it operates inside a viewport your application hosts and expos...",
+     "sev": "normal",
+     "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/browser-use-tool",
+     "first_seen": "2026-08-27",
+     "days_seen": 2
+    },
+    {
+     "key": "anthropic-sdk-python-1-0-2026",
+     "title": "anthropic-sdk-python 1.0 (2026-08-20) is a real breaking release \u2014 HTTP layer moves from `httpx` to `httpx2` (build custom `http_client`/`Timeout`/transports from `httpx2`, and call `httpx2.alias_http...",
+     "sev": "normal",
+     "url": "https://github.com/anthropics/anthropic-sdk-python/blob/main/MIGRATION.md",
+     "first_seen": "2026-08-28",
+     "days_seen": 1
+    },
+    {
+     "key": "sdk-beta-namespaces-collapsed-2026-08",
+     "title": "SDK beta namespaces collapsed (2026-08-27) \u2014 In Python 1.2.0 / TS 0.122.0 / Go 1.68.0 / Java 2.59.0 / Ruby 1.67.0 / C# 12.44.0, `client.beta.files` and `client.beta.skills` stop sending beta headers a...",
+     "sev": "normal",
+     "url": "https://platform.claude.com/docs/en/release-notes/overview",
+     "first_seen": "2026-08-28",
+     "days_seen": 1
+    },
+    {
+     "key": "claude-structured-outputs",
+     "title": "Structured outputs GA moved the parameter: `output_format` \u2192 `output_config.format` \u2014 Out of beta on the Claude API with expanded schema support and faster grammar compilation; beta-header users keep ...",
+     "sev": "normal",
+     "url": "https://platform.claude.com/docs/en/build-with-claude/structured-outputs",
+     "first_seen": "2026-07-27",
+     "days_seen": 2
+    },
+    {
+     "key": "openai-responses-gemini-managed-agents",
+     "title": "OpenAI Agents SDK adds WebSocket transport for the Responses API; call-ID handling loosened \u2014 WebSocket transport is opt-in with HTTP remaining the default \u2014 worth benchmarking for latency-sensitive m...",
+     "sev": "normal",
+     "url": "https://openai.github.io/openai-agents-python/release/",
+     "first_seen": "2026-07-18",
+     "days_seen": 2
+    },
+    {
+     "key": "sglang-july-blackwell-fp8",
+     "title": "SGLang 26.07 (NGC) broadens the hardware matrix and standardizes on CUDA 13.3.1 \u2014 Multi-node configs, GB300/B300, RTX PRO 6000 Blackwell Server Edition, DGX Spark, and Jetson Thor, with FP8 on Hopper ...",
+     "sev": "normal",
+     "url": "https://docs.nvidia.com/deeplearning/frameworks/pdf/SGLang-Release-Notes.pdf",
+     "first_seen": "2026-07-31",
+     "days_seen": 2
+    },
+    {
+     "key": "otel-genai-conventions-still-not-stable",
+     "title": "OTel GenAI semantic conventions are still 100% \"Development\" \u2014 none marked Stable \u2014 Every `gen_ai.*` attribute, span, metric, and event in the official registry carries the Development badge, and the ...",
+     "sev": "normal",
+     "url": "https://dev.to/azena-ai/opentelemetrys-genai-semantic-conventions-are-not-stable-yet-heres-what-actually-shipped-in-2026-3mke",
+     "first_seen": "2026-08-26",
+     "days_seen": 2
+    },
+    {
+     "key": "otel-genai-baseline",
+     "title": "LiteLLM's OTel v2 integration ships per-vendor presets over the same GenAI conventions \u2014 One-line export to Arize, Phoenix, Langfuse, Weave, Langtrace, and AgentOps in each tool's expected format. Use...",
+     "sev": "normal",
+     "url": "https://docs.litellm.ai/docs/observability/opentelemetry_v2",
+     "first_seen": "2026-07-17",
+     "days_seen": 2
+    },
+    {
+     "key": "mcp-2026-07-28-s-rewrite",
+     "title": "Port one MCP server to 2026-07-28 and measure. \u2014 The stateless rewrite plus `CacheableResult` (`ttlMs`/`cacheScope`) plus deterministic `tools/list` ordering are specifically designed to raise prompt-...",
+     "sev": "normal",
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+     "first_seen": "2026-08-11",
+     "days_seen": 2
+    },
+    {
+     "key": "re-cost-your-token-budgets-against",
+     "title": "Re-cost your token budgets against the current tokenizer, not last quarter's. \u2014 Anthropic's notes state the newer Sonnet tokenizer produces roughly 30% more tokens for the same text, with the exact in...",
+     "sev": "normal",
+     "url": "https://platform.claude.com/docs/en/release-notes/overview",
+     "first_seen": "2026-08-28",
+     "days_seen": 1
+    },
+    {
+     "key": "agents-sdk-websocket-transport-against-http",
+     "title": "A/B the Agents SDK WebSocket transport against HTTP \u2014 on a real multi-turn tool loop before adopting \u2014 it's opt-in for a reason, and connection lifecycle handling is new code. release process",
+     "sev": "normal",
+     "url": "https://openai.github.io/openai-agents-python/release/",
+     "first_seen": "2026-08-28",
+     "days_seen": 1
+    },
+    {
+     "key": "openai-assistants-api-sunset-2026-08",
+     "title": "OpenAI Assistants API sunset: 2026-08-26 \u2014 already past. \u2014 Deprecated 2025-08-26, now dead. Migrate to Responses + Conversations. deprecations \u00b7 sunset thread",
+     "sev": "high",
+     "url": "https://developers.openai.com/api/docs/deprecations",
+     "first_seen": "2026-08-28",
+     "days_seen": 1
+    },
+    {
+     "key": "roots-sampling-logging-formally-deprecated-all",
+     "title": "MCP: Roots, Sampling, and Logging are deprecated \u2014 with a minimum twelve-month removal window under the new feature-lifecycle policy. Suggested migrations: pass directories/files as tool params, resou...",
+     "sev": "normal",
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+     "first_seen": "2026-08-27",
+     "days_seen": 2
+    },
+    {
+     "key": "mcp-v1-sdks-maintenance-only.-pin-mcp",
+     "title": "MCP: HTTP+SSE transport reclassified as formally Deprecated \u2014 (it had been soft-deprecated since 2025-03-26). Migrate to Streamable HTTP. `includeContext` values `\"thisServer\"`/`\"allServers\"` are like...",
+     "sev": "high",
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+     "first_seen": "2026-08-24",
+     "days_seen": 2
+    },
+    {
+     "key": "mcp-oauth-2-0-dynamic-client",
+     "title": "MCP: OAuth 2.0 Dynamic Client Registration deprecated \u2014 in favor of Client ID Metadata Documents; DCR stays only for authorization servers that don't support CIMD. same",
+     "sev": "normal",
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+     "first_seen": "2026-08-28",
+     "days_seen": 1
+    },
+    {
+     "key": "tasks-left-core-protocol-official-extension",
+     "title": "MCP: experimental `tasks` left the core protocol \u2014 for the `io.modelcontextprotocol/tasks` extension \u2014 blocking `tasks/result` replaced by polling `tasks/get` plus a new `tasks/update`, and `tasks/lis...",
+     "sev": "normal",
+     "url": "https://modelcontextprotocol.io/specification/2026-07-28/changelog",
+     "first_seen": "2026-08-27",
+     "days_seen": 2
+    },
+    {
+     "key": "opus-5-effort-xhigh-max-disabled-thinking-now",
+     "title": "Anthropic: `thinking: {\"type\": \"disabled\"}` now 400s at effort `xhigh` or `max` on Opus 5 \u2014 a behavior change from 4.8. On Sonnet 5, manual `thinking: {type: \"enabled\", budget_tokens: N}` returns 400 ...",
+     "sev": "normal",
+     "url": "https://platform.claude.com/docs/en/build-with-claude/effort",
+     "first_seen": "2026-08-07",
+     "days_seen": 2
+    },
+    {
+     "key": "pricing-correction-not-hike",
+     "title": "Pricing correction, not a hike: \u2014 the scheduled 2026-09-01 increase for Claude Sonnet 5 to $3/$15 per MTok **will not occur** \u2014 $2/$10 is now the standard price. If you built a September cost model ar...",
+     "sev": "normal",
+     "url": "https://platform.claude.com/docs/en/release-notes/overview",
+     "first_seen": "2026-08-28",
+     "days_seen": 1
+    },
+    {
+     "key": "list-results-are-now-cacheable-and",
+     "title": "MCP is converging on plain HTTP semantics. \u2014 Stateless requests, cacheable list results with TTLs and public/private scopes, header-based routing, and client-retry-on-broken-stream are all the web's e...",
+     "sev": "normal",
+     "url": null,
+     "first_seen": "2026-08-18",
+     "days_seen": 2
+    },
+    {
+     "key": "anthropic-structured-outputs-ga",
+     "title": "The beta-header era at Anthropic is ending in a batch. \u2014 Computer use, Files, Skills, structured outputs, effort, web search, and programmatic tool calling have all shed headers within a few months, w...",
+     "sev": "normal",
+     "url": null,
+     "first_seen": "2026-07-18",
+     "days_seen": 3
+    },
+    {
+     "key": "observability-standardization-lagging-framework-adoption",
+     "title": "Observability standardization is lagging framework adoption. \u2014 Langfuse, LiteLLM, and the rest all claim OTel GenAI compliance while every attribute in the registry is still marked Development. Expect...",
      "sev": "normal",
      "url": null,
      "first_seen": "2026-08-28",
