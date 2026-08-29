@@ -42,6 +42,8 @@ WORKFLOW (one scheduled run, top to bottom):
    └────────────────────────────────────────────────────────────────────┘
               │  repeat 19×                            ▲
               └────────────────────────────────────────┘
+   (WATCHDOG: a subagent whose transcript flatlines >10 min is killed and
+    relaunched once; the publish never waits for a straggler — see 4f/4g)
                                         │  (loop done)
    Step 4b SYNTHESIS ....... ONE pass over the 19 finished briefs (no web) →
                                         │       "Today's Trends" cross-topic read
@@ -248,7 +250,12 @@ If git push fails (auth/network), send one notification saying so — that failu
    (Pages serves the gh-pages root; index.html + codex.html already live there and
     are left untouched. The public dashboard publishes via git; .claude/settings.json
     on main and gh-pages allowlists the Artifact tool for the private addendum
-    deliverable (step 5c) — do not remove that allow rule.)
+    deliverable (step 5c) AND the common read-only Bash text tools (sed, grep,
+    head, tail, cat, awk, cut, wc, sort, uniq — each in both rule spellings) so
+    unattended subagents never park on a permission prompt — do not remove those
+    allow rules. Do NOT write ~/.claude/settings.json from this prompt: the repo
+    file is the durable source, and overwriting user settings each run erases any
+    allowlist accumulated there.)
 
 1. Establish the current timestamp in US EASTERN time by running
    `TZ="America/New_York" date '+%Y-%m-%d %H:%M %Z'` — capture date, time, AND
@@ -305,6 +312,24 @@ If git push fails (auth/network), send one notification saying so — that failu
    d. Rebuild claude.html locally (see "BUILDING THE DASHBOARD").
    e. Do NOT push per-topic. Keep the local file current so a crash still leaves the
       latest built state staged for the single end-of-run push.
+   f. WATCHDOG — stall is not slow: while research subagents run, check their
+      transcript activity every few minutes (the agent's .jsonl transcript file
+      growing is its pulse; a "running" status alone proves nothing — an agent
+      parked on a permission prompt also reads "running"). An agent whose
+      transcript has NOT advanced in ~10 minutes is not slow, it is doing
+      NOTHING (parked prompt, dead connection): kill it and relaunch it once
+      with a tightened tool budget. If the relaunch also flatlines, proceed
+      without that brief. NEVER kill an agent whose transcript is still
+      advancing, no matter how long it has run. (Root cause this rule exists:
+      2026-08-28, one subagent parked ~23h on a permission prompt for `sed`.)
+   g. THE PUBLISH DOES NOT WAIT: the deadline binds the dashboard, not the
+      agents. If a brief is still genuinely running when the other 18 are
+      built, publish on schedule with that topic left status "pending" and an
+      honest placeholder, let the straggler finish, then fold it in with ONE
+      follow-up commit (rebuild, re-archive the same date, and rerun 4b/4c so
+      the synthesis and Since-yesterday diff include it). A late brief is a
+      follow-up commit, never a held publish. (Proven 2026-08-28: 18/19
+      shipped on time, AI App Dev folded in ~15 minutes later.)
 
 4b. SYNTHESIS — "Today's Trends" (ONE extra pass; NO new web research).
    After all topics complete, write BRIEFINGS.synthesis: a cross-topic trends read
@@ -552,6 +577,12 @@ SHARED RULES  (apply to EVERY brief)
 ================================================================================
 
 - Don't use deep-research — it consumes too many tokens. Use ordinary web search.
+- Bash is fine and encouraged where it helps (e.g. slicing a large spilled
+  WebFetch file instead of re-fetching it). The repo's .claude/settings.json
+  pre-approves the common read-only text tools (sed, grep, head, tail, cat, awk,
+  cut, wc, sort, uniq); a command outside that set may park on a permission
+  prompt in an unattended run — the step-4f watchdog will catch it, but prefer
+  the pre-approved set when it does the job.
 - Cover the past 30 days (exception: AI Daily uses the past 24–48 hours).
 - Lens: a working software/performance engineer. Skip theory without application,
   skip marketing, skip keynote/thought-leadership fluff, skip anything that doesn't

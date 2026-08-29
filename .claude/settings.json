@@ -1,5 +1,17 @@
 {
   "permissions": {
-    "allow": ["Artifact"]
+    "allow": [
+      "Artifact",
+      "Bash(sed *)", "Bash(sed:*)",
+      "Bash(grep *)", "Bash(grep:*)",
+      "Bash(head *)", "Bash(head:*)",
+      "Bash(tail *)", "Bash(tail:*)",
+      "Bash(cat *)", "Bash(cat:*)",
+      "Bash(awk *)", "Bash(awk:*)",
+      "Bash(cut *)", "Bash(cut:*)",
+      "Bash(wc *)", "Bash(wc:*)",
+      "Bash(sort *)", "Bash(sort:*)",
+      "Bash(uniq *)", "Bash(uniq:*)"
+    ]
   }
 }
