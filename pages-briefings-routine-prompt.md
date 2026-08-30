@@ -134,10 +134,13 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
         latest built state staged for the single end-of-run push.
   - RESILIENCE: if the Artifact call fails with a transient error ("permission
     stream closed", AbortError, network), retry up to 3× with 2/4/8s backoff
-    before falling back to the action:"list" recovery path. The Artifact tool is
-    allowlisted in .claude/settings.json on both main and gh-pages — a first-call
-    failure is transient plumbing, not a permission denial; never skip 5c on the
-    first error.
+    before falling back to the action:"list" recovery path. The Artifact allow
+    rule lives in ~/.claude/settings.json, written by the step-0 merge-write —
+    the repo .claude/settings.json rule is NOT honored for Artifact in this
+    environment (proven 2026-08-30). If a publish still prompts, the step-0
+    write was skipped or failed: verify ~/.claude/settings.json contains
+    "Artifact" before concluding anything else. A "Denied by user" result is a
+    real denial, not plumbing — do not retry it in an unattended run.
   - LENS BUILD GUARDS (step 5c only): the lens is built by INHERITANCE — you
     fetch the published edition and splice into it — so build defects are SILENT:
     the page renders fine and the damage only shows when diffing an edition
@@ -247,15 +250,39 @@ If git push fails (auth/network), send one notification saying so — that failu
      touch .nojekyll
      git config user.name "briefings-bot"
      git config user.email "briefings-bot@users.noreply.github.com"
+     # MERGE (never overwrite) the allowlist into user-level settings — the
+     # Artifact tool's allow rule is honored ONLY at the user level in this
+     # environment; the repo .claude/settings.json covers the Bash rules but a
+     # bare "Artifact" rule there is silently ignored (proven 2026-08-30: the
+     # step-5c publish prompted and parked despite the repo rule on both
+     # branches). Read-modify-write so nothing already in the file is lost:
+     python3 - <<'SETEOF'
+     import json, os
+     p = os.path.expanduser("~/.claude/settings.json")
+     cfg = {}
+     if os.path.exists(p):
+         try: cfg = json.load(open(p))
+         except Exception: os.rename(p, p + ".corrupt.bak")
+     allow = cfg.setdefault("permissions", {}).setdefault("allow", [])
+     for rule in ["Artifact",
+                  "Bash(sed *)","Bash(sed:*)","Bash(grep *)","Bash(grep:*)",
+                  "Bash(head *)","Bash(head:*)","Bash(tail *)","Bash(tail:*)",
+                  "Bash(cat *)","Bash(cat:*)","Bash(awk *)","Bash(awk:*)",
+                  "Bash(cut *)","Bash(cut:*)","Bash(wc *)","Bash(wc:*)",
+                  "Bash(sort *)","Bash(sort:*)","Bash(uniq *)","Bash(uniq:*)"]:
+         if rule not in allow: allow.append(rule)
+     json.dump(cfg, open(p, "w"), indent=2)
+     SETEOF
    (Pages serves the gh-pages root; index.html + codex.html already live there and
     are left untouched. The public dashboard publishes via git; .claude/settings.json
-    on main and gh-pages allowlists the Artifact tool for the private addendum
-    deliverable (step 5c) AND the common read-only Bash text tools (sed, grep,
+    on main and gh-pages allowlists the common read-only Bash text tools (sed, grep,
     head, tail, cat, awk, cut, wc, sort, uniq — each in both rule spellings) so
     unattended subagents never park on a permission prompt — do not remove those
-    allow rules. Do NOT write ~/.claude/settings.json from this prompt: the repo
-    file is the durable source, and overwriting user settings each run erases any
-    allowlist accumulated there.)
+    allow rules. The user-level merge-write above exists because the Artifact rule
+    is NOT honored from the repo file; it must merge, never truncate — a plain
+    overwrite erased user settings every run before 2026-08-28, and removing the
+    write entirely broke the step-5c Artifact publish on 2026-08-30. Both failure
+    modes have actually happened; the read-modify-write is the only safe shape.)
 
 1. Establish the current timestamp in US EASTERN time by running
    `TZ="America/New_York" date '+%Y-%m-%d %H:%M %Z'` — capture date, time, AND

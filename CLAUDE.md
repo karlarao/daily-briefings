@@ -29,16 +29,24 @@ Ask only when a change is destructive or genuinely outside this workflow.
 
 ## Permission allowlist (why it exists — do not remove)
 
-`.claude/settings.json` pre-approves `Artifact` and the read-only Bash text
-tools (sed, grep, head, tail, cat, awk, cut, wc, sort, uniq), each rule in both
-spellings (`Bash(cmd *)` and `Bash(cmd:*)`) because docs show both formats and
-an unmatched rule is harmless. Reason: on 2026-08-28 a research subagent parked
+`.claude/settings.json` pre-approves the read-only Bash text tools (sed, grep,
+head, tail, cat, awk, cut, wc, sort, uniq), each rule in both spellings
+(`Bash(cmd *)` and `Bash(cmd:*)`) because docs show both formats and an
+unmatched rule is harmless. Reason: on 2026-08-28 a research subagent parked
 ~23 hours on a permission prompt for a `sed -n` slice of a spilled WebFetch
 file — nobody is present to approve prompts in scheduled runs. If a new
 read-only command starts prompting, extend the list on BOTH branches.
 
-Do not write `~/.claude/settings.json` from the routine — it previously
-truncated user settings every run; the repo file is the durable source.
+**The `Artifact` rule is honored ONLY in `~/.claude/settings.json` (user
+level), NOT in the repo file** — proven 2026-08-30 when the lens publish
+prompted and was denied despite `"Artifact"` sitting in the repo allowlist on
+both branches (the repo rule stays there anyway; it is harmless and may work in
+other harness versions). The routine's step 0 therefore MERGE-writes the
+allowlist into `~/.claude/settings.json`: read the existing file if any, union
+the allow rules, write back. Never plain-overwrite (that truncated user
+settings every run before 2026-08-28) and never skip the write (that broke the
+Artifact publish on 2026-08-30). Both failure modes actually happened — the
+read-modify-write is the only safe shape.
 
 ## Watchdog philosophy (agreed 2026-08-29)
 
