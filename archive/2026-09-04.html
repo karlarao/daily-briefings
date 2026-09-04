@@ -229,13 +229,8 @@ window.BRIEFINGS = {
  "model": "claude-opus-5 → claude-fable-5-1 (switched mid-run)",
  "synthesis": "**The 3-minute read** — Two lanes are flagged today and both are the same shape as August's: *the thing you already patched is not the thing that is exposed*. Oracle's August CSPU carries three remote-unauthenticated Clusterware CVEs (CVSS 9.6/9.6/9.1) that a freshly patched 19.32 GI home still needs a one-off for, and Databricks strips every entitlement from the `users` system group on **Sept 14** whether or not you opted out. Underneath the flags, the month's dominant pattern is *silent default flips* — QAS on for new Snowflake warehouses, `<REDACTED>` query text in Databricks system tables, Redshift login lockout on by default, `max_insert_threads=auto` in ClickHouse 26.8, G1 + compact headers in JDK 27, strict JSON in Go 1.27 — none of which break a build and all of which change a bill, a dashboard, or a result. The frontier-model week (Fable 5.1, GPT-6 Astra, Gemini 3.8 Flash) landed at converged $10/$50 pricing, so the real API story is what got *removed*: `tool_choice: any`, `temperature`, Chat-Completions tool calls. And memory — not compute — now sets TCO on every tier from DDR5 RDIMMs to HBM4 to Android per-app limits.\n\n## Data layer — converging themes\n- **The patch you applied is not the patch you need.** Oracle's monthly CSPU adds 9.6-rated Clusterware CVEs on top of a 19.32 RU that Oracle now says to apply \"immediately\" ([advisory](https://www.oracle.com/security-alerts/cspuaug2026.html)); PostgreSQL's Aug 13 minors fixed 28 CVEs with a public RCE PoC while Aurora still listed 18.4 eleven days later ([release](https://www.postgresql.org/about/news/postgresql-186-1711-1615-1519-1424-and-19-beta-3-released-3365/)); MongoDB 8.2.x got nothing in the August round because the versioning policy silently ended its patch line ([versioning](https://www.mongodb.com/docs/manual/reference/versioning/)). Check `version()`, not the vendor's promise. → seen in: Oracle · OLTP & Distributed SQL · MongoDB\n- **Defaults are the release notes now.** Snowflake's 2026_06 bundle turns QAS on at scale factor 8 for every new standard warehouse ([BCR-2373](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_06/bcr-2373)); Databricks masks `statement_text` in `system.query.history` unless you join `databricks_pii_access` ([Aug notes](https://docs.databricks.com/aws/en/release-notes/product/2026/august)); Redshift P204 locks users after 5 failed logins and enforces caller-side KMS grants on Serverless APIs ([behavior changes](https://docs.aws.amazon.com/redshift/latest/mgmt/behavior-changes.html)); ClickHouse 26.8 flips `max_insert_threads` to `auto` ([changelog](https://clickhouse.com/docs/whats-new/changelog)); MotherDuck shares default to `UPDATE AUTOMATIC`. Every bundle now needs a cost review, not just a SQL-compat review. → seen in: Snowflake · Databricks · Redshift · Cloud DW Challengers\n- **The lakehouse write path is where engines are actually competing.** Iceberg v4 bans new equality deletes and goes Parquet-only on manifests ([vote](https://lists.apache.org/thread/4x4516hcmtp0p8c53cc0smmo8hqytpt9)); Redshift P204 writes Iceberg v3 with deletion vectors and row lineage — Graviton nodes only ([AWS](https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-redshift-supports-apache-iceberg-v3/)); Snowflake's Horizon now serves externally-managed tables over IRC and hits S3 Tables directly ([preview](https://docs.snowflake.com/en/release-notes/2026/other/2026-08-18-externally-managed-iceberg-tables-horizon-irc-preview)); Databricks shares managed Iceberg to external clients GA; Oracle ADB adds `AS OF TIMESTAMP` on Iceberg external tables but stays read-oriented; Fabric warns Delta 4.2 features are Spark-only and will break the SQL endpoint. Read-side parity is table stakes; write-side is the differentiator. → seen in: Open Formats & CDC · Redshift · Snowflake · Databricks · Oracle · Microsoft Fabric / Synapse\n- **Plan stability is becoming a product feature.** PG19's `pg_plan_advice`, CockroachDB 26.3 plan pinning ([v26.3](https://docs.cockroachlabs.com/docs/releases/v26.3)), Aurora DSQL extended statistics, TiDB's virtual-column index estimation, Databend's cost-based MV routing and StarRocks' zone-map correctness fixes all landed within weeks — while ClickHouse ships a join-order CBO in a point release with a breaking-changes list attached. \"Pin the plan\" is about to be table stakes in managed offerings. → seen in: OLTP & Distributed SQL · Cloud DW Challengers · BigQuery\n- **Memory sets DB-server TCO, not the CPU.** Server DRAM contract prices are still rising +13–18% QoQ after two quarters of +58–98% ([TrendForce](https://www.trendforce.com/presscenter/news/20260709-13140.html)) just as Venice and Diamond Rapids arrive with 16 channels to fill; Graviton5 R9g is the first DDR5-8800 you can rent ([AWS](https://aws.amazon.com/blogs/aws/amazon-ec2-r9g-and-r9gd-instances-powered-by-aws-graviton5-processors-are-now-generally-available/)); Oracle's fix for 18 GB of per-session ONNX copies is a shared-memory flag ([post](https://blogs.oracle.com/database/scale-onnx-embedding-models-with-external-data-in-oracle-ai-database)); Databricks' Lakebase autoscaler sizes on a working-set HLL estimator. Compression and tiering before DIMMs. → seen in: Database Hardware · Oracle · Databricks\n\n## Application layer — converging themes\n- **Supply-chain attacks moved from the registry into the workspace.** The CHAINDROP/keyv worm plants `.claude/settings.json` SessionStart hooks and `.vscode/tasks.json` folder-open tasks, and shipped with *valid* npm provenance because the poisoned source was in the tagged commit ([Snyk](https://snyk.io/blog/inside-keyv-npm-compromise-preinstall-malware-trusted-provenance-ide-hooks/) · [Elastic](https://www.elastic.co/security-labs/shai-hulud-chaindrop-npm-supply-chain)); Snowflake's .NET repo had a GitHub Actions workflow injection; Flux 2.9.5, Argo and OpenTofu all hardened controller-side file handling the same month. `--ignore-scripts` in CI and treating repo-carried tool config as untrusted are now baseline. → seen in: App Dev (Backend) · Frontend & Web Platform · Platform & DevOps · Snowflake\n- **Runtimes ship \"safe defaults with an expiring opt-out.\"** Go 1.27's strict `json/v2` and size-specialized allocator ([notes](https://go.dev/doc/go1.27)), JDK 27's G1-everywhere and compact object headers (GA Sept 15, [InfoQ](https://www.infoq.com/news/2026/08/java-27-so-far/)), Python 3.15's UTF-8 default (Oct 1), Vitest 5 failing un-awaited assertions, DBR 19's Arrow-serialized Python UDFs, vLLM 0.28's 16384 batched-token default. Budget an upgrade-and-benchmark cycle per runtime; \"drop-in\" is no longer the default assumption. → seen in: App Dev (Backend) · Frontend & Web Platform · AI App Dev · Databricks\n- **The frontier took knobs away, not just added models.** Fable/Mythos 5.1 return 400 on `tool_choice: any|tool`; the Anthropic Python SDK 1.0 drops `temperature`/`top_p`/`top_k`; GPT-6 Astra rejects `effort: none`, custom temperature, logprobs, and Chat-Completions tool calls ([Anthropic](https://platform.claude.com/docs/en/release-notes/api) · [OpenAI](https://developers.openai.com/api/docs/changelog)); MCP 2026-07-28 removes sessions, `initialize` and SSE resumability ([spec](https://modelcontextprotocol.io/specification/2026-07-28/changelog)). Prompt-level determinism tricks and temperature-sweep evals need a rethink. → seen in: AI App Dev · AI Daily\n- **App stores and platforms are becoming performance regulators.** Google Play ties memory footprint (RSS+swap) and ≥25% DEX optimization to visibility from Feb 2027, with Android 17 enforcing per-app memory budgets at the OS ([Android](https://android-developers.googleblog.com/2026/08/app-quality-memory-optimization-secure-onboarding.html)); Copilot code-review approvals now count toward branch-protection ([GitHub](https://github.blog/changelog/2026-09-01-copilot-code-review-can-now-approve-pull-requests)); GitHub Actions retention drops checks to 90 days on Oct 1. Governance is arriving through the toolchain, not the policy doc. → seen in: Mobile Development · AI Daily · Platform & DevOps\n\n## AI, Research & Hardware — converging themes\n- **Decode is leaving the GPU.** Groq 3 LPX (SRAM), Intel Crescent Island (LPDDR5X), OpenAI Jalapeño (spec-decode ASIC), TPU8i (8 HBM stacks + collective engine) are four answers to one question ([STH](https://www.servethehome.com/nvidias-groq-3-lpu-accelerators-for-heterogeneous-ai-compute-at-hot-chips-2026/)); Oracle's Vector Index Service offloads HNSW builds to an A10 and True Cache offloads retrieval ([post](https://blogs.oracle.com/database/getting-started-with-the-vector-index-service-part-2)); SGLang's session-aware radix cache and vLLM's tiered KV offload are the software side. 2027 clusters will be explicitly heterogeneous P/D, not homogeneous NVL72. → seen in: AI Hardware · Oracle · AI App Dev\n- **The harness is the benchmark.** GPT-6 Astra scores 62.7% or 99.9% on ARC-AGI-3 depending on whether OpenAI's Provider Adapter preserves opaque reasoning state ([ARC Prize](https://arcprize.org/blog/astra)); NVIDIA's 15x/30x per-MW claims come from AgentX with Rubin numbers unreviewed; ClickBench relabelled managed-service cold runs as `no-cold` ([changelog](https://github.com/ClickHouse/ClickBench/blob/main/CHANGELOG.md)); DuckDB's 20x async-I/O headline is CSV-pathological per an independent critique; BIRD's top three sit within 0.33 points while ESQ-Bench shows 73–99% silent semantic divergence on enterprise Oracle schemas ([arXiv](https://arxiv.org/abs/2608.23569)). Insist on harness disclosure before quoting any number. → seen in: AI Daily · AI Hardware · Cloud DW Challengers · NL2SQL / Text-to-SQL\n- **Context beats model in production text-to-SQL.** Four independent August papers converge: query-log-derived reference cards and verified-repair memory > execution-feedback loops > pipeline modules > backbone upgrades ([2608.22830](https://arxiv.org/abs/2608.22830) · [2608.28432](https://arxiv.org/abs/2608.28432)); Oracle's own PLSQLBench shows PL/SQL generalization is materially worse than BIRD implies; Databricks' `ai_search()` in SQL and BigQuery's TabFM `AI.PREDICT` (token-priced from Oct 30) push the same \"governed context in the engine\" direction. → seen in: NL2SQL / Text-to-SQL · Oracle · Databricks · BigQuery\n\n## Cross-cutting — spans all three groups\n- **Hyperscalers are absorbing the open-source supply chain.** AWS acquires DuckLabs (DuckDB/DuckLake stay MIT under the Foundation, [post](https://duckdb.org/2026/08/26/ducklabs-to-join-aws.html)); NVIDIA acquires Hugging Face for ~$12.9B ([NVIDIA](https://blogs.nvidia.com/blog/nvidia-to-acquire-hugging-face/)); SAP closes on Dremio this quarter; Neon absorbs the Electric sync-engine team; NVIDIA pays MediaTek $3.5B to resell NVLink Fusion to XPU builders. If your model or engine supply chain is `huggingface_hub` or `pip install duckdb`, the governance of that dependency just changed hands. → seen in: Cloud DW Challengers · AI Daily · AI Hardware · OLTP & Distributed SQL\n- **A dense September deadline cluster.** Databricks `users`-group entitlements removed Sept 14; JDK 27 GA and Oracle's next CSPU Sept 15; Snowflake 2026_07 bundle enters disabled-by-default Sept 4–8; Redshift TLS 1.2 minimum and ODBC 1.x EOL, Android developer verification, and `gemini-omni-flash-preview` shutdown all on Sept 30; Fabric Runtime 2.0 becomes the default late September; GitHub Actions 90-day check retention, Python 3.15 final, Apple's EU Core Technology Commission and the Oracle quarterly CPU (Oct 20) follow. Most of these are silent-until-it-breaks. → seen in: Databricks · Oracle · Snowflake · Redshift · Mobile Development · Microsoft Fabric / Synapse · Platform & DevOps · App Dev (Backend)\n- **Vendor-run numbers, contradicted by independents, in every lane.** Fabric NEE \"6x TPC-DS\" vs. a page that itemizes the correctness gaps it fixes; Snowflake Adaptive vs Gen1 where SELECT's independent run contradicts the launch framing ([SELECT](https://select.dev/posts/adaptive-vs-gen1-where-does-snowflake-s-new-warehouse-actually-save-you-money)); Venice's PCIe lane count reported as 96 and 128; Kioxia PCIe 6.0 samples \"functional only\"; DuckDB 20x vs 3x. The only audited DB result this month is a 101,552 tpmC single-box Korean TPC-C. → seen in: Microsoft Fabric / Synapse · Snowflake · Database Hardware · Cloud DW Challengers · AI Hardware\n",
  "whatsnew": {
-  "prev_date": "2026-09-01",
+  "prev_date": "2026-09-03",
   "new": [
-   {
-    "topic": "Oracle",
-    "title": "Oracle: \"Prepare Now — apply RU 19.32 / 23.26.3 immediately upon availability\" (Aug 18)",
-    "url": "https://blogs.oracle.com/database/prepare-now-apply-the-upcoming-oracle-database-release-update-immediately-upon-availability"
-   },
    {
     "topic": "AI Daily",
     "title": "GPT-6 Astra (Sep 3, rolling out)",
@@ -243,23 +238,13 @@ window.BRIEFINGS = {
    },
    {
     "topic": "AI Daily",
-    "title": "Claude Fable 5.1 + Claude Mythos 5.1 (Sep 1)",
-    "url": "https://www.anthropic.com/claude-fable-and-mythos-5-1"
+    "title": "Astra on ARC-AGI-3: 62.7% or 99.9%, depending on harness",
+    "url": "https://arcprize.org/blog/astra"
    },
    {
-    "topic": "AI App Dev",
-    "title": "Claude Fable 5.1 / Mythos 5.1: `tool_choice` `any` and `tool` return 400",
-    "url": "https://platform.claude.com/docs/en/release-notes/api"
-   },
-   {
-    "topic": "AI App Dev",
-    "title": "OpenAI GPT-6 Astra (Sep 3): no `reasoning.effort: none`, no custom `temperature`/`top_p`, no logprobs, tool calling only via Responses API",
-    "url": "https://developers.openai.com/api/docs/changelog"
-   },
-   {
-    "topic": "Snowflake",
-    "title": "2026_07 bundle preview: 23 BCRs, Disabled-by-default in 10.32 (Sep 4–8), Enabled-by-default in October",
-    "url": "https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_07_bundle"
+    "topic": "AI Daily",
+    "title": "Nvidia to acquire Hugging Face for ~$12.93B (announced Sep 3; reported Aug 27)",
+    "url": "https://blogs.nvidia.com/blog/nvidia-to-acquire-hugging-face/"
    },
    {
     "topic": "Microsoft Fabric / Synapse",
@@ -267,114 +252,130 @@ window.BRIEFINGS = {
     "url": "https://nflo.tech/knowledge-base/2026-08-21-cve-2026-69836-en/"
    },
    {
+    "topic": "AI App Dev",
+    "title": "MCP stdio command-injection family (OX Security): 13 products incl. LiteLLM (CVE-2026-30623, fixed v1.83.7), Flowise (CVE-2026-40933, High, fixed post-3.1.0), Windsurf (CVE-2026-30615), DocsGPT (CVE-2026-26015), LangBot (CVE-2026-54449); several still unfixed (Jaaz, Agent Zero, LangFlow unassigned)",
+    "url": "https://www.ox.security/blog/mcp-supply-chain-advisory-rce-vulnerabilities-across-the-ai-ecosystem/"
+   },
+   {
     "topic": "Platform & DevOps",
     "title": "ingress-nginx CVE-2026-4342 (CVSS 8.8 High) and CVE-2026-3288 — nginx config injection via Ingress annotations/`rewrite-target`",
     "url": "https://github.com/kubernetes/kubernetes/issues/137893"
    },
    {
-    "topic": "Platform & DevOps",
-    "title": "FLAG — GitHub Actions: from Oct 1, checks, workflow runs and statuses fall under the Actions retention setting (default 90 days, previously 400+)",
-    "url": "https://github.blog/changelog/2026-08-27-actions-retention-will-cover-checks-workflow-runs-and-statuses"
+    "topic": "Open Formats & CDC",
+    "title": "Context: CVE-2026-42809 (Critical, CVSS 9.4 per GitHub advisory / 9.9 per other trackers) — Polaris < 1.4.1, patched May",
+    "url": "https://github.com/advisories/GHSA-8ggj-j522-h5qf"
    },
    {
-    "topic": "Cloud DW Challengers",
-    "title": "[ClickHouse OSS] 26.8 LTS released 2026-08-27 — check the incompatible-changes list before upgrading.",
-    "url": "https://clickhouse.com/docs/whats-new/changelog"
+    "topic": "Open Formats & CDC",
+    "title": "Iceberg Terraform Provider 1.0 (Sep 2)",
+    "url": "https://dev.to/alexmercedcoder/apache-data-lakehouse-weekly-august-26-to-september-2-2026-40i1"
    },
    {
-    "topic": "Cloud DW Challengers",
-    "title": "[DuckDB / DuckLake / MotherDuck] AWS is acquiring DuckLabs (announced Aug 26, effective early September). DuckDB, DuckLake, Quack and extensions stay MIT under the non-profit DuckDB Foundation, which will add a stakeholder advisory board; founders keep technical direction from Amsterdam.",
-    "url": "https://duckdb.org/2026/08/26/ducklabs-to-join-aws.html"
+    "topic": "App Dev (Backend)",
+    "title": "Rust 1.98.1 (Sep 3) fixes a vtable miscompilation in 1.98.0 (Aug 20)",
+    "url": "https://blog.rust-lang.org/2026/09/03/Rust-1.98.1/"
    },
    {
-    "topic": "Database Hardware",
-    "title": "AWS EC2 R9g / R9gd (Graviton5) GA Aug 31: up to 192 vCPU / 1,536 GiB, DDR5-8800 (vs. 5600 on Graviton4), 5x larger L3, up to 100 Gbps network and 72 Gbps EBS, R9gd with up to 3x3,800 GB local NVMe; \"up to 25%\" more compute than R8g.",
-    "url": "https://aws.amazon.com/blogs/aws/amazon-ec2-r9g-and-r9gd-instances-powered-by-aws-graviton5-processors-are-now-generally-available/"
+    "topic": "Frontend & Web Platform",
+    "title": "Next.js 16.3 (stable, Aug 3): Turbopack memory eviction + disk cache on by default, native Node streams for SSR, opt-in \"Instant Navigations\"",
+    "url": "https://nextjs.org/blog/next-16-3"
    },
    {
-    "topic": "Database Hardware",
-    "title": "Server DRAM contract prices: TrendForce's standing guidance is +13–18% QoQ for 3Q26, after +93–98% (1Q26) and +58–63% (2Q26); long-term agreements are what's capping the increase.",
-    "url": "https://www.trendforce.com/presscenter/news/20260709-13140.html"
+    "topic": "NL2SQL / Text-to-SQL",
+    "title": "BIRD leaderboard: SiriusAI-SQL (Tencent) takes #1 at 82.28% test EX (submitted 2026-09-02)",
+    "url": "https://bird-bench.github.io/"
    },
    {
-    "topic": "Databricks",
-    "title": "DBR 19 moves to a unified rolling release model — no more 19.0/19.1/19.2",
-    "url": "https://docs.databricks.com/aws/en/release-notes/whats-coming"
+    "topic": "NL2SQL / Text-to-SQL",
+    "title": "Vanna (vanna-ai/vanna) is archived — read-only since 2026-03-29, last release v2.0.2 (2026-02-02)",
+    "url": "https://github.com/vanna-ai/vanna"
+   },
+   {
+    "topic": "Mobile Development",
+    "title": "Android Developer Verification enforcement — Sept 30, 2026",
+    "url": "https://developer.android.com/distribute/play-policies"
+   },
+   {
+    "topic": "Mobile Development",
+    "title": "Expo Go now requires login (iOS, SDK 57+, Sept 3; Android to follow).",
+    "url": "https://expo.dev/changelog/expo-go-57-login"
    },
    {
     "topic": "AI Daily",
-    "title": "GitHub Copilot: Fable 5.1 GA (Sep 1), code review can now approve PRs (Sep 1)",
-    "url": "https://github.blog/changelog/2026-09-01-claude-fable-5-1-generally-available-in-github-copilot"
+    "title": "Sep 3 overlapping outages: OpenAI, Claude, Grok",
+    "url": "https://status.claude.com/"
+   },
+   {
+    "topic": "AI Hardware",
+    "title": "NVIDIA Dynamo \"shadow engine recovery\" (preview): 7.3 s vs 283 s cold restart on B200 with GLM-5.2",
+    "url": "https://developer.nvidia.com/blog/restore-llm-inference-capacity-in-seconds-with-shadow-engine-recovery-in-nvidia-dynamo/"
+   },
+   {
+    "topic": "OLTP & Distributed SQL",
+    "title": "Neon acquires the Electric sync-engine team (Aug 14); ships all five PG minors within 5 days (Aug 21)",
+    "url": "https://neon.com/docs/changelog"
+   },
+   {
+    "topic": "Oracle",
+    "title": "Oracle Key Vault 21.15 / Audit Vault 20.18 \"critical security update\" releases",
+    "url": "https://blogs.oracle.com/database/okv2115"
+   },
+   {
+    "topic": "Microsoft Fabric / Synapse",
+    "title": "Copilot CU rates on record: 100 CU-s per 1K input tokens, 10 CU-s cached input, 400 CU-s output; billed as background (24h smoothing)",
+    "url": "https://learn.microsoft.com/en-us/fabric/fundamentals/copilot-fabric-consumption"
+   },
+   {
+    "topic": "Database Hardware",
+    "title": "Microchip + Micron demoed an end-to-end PCIe 6.0 storage path (Switchtec Gen 6 switch on 3 nm + Micron 9650) at FMS (Aug 6).",
+    "url": "https://www.thelec.net/news/articleView.html?idxno=12859"
    }
   ],
-  "new_more": 198,
+  "new_more": 127,
   "changed": [
    {
     "topic": "Oracle",
     "title": "August 2026 CSPU (Aug 18): 925 CVEs / 943 patches; DB Server gets 6",
     "url": "https://www.oracle.com/security-alerts/cspuaug2026.html",
-    "note": "high → urgent: RU 19.32 alone does not cover the 9.6 Clusterware CVEs; next CSPU Sep 15"
-   },
-   {
-    "topic": "Databricks",
-    "title": "Sept 14, 2026 — `users` system group has no entitlements; enforced for all workspaces",
-    "url": "https://docs.databricks.com/aws/en/release-notes/whats-coming",
-    "note": "deadline now 10 days out"
-   },
-   {
-    "topic": "AI Daily",
-    "title": "Nvidia to acquire Hugging Face for ~$12.93B (announced Sep 3; reported Aug 27)",
-    "url": "https://blogs.nvidia.com/blog/nvidia-to-acquire-hugging-face/",
-    "note": "reported → announced ($12.93B)"
-   },
-   {
-    "topic": "Cloud DW Challengers",
-    "title": "[DuckDB OSS] v2.0-alpha is installable now (`pip install duckdb --pre --upgrade`, `DUCKDB_VERSION=alpha` for the CLI); stable projected second half of October.",
-    "url": "https://duckdb.org/2026/09/02/try-duckdb-20-alpha.html",
-    "note": "preview → 2.0-alpha installable; GA late Oct"
-   },
-   {
-    "topic": "Open Formats & CDC",
-    "title": "PyIceberg 0.12.0 released Sep 1",
-    "url": "https://dev.to/alexmercedcoder/apache-data-lakehouse-weekly-august-26-to-september-2-2026-40i1",
-    "note": "rc2 → released"
+    "note": "high → urgent: three remote-unauthenticated Clusterware CVEs (9.6/9.6/9.1) need a one-off on top of 19.32"
    },
    {
     "topic": "Frontend & Web Platform",
-    "title": "Vitest 5.0 (Sep 3): requires Node ≥22.12 and Vite ≥6.4; 19–53% faster on their benchmark configs; breaking defaults",
-    "url": "https://vitest.dev/blog/vitest-5",
-    "note": "RC → 5.0 GA (Sep 3)"
+    "title": "CHAINDROP / Shai-Hulud worm: `keyv@6.0.0`, `flat-cache@6.1.24`, `file-entry-cache@11.1.6`, `cache-manager@7.2.10`, `cacheable-request@13.0.20`, `cacheable@2.5.1`, `@cacheable/*`, `ecto@5.0.1` plus 400+ downstream packages (~2B monthly downloads) backdoored on Aug 4",
+    "url": "https://www.elastic.co/security-labs/shai-hulud-chaindrop-npm-supply-chain",
+    "note": "urgent → normal: malicious versions pulled from the registry; remaining work is lockfile audit and token rotation"
    },
    {
-    "topic": "Microsoft Fabric / Synapse",
-    "title": "Fabric Runtime 2.0 GA — Spark 4.1, Delta Lake 4.2, Python 3.13, Java 21, Scala 2.13, Azure Linux 3.0; opt-in now, default \"late September 2026\"",
-    "url": "https://learn.microsoft.com/en-us/fabric/data-engineering/runtime-2-0",
-    "note": "GA → default for new workspaces late Sept"
-   },
-   {
-    "topic": "App Dev (Backend)",
-    "title": "Rust 1.98.1 (Sep 3) fixes a vtable miscompilation in 1.98.0 (Aug 20)",
-    "url": "https://blog.rust-lang.org/2026/09/03/Rust-1.98.1/",
-    "note": "1.98.0 miscompiles vtables → 1.98.1 fix (Sep 3)"
-   },
-   {
-    "topic": "Mobile Development",
-    "title": "AGP 9.4.0 stable (Sept)",
-    "url": "https://developer.android.com/build/releases/gradle-plugin",
-    "note": "preview → stable"
+    "topic": "MongoDB",
+    "title": "Driver CVE batch (2026-08-27): cross-tenant database retargeting via dot/NUL injection in namespace strings.",
+    "url": "https://www.mongodb.com/resources/products/alerts",
+    "note": "driver namespace-injection batch upgraded: cross-tenant retargeting confirmed across six drivers"
    },
    {
     "topic": "Microsoft Fabric / Synapse",
     "title": "Synapse \"Allow trusted Microsoft services\" firewall exception retirement — dates conflict",
     "url": "https://www.alithya.com/en/insights/blog-posts/azure-synapse-retiring-trusted-services-access-august-1-2026",
-    "note": "postponed to 2027 vs Aug 1 retirement — sources now conflict"
+    "note": "Synapse trusted-services retirement dates now conflict between two Microsoft pages"
+   },
+   {
+    "topic": "Snowflake",
+    "title": "Service-user password ban, Phase 3 (Aug–Oct 2026, per-account enforcement date)",
+    "url": "https://www.bleepingcomputer.com/news/security/snowflake-ends-service-account-passwords-now-comes-the-hard-part/",
+    "note": "Phase 3 password ban is per-account; check your notified date"
    }
   ],
   "ongoing": [
    {
+    "topic": "Databricks",
+    "title": "Sept 14, 2026 — `users` system group has no entitlements; enforced for all workspaces",
+    "days": 4,
+    "url": "https://docs.databricks.com/aws/en/release-notes/whats-coming"
+   },
+   {
     "topic": "OLTP & Distributed SQL",
     "title": "PostgreSQL 18.6 / 17.11 / 16.15 / 15.19 / 14.24 — 28 CVEs, 110+ bug fixes (Aug 13)",
-    "days": 17,
+    "days": 19,
     "url": "https://www.postgresql.org/about/news/postgresql-186-1711-1615-1519-1424-and-19-beta-3-released-3365/"
    },
    {
@@ -384,52 +385,28 @@ window.BRIEFINGS = {
     "url": "https://www.postgresql.org/support/security/CVE-2026-14669/"
    },
    {
+    "topic": "Frontend & Web Platform",
+    "title": "Next.js August security release: two Critical unauthenticated RCEs, fixed in 16.3.3 (Active LTS) and 15.5.24 (Maintenance LTS)",
+    "days": 6,
+    "url": "https://nextjs.org/blog/august-2026-security-release"
+   },
+   {
+    "topic": "Microsoft Fabric / Synapse",
+    "title": "Fabric Runtime 2.0 GA — Spark 4.1, Delta Lake 4.2, Python 3.13, Java 21, Scala 2.13, Azure Linux 3.0; opt-in now, default \"late September 2026\"",
+    "days": 6,
+    "url": "https://learn.microsoft.com/en-us/fabric/data-engineering/runtime-2-0"
+   },
+   {
     "topic": "MongoDB",
     "title": "MongoDB 8.3.8 / 8.0.29 / 7.0.40 (2026-08-11): CVE-2026-18687…18712.",
     "days": 7,
     "url": "https://www.mongodb.com/resources/products/alerts"
    },
    {
-    "topic": "MongoDB",
-    "title": "Driver CVE batch (2026-08-27): cross-tenant database retargeting via dot/NUL injection in namespace strings.",
-    "days": 3,
-    "url": "https://www.mongodb.com/resources/products/alerts"
-   },
-   {
-    "topic": "Frontend & Web Platform",
-    "title": "Next.js August security release: two Critical unauthenticated RCEs, fixed in 16.3.3 (Active LTS) and 15.5.24 (Maintenance LTS)",
-    "days": 5,
-    "url": "https://nextjs.org/blog/august-2026-security-release"
-   },
-   {
     "topic": "App Dev (Backend)",
-    "title": "keyv / cacheable npm compromise (Aug 4, fallout through August) — check lockfiles, rotate CI secrets",
-    "days": 9,
-    "url": "https://snyk.io/blog/inside-keyv-npm-compromise-preinstall-malware-trusted-provenance-ide-hooks/"
-   },
-   {
-    "topic": "Open Formats & CDC",
-    "title": "parquet-java 1.18.0 (Aug 11) has silent data corruption; 1.18.1 RC1 voted Aug 31–Sep 1",
-    "days": 6,
-    "url": "http://www.mail-archive.com/dev@parquet.apache.org/msg27850.html"
-   },
-   {
-    "topic": "Cloud DW Challengers",
-    "title": "[ClickHouse OSS] CVE-2026-51992 — SQL injection in `CREATE DICTIONARY` source handling, CVSS 9.1 Critical, affects ClickHouse Server ≤ 26.3.9.8, published Jul 29. Advisory lists no patched version; ClickHouse's own security changelog page had no 2026 entries during this run.",
-    "days": 2,
-    "url": "https://github.com/advisories/GHSA-vh7m-4w88-p24f"
-   },
-   {
-    "topic": "Snowflake",
-    "title": "Service-user password ban, Phase 3 (Aug–Oct 2026, per-account enforcement date)",
-    "days": 2,
-    "url": "https://www.bleepingcomputer.com/news/security/snowflake-ends-service-account-passwords-now-comes-the-hard-part/"
-   },
-   {
-    "topic": "Mobile Development",
-    "title": "Google Play: target API 36 (Android 16) required for new apps and updates since Aug 31, 2026",
-    "days": 22,
-    "url": "https://developer.android.com/google/play/requirements/target-sdk"
+    "title": "JDK 27 GA Sep 15",
+    "days": 3,
+    "url": "https://www.infoq.com/news/2026/08/java-27-so-far/"
    },
    {
     "topic": "Platform & DevOps",
@@ -438,13 +415,19 @@ window.BRIEFINGS = {
     "url": "https://kubernetes.io/blog/2026/07/31/kubernetes-v1-37-sneak-peek/"
    },
    {
-    "topic": "Redshift",
-    "title": "Patch 203 (1.0.347559 → 1.0.417950) is the phase-in patch for Python UDF EOL and a heavy zero-ETL stabilization release.",
-    "days": 4,
-    "url": "https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html"
+    "topic": "Mobile Development",
+    "title": "Apple EU terms: Core Technology Fee → 5% Core Technology Commission, effective Oct 1, 2026.",
+    "days": 2,
+    "url": "https://developer.apple.com/news/?id=08182026a"
+   },
+   {
+    "topic": "OLTP & Distributed SQL",
+    "title": "PostgreSQL 14 EOL 2026-11-12",
+    "days": 8,
+    "url": "https://www.postgresql.org/about/news/postgresql-186-1711-1615-1519-1424-and-19-beta-3-released-3365/"
    }
   ],
-  "aged_out": 428
+  "aged_out": 406
  },
  "sections": [
   {
