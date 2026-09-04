@@ -88,6 +88,18 @@ main drops the write entirely and both CLAUDE.md copies now carry this section
 verbatim — keep them identical. If the routine ever prompts on line 1 again,
 the stored prompt has the line back; delete it there.
 
+Backfill procedure (done 2026-09-04 for 09-02 and 09-03; Karl: "I don't want
+gaps"). A missed day is reconstructed, never skipped: per-date scratch dir with
+SHARED_RULES.md cutoff rules ("treat D as today; include only items dated ≤ D;
+countdowns relative to D"), 19 research agents per day (launch ≤20 at once —
+the concurrent-subagent cap is 20), run.json generated "<D> 09:00 EDT", model
+label "<model> (backfilled <today>)" so the dashboard is honest about it.
+Ledger dictionary must be replayed in date order: restore keys.json to its
+pre-run snapshot, finalize D1, then D2, then re-extract/re-finalize today
+against the last backfilled day, and re-curate today's since-yesterday view.
+One push, one Pages verification. The private lens cannot be backfilled
+(artifact version history is linear) — say so in the report.
+
 Addendum 2026-08-31: **container suspension silently kills background
 subagents.** The session VM slept ~12h mid-run; on resume all 11 in-flight
 research agents showed "running"-looking transcripts that never advanced, and
