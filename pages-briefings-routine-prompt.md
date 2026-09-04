@@ -26,7 +26,8 @@ WORKFLOW (one scheduled run, top to bottom):
                        └───────────────────────────────────────────────┘
                                         │
    Step 0  BOOTSTRAP ....... cd repo root, git fetch, checkout gh-pages, pull,
-                                        │       touch .nojekyll, set git author
+                                        │       touch .nojekyll, set git author;
+                                        │       RERUN = today's ledger is already in git
    Step 1  NOW ............. run `date` → full "YYYY-MM-DD HH:MM TZ"
                                         │
    Step 2  SECTIONS ........ build the 19 topics, all {status:"pending"}
@@ -50,6 +51,8 @@ WORKFLOW (one scheduled run, top to bottom):
    Step 4c SINCE-YESTERDAY .. build today's headline ledger, match it against the
                                         │       canonical key dictionary (keys.json, 45d window) →
                                         │       "What's new / changed / still ongoing"
+                                        │       (RERUN: never re-count a story already
+                                        │        stamped today — the tally guard)
    Step 5  FINALIZE ........ set generated + summary → git add/commit/push ONCE
                                         │       (also writes archive/ledger/<date>.json)
                                         │
@@ -58,6 +61,8 @@ WORKFLOW (one scheduled run, top to bottom):
                                         │       it failed/stalled, up to 3×
    Step 6  NOTIFY .......... ONE push IF push failed OR Pages deploy failed,
                                         │       ELSE IF any status=="urgent" (else: silent)
+                                        │       (RERUN: only the flags the earlier run
+                                        │        did not carry; same set → silent)
                                         ▼
                                      ( done )
 
@@ -251,6 +256,18 @@ If git push fails (auth/network), send one notification saying so — that failu
      touch .nojekyll
      git config user.name "briefings-bot"
      git config user.email "briefings-bot@users.noreply.github.com"
+   Then detect a SAME-DAY RERUN. Once a day is the intent, but a troubleshooting
+   session may already have run and published today, and the schedule then
+   fires on top of it (it happened 2026-09-04: 01:22, then 09:20):
+     DATE=$(TZ="America/New_York" date '+%Y-%m-%d')
+     RERUN=no; [ -f "archive/ledger/${DATE}.json" ] && RERUN=yes
+   When RERUN=yes, also record PRIOR_URGENT = the topic ids whose status is
+   "urgent" in that existing ledger file (step 6 needs it). Only a run that
+   PUSHED leaves that file, so a run that crashed or parked before publishing
+   does not count as a rerun. RERUN changes exactly three things — the step-4c
+   tally guard, the lens step, and the step-6 notification — and nothing else:
+   the research, the dashboard rebuild, the archive overwrite and the push all
+   run in full, so the latest run wins and a bad earlier run heals itself.
    That is the WHOLE of step 0. NEVER write to ~/.claude/settings.json (or any
    path outside the repo) from this routine — not with cat, not with python, not
    with the Write tool. Cloud sessions gate every write outside the working
@@ -440,9 +457,16 @@ If git push fails (auth/network), send one notification saying so — that failu
 
    (iv) STAMP, WRITE BACK & BUILD whatsnew. For each of today's items:
          - matched → item key = the entry's canonical key; first_seen =
-           entry.first_seen; entry.last_seen = today; entry.seen_count += 1;
-           days_seen = entry.seen_count; entry.title = today's title; add
-           today's topic to entry.topics if absent.
+           entry.first_seen; entry.title = today's title; add today's topic to
+           entry.topics if absent. Then the TALLY GUARD: if entry.last_seen is
+           ALREADY today, an earlier run today has counted this story — leave
+           seen_count alone; otherwise entry.seen_count += 1. In both cases set
+           entry.last_seen = today and days_seen = entry.seen_count. seen_count
+           is a count of DISTINCT DAYS a story was seen, never of runs, and it
+           only ever goes up — a double count is permanent and silent. The guard
+           does not depend on the RERUN flag: it also protects backfills, manual
+           reruns and a deleted ledger file. (2026-09-04: 435 stories were already
+           stamped by the day's first run; with the guard, 0 were double-counted.)
          - unmatched → new dictionary entry { title, topics: [topic],
            first_seen: today, last_seen: today, seen_count: 1, aliases: [] };
            first_seen = today and days_seen = 1.
@@ -537,6 +561,14 @@ If git push fails (auth/network), send one notification saying so — that failu
    - If git push FAILED (after retries) OR the Pages deployment FAILED (after
      re-triggers): send ONE push — "Pages publish failed: <reason>" (name whether it
      was the push or the Pages deploy, and the last DEPLOY_SHA). That failure IS the news.
+   - Else if RERUN=yes (step 0): compare today's urgent topic ids with PRIOR_URGENT.
+     Identical set, or today's is a subset → send NOTHING; the earlier run already
+     pushed those. Today added flags the earlier run did not carry → send ONE push
+     covering ONLY the new ones, and say "same-day rerun" in the first line. A topic
+     that dropped out of urgent is not news (two agents calibrating the same facts
+     differently). (2026-09-04: the 01:22 run flagged databricks + oracle; the 09:20
+     rerun flagged databricks + formats + frontend + snowflake → one push, the three
+     new ones only.)
    - Else if ANY section.status === "urgent": send ONE push. Lead sentence = the single
      most important item across all briefs; then list each urgent topic with its
      headline + why it matters + the deadline/severity. Wrap in <routine_summary>…</routine_summary>.
