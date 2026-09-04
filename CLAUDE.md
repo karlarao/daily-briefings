@@ -37,16 +37,22 @@ unmatched rule is harmless. Reason: on 2026-08-28 a research subagent parked
 file — nobody is present to approve prompts in scheduled runs. If a new
 read-only command starts prompting, extend the list on BOTH branches.
 
-**The `Artifact` rule is honored ONLY in `~/.claude/settings.json` (user
-level), NOT in the repo file** — proven 2026-08-30 when the lens publish
-prompted and was denied despite `"Artifact"` sitting in the repo allowlist on
-both branches (the repo rule stays there anyway; it is harmless and may work in
-other harness versions). The routine's step 0 therefore MERGE-writes the
-allowlist into `~/.claude/settings.json`: read the existing file if any, union
-the allow rules, write back. Never plain-overwrite (that truncated user
-settings every run before 2026-08-28) and never skip the write (that broke the
-Artifact publish on 2026-08-30). Both failure modes actually happened — the
-read-modify-write is the only safe shape.
+**NEVER write `~/.claude/settings.json` (or anything outside the repo) from the
+routine** — settled 2026-09-04 after the 2026-09-02 and 2026-09-03 runs both
+parked forever on line 1 of the stored prompt (`mkdir -p ~/.claude && cat … >
+~/.claude/settings.json`). Reproduced in-session: `cat` of the repo file alone
+is allowed; `mkdir -p ~/.claude` alone is denied; the Write tool on
+`/root/.claude/settings.json` is denied. Two independent causes: (1) `mkdir`
+is not on the allowlist and every segment of a `&&` chain must match; (2) cloud
+sessions gate all writes outside the working directory, and Claude's own
+settings files are always gated — an allowlist cannot pre-approve editing the
+allowlist. So the "merge-write user settings" idea (added 2026-08-30 because
+the repo-level `Artifact` rule was not honored) is a chicken-and-egg: the line
+meant to prevent prompts IS an unapprovable prompt. Consequence: the step-5c
+lens publish may prompt once at the very end — accepted, non-fatal, and covered
+by 5c's notification rule. The repo `"Artifact"` rule stays in
+`.claude/settings.json` (harmless). If a durable fix is ever found it has to be
+on the scheduler side (a routine-level permission mode), not in the prompt.
 
 ## Watchdog philosophy (agreed 2026-08-29)
 

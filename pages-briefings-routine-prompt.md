@@ -134,13 +134,14 @@ NOTES FOR A FUTURE LLM RUNNING THIS  (intent > literal instructions)
         latest built state staged for the single end-of-run push.
   - RESILIENCE: if the Artifact call fails with a transient error ("permission
     stream closed", AbortError, network), retry up to 3× with 2/4/8s backoff
-    before falling back to the action:"list" recovery path. The Artifact allow
-    rule lives in ~/.claude/settings.json, written by the step-0 merge-write —
-    the repo .claude/settings.json rule is NOT honored for Artifact in this
-    environment (proven 2026-08-30). If a publish still prompts, the step-0
-    write was skipped or failed: verify ~/.claude/settings.json contains
-    "Artifact" before concluding anything else. A "Denied by user" result is a
-    real denial, not plumbing — do not retry it in an unattended run.
+    before falling back to the action:"list" recovery path. The only allow rule
+    this routine can rely on is the repo .claude/settings.json (it may not be
+    honored for Artifact — 2026-08-30 — but user-level settings CANNOT be written
+    from a cloud run; see step 0). If the publish prompts and nobody approves it,
+    that is the 5c NON-FATAL path: the public dashboard is already live, so
+    build the lens, leave the Artifact call pending, and fold the "Lens NOT
+    published" line into the step-6 notification. A "Denied by user" result is
+    a real denial, not plumbing — do not retry it in an unattended run.
   - LENS BUILD GUARDS (step 5c only): the lens is built by INHERITANCE — you
     fetch the published edition and splice into it — so build defects are SILENT:
     the page renders fine and the damage only shows when diffing an edition
@@ -250,39 +251,26 @@ If git push fails (auth/network), send one notification saying so — that failu
      touch .nojekyll
      git config user.name "briefings-bot"
      git config user.email "briefings-bot@users.noreply.github.com"
-     # MERGE (never overwrite) the allowlist into user-level settings — the
-     # Artifact tool's allow rule is honored ONLY at the user level in this
-     # environment; the repo .claude/settings.json covers the Bash rules but a
-     # bare "Artifact" rule there is silently ignored (proven 2026-08-30: the
-     # step-5c publish prompted and parked despite the repo rule on both
-     # branches). Read-modify-write so nothing already in the file is lost:
-     python3 - <<'SETEOF'
-     import json, os
-     p = os.path.expanduser("~/.claude/settings.json")
-     cfg = {}
-     if os.path.exists(p):
-         try: cfg = json.load(open(p))
-         except Exception: os.rename(p, p + ".corrupt.bak")
-     allow = cfg.setdefault("permissions", {}).setdefault("allow", [])
-     for rule in ["Artifact",
-                  "Bash(sed *)","Bash(sed:*)","Bash(grep *)","Bash(grep:*)",
-                  "Bash(head *)","Bash(head:*)","Bash(tail *)","Bash(tail:*)",
-                  "Bash(cat *)","Bash(cat:*)","Bash(awk *)","Bash(awk:*)",
-                  "Bash(cut *)","Bash(cut:*)","Bash(wc *)","Bash(wc:*)",
-                  "Bash(sort *)","Bash(sort:*)","Bash(uniq *)","Bash(uniq:*)"]:
-         if rule not in allow: allow.append(rule)
-     json.dump(cfg, open(p, "w"), indent=2)
-     SETEOF
+   That is the WHOLE of step 0. NEVER write to ~/.claude/settings.json (or any
+   path outside the repo) from this routine — not with cat, not with python, not
+   with the Write tool. Cloud sessions gate every write outside the working
+   directory, and edits to Claude's own settings files are always gated (an
+   allowlist cannot pre-approve changing the allowlist), so such a line raises a
+   permission prompt that nobody is present to approve and the run parks on it
+   forever. That exact failure killed the 2026-09-02 and 2026-09-03 runs on
+   line 1 of the prompt; an `mkdir` in a `&&` chain would prompt on its own too
+   (it is not on the allowlist). If the prompt you are running still carries
+   such a line above this step, skip it and continue.
    (Pages serves the gh-pages root; index.html + codex.html already live there and
     are left untouched. The public dashboard publishes via git; .claude/settings.json
     on main and gh-pages allowlists the common read-only Bash text tools (sed, grep,
     head, tail, cat, awk, cut, wc, sort, uniq — each in both rule spellings) so
     unattended subagents never park on a permission prompt — do not remove those
-    allow rules. The user-level merge-write above exists because the Artifact rule
-    is NOT honored from the repo file; it must merge, never truncate — a plain
-    overwrite erased user settings every run before 2026-08-28, and removing the
-    write entirely broke the step-5c Artifact publish on 2026-08-30. Both failure
-    modes have actually happened; the read-modify-write is the only safe shape.)
+    allow rules. The bare "Artifact" rule in that file may or may not be honored
+    for the step-5c publish; if it is not, 5c prompts ONCE at the very end, after
+    the public dashboard is already live — that is an accepted, non-fatal cost
+    (see 5c's NON-FATAL + NOTIFICATION INTERACTION rules), never a reason to
+    write user-level settings.)
 
 1. Establish the current timestamp in US EASTERN time by running
    `TZ="America/New_York" date '+%Y-%m-%d %H:%M %Z'` — capture date, time, AND
