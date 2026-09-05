@@ -13,5 +13,23 @@
       "Bash(sort *)", "Bash(sort:*)",
       "Bash(uniq *)", "Bash(uniq:*)"
     ]
+  },
+  "hooks": {
+    "PermissionRequest": [
+      {
+        "matcher": "Artifact",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/artifact-allow.sh\"" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Artifact",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/artifact-allow.sh\"" }
+        ]
+      }
+    ]
   }
 }
