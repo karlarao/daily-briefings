@@ -4,6 +4,17 @@ This container is ephemeral. The ONLY durable state is (a) this repo and (b) the
 scheduler's stored prompt. This file is the session memory — read it, keep it
 current, and update it when a workflow decision is made.
 
+## How to answer Karl (2026-09-05 — read this first)
+
+Lead with the direct answer in one or two plain sentences: what happened, what
+I did, yes or no. THEN the detail — Karl likes detail, diagrams and ASCII, but
+only after the answer, never instead of it. A message that opens with a
+diagram, a table of caveats, or a history lesson and makes him hunt for the
+point is a failed answer ("I can't read like a newspaper every time").
+Example of right: "Yeah, I did it. I created the two files in GitHub; every run
+clones the repo, so the hook comes along. Nothing on your laptop." — then the
+diagram. Example of wrong: the same content with the diagram first.
+
 ## Maintenance workflow for routine changes (ESTABLISHED — do not re-ask)
 
 When a change to the daily-briefings routine is agreed with Karl:
