@@ -69,6 +69,39 @@ an in-run write. If an Artifact call DOES prompt in an unattended run, skip 5c
 per the addendum and put one line in the notification; do not retry a
 "Denied by user" result.
 
+## Artifact prompt (hook workaround, 2026-09-05) — supersedes the 08-31 "zero prompts" claim
+
+The lens republish (step 5c) parks a scheduled run on "Allow Claude to update
+an artifact … [Deny] [Allow once]" — no "always" option, and the repo-level
+`"Artifact"` allow rule does NOT gate it. History from the lens ledger: an
+edition published unattended every day 08-13 → 09-01, then the 09-04 09:20 run
+parked (Karl denied it), and the 09-05 09:22 run parked again. Four open
+anthropics/claude-code issues (#88112, #88997, #89967, #91883; Aug 20 – Sep 3)
+report the identical symptom, one with the same "clean for weeks, then every run
+prompts" flip on Aug 23 — a server-side change, not anything in this repo. The
+08-31 "Artifact ran with ZERO prompts" note above was true that day and is not a
+guarantee; the 08-30 "user-level only" note was equally wrong. Cloud sessions run
+in acceptEdits (Manual) mode when auto mode is unavailable, and in that mode the
+publish asks once per session — every scheduled run is a fresh session.
+
+Workaround (docs: repo `.claude/settings.json` hooks DO run in Anthropic-hosted
+cloud sessions; `PreToolUse` `permissionDecision:"allow"` and `PermissionRequest`
+`behavior:"allow"` skip the prompt): `.claude/hooks/artifact-allow.sh`, wired
+from `.claude/settings.json` under both `PreToolUse` and `PermissionRequest`
+with matcher `Artifact`. It answers "allow" ONLY for the Artifact tool and logs
+one line per firing to `/tmp/claude-artifact-hook.log` (event, mode, url), so a
+run can show which permission mode it was in. Tested live 2026-09-05 in an
+attended cloud session (Claude Code 2.1.261, mode=acceptEdits): a new publish
+and a republish-by-URL both ran with no prompt; the PreToolUse hook fired and
+cleared each one before PermissionRequest was needed. First unattended proof is
+the next scheduled run — if 5c still parks, the harness is discarding hook
+decisions in routine sessions (cf. #88698 for `--bg`) and the stored prompt's
+"skip 5c, one notification line" fallback stands. Keep the hook on BOTH branches
+with the settings file. The step-6 notification still runs after 5c; if the hook
+proves unreliable, move step 6 ahead of 5c so a parked lens never delays the
+alert. Bug report draft: scratchpad `BUG-artifact-republish-prompts-in-routine.md`
+(delivered to Karl 09-05); the useful action is a dated comment on #88997/#91883.
+
 ## Watchdog philosophy (agreed 2026-08-29)
 
 Stall detection is by transcript inactivity (flatline ~10 min), NEVER by
