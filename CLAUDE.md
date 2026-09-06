@@ -112,9 +112,10 @@ session's `Artifact action:"list"` and `action:"read"` (1.4MB) also ran clean.
 The hook is therefore honored in routine sessions, not just attended ones — the
 09-04/09-05 parking is fixed. Keep the hook on BOTH branches with the settings
 file. If a future run parks on 5c again, the harness has regressed and the
-stored prompt's "skip 5c, one notification line" fallback still stands. The step-6 notification still runs after 5c; if the hook
-proves unreliable, move step 6 ahead of 5c so a parked lens never delays the
-alert. Bug report draft: scratchpad `BUG-artifact-republish-prompts-in-routine.md`
+stored prompt's "skip 5c, one notification line" fallback still stands.
+
+The step-6 notification still runs after 5c; if the hook ever proves unreliable,
+move step 6 ahead of 5c so a parked lens never delays the alert. Bug report draft: scratchpad `BUG-artifact-republish-prompts-in-routine.md`
 (delivered to Karl 09-05); the useful action is a dated comment on #88997/#91883.
 
 ## Watchdog philosophy (agreed 2026-08-29)
