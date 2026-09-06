@@ -104,11 +104,15 @@ one line per firing to `/tmp/claude-artifact-hook.log` (event, mode, url), so a
 run can show which permission mode it was in. Tested live 2026-09-05 in an
 attended cloud session (Claude Code 2.1.261, mode=acceptEdits): a new publish
 and a republish-by-URL both ran with no prompt; the PreToolUse hook fired and
-cleared each one before PermissionRequest was needed. First unattended proof is
-the next scheduled run — if 5c still parks, the harness is discarding hook
-decisions in routine sessions (cf. #88698 for `--bg`) and the stored prompt's
-"skip 5c, one notification line" fallback stands. Keep the hook on BOTH branches
-with the settings file. The step-6 notification still runs after 5c; if the hook
+cleared each one before PermissionRequest was needed.
+
+**CONFIRMED WORKING UNATTENDED 2026-09-06 (edition 055).** The first scheduled
+run after the hook landed published the lens with ZERO prompts, and the same
+session's `Artifact action:"list"` and `action:"read"` (1.4MB) also ran clean.
+The hook is therefore honored in routine sessions, not just attended ones — the
+09-04/09-05 parking is fixed. Keep the hook on BOTH branches with the settings
+file. If a future run parks on 5c again, the harness has regressed and the
+stored prompt's "skip 5c, one notification line" fallback still stands. The step-6 notification still runs after 5c; if the hook
 proves unreliable, move step 6 ahead of 5c so a parked lens never delays the
 alert. Bug report draft: scratchpad `BUG-artifact-republish-prompts-in-routine.md`
 (delivered to Karl 09-05); the useful action is a dated comment on #88997/#91883.
@@ -201,4 +205,18 @@ lighter "delta pass" (a rarely-exercised branch that would rot unnoticed).
 Known, separate: the lens `events[]` ledger already carries heavy same-story
 key duplication at one run per day (e.g. ~8 keys for "Databricks entitlements
 Sept 14"), because each edition invents fresh slugs and `merge_parent` carries
-all of them forward. Not caused by reruns; a future cleanup.
+all of them forward. Not caused by reruns.
+
+**DONE 2026-09-06 (edition 055): events[] deduplicated 162 → 86.** The Event
+Horizon was rendering one deadline up to five times (five keys for the Sep 7
+`downstream_impact` deprecation alone), which defeats the point of a
+read-once timeline. Fix: fold rows sharing a DATE and a high title-similarity
+score, gated on ≥2 shared anchor tokens (version numbers, CVE ids, product
+nouns) so generic wording can never merge two different deadlines; the losing
+slugs are kept in an `aliases[]` on the survivor so prior-edition diffs still
+resolve, and no dated item was dropped. Two content fixes on top: the obsolete
+"which release will carry 2026_06" speculation row (superseded once 10.32 was
+confirmed) and a duplicate Apple-event row. Script: scratchpad
+`lens/dedupe_events.py`. The same duplication almost certainly affects
+`claims[]`/`patch[]` — not yet touched; those are the next cleanup, and they
+need more care because claims carry counter/ask prose worth preserving.
