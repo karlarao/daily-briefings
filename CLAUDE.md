@@ -48,6 +48,15 @@ unmatched rule is harmless. Reason: on 2026-08-28 a research subagent parked
 file — nobody is present to approve prompts in scheduled runs. If a new
 read-only command starts prompting, extend the list on BOTH branches.
 
+**Added 2026-09-07: `cp`, `mkdir`, `python3` (both spellings).** The 09-07
+09:23 scheduled run parked at step 5c on "Allow Claude to run Inspect parent
+lens structure?" — a compound `cp … && wc -c … && python3 - <<'PY'` that copies
+the fetched parent lens into the scratchpad. The identical command ran with no
+prompt in the 09-06 run; permission mode varies per cloud session, so a
+command that is auto-approved one day prompts the next. Karl approved it by
+hand. These three are what the lens build and the ledger scripts actually
+use; the routine never needs anything outside the allowlist plus git.
+
 **NEVER write `~/.claude/settings.json` from a run — and it isn't needed
 (re-proven 2026-08-31, superseding the 2026-08-30 conclusion).** Two findings
 from the 08-31 deep dive, both demonstrated live:
