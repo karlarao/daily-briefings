@@ -114,6 +114,10 @@ The hook is therefore honored in routine sessions, not just attended ones — th
 file. If a future run parks on 5c again, the harness has regressed and the
 stored prompt's "skip 5c, one notification line" fallback still stands.
 
+**Held 2026-09-07 (edition 056).** Second consecutive unattended run with zero
+Artifact prompts — `list`, `read` (1.4MB) and the republish-by-URL all clean.
+Two data points now; treat the hook as reliable but keep the fallback wording.
+
 The step-6 notification still runs after 5c; if the hook ever proves unreliable,
 move step 6 ahead of 5c so a parked lens never delays the alert. Bug report draft: scratchpad `BUG-artifact-republish-prompts-in-routine.md`
 (delivered to Karl 09-05); the useful action is a dated comment on #88997/#91883.
@@ -221,3 +225,60 @@ confirmed) and a duplicate Apple-event row. Script: scratchpad
 `lens/dedupe_events.py`. The same duplication almost certainly affects
 `claims[]`/`patch[]` — not yet touched; those are the next cleanup, and they
 need more care because claims carry counter/ask prose worth preserving.
+
+## Since-yesterday matching: the key dictionary (findings 2026-09-07)
+
+Step 4c matches today's headlines against `archive/ledger/keys.json` (12.7k
+entries). The draft slug is regenerated from each day's wording, so a purely
+deterministic match is weak — on 09-07 it matched only 66 of 717 items (9%).
+What the run settled on, after auditing samples both ways:
+
+- **Score containment, not just Jaccard.** Headlines get reworded at very
+  different lengths and Jaccard punishes that unfairly. Containment on the
+  shorter title, plus a Jaccard floor of 0.30, lifted the match rate from
+  14% to 54% (388/717) with no wrong merges in a 14-row audit.
+- **A shared CVE id merges unconditionally.** It is a globally unique
+  identifier; the same CVE reworded is the same story.
+- **Guard against version conflicts.** `CockroachDB v26.3 GA` vs
+  `v25.3 GA` scores containment 0.75 and is a DIFFERENT release. Refuse a
+  merge when both titles name version numbers and none are shared.
+  **The regex must not be `\b`-anchored**: in `v26.3` there is no word
+  boundary between `v` and `2`, so `\b\d+\.\d+` silently misses every
+  v-prefixed version — that bug produced exactly one poison merge before it
+  was caught. Use `(?<![\d.])\d+\.\d+(?:\.\d+)*`.
+- **Floor the short/generic titles.** Require ≥3 shared tokens and ≥4 tokens
+  on the shorter side, or "Agent/AI GA wave in the window:" merges into
+  "Governance GA wave" and "Prisma 8" into "Prisma 7 iterating".
+- A missed match costs one day of "new" noise; a wrong merge poisons
+  `days_seen` forever. When the audit is ambiguous, do not merge.
+
+Curation for the card is separate from matching: drop bullets from "Worth your
+weekend" / "Signals worth watching" (commentary, not headlines), drop fragments
+(bare dates, titles ending in ':', action bullets), collapse same-topic
+duplicates, then cap `new` at ~14 by severity. A promotion list lifts an item
+to the `high` band but must never outrank a real urgent.
+
+## Lens ledger duplication — gaps[] is blocked by guard 2 (2026-09-07)
+
+`claims[]`/`patch[]`/`gaps[]` still carry the same fresh-slug duplication that
+`events[]` had (gaps has three keys for GPU warehouse offload alone:
+`gpu-scan-offload-in-warehouse`, `gpu-accelerated-warehouse-execution`,
+`gpu-accelerated-warehouse`). **A routine run cannot fix this**: `gaps`,
+`patch`, `promises` and `benchmarks` are in lens_guard's `ACCUMULATING` tuple,
+so `assert_no_regression` fails any build that shrinks them — by design. The
+events dedupe worked because `events` is not append-only. Cleaning these needs
+a deliberate maintenance session that dedupes and then re-baselines the guard,
+the same way 09-06 did for events. Do not attempt it inside a scheduled run.
+
+Mitigation that IS routine work, and was done on 09-07: before adding a row,
+diff its key against the parent's keys for that section and reuse the existing
+key when it matches. That run remapped 20 of 30 proposed keys onto existing
+ones, so the duplication stopped growing even though it was not reduced.
+
+## WebSearch has a per-session cap (observed 2026-09-07)
+
+The session-wide WebSearch budget hit 200/200 partway through the 19-agent
+fan-out; later agents reported it after only ~4 searches. They completed by
+falling back to targeted WebFetch against primary sources, and brief quality
+held. No action needed, but expect it: agents launched later in the batch will
+lean on WebFetch, so keep telling them which primary URLs to fetch.
