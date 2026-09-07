@@ -11,7 +11,10 @@
       "Bash(cut *)", "Bash(cut:*)",
       "Bash(wc *)", "Bash(wc:*)",
       "Bash(sort *)", "Bash(sort:*)",
-      "Bash(uniq *)", "Bash(uniq:*)"
+      "Bash(uniq *)", "Bash(uniq:*)",
+      "Bash(cp *)", "Bash(cp:*)",
+      "Bash(mkdir *)", "Bash(mkdir:*)",
+      "Bash(python3 *)", "Bash(python3:*)"
     ]
   },
   "hooks": {
