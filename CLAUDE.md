@@ -293,3 +293,66 @@ Also worth knowing: `finalize` is safe to re-run **only** after restoring
 otherwise every matched story gets a second `seen_count` bump. The tally guard
 catches the same-day case, but restoring first is the habit that makes a
 re-finalize free. Done that way on 09-08 when adding `sev_overrides.json`.
+
+## The step-4c tooling is version-controlled now (2026-09-09)
+
+It had been rewritten from scratch on 09-04, 09-06 and 09-08 because it only
+ever lived in the session scratchpad, which dies with the container. It now
+lives on main at **`tools/ledger/`** — `ledger.py` (extract/match/finalize),
+`assemble.py`, `build.py` (dashboard DATA-block splice + encoding assertions),
+`curate.py` and `sections_base.json`. A run should read them with
+`git show origin/main:tools/ledger/ledger.py`, not reinvent them. The retuned
+2026-09-08 thresholds are baked in with the reasoning in the docstring.
+
+**Two extraction bugs found and fixed on 09-09 — both were silently destroying
+the diff, and neither was a threshold problem:**
+
+1. **Titles were ~2× the dictionary's length.** Extracted headlines ran a median
+   158 chars (whole bullet) against stored titles at a median 73. `SequenceMatcher`
+   divides by total length, so that asymmetry alone pushed genuine matches under
+   any sane threshold — 2 fuzzy merges out of 183 items on the first run. Fixed by
+   cutting titles to their first sentence with a 200-char cap, and by adding a
+   `partial_ratio()` (best window of the longer string) alongside the plain ratio.
+   Result: 116 merges out of 721. **Lesson: when the matcher under-merges, check
+   the length distribution of both sides before touching thresholds.**
+2. **Source links were never captured.** `md` bullets put their
+   `[source](url) · [docs](url)` citations on the *continuation line* below the
+   bullet, so mining only the bullet line yielded a `url` for ~1 row in 15. The
+   extractor now attaches links from continuation and sub-bullet lines to the
+   headline above them. 14 of 15 curated rows now carry `[src]`.
+
+Also: `ongoing` rows had null day counts — `build()` runs before `stamp()`, so
+the count is `seen_count + 1`, not `seen_count`.
+
+Expect tomorrow's match rate to be better than today's without any change: the
+dictionary now holds titles written by the *new* extractor, so the length
+asymmetry against today's entries disappears.
+
+## Lens findings 2026-09-09 (edition 058)
+
+**`refresh_nav` existed and no build was calling it.** The static `var NAV`
+left-rail block had drifted for at least three editions — Claim Watch read
+"139 tracked" against 158 actual, Since-yesterday read "vs edition 056", and
+Patch Radar advertised a CSPU date three editions stale. This is the same class
+as the 09-08 runbar/`povContent` drift: `rewrite_identity()` covers the title,
+sub and GEN/ED/DSLUG constants and *nothing else*. A build must explicitly
+rewrite: the runbar, `povContent["meta"]`, the `var NAV` block (via
+`G.refresh_nav`, which asserts each entry took), and the `v-wn` section's
+`data-chips`. All four are now done in the 058 builder.
+
+**The flipped section shells are NOT empty in the published page.** The routine
+spec says the seven chair-flipped `<section>` shells are empty with `setPov()`
+injecting the body. The live artifact has them carrying the *Oracle* body, and
+first paint reads the shell — splicing `""` into them renders blank panels until
+the reader clicks a chair. Seed `pov["content"]["oracle"][vid]["h"]` into each
+shell instead. (Caught by the output being 166KB *smaller* than the parent;
+a size drop against an inheritance parent is always worth explaining.)
+
+**Most "new" competitor claims are already on the board.** Of 8 claims drafted
+from today's briefs, 5 already existed under different keys (adaptive
+warehouses, DuckDB v2, Fabric NEE, Cerebras, Redshift RG). At 57 editions and a
+30-day research window this is the normal case, not the exception: check
+`{r["k"] for r in parent["claims"]}` *and* grep the key list for the vendor
+before writing a card, then merge under the older key with an alias. Only 3
+were genuinely new. A fresh slug for a story already tracked is exactly what
+makes `days` lie.
