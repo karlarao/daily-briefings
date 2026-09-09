@@ -134,6 +134,35 @@ runtime — long-running agents with a heartbeat are healthy and must not be
 killed. The publish deadline binds the dashboard, not the agents: ship on time
 with completed briefs, fold stragglers in with a follow-up commit.
 
+**Addendum 2026-09-08: the transcript-pulse signal does NOT exist in this
+harness — do not trust it.** Every `tasks/<agentId>.output` file was a fixed
+126-byte stub for all 19 agents, created at launch and never appended to; the
+real transcript is not on disk where the watchdog looks. So "file size grew"
+distinguishes nothing, and a stall watchdog built on it silently monitors
+nothing (it also never fires a false positive, which is why this went
+unnoticed). What actually works in this harness: the per-agent completion
+notification, and the fact that agents which finish return a result. On
+2026-09-08 all 19 completed (slowest was Oracle at 626s vs 234–440s for the
+rest) so nothing was lost, but a genuinely parked agent would have been
+invisible until the publish deadline. Until a real pulse exists, treat the
+step-4g rule as the actual protection: publish on schedule with the finished
+briefs and fold a straggler in with a follow-up commit — never block on one.
+
+**Addendum 2026-09-08: WebSearch has a ~200-call cap shared across the WHOLE
+session, not per agent.** It was exhausted roughly two-thirds of the way
+through the 19 research agents; every agent from then on reported it and
+completed the brief with WebFetch against primary sources instead. Briefs were
+still complete and well-sourced — WebFetch is not rate-limited the same way —
+but the later lanes are thinner in the areas that need discovery rather than a
+known URL (the agents disclosed this in their own "Filtered out" sections,
+which is the behaviour we want). Practical consequences: the cap is a budget
+to spend deliberately, primary-source URLs in the brief specs are worth more
+than search terms, and an agent saying "search budget exhausted" is reporting
+an environment limit, not failing. Several sites also 403 automated fetches
+(blogs.oracle.com, community/blog.fabric, openai.com, reuters.com,
+debezium.io, nvidia.custhelp.com, mikedietrichde.com) — agents worked around
+these and flagged them; that is expected, not an error.
+
 Addendum 2026-09-04: **the bad step-0 line reached the scheduler anyway and
 killed the 2026-09-02 and 2026-09-03 runs** (both parked on line 1 of the
 stored prompt, `mkdir -p ~/.claude && cat … > ~/.claude/settings.json`, until
@@ -230,3 +259,100 @@ confirmed) and a duplicate Apple-event row. Script: scratchpad
 `lens/dedupe_events.py`. The same duplication almost certainly affects
 `claims[]`/`patch[]` — not yet touched; those are the next cleanup, and they
 need more care because claims carry counter/ask prose worth preserving.
+
+## Two silent drifts found and fixed 2026-09-08 (edition 057)
+
+**1. `rewrite_identity()` does not cover the runbar or `povContent["meta"]`.**
+The published 09-07 edition rendered a runbar reading "Edition 055 · Generated
+2026-09-06" while its title, masthead, GEN/ED/DSLUG constants and section chips
+all correctly said 056 / 09-07 — and all four chairs' left-rail labels said
+"edition 056 · the calendar became the news" one edition later. The guard's
+three regexes each assert they matched exactly once, so they cannot silently
+no-op; they simply never covered these two places. Both are now rewritten
+explicitly in the lens builder, with a read-back assertion on the runbar. If
+`tools/lens/lens_guard.py` on main is ever refreshed from a build, fold the
+runbar and `meta` rewrites into `rewrite_identity()` so the next builder gets
+them for free.
+
+**2. The dashboard's ledger matcher (step 4c) was far too strict.** The fuzzy
+pass required title similarity ≥0.86 *and* ≥2 shared anchor tokens, where
+"anchor" was any word over three characters. Because the 19 research agents are
+stateless and reword every headline each run, that threshold classified 552 of
+621 items as brand-new — day counts reset constantly and "Since yesterday" was
+mostly resampling noise. Retuned: `strong_anchors()` now means only hard
+identifiers (CVE ids, GHSA ids, dotted versions, alphanumeric part names,
+bundle ids like `2026_06`), and a match needs similarity ≥0.62 corroborated by
+either a shared hard identifier or ≥0.50 Jaccard overlap of content words —
+or ≥0.90 similarity on its own. Same-topic-only and never-merge-two-of-today's
+still hold, so a wrong merge stays hard. Result: 159 fuzzy merges instead of
+35, 428 new instead of 552. The 15 weakest accepted merges were eyeballed and
+all were genuine same-story rewordings. Script: scratchpad `ledger.py`.
+
+Also worth knowing: `finalize` is safe to re-run **only** after restoring
+`archive/ledger/keys.json` to its pre-run state (`git checkout` it first) —
+otherwise every matched story gets a second `seen_count` bump. The tally guard
+catches the same-day case, but restoring first is the habit that makes a
+re-finalize free. Done that way on 09-08 when adding `sev_overrides.json`.
+
+## The step-4c tooling is version-controlled now (2026-09-09)
+
+It had been rewritten from scratch on 09-04, 09-06 and 09-08 because it only
+ever lived in the session scratchpad, which dies with the container. It now
+lives on main at **`tools/ledger/`** — `ledger.py` (extract/match/finalize),
+`assemble.py`, `build.py` (dashboard DATA-block splice + encoding assertions),
+`curate.py` and `sections_base.json`. A run should read them with
+`git show origin/main:tools/ledger/ledger.py`, not reinvent them. The retuned
+2026-09-08 thresholds are baked in with the reasoning in the docstring.
+
+**Two extraction bugs found and fixed on 09-09 — both were silently destroying
+the diff, and neither was a threshold problem:**
+
+1. **Titles were ~2× the dictionary's length.** Extracted headlines ran a median
+   158 chars (whole bullet) against stored titles at a median 73. `SequenceMatcher`
+   divides by total length, so that asymmetry alone pushed genuine matches under
+   any sane threshold — 2 fuzzy merges out of 183 items on the first run. Fixed by
+   cutting titles to their first sentence with a 200-char cap, and by adding a
+   `partial_ratio()` (best window of the longer string) alongside the plain ratio.
+   Result: 116 merges out of 721. **Lesson: when the matcher under-merges, check
+   the length distribution of both sides before touching thresholds.**
+2. **Source links were never captured.** `md` bullets put their
+   `[source](url) · [docs](url)` citations on the *continuation line* below the
+   bullet, so mining only the bullet line yielded a `url` for ~1 row in 15. The
+   extractor now attaches links from continuation and sub-bullet lines to the
+   headline above them. 14 of 15 curated rows now carry `[src]`.
+
+Also: `ongoing` rows had null day counts — `build()` runs before `stamp()`, so
+the count is `seen_count + 1`, not `seen_count`.
+
+Expect tomorrow's match rate to be better than today's without any change: the
+dictionary now holds titles written by the *new* extractor, so the length
+asymmetry against today's entries disappears.
+
+## Lens findings 2026-09-09 (edition 058)
+
+**`refresh_nav` existed and no build was calling it.** The static `var NAV`
+left-rail block had drifted for at least three editions — Claim Watch read
+"139 tracked" against 158 actual, Since-yesterday read "vs edition 056", and
+Patch Radar advertised a CSPU date three editions stale. This is the same class
+as the 09-08 runbar/`povContent` drift: `rewrite_identity()` covers the title,
+sub and GEN/ED/DSLUG constants and *nothing else*. A build must explicitly
+rewrite: the runbar, `povContent["meta"]`, the `var NAV` block (via
+`G.refresh_nav`, which asserts each entry took), and the `v-wn` section's
+`data-chips`. All four are now done in the 058 builder.
+
+**The flipped section shells are NOT empty in the published page.** The routine
+spec says the seven chair-flipped `<section>` shells are empty with `setPov()`
+injecting the body. The live artifact has them carrying the *Oracle* body, and
+first paint reads the shell — splicing `""` into them renders blank panels until
+the reader clicks a chair. Seed `pov["content"]["oracle"][vid]["h"]` into each
+shell instead. (Caught by the output being 166KB *smaller* than the parent;
+a size drop against an inheritance parent is always worth explaining.)
+
+**Most "new" competitor claims are already on the board.** Of 8 claims drafted
+from today's briefs, 5 already existed under different keys (adaptive
+warehouses, DuckDB v2, Fabric NEE, Cerebras, Redshift RG). At 57 editions and a
+30-day research window this is the normal case, not the exception: check
+`{r["k"] for r in parent["claims"]}` *and* grep the key list for the vendor
+before writing a card, then merge under the older key with an alias. Only 3
+were genuinely new. A fresh slug for a story already tracked is exactly what
+makes `days` lie.
