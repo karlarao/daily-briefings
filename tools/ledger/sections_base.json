@@ -1,0 +1,21 @@
+[
+{"id":"oltp","name":"OLTP & Distributed SQL","group":"Data layer","cadence":"Daily","freq":3},
+{"id":"mongodb","name":"MongoDB","group":"Data layer","cadence":"2×/week","freq":2},
+{"id":"formats","name":"Open Formats & CDC","group":"Data layer","cadence":"Daily","freq":3},
+{"id":"oracle","name":"Oracle","group":"Data layer","cadence":"Weekly","freq":1},
+{"id":"snowflake","name":"Snowflake","group":"Data layer","cadence":"2–3×/week","freq":2},
+{"id":"databricks","name":"Databricks","group":"Data layer","cadence":"2–3×/week","freq":2},
+{"id":"bigquery","name":"BigQuery","group":"Data layer","cadence":"2×/week","freq":2},
+{"id":"redshift","name":"Redshift","group":"Data layer","cadence":"Weekly","freq":1},
+{"id":"fabric","name":"Microsoft Fabric / Synapse","group":"Data layer","cadence":"Weekly","freq":1},
+{"id":"challengers","name":"Cloud DW Challengers","group":"Data layer","cadence":"2×/week","freq":2},
+{"id":"dbhw","name":"Database Hardware","group":"Data layer","cadence":"2×/week","freq":2},
+{"id":"appdev","name":"App Dev (Backend)","group":"Application layer","cadence":"Daily","freq":3},
+{"id":"aiappdev","name":"AI App Dev","group":"Application layer","cadence":"Daily","freq":3},
+{"id":"frontend","name":"Frontend & Web Platform","group":"Application layer","cadence":"Daily","freq":3},
+{"id":"devops","name":"Platform & DevOps","group":"Application layer","cadence":"Daily","freq":3},
+{"id":"mobile","name":"Mobile Development","group":"Application layer","cadence":"Weekly","freq":1},
+{"id":"aidaily","name":"AI Daily","group":"AI, Research & Hardware","cadence":"Daily","freq":3},
+{"id":"nl2sql","name":"NL2SQL / Text-to-SQL","group":"AI, Research & Hardware","cadence":"Daily","freq":3},
+{"id":"aihw","name":"AI Hardware","group":"AI, Research & Hardware","cadence":"Daily","freq":3}
+]
