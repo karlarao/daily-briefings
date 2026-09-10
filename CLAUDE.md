@@ -356,3 +356,74 @@ warehouses, DuckDB v2, Fabric NEE, Cerebras, Redshift RG). At 57 editions and a
 before writing a card, then merge under the older key with an alias. Only 3
 were genuinely new. A fresh slug for a story already tracked is exactly what
 makes `days` lie.
+
+## Run findings 2026-09-10 (edition 059)
+
+**`tools/ledger/` is NOT on main — the 09-09 note is wrong.** It lives only on
+the unmerged branch `origin/claude/affectionate-maxwell-cd9v25`. `git show
+origin/main:tools/ledger/ledger.py` fails; the working incantation is
+`git show origin/claude/affectionate-maxwell-cd9v25:tools/ledger/ledger.py`
+(also `assemble.py`, `build.py`, `curate.py`, `sections_base.json`). Five
+`claude/*` branches are now unmerged and gh-pages' CLAUDE.md is ahead of
+main's, so the two copies are NOT identical despite the standing rule. Karl
+needs to merge them, or a future run will keep rediscovering this. Everything
+else in the 09-09 note (the two extraction bugs, the retuned thresholds) is
+accurate and the tooling worked first try: 779 items extracted, 116 merges,
+0 double-counted.
+
+**The 09-06 events dedupe did not hold, and post-hoc matching is the wrong
+fix.** events[] was folded 162 → 86 on 09-06; by today it was back to 113 —
+five separate rows for "JDK 27 GA" on 15 Sept, four for the Databricks
+entitlement enforcement, four for one Alibaba TPC-DS submission in
+benchmarks[]. Nothing in the build stops an edition inventing a fresh slug for
+a story already on the board, and `merge_parent` faithfully carries every slug
+forward. This edition re-folded events 113 → 86 and benchmarks 29 → 23
+(scratchpad `lens/dedupe_rows.py`), but **the durable fix is build-time: before
+assigning a key to a drafted event, look for a parent row on the same date and
+reuse its key.** A matcher run after the fact is a treadmill.
+
+**Two dedupe guards earned their place on the first dry run, both catching
+merges that would have been permanent:**
+- *quantity conflict* — same unit, different value ⇒ never fold. It stopped the
+  Dell TPC-H **1TB** result folding into the Dell TPC-H **3TB** result: same
+  vendor, same month, near-identical wording, genuinely different submissions.
+- *hard-identifier disjointness* — if both rows name CVE/GHSA/bundle ids and
+  the sets do not intersect, never fold. It stopped a JFrog Artifactory KEV row
+  folding into a Kestra one purely because both said "CVE" and "KEV" on the
+  same due date.
+Also: **patch[] must use the similarity route only.** The anchor route (≥3
+shared anchors + Jaccard ≥ 0.35) is right for events and benchmarks but far too
+eager on security rows, where every row shares "cve", "kev", "cvss".
+
+**`assert_no_regression` is the wrong guard for a build that dedupes.** It
+fires on any shrink, which is exactly what a legitimate fold produces. Replaced
+with an alias-aware check: every parent key must still be present *or* appear
+in some survivor's `aliases[]`. Guard 2's intent (no row leaves by omission) is
+preserved; the fold is allowed. If `dedupe_rows.py` is ever promoted into
+`tools/lens/`, promote this check with it.
+
+**Known, not fixed: the claim cards' "day N" chips drift from the ledger.** The
+card HTML carries no key, so a build cannot find the card belonging to a
+re-asserted claim and bump its chip. 22 claims were re-asserted today and their
+ledger `days` went up; their rendered chips did not. Fixing it means emitting
+`data-k="<key>"` on each `.card` — cheap, and worth doing next edition.
+
+**Flag calibration ran hot on purpose: 6 urgent, double the 0–3 guideline.**
+Oracle (KEV, actively exploited, CVSS 10.0), AI Daily (CVSS 10.0 RCE + in-the-wild
+trojanized MCP servers), Open Formats (silent data corruption, no GA fix),
+MongoDB (silent auth bypass, Percona unpatched), AI App Dev (unfixed CVSS 9.0
+MCP injection), Databricks (hard deadline in 4 days). Snowflake was downgraded
+to `ok` on the rule — its CVEs are patched and its bundle enablement carries no
+dated deadline — even though 2026_06 auto-enabled this week. The rule for next
+time: apply the definition literally, downgrade the one that fails it, and say
+plainly in the summary when the day is genuinely heavy rather than trimming to
+hit a number.
+
+**Whatsnew still over-produces.** `new_more` came out at 543 of 663 unmatched.
+"Heads up" bullets are counted as news, and they are mostly restatements of an
+item already in the same brief — excluding that heading from the count (as
+"Worth your weekend" and "Signals worth watching" already are) would cut the
+number substantially without hiding anything.
+
+**Artifact hook: clean for the fifth consecutive unattended run.** `action:"list"`,
+`action:"read"` (1.6MB) and the edition-059 publish all ran with zero prompts.
