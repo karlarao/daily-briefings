@@ -254,12 +254,46 @@ def rewrite_identity(html: str, edition: str, dslug: str, gen: str) -> str:
          f'<span class="sub">edition {edition} · generated {gen}</span>'),
         (r'GEN\s*=\s*"[^"]*",\s*ED\s*=\s*"[^"]*",\s*DSLUG\s*=\s*"[^"]*"',
          f'GEN = "{gen}", ED="{edition}", DSLUG="{dslug}"'),
+        # The runbar spans were NOT covered until 2026-09-11: editions 056 and
+        # 060 both rendered the previous edition's "Edition NNN · Generated"
+        # while every other identity site was correct (see CLAUDE.md, 09-08
+        # and 09-11 findings). They are identity, so they are rewritten here.
+        (r'(<span class="lbl">Edition</span><span class="val">)[^<]*(</span>)',
+         rf'\g<1>{edition}\g<2>'),
+        (r'(<span class="lbl">Generated</span><span class="val">)[^<]*(</span>)',
+         rf'\g<1>{gen}\g<2>'),
     ]
     for pat, rep in subs:
         html, n = re.subn(pat, rep, html)
         if n != 1:
             raise LensBuildError(f"identity rewrite matched {n} times for {pat!r}, expected 1")
+    assert_identity_consistent(html, edition, dslug, gen)
     return html
+
+
+def assert_identity_consistent(html: str, edition: str, dslug: str, gen: str) -> None:
+    """Read back every identity site and refuse a page where they disagree.
+
+    A subn() count proves each pattern matched; it does not prove the page now
+    says the same thing everywhere. This is the check that would have caught
+    the 060 runbar drift before publish.
+    """
+    sites = {
+        "title": re.search(r"<title>Oracle Competitive Lens — ([^<]*)</title>", html),
+        "runbar edition": re.search(r'<span class="lbl">Edition</span><span class="val">([^<]*)', html),
+        "runbar generated": re.search(r'<span class="lbl">Generated</span><span class="val">([^<]*)', html),
+        "js": re.search(r'GEN = "([^"]*)", ED="([^"]*)", DSLUG="([^"]*)"', html),
+    }
+    want = {
+        "title": (dslug,),
+        "runbar edition": (edition,),
+        "runbar generated": (gen,),
+        "js": (gen, edition, dslug),
+    }
+    bad = {k: (m.groups() if m else None) for k, m in sites.items()
+           if not m or m.groups() != want[k]}
+    if bad:
+        raise LensBuildError(f"identity sites disagree after rewrite: {bad}")
 
 
 # -------------------------------------------------------- link coverage ---
@@ -399,6 +433,9 @@ if __name__ == "__main__":
     page = (
         '<title>Oracle Competitive Lens — 2026-01-01</title>'
         '<span class="sub">edition 001 · generated 2026-01-01 09:00 EDT</span>'
+        # the runbar is identity too — editions 056 and 060 shipped with it stale
+        '<div class="runbar"><span class="lbl">Edition</span><span class="val">001</span>'
+        '<span class="lbl">Generated</span><span class="val">2026-01-01 09:00 EDT</span></div>'
         '<script type="application/json" id="lensLedger">'
         '{"date":"2026-01-01","edition":1,"promises":[{"k":"a"},{"k":"b"}],"patch":[],'
         '"benchmarks":[],"gaps":[]}</script>'
@@ -463,10 +500,20 @@ if __name__ == "__main__":
     assert "<title>Oracle Competitive Lens — 2026-01-02</title>" in out
     assert 'edition 002 · generated 2026-01-02 09:00 EDT' in out
     assert 'ED="002"' in out and "2026-01-01" not in out.split("lensLedger")[0]
+    assert 'Edition</span><span class="val">002</span>' in out, "runbar edition not rewritten"
+    assert 'Generated</span><span class="val">2026-01-02 09:00 EDT</span>' in out, "runbar generated not rewritten"
     try:
         rewrite_identity(out, "003", "2026-01-03", "x")  # title already rewritten once
     except LensBuildError:
         raise SystemExit("identity rewrite should still match a well-formed page")
+    # the 060 failure mode: every pattern matched, yet the runbar disagrees
+    drifted = out.replace('Edition</span><span class="val">002', 'Edition</span><span class="val">001', 1)
+    try:
+        assert_identity_consistent(drifted, "002", "2026-01-02", "2026-01-02 09:00 EDT")
+    except LensBuildError as e:
+        assert "runbar edition" in str(e), str(e)
+    else:
+        raise SystemExit("identity read-back failed to trip on a stale runbar")
 
     # guard 5: verifiability drift
     good_card = ('<div class="card"><p class="card-basis">claim · '
