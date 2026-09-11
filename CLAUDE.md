@@ -536,3 +536,25 @@ assistants" sighting is gone. No fetched page's content was executed or followed
 
 **Artifact hook: clean for the sixth consecutive unattended run.** `action:"list"`,
 `action:"read"` (1.7MB) and the edition-060 publish all ran with zero prompts.
+
+**CORRECTION (same day): `reuse_key` as shipped in edition 060 was INERT.** It
+delegated to `same_story`, the very matcher the measurements above prove cannot
+separate a true duplicate from two distinct same-date events. It fired zero times
+and let a fifth "PostgreSQL 14 EOL" row onto the board right after four had been
+folded into one; the advisory version later caught two more it had missed (a third
+Spring-91-CVEs row on 08-20, a fourth September-CSPU row on 09-15). The claim
+that "the backlog stops growing" is withdrawn. What actually works: the drafter
+DECLARES identity with an explicit `same_as=<parent key>`, and the matcher is
+advisory only — it prints every same-date parent row at build time so a duplicate
+is visible before it ships, never silently reused or silently ignored. Both live
+on main-track at `tools/lens/ledger_surgery.py` (with `fold_map.py`, the
+hand-verified events fold), and `lens_guard.rewrite_identity` now also rewrites
+the runbar spans and asserts all four identity sites agree.
+
+Edition 060 was republished the same day as artifact v24 with these folded:
+  - 2026-11-12: `pg-14-eol-and-aurora-lag` → into `postgres-14-eol-nov12`
+  - patch 2026-08-20: `spring-91-cves-single-drop` → into `spring-91-cves-aug20`
+  - patch 2026-09-15: `oracle-cspu-sept-2026-11-db-patches` → into `oracle-cspu-sep-15-next`
+and the two cosmetic errors fixed (runbar "66d ledger" → 65; "17 rows left by
+folding" → 20). The version picker therefore shows two "2026-09-11" entries —
+v23 is the wrong one. Accepted cost, decided by Karl; not a precedent for reruns.
