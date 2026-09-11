@@ -427,3 +427,112 @@ number substantially without hiding anything.
 
 **Artifact hook: clean for the fifth consecutive unattended run.** `action:"list"`,
 `action:"read"` (1.6MB) and the edition-059 publish all ran with zero prompts.
+
+## Run findings 2026-09-11 (edition 060)
+
+**The WebSearch 200-call cap is SESSION-WIDE, not per-agent — and this changes
+how to plan a run.** Multiple agents reported "200/200 exhausted"; the AI App Dev
+agent reported the budget was *already gone before it started*. The later-launched
+agents therefore did their whole brief through WebFetch against primary
+changelogs, advisories and release pages — which several of them noted was the
+better source anyway, but which also produced honest coverage gaps they flagged
+themselves (BigQuery: bigframes/dbt/vector; OLTP: poolers and online-DDL tooling;
+Frontend: Safari/WebKit and the Baseline digests; DB Hardware: smaller storage and
+DPU vendors). All 19 briefs still completed. If this cap persists, the fix is to
+put the search-dependent lanes early in the launch order and let the
+changelog-shaped lanes (Oracle ADB, Snowflake/Databricks/BigQuery release notes,
+Redshift, Fabric) run late, since those are WebFetch-first by nature.
+
+**WATCHDOG BUG — the transcript pulse must use `stat -L`.** The task
+`*.output` files are SYMLINKS into
+`~/.claude/projects/.../subagents/agent-<id>.jsonl`. `stat -c %Y` on the symlink
+returns the *symlink's own* mtime, which is fixed at creation — so every agent
+reads as flatlined about 10 minutes into the run. That produced a false "5 agents
+flatlined >10min" alarm today, naming five agents that had already completed
+successfully. `stat -Lc %Y` follows the link and gives the real transcript mtime
+(the three live agents then showed ages of 1s, 94s and 101s — all healthy).
+Never kill an agent on an unfollowed symlink mtime.
+
+**Post-hoc similarity dedupe of `events[]` cannot be made safe — measured, not
+guessed.** The 09-10 note said a matcher run after the fact is a treadmill. It is
+worse than that. On the real board the TRUE duplicates score *lower* on token
+Jaccard than the same-date pairs that must never merge: the five JDK 27 rows score
+j=0.05–0.26 against each other, while "Fabric Runtime 2.0 becomes default" vs
+"Fabric Runtime 1.3 end of support" (different deadlines, same date) scores j=0.15
+and two genuinely distinct Oracle October rows score j=0.25. The top-scoring
+same-date pair on the whole board (j=0.50) was itself a real duplicate. There is
+no threshold that keeps the first group and rejects the others, because each
+duplicate is an independent re-summary sharing almost no vocabulary with its twin.
+**Identity has to be asserted at authoring time.** Two things landed today:
+`ledger_surgery.reuse_key` (before a drafted row gets a slug, reuse a same-date
+parent row's key) so the backlog stops growing, and `fold_map.py` — an explicit,
+hand-read list of duplicate groups — for the existing backlog. Events 86 → 69.
+
+**A wrong date defeats a date-keyed fold, so correct before folding.** The reason
+the JDK 27 group survived the 09-10 pass is that one of its rows was dated
+2026-09-14 when GA is the 15th; a fold keyed on date can never merge rows that
+disagree about the date. A second row called JDK 27 "LTS" when it is non-LTS. Both
+were corrected first, then the group folded 5 → 1. Expect other survivors of past
+folds to be hiding behind a bad field rather than a bad threshold.
+
+**`claims[]` and `ownclaims[]` carry the same duplication, now measured:** MI455X
+appears 8×, CBTREE 3×, the "Oracle optimizer blog has gone quiet" observation 4×,
+AutoLiquid 2×. NOT fixed today — the 09-10 note is right that these need more care
+because each card carries counter/ask prose worth preserving, and a wrong merge
+destroys authored text rather than a timeline row. This is the next cleanup, and
+it wants the same treatment: a hand-verified map, not a threshold.
+
+**DONE: claim cards now carry `data-k`, and the day chips were re-synced.** The
+09-10 note queued this. 161 of 169 carried cards were matched and keyed, and 9
+rendered "day N" chips that had drifted from the ledger were corrected. One
+gotcha for whoever touches this next: rendered card titles are TRUNCATED to ~144
+characters and suffixed with an ellipsis, so exact title matching finds only the
+short cards (42/169) — match on the prefix.
+
+**`rewrite_identity()` does NOT touch the runbar spans.** The 060 build passed
+every guard while rendering "Edition 059 · Generated 2026-09-10" in the runbar,
+because `rewrite_identity` covers the `<title>`, the masthead and the JS
+constants only. Caught by eye, not by a guard. The build now rewrites both spans
+explicitly and asserts all four identity sites agree before writing. **If
+`tools/lens/lens_guard.py` on main is ever updated, fold this into
+`rewrite_identity` itself** — it is exactly the silent-drift class the guards
+exist to catch.
+
+**The Longitudinal "High" column is not comparable across days, and now says so.**
+Each run re-derives the severity heuristic rather than reading a stored value, so
+today's pass marked 235 items high against a recent norm near 86. That is a
+classifier change, not a change in the world. The section now states this and
+points readers at Items / Oracle / lanes as the real trend lines. The durable fix
+is to store per-item severity in the ledger; queued.
+
+**Step 4c matcher needed an inverted index.** The dictionary is 14,856 entries
+(11,985 inside the 45-day window) against ~710 items/day — naive difflib is ~9.6M
+comparisons and did not finish inside two minutes. A token inverted index with
+common tokens dropped brings the whole step to **1.1 seconds**. Tally guard
+verified: 2 stories were already stamped today (the same story surfacing in two
+lanes), 0 double-counted.
+
+**Whatsnew over-production: the 09-10 recommendation works.** Excluding "Heads up"
+from the news count (alongside "Worth your weekend" and "Signals worth watching",
+which were already excluded) cut unmatched-news from 467 to 311. Still high, and
+the residue is genuine continuation bullets that no heuristic separates cleanly —
+the card is curated by hand to 15 rows regardless, so this only affects `new_more`.
+
+**Flag calibration: 5 urgent, kept deliberately.** Applying the definition
+literally, all five pass: two actively-exploited CISA KEV entries (JFrog
+Artifactory CVSS 9.8 unauth→admin with the due date already passed; Starlette
+BadHost under every FastAPI app on 0.x) and three hard deadlines inside nine days
+(Databricks entitlement enforcement 14 Sep with the opt-out removed, Oracle CSPU
+15 Sep, Snowflake removing reader-account dashboards 20 Sep). Mobile was NOT
+flagged despite iOS 27 GA landing in 3 days — a date that requires nothing of the
+reader is not a deadline, and the agent held that line correctly.
+
+**Source access:** `blogs.oracle.com` and `mikedietrichde.com` both blocked direct
+HTML retrieval (403 / captcha) from the run VM; their RSS feeds worked and were
+used instead. `amd.com` returned 503. The AWS Redshift behavior-changes page was
+fetched in BOTH its HTML and `.md` variants this run and carried **no**
+agent-directed instruction block — the 2026-09-01 "Skills for AI coding
+assistants" sighting is gone. No fetched page's content was executed or followed.
+
+**Artifact hook: clean for the sixth consecutive unattended run.** `action:"list"`,
+`action:"read"` (1.7MB) and the edition-060 publish all ran with zero prompts.
