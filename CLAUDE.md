@@ -558,3 +558,154 @@ Edition 060 was republished the same day as artifact v24 with these folded:
 and the two cosmetic errors fixed (runbar "66d ledger" → 65; "17 rows left by
 folding" → 20). The version picker therefore shows two "2026-09-11" entries —
 v23 is the wrong one. Accepted cost, decided by Karl; not a precedent for reruns.
+
+## Run findings 2026-09-12 (edition 061)
+
+**CONTAINER SUSPENSION REPRODUCED — and the 08-31 diagnosis is exactly right.**
+The VM slept ~7 hours mid-run (09:15 → 16:02 EDT), silently killing all 19
+research agents. The recognition chain, in the order that actually settled it:
+(1) **uniform simultaneous flatline** — all 19 transcripts stopped within the
+same 1-second window, which independent stalls never do; (2) transcripts cut
+mid-`assistant` record, 17 of 19 with no `stop_reason`; (3) **zero completion
+notifications** for any agent; (4) `ListAgents` → "no reachable agents", i.e.
+the harness had lost all 19 tasks — the definitive check; (5) wall clock, which
+turned inference into proof. Relaunched the whole batch per the 08-31 rule; all
+19 completed and the run published the same day, ~7h late. **Do not investigate
+per-agent when the flatline is uniform** — that is 19 investigations of one root
+cause.
+
+**The transcript pulse DOES exist in this harness — the 09-08 addendum is
+withdrawn.** That note said every `tasks/<id>.output` was a fixed 126-byte stub
+and a stall watchdog built on it monitors nothing. Wrong: the files are symlinks
+into `~/.claude/projects/.../subagents/agent-<id>.jsonl`, and the real
+transcripts grow normally (290–750 KB within four minutes of launch). It was the
+**unfollowed symlink** (the 09-11 `stat -L` bug) that made the signal look
+absent. `stat -Lc %Y` gives a true pulse. The watchdog now lives on main at
+`tools/watchdog.sh`.
+
+**Known limit of that watchdog, worth accepting rather than fixing:** it cannot
+distinguish *finished* from *parked* — a completed agent's transcript also stops
+growing, so it fires a false stall ~10 min after each agent finishes. Harmless
+if you stop it once the briefs are in; do not "fix" it by killing on age alone.
+
+**`tools/ledger/` is on main-track at last.** The 09-09 note claimed it was on
+main and the 09-10 note corrected that to "only on an unmerged branch." It is
+now genuinely on main via this branch, with two fixes that had never reached
+version control:
+- **curate.py excludes "Heads up" from the news count.** The 09-11 run applied
+  this and measured it (unmatched-news 467 → 311) but only landed lens tooling,
+  so the fix evaporated with the container. It is in the file now, with the
+  reasoning.
+- **`tools/ledger/extract_briefs.py` is new.** Re-typing each 15–20k-token brief
+  into a Write call cost ~40k context per topic and risked transcription drift;
+  this parses the agent's final message straight out of its `.jsonl`. It also
+  strips the "Report to the caller" / "Environment notes for the run owner"
+  sections several agents append — that is agent-to-agent chatter and it must
+  not reach the dashboard or be mined as fake headlines by step 4c. Match the
+  *shape* of those headings, not one wording: agents phrased it five ways today.
+
+**LENS BUG FIXED AT SOURCE: `cite()` built archive links to dates that cannot
+exist.** Edition 060 shipped seven anchors reading "archive 09-14", "archive
+10-20" etc., because callers passed an event row's **own date** (the day the
+deadline fires) instead of a day the item was seen. The links were well-formed,
+so **guard 5 passed them while they were dead on arrival** — precisely the
+silent-drift class the guards exist to catch. `lens_links.cite()` now accepts a
+date only if the archive can have a page for it (`ARCHIVE_START` ≤ d ≤ today)
+and otherwise falls through the chain. Pass a SEEN date — `last_seen`, then
+`first_seen`, then today — never the event date. The seven live anchors in 061
+were repaired.
+
+**Ledger correction that mattered more than any new row: the Iceberg V4
+equality-delete deadline was invented.** Edition 060 carried `2026-10-31`. The
+vote passed 2026-08-20 (7 binding / 17 non-binding, no dissent) but V4 is
+unreleased, no spec PR has merged, and **no date was ever announced**. Row is
+now undated. This is the 09-11 lesson applied prospectively — a wrong date
+defeats every date-keyed check downstream — so corrections run *before* anything
+else touches the board.
+
+**`reuse_key`'s advisory earned its keep on the first build.** It printed the
+same-date parents for each of the 7 new event rows (5 already on 09-14, 1 on
+09-25, 2 on 11-01), which is exactly the "make a duplicate visible at build time"
+behaviour the 09-11 correction was after. None was a duplicate; the point is
+that confirming took seconds instead of an edition.
+
+**`splice_sections(expect=N)` counts sections VISITED, not replaced.** Passing
+`expect=1` while replacing one section of fifteen fails the guard. Pass the
+page's section count (15); the separate `missing` check is what asserts your
+ids actually matched.
+
+**Flag calibration: 8 urgent, double the 09-10 high-water mark, kept
+deliberately.** Applying the definition literally, all eight pass: two CVSS 10.0
+in CISA KEV (GitLab CVE-2026-85706 due 14 Sep with a public PoC and live
+probing; Oracle CVE-2026-21962 with its due date already PASSED and forensic
+triage required), actively-exploited PaperCut, three unpatched-for-someone CVEs
+(Angular ≤19.2.25, Percona-MongoDB, plus the Snowflake driver train), and three
+hard deadlines inside 14 days (Databricks 14 Sep, Oracle CSPU 15 Sep, Snowflake
+reader dashboards 20 Sep). **Note appdev and devops flag the SAME GitLab CVE** —
+8 flags, 7 distinct stories. Redshift, Mobile and Fabric were correctly held at
+`ok` with dated items at 18–19 days; the Redshift agent said so explicitly. The
+09-10 rule held: apply the definition literally, downgrade what fails it, and
+say plainly when the day is heavy rather than trimming to a number.
+
+**A prior edition's urgent RESOLVED, which is worth as much as a new flag.**
+parquet-java 1.18.1 shipped GA 2026-09-04; the "pin to 1.17.1" advice is
+retired. Edition 060 was not wrong to call it RC1 — the project never updated
+GitHub's Releases page, which still badges 1.18.0 as Latest. **For ASF projects,
+Maven Central metadata and `downloads.apache.org` are authoritative for GA;
+GitHub Releases is not.**
+
+**Source-access changes to carry forward:**
+- **`blogs.oracle.com` RSS is now blocked too** (403 on `/database/rss`,
+  `/atom`, `/optimizer/rss`, via WebFetch *and* curl with a browser UA). The
+  topic spec still says "use its RSS feed" — that no longer works, and it cost
+  the Oracle `## Performance` category entirely this run. `oracle.com` itself
+  403s WebFetch but **serves fine to curl with a browser user-agent**, which is
+  how the CSPU advisories were read.
+- **Google Cloud docs now 301** from `cloud.google.com/<product>/docs/*` to
+  `docs.cloud.google.com/*` (pricing and blog stay put).
+- **AWS Redshift doc URLs in the topic spec are dead** — use
+  `behavior-changes.html` and `cluster-versions.html`, fetched with
+  `Accept: text/markdown` (plain WebFetch gets the JS shell).
+- **The AWS what's-new search API is stale at 2024-05**; the RSS feed works but
+  holds only ~11 days.
+- **`debezium.io/feed.xml` returns 200 to plain curl with full release-note
+  bodies** even though the site 403s WebFetch — far better than its GitHub
+  release entries, which are just `[maven-release-plugin] copy for tag`.
+- **The GitHub MCP server is scoped to `karlarao/daily-briefings` only**, and
+  `api.github.com` is blocked to curl. WebFetch against
+  `github.com/<owner>/<repo>/releases.atom` works and is the reliable route;
+  `raw.githubusercontent.com` works for changelog files.
+- **Richard Foote's blog has been retired since July 2023** — drop it from the
+  Oracle brief's preferred-source list.
+
+**Security sweep, negative result, second consecutive run:** the 2026-09-01
+`docs.aws.amazon.com` "Skills for AI coding assistants" block is still gone. The
+Redshift agent diffed both variants of `behavior-changes.html` (markdown 34,132
+bytes vs HTML 55,977) and grepped for every marker — zero matches. The mechanism
+persists (the `Accept: text/markdown` header still yields a separate variant;
+the `.md` URL form now 404s), the content does not. Worth noting the sequel: the
+`aws agent-toolkit` that block was pushing shipped as an announced Redshift
+product on 2026-08-27, and Microsoft shipped MIT-licensed "Skills for Fabric"
+that AI coding tools auto-load at session start. Vendors are now shipping
+first-party agent skill packs holding write credentials to production data
+platforms. No fetched page's suggestion was executed by any agent this run.
+
+**Pages deploy needed one re-trigger.** The first deploy sat `queued` with a
+frozen `updated_at`; an empty commit re-triggered it and the second succeeded.
+Note for the next run: I re-triggered at ~2 minutes, not the ~3 the spec calls
+for, after misreading elapsed time — the cost is one extra Pages build, and the
+first run then shows `cancelled` because a newer push supersedes a queued one.
+That `cancelled` is expected, not a failure.
+
+**Artifact hook: clean for the eighth consecutive unattended run.**
+`action:"list"`, `action:"read"` (1.8 MB) and the edition-061 publish all ran
+with zero prompts.
+
+**Scope note, stated rather than hidden:** the ~7h suspension compressed the
+lens pass. Edition 061 refreshes Event Horizon, Since-yesterday, Today's Read
+across all four chairs, the runbar, the nav and the ledger. Claim Watch, Mirror,
+Question Forecast, Gap Ledger, Benchmarks, Promises, Perf Signals, Build Radar
+and Skills Radar **carry forward from 060 unrevised and the edition says so on
+its face**. The chair-symmetry rule ("a stale persona chair is worse than none")
+was not fully honoured today; a stale chair that is *labelled* stale is the
+lesser evil, but next run should restore full depth.
