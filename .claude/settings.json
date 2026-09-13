@@ -2,19 +2,32 @@
   "permissions": {
     "allow": [
       "Artifact",
-      "Bash(sed *)", "Bash(sed:*)",
-      "Bash(grep *)", "Bash(grep:*)",
-      "Bash(head *)", "Bash(head:*)",
-      "Bash(tail *)", "Bash(tail:*)",
-      "Bash(cat *)", "Bash(cat:*)",
-      "Bash(awk *)", "Bash(awk:*)",
-      "Bash(cut *)", "Bash(cut:*)",
-      "Bash(wc *)", "Bash(wc:*)",
-      "Bash(sort *)", "Bash(sort:*)",
-      "Bash(uniq *)", "Bash(uniq:*)",
-      "Bash(cp *)", "Bash(cp:*)",
-      "Bash(mkdir *)", "Bash(mkdir:*)",
-      "Bash(python3 *)", "Bash(python3:*)"
+      "Bash(sed *)",
+      "Bash(sed:*)",
+      "Bash(grep *)",
+      "Bash(grep:*)",
+      "Bash(head *)",
+      "Bash(head:*)",
+      "Bash(tail *)",
+      "Bash(tail:*)",
+      "Bash(cat *)",
+      "Bash(cat:*)",
+      "Bash(awk *)",
+      "Bash(awk:*)",
+      "Bash(cut *)",
+      "Bash(cut:*)",
+      "Bash(wc *)",
+      "Bash(wc:*)",
+      "Bash(sort *)",
+      "Bash(sort:*)",
+      "Bash(uniq *)",
+      "Bash(uniq:*)",
+      "Bash(cp *)",
+      "Bash(cp:*)",
+      "Bash(mkdir *)",
+      "Bash(mkdir:*)",
+      "Bash(python3 *)",
+      "Bash(python3:*)"
     ]
   },
   "hooks": {
@@ -22,7 +35,19 @@
       {
         "matcher": "Artifact",
         "hooks": [
-          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/artifact-allow.sh\"" }
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/artifact-allow.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/bash-allow.sh\""
+          }
         ]
       }
     ],
@@ -30,7 +55,19 @@
       {
         "matcher": "Artifact",
         "hooks": [
-          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/artifact-allow.sh\"" }
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/artifact-allow.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/bash-allow.sh\""
+          }
         ]
       }
     ]
