@@ -1,22 +1,45 @@
 #!/usr/bin/env python3
-"""Override extractor-computed tokens with the harness-reported figures.
+"""Override extractor-computed token counts with the harness-reported figures.
 
-extract_briefs.py sums usage from the LAST assistant record of each agent
-transcript; the harness reports the agent's full total in its completion
-notification. Measured 2026-09-14: extractor ran 3.8% low overall, per-agent
--3.5% to +11%. The spec says use what the harness reported, so we do.
+Why this exists (measured 2026-09-14): extract_briefs.py reads `usage` from the
+LAST assistant record of each agent transcript. The harness reports the agent's
+FULL total in its completion notification. Across 19 agents the extractor ran
+3.8% low overall, and between -3.5% and +11% per agent -- small, but the routine
+spec says to use "the token usage your harness reported", and the notification
+figure is the one that matches what the run actually cost.
+
+Usage:
+    python3 apply_harness_tokens.py <harness_tokens.json> <sections.json>
+
+harness_tokens.json is {"<topic id>": <int>, ...}, transcribed from each agent's
+completion notification. Topics absent from it keep the extractor's value.
 """
-import json, sys
-SP = "/tmp/claude-0/-home-user-daily-briefings/0201b255-e799-57de-ade5-fd7554fff54a/scratchpad"
-h = json.load(open(SP + "/harness_tokens.json"))
-p = SP + "/tools/ledger/sections.json"
-secs = json.load(open(p))
-patched = 0
-for s in secs:
-    if s["id"] in h:
-        s["tokens"] = h[s["id"]]
-        patched += 1
-json.dump(secs, open(p, "w"), indent=1)
-tot = sum(s.get("tokens", 0) or 0 for s in secs)
-print("patched %d/%d sections with harness tokens; total=%d (~%dk)"
-      % (patched, len(secs), tot, round(tot / 5000.0) * 5))
+import json
+import sys
+
+
+def main():
+    if len(sys.argv) != 3:
+        raise SystemExit(__doc__)
+    hpath, spath = sys.argv[1], sys.argv[2]
+    harness = json.load(open(hpath))
+    secs = json.load(open(spath))
+
+    patched, delta = 0, 0
+    for s in secs:
+        if s["id"] in harness:
+            delta += harness[s["id"]] - int(s.get("tokens") or 0)
+            s["tokens"] = harness[s["id"]]
+            patched += 1
+
+    json.dump(secs, open(spath, "w"), indent=1)
+    total = sum(int(s.get("tokens") or 0) for s in secs)
+    print("patched %d/%d sections; net %+d tokens; total=%d (~%dk)"
+          % (patched, len(secs), delta, total, round(total / 5000.0) * 5))
+    missing = [s["id"] for s in secs if s["id"] not in harness]
+    if missing:
+        print("no harness figure (kept extractor value): %s" % ", ".join(missing))
+
+
+if __name__ == "__main__":
+    main()
