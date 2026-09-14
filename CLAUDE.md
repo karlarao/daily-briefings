@@ -934,3 +934,147 @@ found in a fetched page. Worth noting the sequel is now openly shipped rather th
 covert: Microsoft's MIT-licensed Skills for Fabric auto-load at session start from
 `~/.copilot/`, `.cursorrules` and `AGENTS.md`, and AWS's agent toolkit backs a
 ChatGPT Work plugin running generated SQL against customer data.
+## Run findings 2026-09-14 (edition 063)
+
+**`tools/ledger/` is STILL not on main — fourth consecutive run to rediscover it.**
+The 09-09 note claimed it was there, 09-10 corrected that, 09-12 said it had
+"landed on main-track", and 09-13 landed it on yet another unmerged branch. It is
+on `claude/affectionate-maxwell-5ve9hs` (09-13) and now on this branch too. Six
+`claude/*` branches are unmerged and **main's CLAUDE.md and gh-pages' differ**
+despite the standing rule that they stay identical. Karl: merging these is what
+stops the rediscovery loop. Working incantation until then:
+`git show origin/claude/affectionate-maxwell-5ve9hs:tools/ledger/ledger.py`.
+
+**The Artifact and Bash hooks are clean for the TENTH consecutive unattended run.**
+`action:"list"`, `action:"read"` (1.9 MB) and the edition-063 publish all ran with
+zero prompts, and no Bash compound parked. Nothing to do; recording the streak
+because the 09-04/09-05 parking is what these hooks exist to prevent.
+
+**Step 5b as written would have triggered a needless Pages rebuild.** The spec says
+to poll the workflow run's `status`/`conclusion`. For DEPLOY_SHA 373289e the
+run-level status still read `in_progress` — with `updated_at` frozen at 13:41:20 —
+minutes after all three jobs, **including `deploy`, had completed `success`**
+(deploy finished 13:41:27). Polling only the run level reads as "stuck after ~3
+min" and fires the empty-commit re-trigger, which is exactly the 09-12 mistake
+("re-triggered at ~2 minutes, cost one extra Pages build"). **Use
+`list_workflow_jobs` and read the `deploy` job's conclusion — the run-level
+aggregate lags it.**
+
+**extract_briefs.py undercounts tokens by ~4%.** It sums `usage` from the last
+assistant record; the harness reports the agent's full total in its completion
+notification. Measured across 19 agents: extractor 2,478,813 vs harness 2,583,388
+(3.8% low overall, -3.5% to +11% per agent). The spec says use what the harness
+reported, so `tools/ledger/apply_harness_tokens.py` now overlays the notification
+figures onto sections.json. Run total this edition: **~2,585k**, roughly 2.9x
+recent runs — the agents averaged 60+ tool calls each because the WebSearch budget
+pushed them onto primary-source fetching.
+
+**The step-4c `sev` heuristic scores from the title alone, and mis-ranked the day's
+biggest deadline.** "Workspace entitlement control is enforced ... as of 2026-09-14
+and opt-out is gone" scored `normal` — no CVE id, no deprecation keyword — and
+sorted below 113 other normals, so the single most consequential vendor event of
+the day fell off the Since-yesterday card entirely. Fixed with `PIN_ONGOING` in
+curate.py: a hand-verified pin, same pattern as PICKS and the lens fold maps,
+rather than loosening the ranking. The heuristic itself is still title-only;
+scoring it against the topic's status would be the durable fix.
+
+**Flag calibration: 9 urgent, triple the 0-3 guideline, all nine kept.** Audited
+one at a time against the literal definition: five distinct CISA KEV entries with
+dates inside eleven days (GitLab CVSS 10.0 and PaperCut both due TODAY, Starlette
+16 Sep, two exploited Chrome V8 zero-days 18 + 23 Sep, JFrog 25 Sep), two CVEs with
+**no fix available for somebody** (Aurora PostgreSQL 32 days behind 28 CVEs;
+Percona-MongoDB still unpatched for a CVSS 9.2 that can leave auth silently OFF),
+one enforcement landing today with the opt-out removed, and two Apple rules already
+in force that block App Store submission. Nine flags, nine distinct stories — no
+shared CVE across lanes, unlike 061. Six lanes were held at `ok` on the rule,
+including Snowflake (four driver CVEs but none in KEV, none exploited, fix
+available) and Redshift (its deadlines are 16 days out, outside the bar). **Mobile
+was flagged where 09-11 correctly declined to:** that was iOS 27 GA, a date
+requiring nothing of the reader; this is a submission-blocking rule already
+binding. A requirement in force is past its deadline, not approaching one.
+
+### Lens findings (edition 063)
+
+**Three dated rows were wrong on the board and were corrected before anything else
+was touched.** (1) The DeepSeek V4-Pro retirement **did not happen** — 062 carried
+a reroute of every `deepseek-v4-pro` call to V4.1 Flash today; DeepSeek's own
+changelog says it will "continue providing API services ... with the billing method
+remaining unchanged." Aggregators carried it; the vendor contradicts them. Row
+retracted, not deleted. (2) **Fabric Runtime 1.3 end-of-support had an invented
+date** — 062 called 2026-09-30 "a real, day-precise date"; learn.microsoft.com
+carries no retirement sentence at all and still defaults new workspaces to 1.3.
+(3) **Snowflake 2026_06 "Generally Enabled" was never dated** — the
+Enabled-by-Default flip already happened in 10.32 and no closing date is published.
+Same class as the 09-12 Iceberg V4 fabrication, and the reason corrections run
+first: a wrong date defeats every date-keyed check downstream.
+
+**A seventh identity site exists, and two more had drifted.** Published edition 062
+rendered `povContent.content[*]["v-read"].c` as "edition 061 · 2026-09-12" on all
+four chairs (one edition stale) and `povContent.meta[*]["v-wn"]` as "vs edition
+060" (two editions stale) — neither is covered by `rewrite_identity`. A third,
+found only by reading the output: the **`<section>` shell's own `data-chips`
+attribute**, which is what FIRST PAINT reads before `setPov()` runs, and which
+splice leaves alone unless the section is in `chips`. Every build must now rewrite
+**seven** sites: title, masthead, GEN/ED/DSLUG, runbar spans, `var NAV`,
+povContent `meta` + `.c`, and the section-shell `data-chips`. 063 rewrites and
+asserts all seven. If `tools/lens/lens_guard.py` is ever refreshed, fold the last
+three into `rewrite_identity` and extend `assert_identity_consistent`.
+
+**The claims/patch duplication backlog is real, measured, and now partly paid
+down.** The 09-10 and 09-11 notes deferred this as needing "a hand-verified map,
+not a threshold." Measured on the 062 board: **three rows on 2026-09-15 for one
+September CSPU** — one of which was dated September but whose prose described
+*August* — five rows on 2026-08-18 for one August advisory, one row whose `due`
+field was the literal string `"shipped 18 Aug"`, **eight MI455X claims** that are
+really two spec sheets plus three distinct claims, and two identical CBTREE
+ownclaims. `tools/lens/fold_map_063.py` folds claims 175→172, ownclaims 44→43 and
+patch 166→161, every loser preserved in the survivor's `aliases[]`. The
+alias-aware regression check (not `assert_no_regression`, which fires on any
+shrink) confirms no parent key left by omission.
+
+**The board contradicted itself on a date and the contradiction nearly shipped.**
+The Iceberg V4 equality-delete vote was recorded as 2026-08-20 in two places while
+today's Open Formats brief reads the ASF result thread as 2026-08-18 and cites it
+twice. Harmonised to 08-18 with the disagreement recorded in the row. **Lesson for
+the build order:** the first fix edited the assembled HTML, which left the
+*rendered* `v-events` table still saying 08-20 because it had been generated from
+the pre-fix ledger. Corrections must be applied **to the ledger, before section
+generation** — not to the page afterwards.
+
+**Most "new" competitor claims were already on the board, again.** Of 20 candidates
+drafted from today's briefs, **17 already existed** under different keys; only
+three were genuinely new (ClickHouse On-Demand Compute with no published pricing,
+the Iceberg V4 equality-delete ban, and the 4-hi HBM cost-per-token argument that
+Rubin Ultra's 192GB seems to concede). At 63 editions on a 30-day window this is
+the normal case, exactly as the 09-09 note predicted. Check the key list before
+writing a card.
+
+**Guard 5 earned its place, again.** It failed the first assembly with 11 factual
+units carrying no citation and named every one. Link mining is healthy: 1,059
+primary links across 19 briefs, every brief with more links than headline bullets,
+and 818 citation units on the finished page with zero uncited.
+
+**Scope, stated plainly:** 063 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven
+identity sites. Claim Watch gained three cards and 107 day-bumps but its prose
+layout, plus Mirror, Question Forecast, Gap Ledger, Benchmarks, Promises, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers, **carry forward from 062**.
+The quarterly re-rank of Skills and Build Radar across all four chairs is due
+2026-10-01.
+
+**Source access:** `blogs.oracle.com` is now fully unreachable — HTML *and* RSS,
+WebFetch *and* curl-with-browser-UA, across `/database/rss`, `/optimizer/rss`,
+`/feed` and the site's own JSON API — for a second consecutive week. It cost the
+Oracle brief's `## Performance` category outright; Dietrich and McDonald carried
+the lane instead. `mikedietrichde.com` HTML is behind an `sgcaptcha` redirect but
+its RSS works. **The topic spec's instruction to "use its RSS feed" for
+blogs.oracle.com should be dropped — it has not worked for two weeks.**
+
+**Security sweep, negative result, third consecutive run.** The Redshift agent
+fetched `behavior-changes.html` in both variants (markdown 34,110 bytes vs HTML
+55,955), confirmed all 21 headings present in both, and grepped both plus
+`cluster-versions.html` for every marker — zero hits. The 2026-09-01 "Skills for AI
+coding assistants" block is still gone; the delivery mechanism still exists. One
+benign sighting worth recording: MongoDB docs pages append a line advertising an
+AI-agent documentation index at `mongodb.com/docs/llms.txt`. It was treated as
+data. **No fetched page's suggestion was executed by any agent this run.**
