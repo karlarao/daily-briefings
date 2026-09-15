@@ -1078,3 +1078,51 @@ coding assistants" block is still gone; the delivery mechanism still exists. One
 benign sighting worth recording: MongoDB docs pages append a line advertising an
 AI-agent documentation index at `mongodb.com/docs/llms.txt`. It was treated as
 data. **No fetched page's suggestion was executed by any agent this run.**
+
+## 2026-09-15 run PARKED on a Bash prompt the hook should have cleared — and the hook was not the bug
+
+The 09-15 09:12 scheduled run parked at step 5c on "Allow Claude to run Stage
+parent lens and inspect its ledger?" — the compound
+`SP="…" && mkdir -p … && cp /root/.claude/projects/…/artifact-….html … && wc -c … && python3 - <<'PY'`.
+Karl found it 40 minutes later and released it by hand with **Allow once**.
+
+**Diagnosed from the 09-14 session, which could not reach the 09-15 container:**
+1. `bash-allow.sh` is CORRECT. Fed the exact parked command, it answers `allow`
+   on both `PreToolUse` and `PermissionRequest`. The `/root/.claude/projects/…`
+   path does NOT trip the hard refusals (those are `.claude/settings` and a
+   REDIRECT into `.claude/`; a `cp` source is neither).
+2. The wiring is CORRECT on both `main` and `gh-pages` — settings.json and both
+   hook files are byte-identical, mode 100755, `$CLAUDE_PROJECT_DIR` resolves.
+3. It WORKED the day before: the 09-14 run logged 277 hook firings (all
+   `PreToolUse`, 157 allow / 120 pass, `mode=default`, Claude Code 2.1.272) and
+   was never prompted, including dozens of this exact `SP=… && … && python3 - <<'PY'`
+   shape. It also worked on 09-13.
+So on 09-15 the harness either **did not invoke the hook** or **ignored its
+`allow`**. That is the same class of server-side flip documented for the
+Artifact hook on 09-04/09-05 ("clean for weeks, then every run prompts"), and it
+means **a hook is a mitigation, not a guarantee** — exactly as that section
+already says.
+
+**What settles which of the two it was:** `/tmp/claude-bash-hook.log` IN THE
+PARKED SESSION'S container. A line for the command with `verdict=allow` ⇒ the
+hook fired and was ignored (harness stopped honouring hook permission
+decisions). No line at all ⇒ the hook was never invoked (hooks not loaded, or
+`$CLAUDE_PROJECT_DIR` unset). The next time a run parks, dump that file before
+doing anything else.
+
+**The fix that does not depend on hooks at all — measured, not guessed:** the
+leading `SP="…"` assignment is the ONLY piece of that compound the allowlist
+cannot match. Strip it and every remaining piece (`mkdir`, `cp`, `wc`,
+`python3`) is already in `permissions.allow`, so the whole compound auto-allows
+with NO hook involved. Tested against the live settings.json:
+
+    AS WRITTEN  : SP="…" ✗  mkdir ✓  cp ✓  wc ✓  python3 ✓   ⇒ PROMPT
+    WITHOUT SP= :           mkdir ✓  cp ✓  wc ✓  python3 ✓   ⇒ AUTO-ALLOW
+
+**RULE for every run and every subagent: never start a Bash compound with a
+`VAR=` assignment.** Put the path in a python heredoc variable, or spell the
+literal path in each piece. The allowlist then covers the routine's whole
+read-only vocabulary on its own, and the hook becomes the belt to that
+suspenders instead of the only thing holding the trousers up. This needs a
+line in the stored prompt's SHARED RULES to be durable — a stored-prompt
+change, so it goes to Karl as both files per the maintenance workflow.
