@@ -1126,3 +1126,156 @@ read-only vocabulary on its own, and the hook becomes the belt to that
 suspenders instead of the only thing holding the trousers up. This needs a
 line in the stored prompt's SHARED RULES to be durable — a stored-prompt
 change, so it goes to Karl as both files per the maintenance workflow.
+
+## SETTLED: the 09-15 park — the hook FIRED and the harness IGNORED it
+
+The section above asked for one piece of evidence to decide between "the hook
+was never invoked" and "the hook fired and was ignored", and named the file that
+would settle it. **The parked session was this run's own container, so it could
+read that file. Answer: the hook fired and was ignored.**
+
+From `/tmp/claude-bash-hook.log` in the parked container (437 records, all
+`mode=default`, 243 pass / 194 allow):
+
+    2026-09-15T13:19:06Z PermissionRequest mode=default verdict=allow
+      reason=every piece is a read-only/allowlisted command
+      cmd=SP="…" && mkdir -p "$SP/lens" && cp /root/.claude/projects/…
+
+    …43.6 minutes of NO hook firings at all…
+
+    2026-09-15T14:06:45Z PreToolUse mode=default verdict=allow   ← Karl clicked Allow once
+
+So the hook **did** run, on `PermissionRequest`, and **did** answer `allow`, at
+13:19:06Z — and the session parked anyway until a human approved it 47 minutes
+later. That is branch (1): **the harness stopped honouring the hook's permission
+decision.** Same server-side class as the 09-04/09-05 Artifact parking. A hook
+is a mitigation, not a guarantee — now demonstrated rather than inferred.
+
+**The sharpest clue in the log, worth following next time:** there is exactly
+**ONE** `PermissionRequest` event in all 437 records, and it is this command.
+Every other command was cleared by `PreToolUse`. What is unique about this one
+is that its `cp` SOURCE is `/root/.claude/projects/…` — **outside the project
+directory**. The 2026-08-31 note already records that cloud sessions gate every
+*write* outside the working directory behind an approval no allowlist can
+pre-approve; this looks like the same gate applied to a *read*, sitting in front
+of the hook rather than behind it. Not proven, but it is the one distinguishing
+feature and it predicts which commands will park.
+
+**Consequence for the routine, beyond the `VAR=` rule:** step 5c never needs that
+`cp` at all. `Artifact action:"read"` already reports the saved path; pass it
+straight to `python3` (allowlisted, reads in-process) or use the Read tool. This
+edition staged the parent once and every later step worked from the scratchpad
+copy. Removing the cross-directory `cp` removes the only command in the whole
+routine that has ever raised this prompt.
+
+**Correction to this run's own earlier diagnosis.** Mid-run the watchdog showed
+all 19 agents flatlined and I called it container suspension on the four
+signatures from 08-31/09-12 — uniform simultaneous flatline, transcripts cut
+mid-`assistant` with no `stop_reason`, zero completion notifications, `ListAgents`
+empty. **Those four signatures do NOT distinguish a suspension from a long
+permission park**, because both freeze the session wholesale. The relaunch was
+right either way (that is the value of the rule), but the label was wrong. What
+separates them: a suspension shows a wall-clock jump with no hook activity and no
+human action; a park shows a `PermissionRequest` in the hook log and ends the
+instant a human clicks. **Check the hook log before naming the cause.**
+
+## Run findings 2026-09-15 (edition 064)
+
+**Flag calibration: 12 urgent — a new series high — and all twelve survive the
+literal definition.** Audited one at a time rather than trimmed: five CISA KEV
+entries with dates inside ten days (LiteLLM CVE-2026-59822 + Starlette
+CVE-2026-48710 both due 16 Sep, two exploited Chrome V8 zero-days 18 + 23 Sep,
+JFrog Artifactory 25 Sep), one KEV entry **19 days overdue** with forensic-triage
+obligations (Oracle CVE-2026-21962, CVSS 10.0, fix available since January), four
+"no fix exists for somebody" (Parquet CVE-2026-73334 through 1.18.1,
+crystaldba/postgres-mcp 9.2 with only an open PR, Percona MongoDB, Angular 19
+EOL), and four dated cutovers inside 15 days. **12 flags, 11 distinct stories** —
+Starlette is shared by App Dev and AI App Dev, the 061-style overlap. Seven lanes
+held `ok` while carrying real CVEs, which is the evidence the agents discriminated.
+
+**Ledger health: 741 items, 26 exact + 114 fuzzy merges, 0 double-counted.**
+Tally guard bumped 140, guarded 0. Dictionary 17,468 → 18,069. The 15 weakest
+accepted merges were eyeballed and all were genuine same-story rewordings.
+
+**`curate.py` gotcha worth knowing before you write the lists: the within-topic
+fold runs BEFORE pinning, and `EXCLUDE_ONGOING` can delete the row a
+`PIN_ONGOING` entry is trying to keep.** Today the Redshift TLS deadline (15 days
+out, an urgent flag) vanished from the card: the short row
+"2026-09-30 — TLS 1.0/1.1 connections rejected." was folded into the longer
+"…15 days out…" row, my exclude then killed the survivor, and the pin reported
+"not found" rather than resurrecting it. **Pin the surviving (usually longer)
+wording, and never exclude a row you also pin.** The `WARN: pin not found` line is
+the symptom — treat it as an error, not a warning.
+
+**Guard 5 passed on the FIRST assembly (744 units, zero uncited)**, against the
+09-13 note's expectation that it fails on any edition adding authored prose. The
+difference is mechanical: every section generator called `cite()` inline as it
+emitted each row, instead of prose being written first and citations retrofitted.
+**Wire the citation into the generator, not into a later pass.**
+
+**The claims/patch duplication backlog got its first real payment.** The 09-10,
+09-11 and 09-13 notes all deferred this. Patch Radar carried **six separate rows
+for the single parquet-java 1.18.0 corruption story** (`…-corruption-unfixed`,
+`…-silent-corruption`, `…-1181-rc1-voted`, `…-corruption`, `…-binary-corruption`,
+`…-1181-rc-only`). Today all six became jointly obsolete — 1.18.1 GA'd 09-04 and
+fixes both paths — which is exactly the right moment to fold: hand-read, all
+losers preserved in `aliases[]`, survivor rewritten as RESOLVED. patch 161 → 160
+including four genuinely new rows. The alias-aware regression check confirmed no
+parent key left by omission.
+
+**Four dated rows on the board were wrong and were corrected before any section
+was generated** (the 09-14 build-order rule):
+- `nist-moves-fips-140-2…` — 2026-09-21 is a **NIST calendar event, not an Oracle
+  deadline**. Oracle publishes no date; the 26ai guide says only "sometime after".
+  The real trap is silent: `FIPS_140=TRUE` resolves to FIPS_140_2 today and to
+  FIPS_140_3 once that is desupported — same value, different cipher policy.
+- `play-permission-clampdown-2027` — the 062/063 date conflict **resolved to
+  2027-01-27**; both Google surfaces now agree. 2026-10-28 survives only in
+  third-party trackers.
+- `microsoft-fabric-runtime-1-3…` — **both prior readings were wrong.** 062 called
+  2026-09-30 a day-precise cliff; 063 said the page carried no retirement sentence
+  at all. The lifecycle page carries the date *and* an LTS footnote: it is a
+  GA→LTS transition with support through **March 2027**.
+- `snowflake-2026-07-enable-oct` — the bundle page says "a subsequent October
+  release" (month only) while BCR-2378's timeline names **2026-10-13**. Carried the
+  day-precise one with the disagreement recorded on the row.
+
+**Step 5b's 09-14 rule paid off immediately.** For DEPLOY_SHA e199538 the
+run-level status read `queued` while the `deploy` job had already completed
+`success` at 14:36:56Z. Polling the run level would have fired a needless
+empty-commit re-trigger. **Read the `deploy` job, never the run aggregate.**
+
+**A push landed on gh-pages mid-run and the push was rejected non-fast-forward.**
+Another session pushed a CLAUDE.md-only commit while this run worked. The fix was
+a rebase of this run's own *unpushed* commit onto the updated remote — not a force
+push, and not a rewrite of anyone else's history. Files did not overlap. Worth
+knowing this can happen at all: the routine is no longer the only writer to
+gh-pages.
+
+**Source access:** `mikedietrichde.com` RSS is **now blocked too** — a regression
+from 09-14, when the feed still worked; both curl-with-browser-UA and WebFetch get
+the `sgcaptcha` redirect. Combined with `blogs.oracle.com` unreachable for a third
+consecutive week, Oracle's performance channel has no working substitute and the
+`## Performance` category is a structural gap, not a quiet month. New this run:
+`api.osv.dev/v1/query` via POST is an uncapped route to advisory data with
+affected/fixed ranges; `github.com/**/releases.atom` is 403 to curl but fine via
+WebFetch (confirmed again by two lanes independently).
+
+**WebSearch did not bind for any of the 19 agents** — every lane that mentioned it
+said the cap was never hit, on a second consecutive run. The launch order
+(search-dependent lanes first, changelog lanes last) is holding up; keep it.
+
+**Artifact hook clean for the 11th consecutive unattended run** — `list`, `read`
+(1.9 MB) and the edition-064 publish (v28) all ran with zero prompts. The Bash
+hook, on the same day, did not. Both are in the repo; only one of them held.
+
+**Scope, stated plainly:** 064 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven
+identity sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks,
+Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor Dossiers
+**carry forward from 063 and the edition says so on its face**, because the 47-minute
+park plus a full 19-agent relaunch cost the depth pass. The quarterly Skills/Build
+re-rank across all four chairs is due **2026-10-01** — two weeks out, do not let it
+slip. Output is 38,267 bytes smaller than the parent, fully accounted for:
+v-patch −37,298 (the radar cap plus the six-row fold), v-read −1,802,
+v-longitudinal −336, against v-wn +6,439 and v-events +1,244.
