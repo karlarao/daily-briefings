@@ -743,3 +743,539 @@ sudo, eval, `$CMD`, npm and the 09-02 line all fall through. Keep it on BOTH
 branches with the settings file. If a run still parks on a Bash prompt, read
 `/tmp/claude-bash-hook.log` first — the reason column says which piece it
 refused.
+
+## Run findings 2026-09-13 (edition 062)
+
+**Clean run: no suspension, no parked prompt, all 19 agents completed first try.**
+Launched 09:02 EDT, last brief in ~11:30, published 13:24 UTC, lens v26 after.
+Both hooks clean — `artifact-allow.sh` for the 10th consecutive unattended run
+(list + 1.8MB read + publish, zero prompts) and `bash-allow.sh` on its first
+scheduled run after landing, with no Bash prompt anywhere despite heavy
+`SP=… && python3 - <<'PY'` use. That shape is exactly what killed 09-12.
+
+**The WebSearch cap did NOT bind this run, and the launch order is the likely
+reason.** Agents reported 4–10 searches each and several said explicitly the cap
+was never hit — against 09-11/09-12 where it was exhausted two-thirds through.
+The change: search-dependent lanes (aidaily, aiappdev, nl2sql, aihw, dbhw,
+challengers, oltp, mongodb, formats) launched FIRST and changelog-shaped lanes
+(oracle, snowflake, databricks, bigquery, redshift, fabric) last, per the 09-11
+recommendation. Also worth carrying: agents were told in SHARED_RULES.md that
+WebFetch against primary sources is the better route anyway, and several said so
+unprompted. **Keep the launch order.**
+
+**`tools/ledger/` is STILL not on main — third run to rediscover this.** It lives
+only on the unmerged branch `origin/claude/affectionate-maxwell-yyi0jj`, together
+with `tools/watchdog.sh`. The 09-12 commit message says "land tools/ledger on
+main"; that commit is on that branch, which was never merged. Working incantation:
+`git show origin/claude/affectionate-maxwell-yyi0jj:tools/ledger/ledger.py`.
+Karl needs to merge the `claude/*` branches or every run keeps paying this tax.
+
+**The brief-extractor contract drifted and it is worth pinning down.**
+`extract_briefs.py` parses a `STATUS: / FLAG_REASON: / BRIEF:` *header* contract.
+This run's SHARED_RULES.md told agents to emit the brief first and the status
+lines last. Rather than re-prompt 19 agents, the extractor now accepts BOTH
+shapes (`_split_trailing_contract` falls through to the header parser when no
+`BRIEF:` marker exists), with the caller-directed-chatter strip applied on either
+path. Four-case self-test in-session. **Either write SHARED_RULES to match the
+header contract, or keep the dual parser — but do not let them disagree silently,
+because the failure mode is "not ready: <topic>(no-brief)" for all 19.**
+
+**`tools/watchdog.sh` had the 09-12 session's tasks dir hardcoded.** It would have
+globbed an empty directory and reported a clean bill forever. Now takes
+`$TASKS_DIR`. A watchdog that cannot fail is worse than none — same class as the
+09-11 unfollowed-symlink bug. Fixed in the scratchpad copy; needs landing.
+
+**Flag calibration: 11 urgent, and all 11 survive the literal definition.**
+Nearly 4× the 0–3 guideline, so it was audited item by item rather than trimmed:
+3 CISA KEV entries with deadlines inside 3 days (GitLab 10.0 actively probed,
+Starlette + LiteLLM), 1 KEV entry 17 days OVERDUE with forensic-triage
+obligations (Oracle CVE-2026-21962), 1 active mass-exploitation campaign
+(PaperCut, 440 instances), 2 vendor enforcement dates inside 7 days (Databricks
+14 Sep, Snowflake 20 Sep), 4 "no fix exists for you" (Angular ≤19.2.25 EOL,
+Aurora PostgreSQL, Percona MongoDB, postgres-mcp). **11 flags, 11 DISTINCT
+stories** — unlike 061, where 8 flags covered 7 (appdev and devops both flagged
+the same GitLab CVE). Evidence the agents discriminated rather than blanket-
+flagged: 8 lanes returned `ok` while holding real CVEs, including BigQuery (a
+Critical already patched server-side in May), Challengers (PMM 8.7 patched
+same-day), Open Formats (an unfixed Iceberg corruption bug, narrow population)
+and Mobile (a Play deadline at 17 days, correctly outside the window). The 09-10
+rule held: apply the definition literally, say plainly when the day is heavy.
+
+**"Patched upstream, unpatched for you" is the window's dominant CVE shape** and
+is worth watching as a standing category: Angular 19 EOL, Aurora PostgreSQL a
+month behind community Postgres on 28 CVEs while RDS and Azure shipped, Percona
+MongoDB, `postgres-mcp`, Spring's EOL branches. It defeats a patch-to-latest
+policy and the scanner number never moves.
+
+## Ledger + curation findings 2026-09-13
+
+**The `new_more` over-production finally has a fix, and it was not a threshold.**
+`curate.py` excluded commentary headings from the count but never folded
+same-story restatements, so one CVE covered in a brief's news section, again
+under "Heads up" and again as a weekend item counted three times. Added a
+within-topic content-word fold (Jaccard ≥ 0.40) before counting: **682 → 451**, a
+34% cut with nothing hidden. The residue is genuine distinct items; the card is
+hand-curated to 15 rows regardless.
+
+**Matcher health: 816 items, 17 exact + 129 fuzzy merges, 0 double-counted.**
+The 15 weakest accepted merges were eyeballed and all were genuine same-story
+rewordings. Dictionary 15,956 → 16,626. Tally guard bumped 146, guarded 0.
+
+**Two `[src]` links were attached by hand** after curation (MongoDB "Patch now",
+Databricks "Horizontal scaling") — both from URLs already cited in their own
+brief for that exact fact. That is reuse, not invention, and it is the right call
+when the extractor's best-matching bullet happens to carry no inline link.
+
+## Lens findings 2026-09-13 (edition 062)
+
+**`reuse_key`'s advisory caught two real duplicates before they shipped** — a Play
+package-registration row and an NVIDIA PSIRT row, both already on the board at the
+same date under older keys. Folded into the older keys with aliases. This is the
+first run where the advisory paid for itself, and it vindicates the 09-11
+correction: make duplicates VISIBLE at build time, never silently reuse or
+silently ignore.
+
+**Four corrections applied BEFORE anything else touched the board** (the 09-11
+"a wrong date defeats every date-keyed check downstream" rule):
+- `parquet-java-1181-ga-tbd` still read "still RC1 as of today / pin 1.17.1".
+  1.18.1 GA'd 2026-09-04 — confirmed from Maven Central and downloads.apache.org.
+  GitHub Releases lagged 8 days and was corrected 09-13. **Standing rule: for ASF
+  projects Maven Central and downloads.apache.org are authoritative for GA.**
+- `fabric-runtime-2-default` carried a day-precise 2026-09-30. Microsoft publishes
+  only "late September" — now TBD. The *separate* Runtime 1.3 EOS on 2026-09-30 is
+  the real day-precise deadline. Prior editions conflated them because they share
+  a month; today's Fabric agent separated them from primary docs.
+- Play Contacts Permissions: Google's own pages carry BOTH 2026-10-28 and
+  2027-01-27. Moved to the earlier (Policy Deadlines table) with the conflict
+  recorded on the row rather than resolved silently.
+- Cerebras CS-4 promise → delivered, now shipping with disclosed numbers.
+
+**Of ~8 candidate claims, only 2 were genuinely new** (XCENA MX1, ESQ-Bench) — the
+other 6 were already tracked under existing keys. Third consecutive run to confirm
+the 09-09 finding: at 62 editions with a 30-day window, "already on the board" is
+the normal case. Always probe existing keys before writing a card.
+
+**Guard 5 failed the first assembly and was right to.** 40 authored units (v-read
+bullets, v-wn ongoing rows, all 14 question talk tracks across 4 chairs) carried
+no citation. Newly authored prose is exactly where verifiability drift enters,
+because inherited sections already carry their links. **Expect guard 5 to fail on
+any edition that adds authored prose, and budget the citation pass.** Final: 737
+cited units.
+
+**The sticky rule is now mechanically verified, not just intended.** After
+refreshing the 6 evidence lines per radar per chair, the build asserts the
+remaining skills/build text is byte-identical to the parent outside those lines.
+Worth keeping — "reproduce verbatim" is otherwise an honour-system rule.
+
+**Patch Radar rendered 106 of 166 rows on the first pass, which is a list, not a
+radar.** Now caps at the 24 most actionable (due ≤30 days, or re-asserted today)
+and says so on its face; the rest stay in the ledger. That trim is also the whole
+explanation for the output being smaller than the parent — ledger +14.9KB and
+povContent +31.9KB against v-patch −56KB. **A size drop against an inheritance
+parent still has to be explained every time (09-09 rule); this one was.**
+
+**Longitudinal's Urgent column was counting urgent ITEMS, not urgent LANES** on
+the first pass (38 vs 11). Fixed to count lanes, which is the comparable figure
+and the one the flag rule actually produces. Today is the series high-water mark:
+11 urgent lanes against 5, 3, 6, 5, 8 for the previous five runs.
+
+**Still not fixed, carried forward:** `claims[]` (175) and `patch[]` (166) carry
+the known same-story duplication the 09-10/09-11 notes describe. They need a
+hand-verified fold map like `fold_map.py`, not a threshold — each card carries
+authored counter/ask prose, so a wrong merge destroys writing rather than a
+timeline row. Also still queued: storing per-item severity in the public ledger
+so the Longitudinal "High" column becomes comparable across days.
+
+## Source-access changes 2026-09-13
+
+- **`blogs.oracle.com` is now fully unreachable — HTML *and* RSS, WebFetch *and*
+  curl with a browser UA (403).** This removed the entire official Oracle
+  Performance channel from the edition: Optimizer, In-Memory, Smart Scan, and the
+  Exadata System Software monthly posts, which are published nowhere else. The
+  topic spec still says "use its RSS feed"; that has now failed two runs running.
+  Treat Oracle perf coverage as a known gap, not as "nothing happened".
+- **`community.fabric.microsoft.com` RSS WORKS and supersedes the standing
+  "blocked" note.** Article pages are still Cloudflare-403 to WebFetch and curl,
+  but `curl -sSL -A "<browser UA>" "https://community.fabric.microsoft.com/t5/s/rss/board?board.id=fbc_fabricupdatesblogs&count=60"`
+  returns 200 with **full post bodies** in `<description>`, covering the whole
+  30-day window. `blog.fabric.microsoft.com/en-us/blog/feed/` 301-chains to it.
+- **`learn.microsoft.com/en-us/fabric/release-plan/` now 301s to
+  `roadmap.fabric.microsoft.com`**, which serves navigation chrome only. Fabric
+  release-plan URLs are dead as a source; `fundamentals/whats-new` and
+  `data-engineering/lifecycle` are the live ones.
+- **NVD detail pages are JS-only** and return the NVD homepage to WebFetch. Use
+  `services.nvd.nist.gov/rest/json/cves/2.0?cveId=…` via curl. Similarly
+  `api.msrc.microsoft.com/cvrf/v3.0/cvrf/2026-Sep` returns full CVRF JSON to curl
+  with `Accept: application/json` — that is where "Customer Action Required" and
+  fixed-build data live.
+- **`lists.apache.org` HTML is an empty SPA shell**; its JSON API
+  (`/api/stats.lua`, `/api/thread.lua`) works via curl and is the reliable route
+  for ASF mailing lists. The `?q=` search parameter ignores date filters — page by
+  month instead.
+- **`github.com/<org>/<repo>/releases.atom` returns title+date only for repos that
+  tag heavily** (ClickHouse, Doris, Pinot, Druid, Iceberg). Cross-check
+  `raw.githubusercontent.com` CHANGELOGs and Maven Central `maven-metadata.xml`
+  before asserting a version. `api.github.com` remains blocked to curl; WebFetch
+  against releases.atom works.
+- **TPC result URLs**: `*_last_ten_results.asp` 404s; the working form is
+  `*_last_ten_results5.asp?version=N`. The advanced-sort view reports *system
+  availability* dates, not submission dates — cross-check before quoting a date.
+- `docs.claude.com` → `platform.claude.com` and `platform.openai.com` →
+  `developers.openai.com` (301/307). `export.arxiv.org` API returned 429 all run;
+  the `arxiv.org/search/` UI and `/abs/` pages served fine.
+
+**Security sweep, negative result — fourth consecutive run.** The Redshift agent
+re-fetched `behavior-changes.html` in both variants (markdown 34,132 bytes vs HTML
+55,977 — byte-identical sizes to 09-12) and grepped both for `agent-toolkit`,
+`Skills for AI`, `AI coding assistant`, `search-skills`: **zero matches**. The
+2026-09-01 agent-directed block is still gone; the markdown-variant *mechanism*
+persists. No agent on any lane reported executing or following an instruction
+found in a fetched page. Worth noting the sequel is now openly shipped rather than
+covert: Microsoft's MIT-licensed Skills for Fabric auto-load at session start from
+`~/.copilot/`, `.cursorrules` and `AGENTS.md`, and AWS's agent toolkit backs a
+ChatGPT Work plugin running generated SQL against customer data.
+## Run findings 2026-09-14 (edition 063)
+
+**`tools/ledger/` is STILL not on main — fourth consecutive run to rediscover it.**
+The 09-09 note claimed it was there, 09-10 corrected that, 09-12 said it had
+"landed on main-track", and 09-13 landed it on yet another unmerged branch. It is
+on `claude/affectionate-maxwell-5ve9hs` (09-13) and now on this branch too. Six
+`claude/*` branches are unmerged and **main's CLAUDE.md and gh-pages' differ**
+despite the standing rule that they stay identical. Karl: merging these is what
+stops the rediscovery loop. Working incantation until then:
+`git show origin/claude/affectionate-maxwell-5ve9hs:tools/ledger/ledger.py`.
+
+**The Artifact and Bash hooks are clean for the TENTH consecutive unattended run.**
+`action:"list"`, `action:"read"` (1.9 MB) and the edition-063 publish all ran with
+zero prompts, and no Bash compound parked. Nothing to do; recording the streak
+because the 09-04/09-05 parking is what these hooks exist to prevent.
+
+**Step 5b as written would have triggered a needless Pages rebuild.** The spec says
+to poll the workflow run's `status`/`conclusion`. For DEPLOY_SHA 373289e the
+run-level status still read `in_progress` — with `updated_at` frozen at 13:41:20 —
+minutes after all three jobs, **including `deploy`, had completed `success`**
+(deploy finished 13:41:27). Polling only the run level reads as "stuck after ~3
+min" and fires the empty-commit re-trigger, which is exactly the 09-12 mistake
+("re-triggered at ~2 minutes, cost one extra Pages build"). **Use
+`list_workflow_jobs` and read the `deploy` job's conclusion — the run-level
+aggregate lags it.**
+
+**extract_briefs.py undercounts tokens by ~4%.** It sums `usage` from the last
+assistant record; the harness reports the agent's full total in its completion
+notification. Measured across 19 agents: extractor 2,478,813 vs harness 2,583,388
+(3.8% low overall, -3.5% to +11% per agent). The spec says use what the harness
+reported, so `tools/ledger/apply_harness_tokens.py` now overlays the notification
+figures onto sections.json. Run total this edition: **~2,585k**, roughly 2.9x
+recent runs — the agents averaged 60+ tool calls each because the WebSearch budget
+pushed them onto primary-source fetching.
+
+**The step-4c `sev` heuristic scores from the title alone, and mis-ranked the day's
+biggest deadline.** "Workspace entitlement control is enforced ... as of 2026-09-14
+and opt-out is gone" scored `normal` — no CVE id, no deprecation keyword — and
+sorted below 113 other normals, so the single most consequential vendor event of
+the day fell off the Since-yesterday card entirely. Fixed with `PIN_ONGOING` in
+curate.py: a hand-verified pin, same pattern as PICKS and the lens fold maps,
+rather than loosening the ranking. The heuristic itself is still title-only;
+scoring it against the topic's status would be the durable fix.
+
+**Flag calibration: 9 urgent, triple the 0-3 guideline, all nine kept.** Audited
+one at a time against the literal definition: five distinct CISA KEV entries with
+dates inside eleven days (GitLab CVSS 10.0 and PaperCut both due TODAY, Starlette
+16 Sep, two exploited Chrome V8 zero-days 18 + 23 Sep, JFrog 25 Sep), two CVEs with
+**no fix available for somebody** (Aurora PostgreSQL 32 days behind 28 CVEs;
+Percona-MongoDB still unpatched for a CVSS 9.2 that can leave auth silently OFF),
+one enforcement landing today with the opt-out removed, and two Apple rules already
+in force that block App Store submission. Nine flags, nine distinct stories — no
+shared CVE across lanes, unlike 061. Six lanes were held at `ok` on the rule,
+including Snowflake (four driver CVEs but none in KEV, none exploited, fix
+available) and Redshift (its deadlines are 16 days out, outside the bar). **Mobile
+was flagged where 09-11 correctly declined to:** that was iOS 27 GA, a date
+requiring nothing of the reader; this is a submission-blocking rule already
+binding. A requirement in force is past its deadline, not approaching one.
+
+### Lens findings (edition 063)
+
+**Three dated rows were wrong on the board and were corrected before anything else
+was touched.** (1) The DeepSeek V4-Pro retirement **did not happen** — 062 carried
+a reroute of every `deepseek-v4-pro` call to V4.1 Flash today; DeepSeek's own
+changelog says it will "continue providing API services ... with the billing method
+remaining unchanged." Aggregators carried it; the vendor contradicts them. Row
+retracted, not deleted. (2) **Fabric Runtime 1.3 end-of-support had an invented
+date** — 062 called 2026-09-30 "a real, day-precise date"; learn.microsoft.com
+carries no retirement sentence at all and still defaults new workspaces to 1.3.
+(3) **Snowflake 2026_06 "Generally Enabled" was never dated** — the
+Enabled-by-Default flip already happened in 10.32 and no closing date is published.
+Same class as the 09-12 Iceberg V4 fabrication, and the reason corrections run
+first: a wrong date defeats every date-keyed check downstream.
+
+**A seventh identity site exists, and two more had drifted.** Published edition 062
+rendered `povContent.content[*]["v-read"].c` as "edition 061 · 2026-09-12" on all
+four chairs (one edition stale) and `povContent.meta[*]["v-wn"]` as "vs edition
+060" (two editions stale) — neither is covered by `rewrite_identity`. A third,
+found only by reading the output: the **`<section>` shell's own `data-chips`
+attribute**, which is what FIRST PAINT reads before `setPov()` runs, and which
+splice leaves alone unless the section is in `chips`. Every build must now rewrite
+**seven** sites: title, masthead, GEN/ED/DSLUG, runbar spans, `var NAV`,
+povContent `meta` + `.c`, and the section-shell `data-chips`. 063 rewrites and
+asserts all seven. If `tools/lens/lens_guard.py` is ever refreshed, fold the last
+three into `rewrite_identity` and extend `assert_identity_consistent`.
+
+**The claims/patch duplication backlog is real, measured, and now partly paid
+down.** The 09-10 and 09-11 notes deferred this as needing "a hand-verified map,
+not a threshold." Measured on the 062 board: **three rows on 2026-09-15 for one
+September CSPU** — one of which was dated September but whose prose described
+*August* — five rows on 2026-08-18 for one August advisory, one row whose `due`
+field was the literal string `"shipped 18 Aug"`, **eight MI455X claims** that are
+really two spec sheets plus three distinct claims, and two identical CBTREE
+ownclaims. `tools/lens/fold_map_063.py` folds claims 175→172, ownclaims 44→43 and
+patch 166→161, every loser preserved in the survivor's `aliases[]`. The
+alias-aware regression check (not `assert_no_regression`, which fires on any
+shrink) confirms no parent key left by omission.
+
+**The board contradicted itself on a date and the contradiction nearly shipped.**
+The Iceberg V4 equality-delete vote was recorded as 2026-08-20 in two places while
+today's Open Formats brief reads the ASF result thread as 2026-08-18 and cites it
+twice. Harmonised to 08-18 with the disagreement recorded in the row. **Lesson for
+the build order:** the first fix edited the assembled HTML, which left the
+*rendered* `v-events` table still saying 08-20 because it had been generated from
+the pre-fix ledger. Corrections must be applied **to the ledger, before section
+generation** — not to the page afterwards.
+
+**Most "new" competitor claims were already on the board, again.** Of 20 candidates
+drafted from today's briefs, **17 already existed** under different keys; only
+three were genuinely new (ClickHouse On-Demand Compute with no published pricing,
+the Iceberg V4 equality-delete ban, and the 4-hi HBM cost-per-token argument that
+Rubin Ultra's 192GB seems to concede). At 63 editions on a 30-day window this is
+the normal case, exactly as the 09-09 note predicted. Check the key list before
+writing a card.
+
+**Guard 5 earned its place, again.** It failed the first assembly with 11 factual
+units carrying no citation and named every one. Link mining is healthy: 1,059
+primary links across 19 briefs, every brief with more links than headline bullets,
+and 818 citation units on the finished page with zero uncited.
+
+**Scope, stated plainly:** 063 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven
+identity sites. Claim Watch gained three cards and 107 day-bumps but its prose
+layout, plus Mirror, Question Forecast, Gap Ledger, Benchmarks, Promises, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers, **carry forward from 062**.
+The quarterly re-rank of Skills and Build Radar across all four chairs is due
+2026-10-01.
+
+**Source access:** `blogs.oracle.com` is now fully unreachable — HTML *and* RSS,
+WebFetch *and* curl-with-browser-UA, across `/database/rss`, `/optimizer/rss`,
+`/feed` and the site's own JSON API — for a second consecutive week. It cost the
+Oracle brief's `## Performance` category outright; Dietrich and McDonald carried
+the lane instead. `mikedietrichde.com` HTML is behind an `sgcaptcha` redirect but
+its RSS works. **The topic spec's instruction to "use its RSS feed" for
+blogs.oracle.com should be dropped — it has not worked for two weeks.**
+
+**Security sweep, negative result, third consecutive run.** The Redshift agent
+fetched `behavior-changes.html` in both variants (markdown 34,110 bytes vs HTML
+55,955), confirmed all 21 headings present in both, and grepped both plus
+`cluster-versions.html` for every marker — zero hits. The 2026-09-01 "Skills for AI
+coding assistants" block is still gone; the delivery mechanism still exists. One
+benign sighting worth recording: MongoDB docs pages append a line advertising an
+AI-agent documentation index at `mongodb.com/docs/llms.txt`. It was treated as
+data. **No fetched page's suggestion was executed by any agent this run.**
+
+## 2026-09-15 run PARKED on a Bash prompt the hook should have cleared — and the hook was not the bug
+
+The 09-15 09:12 scheduled run parked at step 5c on "Allow Claude to run Stage
+parent lens and inspect its ledger?" — the compound
+`SP="…" && mkdir -p … && cp /root/.claude/projects/…/artifact-….html … && wc -c … && python3 - <<'PY'`.
+Karl found it 40 minutes later and released it by hand with **Allow once**.
+
+**Diagnosed from the 09-14 session, which could not reach the 09-15 container:**
+1. `bash-allow.sh` is CORRECT. Fed the exact parked command, it answers `allow`
+   on both `PreToolUse` and `PermissionRequest`. The `/root/.claude/projects/…`
+   path does NOT trip the hard refusals (those are `.claude/settings` and a
+   REDIRECT into `.claude/`; a `cp` source is neither).
+2. The wiring is CORRECT on both `main` and `gh-pages` — settings.json and both
+   hook files are byte-identical, mode 100755, `$CLAUDE_PROJECT_DIR` resolves.
+3. It WORKED the day before: the 09-14 run logged 277 hook firings (all
+   `PreToolUse`, 157 allow / 120 pass, `mode=default`, Claude Code 2.1.272) and
+   was never prompted, including dozens of this exact `SP=… && … && python3 - <<'PY'`
+   shape. It also worked on 09-13.
+So on 09-15 the harness either **did not invoke the hook** or **ignored its
+`allow`**. That is the same class of server-side flip documented for the
+Artifact hook on 09-04/09-05 ("clean for weeks, then every run prompts"), and it
+means **a hook is a mitigation, not a guarantee** — exactly as that section
+already says.
+
+**What settles which of the two it was:** `/tmp/claude-bash-hook.log` IN THE
+PARKED SESSION'S container. A line for the command with `verdict=allow` ⇒ the
+hook fired and was ignored (harness stopped honouring hook permission
+decisions). No line at all ⇒ the hook was never invoked (hooks not loaded, or
+`$CLAUDE_PROJECT_DIR` unset). The next time a run parks, dump that file before
+doing anything else.
+
+**The fix that does not depend on hooks at all — measured, not guessed:** the
+leading `SP="…"` assignment is the ONLY piece of that compound the allowlist
+cannot match. Strip it and every remaining piece (`mkdir`, `cp`, `wc`,
+`python3`) is already in `permissions.allow`, so the whole compound auto-allows
+with NO hook involved. Tested against the live settings.json:
+
+    AS WRITTEN  : SP="…" ✗  mkdir ✓  cp ✓  wc ✓  python3 ✓   ⇒ PROMPT
+    WITHOUT SP= :           mkdir ✓  cp ✓  wc ✓  python3 ✓   ⇒ AUTO-ALLOW
+
+**RULE for every run and every subagent: never start a Bash compound with a
+`VAR=` assignment.** Put the path in a python heredoc variable, or spell the
+literal path in each piece. The allowlist then covers the routine's whole
+read-only vocabulary on its own, and the hook becomes the belt to that
+suspenders instead of the only thing holding the trousers up. This needs a
+line in the stored prompt's SHARED RULES to be durable — a stored-prompt
+change, so it goes to Karl as both files per the maintenance workflow.
+
+## SETTLED: the 09-15 park — the hook FIRED and the harness IGNORED it
+
+The section above asked for one piece of evidence to decide between "the hook
+was never invoked" and "the hook fired and was ignored", and named the file that
+would settle it. **The parked session was this run's own container, so it could
+read that file. Answer: the hook fired and was ignored.**
+
+From `/tmp/claude-bash-hook.log` in the parked container (437 records, all
+`mode=default`, 243 pass / 194 allow):
+
+    2026-09-15T13:19:06Z PermissionRequest mode=default verdict=allow
+      reason=every piece is a read-only/allowlisted command
+      cmd=SP="…" && mkdir -p "$SP/lens" && cp /root/.claude/projects/…
+
+    …43.6 minutes of NO hook firings at all…
+
+    2026-09-15T14:06:45Z PreToolUse mode=default verdict=allow   ← Karl clicked Allow once
+
+So the hook **did** run, on `PermissionRequest`, and **did** answer `allow`, at
+13:19:06Z — and the session parked anyway until a human approved it 47 minutes
+later. That is branch (1): **the harness stopped honouring the hook's permission
+decision.** Same server-side class as the 09-04/09-05 Artifact parking. A hook
+is a mitigation, not a guarantee — now demonstrated rather than inferred.
+
+**The sharpest clue in the log, worth following next time:** there is exactly
+**ONE** `PermissionRequest` event in all 437 records, and it is this command.
+Every other command was cleared by `PreToolUse`. What is unique about this one
+is that its `cp` SOURCE is `/root/.claude/projects/…` — **outside the project
+directory**. The 2026-08-31 note already records that cloud sessions gate every
+*write* outside the working directory behind an approval no allowlist can
+pre-approve; this looks like the same gate applied to a *read*, sitting in front
+of the hook rather than behind it. Not proven, but it is the one distinguishing
+feature and it predicts which commands will park.
+
+**Consequence for the routine, beyond the `VAR=` rule:** step 5c never needs that
+`cp` at all. `Artifact action:"read"` already reports the saved path; pass it
+straight to `python3` (allowlisted, reads in-process) or use the Read tool. This
+edition staged the parent once and every later step worked from the scratchpad
+copy. Removing the cross-directory `cp` removes the only command in the whole
+routine that has ever raised this prompt.
+
+**Correction to this run's own earlier diagnosis.** Mid-run the watchdog showed
+all 19 agents flatlined and I called it container suspension on the four
+signatures from 08-31/09-12 — uniform simultaneous flatline, transcripts cut
+mid-`assistant` with no `stop_reason`, zero completion notifications, `ListAgents`
+empty. **Those four signatures do NOT distinguish a suspension from a long
+permission park**, because both freeze the session wholesale. The relaunch was
+right either way (that is the value of the rule), but the label was wrong. What
+separates them: a suspension shows a wall-clock jump with no hook activity and no
+human action; a park shows a `PermissionRequest` in the hook log and ends the
+instant a human clicks. **Check the hook log before naming the cause.**
+
+## Run findings 2026-09-15 (edition 064)
+
+**Flag calibration: 12 urgent — a new series high — and all twelve survive the
+literal definition.** Audited one at a time rather than trimmed: five CISA KEV
+entries with dates inside ten days (LiteLLM CVE-2026-59822 + Starlette
+CVE-2026-48710 both due 16 Sep, two exploited Chrome V8 zero-days 18 + 23 Sep,
+JFrog Artifactory 25 Sep), one KEV entry **19 days overdue** with forensic-triage
+obligations (Oracle CVE-2026-21962, CVSS 10.0, fix available since January), four
+"no fix exists for somebody" (Parquet CVE-2026-73334 through 1.18.1,
+crystaldba/postgres-mcp 9.2 with only an open PR, Percona MongoDB, Angular 19
+EOL), and four dated cutovers inside 15 days. **12 flags, 11 distinct stories** —
+Starlette is shared by App Dev and AI App Dev, the 061-style overlap. Seven lanes
+held `ok` while carrying real CVEs, which is the evidence the agents discriminated.
+
+**Ledger health: 741 items, 26 exact + 114 fuzzy merges, 0 double-counted.**
+Tally guard bumped 140, guarded 0. Dictionary 17,468 → 18,069. The 15 weakest
+accepted merges were eyeballed and all were genuine same-story rewordings.
+
+**`curate.py` gotcha worth knowing before you write the lists: the within-topic
+fold runs BEFORE pinning, and `EXCLUDE_ONGOING` can delete the row a
+`PIN_ONGOING` entry is trying to keep.** Today the Redshift TLS deadline (15 days
+out, an urgent flag) vanished from the card: the short row
+"2026-09-30 — TLS 1.0/1.1 connections rejected." was folded into the longer
+"…15 days out…" row, my exclude then killed the survivor, and the pin reported
+"not found" rather than resurrecting it. **Pin the surviving (usually longer)
+wording, and never exclude a row you also pin.** The `WARN: pin not found` line is
+the symptom — treat it as an error, not a warning.
+
+**Guard 5 passed on the FIRST assembly (744 units, zero uncited)**, against the
+09-13 note's expectation that it fails on any edition adding authored prose. The
+difference is mechanical: every section generator called `cite()` inline as it
+emitted each row, instead of prose being written first and citations retrofitted.
+**Wire the citation into the generator, not into a later pass.**
+
+**The claims/patch duplication backlog got its first real payment.** The 09-10,
+09-11 and 09-13 notes all deferred this. Patch Radar carried **six separate rows
+for the single parquet-java 1.18.0 corruption story** (`…-corruption-unfixed`,
+`…-silent-corruption`, `…-1181-rc1-voted`, `…-corruption`, `…-binary-corruption`,
+`…-1181-rc-only`). Today all six became jointly obsolete — 1.18.1 GA'd 09-04 and
+fixes both paths — which is exactly the right moment to fold: hand-read, all
+losers preserved in `aliases[]`, survivor rewritten as RESOLVED. patch 161 → 160
+including four genuinely new rows. The alias-aware regression check confirmed no
+parent key left by omission.
+
+**Four dated rows on the board were wrong and were corrected before any section
+was generated** (the 09-14 build-order rule):
+- `nist-moves-fips-140-2…` — 2026-09-21 is a **NIST calendar event, not an Oracle
+  deadline**. Oracle publishes no date; the 26ai guide says only "sometime after".
+  The real trap is silent: `FIPS_140=TRUE` resolves to FIPS_140_2 today and to
+  FIPS_140_3 once that is desupported — same value, different cipher policy.
+- `play-permission-clampdown-2027` — the 062/063 date conflict **resolved to
+  2027-01-27**; both Google surfaces now agree. 2026-10-28 survives only in
+  third-party trackers.
+- `microsoft-fabric-runtime-1-3…` — **both prior readings were wrong.** 062 called
+  2026-09-30 a day-precise cliff; 063 said the page carried no retirement sentence
+  at all. The lifecycle page carries the date *and* an LTS footnote: it is a
+  GA→LTS transition with support through **March 2027**.
+- `snowflake-2026-07-enable-oct` — the bundle page says "a subsequent October
+  release" (month only) while BCR-2378's timeline names **2026-10-13**. Carried the
+  day-precise one with the disagreement recorded on the row.
+
+**Step 5b's 09-14 rule paid off immediately.** For DEPLOY_SHA e199538 the
+run-level status read `queued` while the `deploy` job had already completed
+`success` at 14:36:56Z. Polling the run level would have fired a needless
+empty-commit re-trigger. **Read the `deploy` job, never the run aggregate.**
+
+**A push landed on gh-pages mid-run and the push was rejected non-fast-forward.**
+Another session pushed a CLAUDE.md-only commit while this run worked. The fix was
+a rebase of this run's own *unpushed* commit onto the updated remote — not a force
+push, and not a rewrite of anyone else's history. Files did not overlap. Worth
+knowing this can happen at all: the routine is no longer the only writer to
+gh-pages.
+
+**Source access:** `mikedietrichde.com` RSS is **now blocked too** — a regression
+from 09-14, when the feed still worked; both curl-with-browser-UA and WebFetch get
+the `sgcaptcha` redirect. Combined with `blogs.oracle.com` unreachable for a third
+consecutive week, Oracle's performance channel has no working substitute and the
+`## Performance` category is a structural gap, not a quiet month. New this run:
+`api.osv.dev/v1/query` via POST is an uncapped route to advisory data with
+affected/fixed ranges; `github.com/**/releases.atom` is 403 to curl but fine via
+WebFetch (confirmed again by two lanes independently).
+
+**WebSearch did not bind for any of the 19 agents** — every lane that mentioned it
+said the cap was never hit, on a second consecutive run. The launch order
+(search-dependent lanes first, changelog lanes last) is holding up; keep it.
+
+**Artifact hook clean for the 11th consecutive unattended run** — `list`, `read`
+(1.9 MB) and the edition-064 publish (v28) all ran with zero prompts. The Bash
+hook, on the same day, did not. Both are in the repo; only one of them held.
+
+**Scope, stated plainly:** 064 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven
+identity sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks,
+Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor Dossiers
+**carry forward from 063 and the edition says so on its face**, because the 47-minute
+park plus a full 19-agent relaunch cost the depth pass. The quarterly Skills/Build
+re-rank across all four chairs is due **2026-10-01** — two weeks out, do not let it
+slip. Output is 38,267 bytes smaller than the parent, fully accounted for:
+v-patch −37,298 (the radar cap plus the six-row fold), v-read −1,802,
+v-longitudinal −336, against v-wn +6,439 and v-events +1,244.
