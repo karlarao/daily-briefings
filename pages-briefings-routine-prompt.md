@@ -627,9 +627,18 @@ SHARED RULES  (apply to EVERY brief)
 - Bash is fine and encouraged where it helps (e.g. slicing a large spilled
   WebFetch file instead of re-fetching it). The repo's .claude/settings.json
   pre-approves the common read-only text tools (sed, grep, head, tail, cat, awk,
-  cut, wc, sort, uniq); a command outside that set may park on a permission
-  prompt in an unattended run — the step-4f watchdog will catch it, but prefer
-  the pre-approved set when it does the job.
+  cut, wc, sort, uniq) plus cp, mkdir and python3; a command outside that set
+  may park on a permission prompt in an unattended run — the step-4f watchdog
+  will catch it, but prefer the pre-approved set when it does the job.
+- NEVER start a Bash compound with a VAR=... assignment — no
+  `SP="…" && cp … && python3 - <<'PY'`. Permission rules match the FIRST WORD
+  of each &&-piece, and an assignment matches no rule, so the WHOLE compound
+  prompts even though every real command in it is pre-approved. In an
+  unattended run a prompt is a kill switch with a delay, not a pause: this
+  exact shape parked the 2026-09-12 and 2026-09-15 runs. Put the path in a
+  variable INSIDE the python heredoc, or spell the literal path in each piece.
+  The repo's bash-allow.sh hook clears this shape when the harness honours
+  hooks — 2026-09-15 proved it does not always, so do not rely on it.
 - Cover the past 30 days (exception: AI Daily uses the past 24–48 hours).
 - Lens: a working software/performance engineer. Skip theory without application,
   skip marketing, skip keynote/thought-leadership fluff, skip anything that doesn't
