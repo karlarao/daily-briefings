@@ -1279,3 +1279,124 @@ re-rank across all four chairs is due **2026-10-01** — two weeks out, do not l
 slip. Output is 38,267 bytes smaller than the parent, fully accounted for:
 v-patch −37,298 (the radar cap plus the six-row fold), v-read −1,802,
 v-longitudinal −336, against v-wn +6,439 and v-events +1,244.
+
+## Run findings 2026-09-16 (edition 065)
+
+**Flag calibration: 14 urgent — a new series high, and all fourteen survive the
+literal definition.** Audited one at a time rather than trimmed: four CISA KEV
+deadlines inside ten days (LiteLLM CVE-2026-59822 and Starlette CVE-2026-48710 both
+due TODAY, two exploited Chrome V8 zero-days 18 + 23 Sep, JFrog Artifactory 25 Sep),
+two KEV entries already overdue at CVSS 10.0 (GitLab CVE-2026-85706, and Oracle
+CVE-2026-21962 now 20 days past due with the September CSPU confirmed NOT to carry
+the fix), five "no fix exists for somebody" (the x86 kernel write-loss bug, Aurora
+PostgreSQL, Percona MongoDB, Apache Doris 2.x/3.x, Angular 19 EOL), and four dated
+cutovers inside 14 days. **14 flags, 13 distinct stories** — LiteLLM is shared by AI
+Daily and AI App Dev, the 061-style overlap. Five lanes held `ok` while carrying real
+CVEs (AI Hardware with a CVSS 9.8 Triton, BigQuery with a 9.4 patched server-side),
+which is the evidence the agents discriminated rather than blanket-flagged.
+
+**`build.py`'s double-escape assertion was too broad and would have blocked a correct
+publish.** It failed on `aidaily` because the brief quoted llama.cpp forcing a literal
+`` `\n</think>` `` token inside a code span — 96 real newlines against 1 literal. The
+actual double-escape signature is *literal backslash-n AND no real newlines*, which is
+exactly what the template's own `md2html` repair guard tests. Narrowed to match. A guard
+that fails on correct content trains you to bypass guards.
+
+**`curate.py`: a PIN must bypass the COMMENTARY heading filter, and a missing pin is now
+fatal.** Three of six pins reported "not found" because dated vendor cutovers are almost
+always written under a brief's `## Heads up` heading, which `is_news()` strips before
+pinning runs — so the Snowflake reader-account deletion (4 days out, *no recovery path*),
+the Databricks entitlement enforcement and the Supervisor API EOL all vanished from the
+card. Same failure class as the 09-14 sev-heuristic miss: the most consequential dated
+item falls off. Pins now select from raw `ongoing` and `WARN: pin not found` is a
+`SystemExit`. (The 09-15 rule still holds: pin the surviving/longer wording, exclude the
+short duplicate, never both on one row.)
+
+**`reuse_key`'s advisory had its best run yet: 6 of 7 drafted event rows and 2 of 5
+drafted patch rows were already on the board under older keys.** Node 20, Play developer
+verification, NVIDIA PSIRT, Apple EU terms, Azure Databricks Standard→Premium and the
+Play target-API extension were all re-asserted on their existing keys instead of getting
+fresh slugs; the Aurora finding went onto `pg-28-cves-aug13` (same CVE batch, new angle)
+and the StarRocks re-verification onto `starrocks-cve-trio-4014`. Only `postgres-19-beta4`
+plus three patch rows were genuinely new. **This is the 09-09 finding holding at 65
+editions: "already on the board" is the normal case, and a fresh slug for a tracked story
+is precisely what makes `days` lie.** Draft the row, then let the advisory tell you
+whether it is new — do not assume.
+
+**Three duplicate pairs folded out of `patch[]`, continuing the backlog 064 started.**
+Oracle CVE-2026-21962, JFrog CVE-2026-82329 and Snowflake CVE-2026-85525 were each
+carried under two keys. Hand-read, folded, every loser preserved in `aliases[]`;
+`assert_alias_safe` confirmed no parent key left by omission. patch 160 → 157 → 160 with
+the new rows.
+
+**A wrong alias is as damaging as a wrong date, and this one survived two corrections.**
+The Fabric Runtime **2.0** row carried two Runtime **1.3** keys in its `aliases[]`
+(`fabric-runtime-13-eos`, `...end-of-support-archive-08-15`). Both rows' *text* had been
+corrected in 064, but the alias list still encoded the 062/063 conflation of two things
+that merely share 2026-09-30, so any future lookup of those keys would have resolved to
+the wrong row. **When you correct a row, check its aliases too** — the prose and the
+identity data are corrected separately.
+
+**Artifact republish now needs a plain `action:"read"`; a `path` read does NOT count.**
+Reading with `path:"index.html"` is still the right way to stage the parent (it avoids
+the cross-directory `cp` that parked 09-15) but it explicitly does not count as viewing
+for a republish. The publish was refused twice: first for not having viewed, then for
+resending identical content after re-reading the file the refusal itself handed over.
+**The working sequence is: `action:"read"` with `path` to stage and build → plain
+`action:"read"` on the URL before publishing → publish.** Its result returns a *head*,
+not the whole 1.8 MB, so it is safe for context. Verify the live version is the parent
+you built on by sha256 rather than asserting it.
+
+**Guard 5 passed on the first assembly again — 732 cited units, zero uncited.** Second
+consecutive edition, and the mechanism is the same as 09-15: `cite()` is called inline by
+each row generator, never retrofitted. Also caught by cross-checking rather than by a
+guard: the refreshed NAV said "11 no-fix" while the runbar and Today's Read prose said
+"5". The board-wide figure is 11; the prose was describing today's additions but read as
+a total. **Any figure stated in more than one place needs a single source — assert they
+agree before writing.**
+
+**Pages deploy verified by reading the `deploy` job, per the 09-14 rule.** Run-level
+status still read `in_progress` while `deploy` had completed `success` at 13:36:38Z. No
+re-trigger needed, no wasted Pages build.
+
+**Ledger health: 891 items, 36 exact + 129 fuzzy merges, 0 double-counted.** Tally guard
+bumped 165, guarded 0. Dictionary 18,069 → 18,795. The 15 weakest accepted merges were
+eyeballed and all were genuine same-story rewordings.
+
+**`tools/ledger/` is STILL not on main — sixth consecutive run to rediscover it.** Newest
+copy was on `claude/affectionate-maxwell-hc1zof` (09-15). Working incantation until the
+`claude/*` branches are merged:
+`git show origin/claude/affectionate-maxwell-hc1zof:tools/ledger/ledger.py`.
+
+**WebSearch did not bind for any of the 19 agents, third consecutive run.** The launch
+order (search-dependent lanes first, changelog-shaped lanes last) is holding — keep it.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **fourth** consecutive
+week, and `mikedietrichde.com` RSS is still captcha-blocked, so Oracle's Performance
+channel is a standing structural gap — the Oracle brief says so on its face rather than
+reporting a quiet month. New this run: `search.maven.org/solrsearch` is **stale** (still
+reported parquet-column 1.17.1 nine days after 1.18.1 GA) — use
+`repo1.maven.org/.../maven-metadata.xml`; `lists.apache.org` `search.lua` 404s but
+`stats.lua` + `thread.lua` paged by month is the most productive ASF route;
+`phoronix.com` 403s WebFetch but serves curl with a browser UA; `lore.kernel.org` search
+is access-denied, the `ratatoskr.run` LKML mirror works.
+
+**Security sweep, negative result — sixth consecutive run.** The Redshift agent fetched
+both variants of `behavior-changes.html` (markdown 34,132 bytes vs HTML 55,977 — byte-
+identical sizes to 09-12 and 09-13) and grepped both for `agent-toolkit`, `Skills for AI`,
+`AI coding assistant`, `search-skills`: **zero matches**. Worth recording the sequel: the
+same Redshift docs now link the agent-toolkit skills repo in **both** variants, i.e. as
+ordinary first-party documentation a human also sees — not an agent-only injection. Two
+new sightings of the *affordance* (not an instruction block): `docs.snowflake.com` and
+`mongodb.com/docs` both advertise an `llms.txt` index to whatever is fetching them. Both
+were treated as data. No fetched page's suggestion was executed by any agent this run.
+
+**Scope, stated plainly:** edition 065 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all four identity
+sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker,
+Perf Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 064 and
+the edition says so on its face** — the day's research was overwhelmingly security and
+deadline movement rather than competitive claims, so the depth went where the movement
+was. Output is 4,563 bytes *larger* than the parent, accounted for by the new rows and
+refreshed prose against three folds. **The quarterly Skills/Build re-rank across all four
+chairs is due 2026-10-01 — two weeks out, do not let it slip.**
