@@ -29,29 +29,43 @@ if not BASE:
 TASKS = os.path.join(BASE, "tasks")
 BRIEFS = os.path.join(BASE, "scratchpad/tools/ledger/briefs")
 
-# REWRITE THIS EVERY RUN: agent ids are minted per launch. Map each research
-# agent's id (from its launch result) to the topic id it was given.
-AGENTS = {
-    "a7f779151f5c53d4b": "aidaily",
-    "a299d564639db72f8": "aiappdev",
-    "ac5ee44f7aef7188b": "nl2sql",
-    "ad6d25c9b0367d3df": "aihw",
-    "a8d92de70c405b95a": "dbhw",
-    "afe479cc30c91d281": "challengers",
-    "a0d33107d01580bcd": "oltp",
-    "a9ae33773a304b3e1": "mongodb",
-    "adea67548840ed8cf": "formats",
-    "a4e07a0256b8e4f38": "appdev",
-    "a0b1e3989461cca7c": "frontend",
-    "a586cdcbff60c678e": "devops",
-    "a1ecd820706b2d41c": "mobile",
-    "a02ed62f8ccbb037e": "oracle",
-    "a07217f4a3163a2e6": "snowflake",
-    "a50f07c5859bcea55": "databricks",
-    "ae5dc8c0676f4b429": "bigquery",
-    "ab93208e2d7de8227": "redshift",
-    "a8f0f9e2e9ed29e0e": "fabric",
-}
+# Agent ids are minted per launch, so this map changes every run. Since
+# 2026-09-17 the run writes <session>/scratchpad/agents.json as {topic: agentId}
+# right after launching (the ids are in hand there anyway) and this file reads
+# it -- no source edit needed. The literal map below is only the fallback for a
+# session that did not write that file.
+_AGENTS_JSON = os.path.join(BASE, "scratchpad/agents.json")
+AGENTS = {}
+if os.path.exists(_AGENTS_JSON):
+    try:
+        with open(_AGENTS_JSON, encoding="utf-8") as fh:
+            AGENTS = {aid: tid for tid, aid in json.load(fh).items()}
+    except Exception as exc:                       # malformed -> fall back
+        print("warn: could not read %s (%s); using built-in map"
+              % (_AGENTS_JSON, exc), file=sys.stderr)
+        AGENTS = {}
+if not AGENTS:
+    AGENTS = {
+        "a7f779151f5c53d4b": "aidaily",
+        "a299d564639db72f8": "aiappdev",
+        "ac5ee44f7aef7188b": "nl2sql",
+        "ad6d25c9b0367d3df": "aihw",
+        "a8d92de70c405b95a": "dbhw",
+        "afe479cc30c91d281": "challengers",
+        "a0d33107d01580bcd": "oltp",
+        "a9ae33773a304b3e1": "mongodb",
+        "adea67548840ed8cf": "formats",
+        "a4e07a0256b8e4f38": "appdev",
+        "a0b1e3989461cca7c": "frontend",
+        "a586cdcbff60c678e": "devops",
+        "a1ecd820706b2d41c": "mobile",
+        "a02ed62f8ccbb037e": "oracle",
+        "a07217f4a3163a2e6": "snowflake",
+        "a50f07c5859bcea55": "databricks",
+        "ae5dc8c0676f4b429": "bigquery",
+        "ab93208e2d7de8227": "redshift",
+        "a8f0f9e2e9ed29e0e": "fabric",
+    }
 
 
 def final_text(path):

@@ -27,25 +27,30 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    # 2026-09-16 hand curation. Order: KEV deadlines today, then overdue KEV, then
-    # imminent KEV, then "no fix exists for you", then dated cutovers. One row per
-    # distinct story -- the two Chrome V8 zero-days are one story (the frontend
-    # flag_reason carries both CVEs and both dates).
-    "LiteLLM MCP auth bypass (CVE-2026-59822) is in CISA KEV, due today 2026-09-16",
-    "Starlette BadHost (CVE-2026-48710) KEV deadline is today, and FastAPI",
-    "GitLab CVE-2026-85706 (CVSS 10.0) is in CISA KEV with the due date already past",
-    "CVE-2026-21962 is 20 days past its CISA KEV deadline, and the September CSPU does not fix it",
-    "Chrome V8 zero-day CVE-2026-85046 (type confusion, CVSS 8.8) is in CISA KEV with a 18 Sep due date",
-    "JFrog Artifactory: four KEV entries in one month, two due 2026-09-25",
-    "Linux silently loses writes after MADV_FREE when THP and cgroup limits are both in play",
-    "What you are actually exposed to on Aurora: eleven CVSS 8.8 code-execution bugs",
-    "Percona Server for MongoDB is still unpatched for that 9.2",
-    "Apache Doris — CVE-2026-72524 (CVSS 8.8 HIGH) authorization bypass, fixed only in 4.0.8",
-    "StarRocks — CVE-2026-82276 (5.3) + CVE-2026-82306 (6.5): unauthenticated FE endpoints",
-    "Angular shipped four CVEs on 10 Sep and v19 gets none of them",
-    "PostgreSQL 18.6 (2026-08-13) added an output_plugin_libraries GUC",
-    "Android developer verification enforces 2026-09-30 in Brazil, Indonesia, Singapore and Thailand",
-    "parquet-java 1.18.1 is GA and 1.18.0 must be skipped entirely",
+    # 2026-09-17 hand curation. Order: KEV entries whose due date has ALREADY
+    # PASSED, then imminent KEV, then "no fix exists for somebody", then dated
+    # cutovers, then the one structural non-security item. One row per distinct
+    # story -- the two Chrome V8 zero-days are carried in `ongoing` instead,
+    # where they have day counts, so their short "Heads up" restatements here
+    # are deliberately NOT picked.
+    "CVE-2026-21962 is still in CISA KEV and PAST DUE",
+    "LiteLLM CVE-2026-59822 — CISA KEV, added 2 Sep, due 16 Sep (PASSED), actively exploited",
+    "CVE-2026-48710 (Starlette) added to CISA KEV 2 Sep, due date 16 Sep — already passed",
+    "2026-09-14 — GitLab CVE-2026-85706 KEV due date has PASSED",
+    "CVE-2026-82067 — authorization can silently fail to start",
+    "MongoDB 8.2 is EOL (31 July 2026) and has already missed two CVE batches",
+    "Apache Doris 2.0.x, 2.1.x, 3.0.x and 3.1.x have no patched release",
+    "StarRocks — three CVEs against \"through 4.0.13\", and the project has published zero security advisories",
+    "Angular 19 is EOL and the advisories say so explicitly",
+    # JFrog is carried in `ongoing` instead: the DevOps row is longer, carries a
+    # source link, and has a day count, so pinning it there and dropping the
+    # short App Dev restatement keeps one story on one row (09-15 rule).
+    "Trust Center went secure-by-default (Sep 8)",
+    "LiteLLM CVE-2026-37004 — CVSS 9.8, SSTI → RCE",
+    "Google Play: register every app package name by 2026-09-30 or face global removal",
+    "Azure Databricks Standard tier EOL — 1 October 2026, auto-upgrade to Premium",
+    "CVE-2026-73334 — Apache parquet-java, KMS token can be sent to an attacker-chosen host",
+    "64GB DDR5 server DRAM hit $1,500 contract / $3,100 spot on 15 Sep",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -53,11 +58,11 @@ PICKS = [
 # because the two phrasings share little vocabulary. A hand-read list beats a
 # loosened threshold here -- same reasoning as the lens fold_map.
 EXCLUDE_ONGOING = [
-    # 2026-09-16: each restates a row pinned below under longer wording. Per the
-    # 09-15 lesson the SHORT duplicate is excluded and the LONG survivor pinned --
-    # never the other way round.
-    "2026-09-30 — TLS 1.0/1.1 connections rejected on provisioned clusters",
-    "2026-09-23 — Node 20 removed from GitHub Actions runners.",
+    # 2026-09-17: each restates a row picked or pinned elsewhere. Per the 09-15
+    # lesson the SHORT duplicate is excluded and the LONG survivor kept --
+    # never both on one card.
+    "30 Sep 2026 — Supervisor API (Beta) end of life, no replacement in place",
+    "GitLab CVE-2026-85706 — CVSS 10.0 unauthenticated arbitrary file read",
 ]
 
 
@@ -69,14 +74,18 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    # 2026-09-16: carried deadlines that outrank most of today's new rows and would
-    # otherwise sort below them. Snowflake is 4 days out and unrecoverable.
-    "2026-09-20 (4 days): Legacy Dashboards are removed from reader accounts",
-    "Redshift enforces a TLS 1.2 minimum on 2026-09-30",
-    "Node 20 is removed from GitHub Actions runners on 2026-09-23",
-    "2026-09-14 (passed, in force): workspace entitlement enforcement",
-    "2026-09-30: Supervisor API (Beta) end of life",
-    "CVE-2026-82067 (CVSS 9.2) — improper case-sensitivity handling in config validation",
+    # 2026-09-17: carried deadlines and unpatched-for-someone rows that outrank
+    # most of today's new rows and would otherwise sort below them. Snowflake is
+    # 3 days out and its dashboards are unrecoverable; the two Chrome V8 KEV
+    # dates are 1 and 6 days out. Pins bypass the COMMENTARY heading filter
+    # because dated cutovers are almost always written under "## Heads up".
+    "2026-09-20 (3 days) — reader accounts are upgraded to Workspaces",
+    "CVE-2026-85046 — V8 type confusion, exploited in the wild, CISA KEV due 2026-09-18",
+    "CVE-2026-87491 — V8 out-of-bounds write, exploited in the wild, CISA KEV due 2026-09-23",
+    "2026-09-30 — TLS 1.2 minimum enforced. TLS 1.0/1.1 connections are REJECTED",
+    "Percona Server for MongoDB users have no fix available for the September CVEs",
+    "Supervisor API (Beta) end of life — 30 September 2026",
+    "JFrog Artifactory: two flaws chained in the wild to mint admin tokens",
 ]
 
 

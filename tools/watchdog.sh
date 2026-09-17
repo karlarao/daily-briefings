@@ -11,6 +11,15 @@
 # within 4 minutes of launch). The signal exists; it was the unfollowed symlink
 # that made it look absent.
 TD="${TASKS_DIR:-${CLAUDE_SESSION_TASKS:-}}"
+# Fall back to the session's tasks/ dir relative to this script when the env var
+# is unset. Added 2026-09-17: setting TASKS_DIR inline means writing
+# `TASKS_DIR=… bash watchdog.sh`, and a Bash compound that STARTS with a VAR=
+# assignment matches no permission rule, so the whole command prompts — the
+# exact shape that parked the 09-12 and 09-15 runs. The script finds its own
+# tasks/ dir instead. Layout: <session>/scratchpad/tools/watchdog.sh -> <session>/tasks
+if [ -z "$TD" ] || [ ! -d "$TD" ]; then
+  TD="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." 2>/dev/null && pwd)/tasks"
+fi
 if [ -z "$TD" ] || [ ! -d "$TD" ]; then
   echo "watchdog: set TASKS_DIR to this session's tasks/ dir" >&2; exit 2
 fi

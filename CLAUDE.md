@@ -1400,3 +1400,167 @@ deadline movement rather than competitive claims, so the depth went where the mo
 was. Output is 4,563 bytes *larger* than the parent, accounted for by the new rows and
 refreshed prose against three folds. **The quarterly Skills/Build re-rank across all four
 chairs is due 2026-10-01 — two weeks out, do not let it slip.**
+
+## Run findings 2026-09-17 (edition 066)
+
+**WebSearch bound again for the first time in four runs, and nobody exhausted it.**
+The 09-14/09-15/09-16 runs all reported the 200-call cap gone before the agents
+started; today agents reported 4–8 calls each and several said explicitly the
+budget was never hit. The launch order (search-dependent lanes first,
+changelog-shaped lanes last) stays — it cost nothing and it is the only lever
+if the cap comes back — but do not plan a run around the assumption that search
+is unavailable.
+
+**Flag calibration: 11 urgent, 9 distinct stories, every one audited against the
+literal definition.** Four CISA KEV clocks have **already run out** (Oracle
+CVE-2026-21962 at 21 days with `forensicTriage: Yes`; GitLab CVE-2026-85706 at
+CVSS 10.0 under internet-wide exploitation; Starlette and LiteLLM both due
+16 Sep), three more fall inside nine days (two Chrome V8 zero-days, JFrog
+Artifactory), and four vendor cutovers land on 30 Sep / 1 Oct. JFrog is the
+shared story across App Dev and DevOps — the 061-style overlap. **Eight lanes
+held `ok` while carrying real CVEs**, which is the evidence the agents
+discriminated: AI Daily (LMDeploy CVSS 9.8, patched, not KEV), AI Hardware
+(Triton 9.8, same), Fabric (two Critical EoPs fixed server-side with
+`customerActionRequired=false`), BigQuery (a Critical RCE patched in May),
+OLTP (PostgreSQL 14 EOL correctly held at 56 days). The Fabric and AI Hardware
+agents each wrote out their reasoning for *not* flagging, which is the
+behaviour to keep.
+
+**"No fix exists for somebody" is this month's dominant CVE shape, and it is
+worth tracking as a category.** Angular ≤19.2.25 (EOL, two High SSR bugs never
+to be patched), Starlette 0.x (no backport, ever), Apache Doris 2.x/3.0.x/3.1.x
+(ASF ships fixes only in 4.0.8/4.1.4), MongoDB 8.2 (EOL six weeks before a
+CVSS 9.2 that disables authorization) and Percona Server for MongoDB (newest
+build predates the fix). In every case the remediation is a **major upgrade,
+which is a project, not a patch**. The lens now counts these explicitly —
+5 rows on the board.
+
+**`tools/ledger/` is STILL not on main — seventh consecutive run to rediscover
+it.** Newest copy today was `claude/cool-cannon-yc8kjg` (09-16). Working
+incantation until the `claude/*` branches are merged:
+`git show origin/claude/cool-cannon-yc8kjg:tools/ledger/ledger.py`. **This run
+finally stops paying the tax twice**: two chores that had to be redone by hand
+every run are now self-configuring (below).
+
+**Two durable tooling fixes, both removing a per-run hand edit:**
+- **`extract_briefs.py` reads `<session>/scratchpad/agents.json`.** The agent-id
+  map had to be retyped into the source every run because ids are minted per
+  launch. The run now writes `{topic: agentId}` right after launching — the ids
+  are in hand there anyway — and the script reads it, falling back to the
+  literal map only if the file is missing or malformed.
+- **`watchdog.sh` finds its own `tasks/` dir.** Setting `TASKS_DIR` inline means
+  writing `TASKS_DIR=… bash watchdog.sh`, and **a Bash compound that starts with
+  a `VAR=` assignment matches no permission rule** — the exact shape that parked
+  the 09-12 and 09-15 runs. The script now derives the path from
+  `${BASH_SOURCE[0]}/../../tasks`. Same rule, applied to our own tooling rather
+  than only to the prompt.
+
+**`reuse_key`'s advisory had its most useful run yet: 4 of 9 drafted rows were
+already on the board**, and one of them could not have been caught any other
+way. Apple EU terms, the October CPU and BigQuery TabFM token pricing each
+already existed under an older key and were re-asserted rather than given a
+fresh slug. **The instructive one is Apache Doris**: the "no fix on 2.x/3.x"
+story is tracked since **09-14**, so a *date-keyed* advisory could never have
+surfaced it against a row drafted for today — only reading the board did. That
+is the 09-11 conclusion holding: identity has to be declared at authoring time,
+and the matcher is advisory only.
+
+**The Event Horizon action column nearly shipped missing, and the near-miss
+found a real data-modelling point.** A rebuild emitted 5 columns instead of 6,
+silently dropping "What to do with it" — which is the entire point of the
+section; a timeline without an action is a calendar. Caught by eye, not by a
+guard. Recovering it by parsing the rendered parent worked (57 of 61 rows
+matched), **but it turned out to be unnecessary: `events[]` already carries an
+`act` field on 34 of 61 rows.** Read the ledger first and fall back to
+parent-parsing, never the other way round. Measured before deciding whether to
+republish: only 2 rows differed and the authored text beat the stored text in
+both, so the published edition stands. **Worth a guard: assert the rendered
+column count against the header count.**
+
+**Guard 5 earned its keep on a class it had not caught before — navigation and
+housekeeping bullets.** 12 uncited units, all of them claims about *this
+edition's own board* ("5 rows now have no fix", "7 events retired", "5 duplicate
+rows folded"). A primary vendor URL would have been a wrong link, which is worse
+than no link; the honest citation is the dated public-archive fallback
+(`cite(None, TODAY)`), because the claim is verifiable from today's dashboard
+and the embedded ledger. Second consecutive edition where guard 5 caught
+something real rather than passing decoratively.
+
+**Two Python gotchas that cost a cycle each, both worth knowing:**
+- **`re.sub` interprets `\u` in the *replacement* string** as a bad template
+  escape and raises. When rewriting `curate.py`'s PICKS/PIN lists, pass a lambda
+  (`lambda m, b=block: b`) instead of a replacement string.
+- **`%`-formatting collides with ledger prose.** The Apple EU row contains
+  "5% Core Technology Commission", so concatenating rows into a `%`-formatted
+  template raises `not enough arguments for format string`. Format the lede
+  alone, then concatenate the generated table.
+
+**Ledger health: 866 items, 49 exact + 138 fuzzy merges, 0 double-counted.**
+Tally guard bumped 187, guarded 0. Dictionary 18,795 → 19,474. The 15 weakest
+accepted merges were eyeballed and all were genuine same-story rewordings.
+`curate.py`'s "pin not found" `SystemExit` (added 09-16) fired immediately on
+yesterday's stale pins, which is exactly what it is for.
+
+**Lens: events 80 → 75, patch 160 → 158, five duplicate patch rows hand-folded.**
+Seven past-dated events retired. Folds were hand-verified same-CVE groups only
+(Polaris CVE-2026-64640 ×2, Snowflake OCSP CVE-2026-85525 ×2, containerd
+checkpoint-restore ×3, Nuxt DevTools CVE-2026-71319 ×2), every loser preserved
+in the survivor's `aliases[]`. Output is 88 bytes smaller than the parent —
+fully accounted for by the retirements and folds against 2 new events, 3 new
+patch rows and 20 authored actions. **A size drop against an inheritance parent
+is still always worth explaining.**
+
+**A correction that did NOT need making, which is its own finding.** I drafted a
+correction for the Fabric Runtime 1.3 row on the strength of today's brief
+("EOS 30 Sep is really an LTS entry through March 2027") — and found edition 065
+had already fixed both the prose *and* the aliases. The 09-16 lesson (prose and
+identity data are corrected separately) held. The real correction today was
+Runtime **2.0**: it is GA but *not* default, Microsoft publishes only "late
+September 2026" with no day, and the flip affects new workspaces only. Now
+TBD-chipped.
+
+**Pages deploy verified by reading the `deploy` job, per the 09-14 rule.** Run
+level read `in_progress` while `build` had already succeeded; `deploy` completed
+`success` at 13:34:15Z, ~48s after the push. No re-trigger, no wasted build.
+**Do not re-trigger before the `deploy` job exists** — it is created only after
+`build` finishes, so an early look shows one job and looks like a stall.
+
+**Artifact hook: clean for the ninth consecutive unattended run.**
+`action:"list"`, `action:"read"` with `path` (1.9 MB), the plain `action:"read"`
+that a republish requires, and the edition-066 publish all ran with zero
+prompts. The 09-16 sequence is confirmed as the working one: **`read` with
+`path` to stage and build → plain `read` on the URL → publish.** The plain read
+returned the same version id the staged copy came from, which is the cheap way
+to prove no one published underneath you.
+
+**Source access, unchanged and worth restating:** `blogs.oracle.com` 403s HTML
+*and* RSS for a **fifth** consecutive week and `mikedietrichde.com` RSS is still
+captcha-blocked, so the Oracle Performance channel is a standing structural gap
+— the Oracle brief says so on its face rather than reporting a quiet month.
+Jonathan Lewis (last post 2026-06-26) and Tanel Poder (2026-04-10) were checked
+and are genuinely dormant, which is worth knowing before blaming the fetcher.
+
+**Security sweep, negative result — seventh consecutive run.** The Redshift
+agent fetched `behavior-changes.html` in both variants (markdown 34,132 bytes vs
+HTML 55,977 — byte-identical to the 09-12 and 09-16 measurements) and grepped
+both for `agent-toolkit`, `Skills for AI`, `AI coding assistant`,
+`search-skills`, `llms.txt`: **zero matches in each**. The mechanism persists,
+the injected content does not. Sightings of the *affordance* continue to spread
+though, and this run is the widest yet: Oracle ships MCP servers in ORDS, ADB,
+SQLcl and OCI Database Tools (Database Tools only gained **service logging on
+21 Aug, after the servers shipped**, and SQLcl's MCP default moved from
+restriction level 4 to *unrestricted* in 26.1.2); BigQuery's `run_bq_command`
+exposes the `bq` CLI including **reservation management**; Microsoft's SQL DW
+operations skill went GA out of `microsoft/fabric-skills`; Android Studio
+preloads 23 curated skills. All treated as data. **No fetched page's suggestion
+was executed by any agent this run**, and no agent loaded a skill file.
+
+**Scope, stated plainly:** edition 066 refreshes Today's Read on all four
+chairs, Since yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the
+ledger and all four identity sites. Claim Watch, Mirror, Question Forecast, Gap
+Ledger, Benchmarks, Promise Tracker, Perf Signals, Build Radar, Skills Radar and
+Vendor Dossiers **carry forward from 065 unrevised and the edition says so on
+its face** — the day's research was overwhelmingly security and deadline
+movement rather than competitive claims. **The quarterly Skills/Build re-rank
+across all four chairs is due 2026-10-01 — 14 days out, and it has now been
+flagged as approaching for three consecutive editions. Do not let it slip.**

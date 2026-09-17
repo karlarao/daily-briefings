@@ -428,6 +428,37 @@ def assert_page_link_coverage(html: str, policy: dict = LINK_POLICY) -> int:
     return checked
 
 
+
+def assert_table_shape(html: str) -> int:
+    """Every rendered table row must have as many cells as its header has columns.
+
+    Why this exists (2026-09-17): an Event Horizon rebuild emitted five columns
+    against a six-column header, silently dropping "What to do with it" -- the
+    one column that makes the section a timeline rather than a calendar. Nothing
+    caught it; it was found by eye. A column that disappears is exactly the
+    silent-drift class the guards exist for, and it is cheap to check.
+
+    Returns the number of tables verified.
+    """
+    tables = re.findall(r"<table>(.*?)</table>", html, re.S)
+    bad = []
+    for i, t in enumerate(tables):
+        head = re.search(r"<tr>((?:\s*<th[^>]*>.*?</th>\s*)+)</tr>", t, re.S)
+        if not head:
+            continue
+        ncols = len(re.findall(r"<th[^>]*>", head.group(1)))
+        for j, row in enumerate(re.findall(r"<tr>((?:\s*<td[^>]*>.*?</td>\s*)+)</tr>", t, re.S)):
+            n = len(re.findall(r"<td[^>]*>", row))
+            if n != ncols:
+                bad.append((i, j, ncols, n, re.sub(r"<[^>]+>", "", row)[:70]))
+    if bad:
+        lines = "\n".join("  table %d row %d: header has %d columns, row has %d -- %s"
+                           % b for b in bad[:8])
+        raise LensBuildError(
+            "TABLE SHAPE DRIFT: %d row(s) do not match their header column count.\n%s"
+            % (len(bad), lines))
+    return len(tables)
+
 # ------------------------------------------------------------- self-test ---
 if __name__ == "__main__":
     page = (
