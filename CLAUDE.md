@@ -1580,3 +1580,38 @@ its face** — the day's research was overwhelmingly security and deadline
 movement rather than competitive claims. **The quarterly Skills/Build re-rank
 across all four chairs is due 2026-10-01 — 14 days out, and it has now been
 flagged as approaching for three consecutive editions. Do not let it slip.**
+
+## Post-run cleanup 2026-09-17 — the branch hunt is over, with three ports that were about to be lost
+
+**Karl merged the run branch into `main` (`10c4ff7`, then `8a152e9`).** Before the
+superseded `claude/*` branches were touched, every one was diffed against main
+for content main lacked. Most differences were older daily copies of the same
+files, but **three things would have been deleted with them**:
+
+1. **`lens_links.cite()` had lost its 09-12 date bound.** The `ARCHIVE_START` /
+   `today` check (cite a SEEN date only, never an event date) lived on
+   `affectionate-maxwell-yyi0jj` and never entered the 09-13+ lineage that became
+   main — which is why today's builder had to re-implement that filter by hand.
+   Restored wholesale from that branch (a strict superset) and self-tested.
+2. **`pages-briefings-routine-prompt.md` on main was behind the scheduler.** The
+   09-15 SHARED RULES change (cp/mkdir/python3 in the allowlist; never start a
+   Bash compound with `VAR=`) reached Karl's scheduled task from
+   `affectionate-maxwell-twvtzk` but never reached main — exactly the
+   branch-disagreement class the 09-04 note warned about. Synced.
+3. **`tools/lens/dedupe_rows.py`** existed only on `affectionate-maxwell-sehnv0`.
+   Superseded methodology (09-11), but the notes cite it by name; preserved with
+   a SUPERSEDED header rather than lost.
+
+Also landed: **step 4c of the public spec now names `tools/ledger/` on main**, so
+a run reads the tooling from `git show origin/main:tools/ledger/<file>` instead
+of finding it through this file. The full PRIVATE prompt (spec + lens addendum
+spliced between 5b and 6) was delivered to Karl via SendUserFile for pasting
+into the scheduler; it is never committed.
+
+**Branch deletion is NOT something a run can do.** `git push origin --delete`
+returns HTTP 403 from the GitHub App credential, even on a throwaway ref the
+same token had just created — it can create refs, not remove them. So the
+eleven superseded branches remain, plus one `tmp-delete-probe` ref left by the
+permission probe. Karl deletes them by hand; the one-liner is in the session
+reply. Keep `claude/cool-cannon-t3zrir` — it is the current session branch and
+is fully merged.
