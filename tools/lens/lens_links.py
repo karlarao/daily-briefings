@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import difflib
 import glob
+import datetime as _dt
 import os
 import re
 
@@ -141,19 +142,36 @@ def find_url(title: str, corpus: list[tuple[str, str, str]],
     return best
 
 
-def cite(url: str | None, *dates: str | None, label: str = "src") -> str:
+ARCHIVE_START = "2026-07-06"   # first day the public archive has a page
+
+
+def cite(url: str | None, *dates: str | None, label: str = "src",
+         today: str | None = None) -> str:
     """One citation anchor via the fallback chain.
 
     url present            -> <a href=url>label</a>
-    else first parseable   -> archive_link(date)   ("archive MM-DD")
+    else first USABLE      -> archive_link(date)   ("archive MM-DD")
          YYYY-MM-DD date
     else                   -> the literal UNSOURCED marker
+
+    A date is USABLE only if the archive can actually have a page for it:
+    on or after ARCHIVE_START and not in the future.
+
+    Why the bound exists (found in the edition 061 build, 2026-09-12): callers
+    were passing an EVENT ROW's own date -- the day the deadline fires -- rather
+    than a day the item was seen. Edition 060 therefore shipped seven anchors
+    reading "archive 09-14", "archive 10-20" and so on, pointing at archive
+    pages that do not exist and mostly never will. The link satisfied guard 5
+    (it is a well-formed anchor) while being dead on arrival, which is exactly
+    the silent-drift class the guards exist to stop. Pass a SEEN date --
+    last_seen, then first_seen, then today -- never the event date.
     """
     if url:
         safe = url.replace('"', "%22")
         return f'<a href="{safe}" target="_blank" rel="noopener">{label}</a>'
+    cutoff = today or _dt.date.today().isoformat()
     for d in dates:
-        if d and re.fullmatch(r"\d{4}-\d{2}-\d{2}", d):
+        if d and re.fullmatch(r"\d{4}-\d{2}-\d{2}", d) and ARCHIVE_START <= d <= cutoff:
             return archive_link(d)
     return UNSOURCED
 

@@ -395,6 +395,22 @@ If git push fails (auth/network), send one notification saying so — that failu
    prose contaminate today's briefs. The 19 research subagents stay 100% stateless — they
    NEVER see prior runs. Only this step, at the very end, touches history. Steps:
 
+   TOOLING (on main since 2026-09-17 — read it, do not reinvent it): every step
+   below is implemented in `tools/ledger/` on the main branch. The run is
+   checked out on gh-pages, so read them with `git show origin/main:tools/ledger/<file>`
+   into the scratchpad: `ledger.py` (extract → match → finalize, with the retuned
+   thresholds and the tally guard baked in), `extract_briefs.py` (pulls each
+   agent's brief out of its transcript; reads `<session>/scratchpad/agents.json`
+   as {topic: agentId}, so write that file right after launching the agents),
+   `assemble.py` and `apply_harness_tokens.py` (sections.json), `curate.py` (the
+   hand-curated Since-yesterday card — rewrite its PICKS / PIN_ONGOING /
+   EXCLUDE_ONGOING lists against TODAY's row wording; a stale pin is a fatal
+   error by design), and `build.py` (the DATA-block splice with the encoding
+   assertions). `tools/watchdog.sh` is the step-4f transcript watchdog. Before
+   2026-09-17 these lived only on unmerged claude/* branches and seven consecutive
+   runs had to rediscover them; if a run cannot find them on main, that is a
+   regression worth one line in the notification.
+
    (i) BUILD TODAY'S LEDGER — a small, titles-only structured index of this run. For each
        of the 19 briefs, extract its headline items (the bold "**Headline**" bullets across
        its categories; skip "Filtered out"). For each item emit a DRAFT key plus:
@@ -627,9 +643,18 @@ SHARED RULES  (apply to EVERY brief)
 - Bash is fine and encouraged where it helps (e.g. slicing a large spilled
   WebFetch file instead of re-fetching it). The repo's .claude/settings.json
   pre-approves the common read-only text tools (sed, grep, head, tail, cat, awk,
-  cut, wc, sort, uniq); a command outside that set may park on a permission
-  prompt in an unattended run — the step-4f watchdog will catch it, but prefer
-  the pre-approved set when it does the job.
+  cut, wc, sort, uniq) plus cp, mkdir and python3; a command outside that set
+  may park on a permission prompt in an unattended run — the step-4f watchdog
+  will catch it, but prefer the pre-approved set when it does the job.
+- NEVER start a Bash compound with a VAR=... assignment — no
+  `SP="…" && cp … && python3 - <<'PY'`. Permission rules match the FIRST WORD
+  of each &&-piece, and an assignment matches no rule, so the WHOLE compound
+  prompts even though every real command in it is pre-approved. In an
+  unattended run a prompt is a kill switch with a delay, not a pause: this
+  exact shape parked the 2026-09-12 and 2026-09-15 runs. Put the path in a
+  variable INSIDE the python heredoc, or spell the literal path in each piece.
+  The repo's bash-allow.sh hook clears this shape when the harness honours
+  hooks — 2026-09-15 proved it does not always, so do not rely on it.
 - Cover the past 30 days (exception: AI Daily uses the past 24–48 hours).
 - Lens: a working software/performance engineer. Skip theory without application,
   skip marketing, skip keynote/thought-leadership fluff, skip anything that doesn't
