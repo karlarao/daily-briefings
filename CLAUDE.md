@@ -1435,11 +1435,15 @@ build predates the fix). In every case the remediation is a **major upgrade,
 which is a project, not a patch**. The lens now counts these explicitly —
 5 rows on the board.
 
-**`tools/ledger/` is STILL not on main — seventh consecutive run to rediscover
-it.** Newest copy today was `claude/cool-cannon-yc8kjg` (09-16). Working
-incantation until the `claude/*` branches are merged:
-`git show origin/claude/cool-cannon-yc8kjg:tools/ledger/ledger.py`. **This run
-finally stops paying the tax twice**: two chores that had to be redone by hand
+**RESOLVED 2026-09-17: `tools/ledger/` IS on main.** Karl merged
+`claude/cool-cannon-t3zrir` (fast-forward, `10c4ff7`) after the run. Every
+"STILL not on main" note from 09-10 through this morning is now history:
+**`git show origin/main:tools/ledger/ledger.py` is the working incantation**,
+along with `assemble.py`, `build.py`, `curate.py`, `extract_briefs.py`,
+`apply_harness_tokens.py`, `sections_base.json`, `tools/watchdog.sh` and the
+full `tools/lens/` set. The nine older `claude/affectionate-maxwell-*` and
+`cool-cannon-yc8kjg` branches are superseded copies and can be deleted. **This
+run also stops paying the tax twice**: two chores that had to be redone by hand
 every run are now self-configuring (below).
 
 **Two durable tooling fixes, both removing a per-run hand edit:**
