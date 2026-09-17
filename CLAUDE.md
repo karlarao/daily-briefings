@@ -1465,17 +1465,29 @@ surfaced it against a row drafted for today — only reading the board did. That
 is the 09-11 conclusion holding: identity has to be declared at authoring time,
 and the matcher is advisory only.
 
-**The Event Horizon action column nearly shipped missing, and the near-miss
-found a real data-modelling point.** A rebuild emitted 5 columns instead of 6,
-silently dropping "What to do with it" — which is the entire point of the
-section; a timeline without an action is a calendar. Caught by eye, not by a
-guard. Recovering it by parsing the rendered parent worked (57 of 61 rows
-matched), **but it turned out to be unnecessary: `events[]` already carries an
-`act` field on 34 of 61 rows.** Read the ledger first and fall back to
-parent-parsing, never the other way round. Measured before deciding whether to
-republish: only 2 rows differed and the authored text beat the stored text in
-both, so the published edition stands. **Worth a guard: assert the rendered
-column count against the header count.**
+**The Event Horizon action column DID ship broken, and the guard written in
+response caught it within the same run.** A rebuild emitted rows with 6 cells
+under a 5-column header, because a `.replace()` on the header string silently
+failed to match after the file had been reformatted — so "What to do with it"
+rendered under the "Src" heading. Edition 066 went out that way as **version
+30**. Writing `lens_guard.assert_table_shape()` immediately afterwards failed
+the already-published file on its first run, which is exactly what a guard is
+for; fixed and republished as **version 31**. Two lessons, both general:
+- **A `.replace()` that does not match is a silent no-op.** Every one of this
+  run's string patches that mattered used `assert old in s` first, except that
+  one. Assert the match or use `subn` and check the count — the same discipline
+  `rewrite_identity` already applies to identity sites.
+- **`events[]` already carries an `act` field on 34 of 61 rows.** Recovering the
+  action text by parsing the rendered parent worked (57 of 61 matched) but was
+  never necessary. Read the ledger first, fall back to parent-parsing, never the
+  other way round. Measured before deciding: only 2 rows differed and the
+  authored text beat the stored text in both.
+
+**Accepted cost: two artifact versions carry the 2026-09-17 title,** so the
+version picker shows today twice and **v30 is the wrong one**. Same trade as
+edition 060 on 09-11. It was worth it — the defect was in the most-read table on
+the page, not cosmetic — but the rule stands that same-day republishes are a
+last resort, not a habit.
 
 **Guard 5 earned its keep on a class it had not caught before — navigation and
 housekeeping bullets.** 12 uncited units, all of them claims about *this
