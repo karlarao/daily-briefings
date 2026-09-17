@@ -15,6 +15,16 @@ Example of right: "Yeah, I did it. I created the two files in GitHub; every run
 clones the repo, so the hook comes along. Nothing on your laptop." — then the
 diagram. Example of wrong: the same content with the diagram first.
 
+**"Paste here the private routine prompt" (or "give me the prompt", "send the
+prompt") ALWAYS means: send the full PRIVATE prompt as a downloadable .md file via
+SendUserFile (display "attach"). Never dump the 2,000-line text into the chat
+(2026-09-17: it hit the output limit, split mid-line, and was unusable — Karl:
+"you always put the downloadable md file"). Build it fresh each time from main's
+public spec + the lens addendum spliced between step 5b and step 6, write it to the
+scratchpad as `PRIVATE-scheduled-routine-prompt-<date>.md`, send the file, and
+reply with one line saying what changed vs the scheduler. The same rule applies to
+any handoff file: a file card, not a wall of text.**
+
 ## Maintenance workflow for routine changes (ESTABLISHED — do not re-ask)
 
 When a change to the daily-briefings routine is agreed with Karl:
