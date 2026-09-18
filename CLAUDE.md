@@ -1625,3 +1625,222 @@ eleven superseded branches remain, plus one `tmp-delete-probe` ref left by the
 permission probe. Karl deletes them by hand; the one-liner is in the session
 reply. Keep `claude/cool-cannon-t3zrir` — it is the current session branch and
 is fully merged.
+
+## Run findings 2026-09-18 (edition 067)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt,
+both hooks clean.** Launched 09:14 EDT, published 13:40 UTC, lens v32 after.
+`artifact-allow.sh` clean for the 10th consecutive unattended run (list, a
+`read` with `path`, the plain `read` a republish needs, and the publish — zero
+prompts); `bash-allow.sh` clean with no Bash prompt anywhere. ~3,195k research
+tokens, a record (prior high ~2,585k on 09-14), because the agents averaged
+60+ tool calls each against primary sources.
+
+**EXTRACTOR BUG THAT BROKE ALL 19 BRIEFS — `SubagentHandback` changed the
+transcript tail shape.** `extract_briefs.final_text()` returned the *last*
+assistant text block. Agents now emit the brief, call `SubagentHandback`, and
+then emit a short acknowledgement:
+
+    text      <- the 23k-char brief
+    tool_use  <- SubagentHandback {"message": "<the same brief>"}
+    text      <- "Brief delivered."      (16 chars)
+
+so every topic came back `not ready: <topic>(short:N)` and it looked like the
+agents had failed. **Fixed on main: prefer the `SubagentHandback` payload
+outright** (it is the agent's final report by definition), else fall back to the
+LONGEST text block rather than the last one. Two wrong intermediate fixes are
+worth recording because both looked right: "last substantial (≥400 char)
+candidate" returned **376 chars of dbhw's 40k brief**, because that agent signed
+off with a long recap of its own STATUS/FLAG_REASON lines. Length is the
+reliable discriminator; recency is not. Side benefit: token counts got more
+accurate too (aidaily 125,237 → 146,664 against a harness-reported 146,928).
+
+**The `%`-formatting collision hit THREE times in one lens build.** The 09-17
+note records it once; today it recurred as (1) a `%`-format applied across a
+concatenation containing generated ledger rows, which carry literal `%` signs
+("5% Core Technology Commission"); (2) a miscounted placeholder/arg tuple in a
+long HTML literal; (3) `'...' + A() + '...' % (...)` — where `%` binds *after*
+`+`, so the format consumed the wrong operand. **The durable answer is to stop
+using `%` for HTML blocks that embed generated citations: build them by
+concatenation with explicit `str()`.** Counting placeholders across a 20-line
+literal is how this bug keeps coming back.
+
+**`rewrite_identity()` does NOT cover the runbar on this parent, and the reason
+a regex cannot find it is structural.** The 09-11 note said the runbar rewrite
+had been folded in; on the edition-066 parent, `rewrite_identity` provably
+changed nothing there. The runbar is literal markup with the label and the value
+in **separate spans** — `<span class="lbl">Edition</span><span
+class="val">066</span>` — so a pattern like `Edition 0?66` never matches because
+the literal never appears contiguously. **Rebuild the whole `<div class="runbar">`
+and read it back**, asserting the parent edition and date are gone; patching
+pieces can half-succeed silently. Also: several `Edition 06x` strings in the page
+are legitimate historical prose ("CORRECTION (ed. 064)") and must NOT be
+rewritten — a blanket substitution would corrupt the correction record.
+
+**Measured before touching the matcher, and the measurement said don't.** Step 4c
+matched only 126 of 882 items (14%) against a recent norm near 19–22%, and
+today's titles ran a median 144 chars against the dictionary's 94 — the 09-09
+length-asymmetry signature. So I swept `TITLE_CAP` 200 → 140 → 110 → 90 before
+changing anything: fuzzy merges moved 96 → 103 → 104 → 109, i.e. **13 items of
+882**. Unlike 09-09 (where the fix moved merges 2 → 116), length is not the cause
+here; the low rate is mostly real novelty (a big new-CVE wave plus MLPerf v6.1,
+JDK 27, Go 1.27, Safari 27, Iceberg 1.12 RC0). Thresholds and the cap left
+untouched. **The 09-09 diagnostic is worth running every time precisely because
+it can exonerate the matcher.**
+
+**A "no-fix" count was about to ship wrong, and it is the 09-16 ambiguity
+recurring.** A first-cut predicate matched "no fix"/"unpatched" anywhere in a
+row's prose and returned **23 of 160** patch rows, because plenty of rows
+*discuss* an unpatched thing without being one. The authoritative signal is the
+`due` field, which gives **14**. Edition 066 rendered "5 rows now have no fix"
+while naming five examples — a curated SUBSET read as a total, exactly like the
+09-16 NAV/runbar "11 vs 5" mismatch. **State the board-wide total and today's
+additions as two separate numbers from one source, and never let a named list
+imply the total.**
+
+**One story appeared twice on the Since-yesterday card and the fix was editorial,
+not mechanical.** The GitLab KEV entry landed in `new` (a fresh key from one
+bullet) *and* `ongoing` at day 4 (a match from another bullet in the same brief).
+Both are legitimate extractions; putting a 4-day-old KEV entry under "🆕 New" is
+simply false. Dropped the pick, kept the carried row with its day count, and
+promoted JDK 27 into the freed slot. **Two bullets in one brief can produce both
+a new key and a match against an older one — that is the shape that puts one
+story on a card twice.**
+
+**Flag calibration: 14 urgent — equal to the series high — and all 14 survive the
+literal definition.** Audited one at a time: four CISA KEV clocks already PASSED
+(Oracle CVE-2026-21962 at 22 days with active exploitation, GitLab CVSS 10.0,
+LiteLLM, Starlette/MLflow), one KEV inside 7 days with documented in-the-wild
+chaining (JFrog), six "no fix exists for somebody" (Linux 6.6–7.2 THP write loss,
+Aurora PostgreSQL, Percona-MongoDB, Apache Doris 2.x/3.x, Angular ≤19 + Next.js
+14.x/13.x, OpenBMC), and four dated cutovers inside 14 days (Snowflake reader
+dashboards at 2 days, Redshift TLS, Play package registration, Databricks
+Supervisor API + Azure Premium). **14 flags, 13 distinct stories** — App Dev and
+DevOps both flagged JFrog, and the App Dev row was the one picked for the card
+because it carries the fact that changes behaviour: *patching alone is not
+enough*, the token signing certificate must be rotated. Five lanes held `ok`
+while carrying real CVEs — BigQuery (a Critical patched server-side with no
+customer action), Fabric (a CVSS 10.0 with `Customer Action Required: No`),
+Open Formats, AI Daily, NL2SQL — and each wrote out its reasoning for *not*
+flagging, which is the behaviour to keep.
+
+**An agent saying "I could not verify this and I do not think it is mine" is a
+high-value result.** I put a carried "Supervisor API EOL" item into the
+**Snowflake** prompt on the strength of a prior CLAUDE.md note. The Snowflake
+agent searched the deprecated-features page, the SPCS spec reference and both
+BCR bundles, found zero hits, and recommended re-assigning rather than inventing
+a date. Today's Databricks agent independently named it: it is the **Agent Bricks
+Supervisor API, retired 2026-09-30**. The lens board had it correctly keyed to
+Databricks all along — **the error was in my prompt, not the board**, and the
+agent's refusal is what caught it.
+
+**Most of today's drafted corrections had already been applied, which is itself
+the finding.** The Open Formats agent flagged that the board's Parquet
+CVE-2026-73334 row read "no fix through 1.18.1" when 1.18.1 *is* the fix —
+edition 066 had already corrected it, explicitly calling out 064's wrong reading.
+Both Fabric Runtime rows were likewise already right (and today's brief confirmed
+them from the primary lifecycle page, settling three editions of disagreement:
+09-30 **is** a published EOSA date *and* the footnote puts 1.3 into LTS through
+March 2027 — both halves true, and 063's "no retirement sentence at all" was
+wrong). **Check the board before drafting a correction**, same as for a claim.
+
+**Corrections that were genuinely needed (4), all applied to the ledger before
+any section was generated:**
+- `snowflake-2026-07-enable-oct`: **2026-10-13 → undated.** The day-precise date
+  is no longer published anywhere; the BCR page now gives no date at all. So the
+  recorded 064 disagreement closed because the precise side **withdrew**, not
+  because it was resolved — a different thing, and worth saying so.
+- `play-permission-clampdown-2027`: the conflict carried since 062 is now
+  genuinely **closed** — both Google surfaces read 2027-01-27. Dropped the
+  recorded disagreement rather than carrying it.
+- `cve-2026-21962`: 20d → 22d past due, plus the clarification that **a fix has
+  existed since the January 2026 CPU**. That moves it out of the no-fix register:
+  it is unpatched by omission, which is worse rhetorically, not better.
+- `iceberg-v4-equality-delete-deprecation`: spec PR **#17783 now exists and is
+  still open**; still no V4 date, so the row stays deliberately undated.
+
+**`reuse_key`'s advisory: 2 of 6 drafted events were already on the board**
+(`bq-tabfm-token-pricing-oct30`, `postgres-14-eol-nov12`) and were re-asserted on
+their existing keys rather than given fresh slugs. On the patch side, **only 2 of
+14 probed CVEs were new** (OpenBMC, Spring). At 67 editions "already on the
+board" remains the normal case — and today the *whole 30 Sep / 1 Oct deadline
+wall* was already carried with correct dates.
+
+**A genuinely new no-fix MECHANISM worth watching as a category: the fix exists
+and is paywalled.** Spring CVE-2026-59313 is fixed in OSS only on 7.0.9; 5.3
+through 6.2 need commercial Enterprise Support. Harder to triage than an EOL
+branch because the fix demonstrably exists — and Spring rates it Low while
+scanners say 9.8, a seven-point disagreement between the two sources a policy
+might threshold on.
+
+**Scanner blindness is now its own standing category.** Snowflake's five driver
+CVEs sit in OSV with `package: null`, GIT ranges only and no GHSA alias, so
+pip-audit / Dependabot / osv-scanner against a lockfile return **zero** of them;
+containerd's Critical checkpoint-restore flaw and its unpack sibling have **no
+CVE ids at all**. Meanwhile amqp091-go gained ten CVE ids in one day for July
+fixes and Marten a Critical for a July advisory — a build that passed yesterday
+now fails a no-Criticals gate with no code change. Worth deciding whether that
+gate reads advisory publication or fix availability.
+
+**Pages deploy verified by reading the `deploy` JOB, per the 09-14 rule.** At the
+first look the run had only a `build` job in progress — the `deploy` job is
+created *after* build finishes, so an early poll looks like a stall (the 09-17
+note). `deploy` completed `success` at 13:40:29Z, ~26s after the push. No
+re-trigger, no wasted build.
+
+**Guard 5 earned its keep again on the same class as 09-17**: four
+navigation bullets in Today's Read ("Patch-Risk Radar — our 22-day overdue KEV
+row…") are claims about *this edition's own board*, where a primary vendor URL
+would be a wrong link. The honest citation is the dated public-archive fallback,
+`cite(None, TODAY)`. Final: **734 cited units, 0 uncited.**
+
+**Ledger health: 882 items, 30 exact + 96 fuzzy merges, 0 double-counted.** Tally
+guard bumped 126, guarded 0. Dictionary 19,474 → 20,230. The 15 weakest accepted
+merges were eyeballed and all were genuine same-story rewordings.
+`curate.py`'s fatal "pin not found" did not fire; both pins landed.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **sixth**
+consecutive week (tried `/database/rss`, `/optimizer/rss`, `/exadata/rss`,
+`/feed` and the site's JSON API), so the official Optimizer / In-Memory /
+Smart Scan / Exadata-monthly channel is a standing structural gap and the Oracle
+brief says so on its face rather than reporting a quiet month. `mikedietrichde.com`
+RSS now returns HTTP 202 with an `sgcaptcha` meta-refresh — a further regression.
+New and useful: `github.com/NVIDIA/product-security` serves full CSAF and Markdown
+bulletins and is a **better** route than the 403-ing `nvidia.custhelp.com` portal;
+`ratatoskr.run` works for LKML/stable threads; `lists.apache.org/api/mbox.lua`
+returns a full month's raw mbox and is the only route that finds a `[VOTE]`
+result mail (`stats.lua` collapses reply chains); `repo1.maven.org` began
+429-ing mid-run, so fall back to `releases.atom` + `downloads.apache.org`.
+Confirmed again: Google Cloud docs are at `docs.cloud.google.com`.
+
+**Security sweep, negative result — eighth consecutive run.** The Redshift agent
+fetched `behavior-changes.html` in both variants (markdown 34,132 bytes vs HTML
+55,977 — byte-identical to the 09-12, 09-13, 09-16 and 09-17 measurements), 24
+headings in each, and grepped both for `agent-toolkit`, `Skills for AI`,
+`AI coding assistant`, `search-skills` and `llms.txt`: **zero matches, all five
+markers, both variants.** It also answered the carried question: where the skills
+repo IS linked (`system-table-s3-tables.html`) it appears **once in each variant
+with 21 headings in each**, i.e. ordinary first-party documentation a human sees
+too — the opposite of the 09-01 pattern. One broken first-party link found: the
+Aug-27 announcement cites `redshift/latest/mgmt/agent-skills.html`, which does
+not exist. **No fetched page's suggestion was executed and no skill file was
+loaded by any agent.** The *affordance* keeps spreading and is now openly
+first-party: DuckDB shipped official "DuckDB Skills for Claude Code" (09-16),
+Fabric's SQL DW operations skill went GA beside a remote MCP `execute_query`
+against live warehouses, BigQuery's `run_bq_command` exposes the `bq` CLI
+including reservation management, AWS's toolkit backs a ChatGPT Work plugin that
+runs generated SQL against Redshift, Android Studio preloads 23 auto-invoked
+skills, and Safari 27 ships an MCP server.
+
+**Scope, stated plainly:** edition 067 refreshes Today's Read on all four chairs,
+Since yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and
+every identity site (title, masthead, GEN/ED/DSLUG, runbar, NAV, povContent
+meta + `.c`, and the section-shell `data-chips`). Claim Watch, Mirror, Question
+Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals, Build Radar,
+Skills Radar and Vendor Dossiers **carry forward from 066 and the edition says so
+on its face** — the day's research was overwhelmingly security and deadline
+movement rather than competitive claims. Output is 9,772 bytes larger than the
+parent, accounted for by 4 new event rows, 2 new patch rows and refreshed prose
+against one retirement. **The quarterly Skills/Build re-rank across all four
+chairs is due 2026-10-01 — 13 days out, and now flagged as approaching for five
+consecutive editions. It should not slip again.**

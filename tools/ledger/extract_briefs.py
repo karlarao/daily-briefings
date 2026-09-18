@@ -69,8 +69,24 @@ if not AGENTS:
 
 
 def final_text(path):
-    """Last assistant message's concatenated text blocks, plus token usage."""
-    last, usage = None, 0
+    """The agent's final BRIEF, plus token usage.
+
+    2026-09-18: this used to return the last assistant text block, and that
+    broke on every agent that hands back through the SubagentHandback tool.
+    The real tail shape is now:
+
+        text      <- the 23k-char brief
+        tool_use  <- SubagentHandback {"message": "<the same brief>"}
+        text      <- "Brief delivered."      (16 chars)
+
+    so "last text block" yields the acknowledgement and the brief is thrown
+    away. The whole run then reports "not ready: <topic>(short:N)" for every
+    agent -- silent, and it looks like the agents failed rather than the
+    parser. Fix: collect every candidate (assistant text blocks AND the
+    SubagentHandback message payload) and return the LAST SUBSTANTIAL one.
+    A trailing one-liner can never displace a real brief again.
+    """
+    cands, hands, usage = [], [], 0
     with open(path, encoding="utf-8", errors="replace") as fh:
         for line in fh:
             line = line.strip()
@@ -86,14 +102,32 @@ def final_text(path):
                          if isinstance(c, dict) and c.get("type") == "text"]
                 txt = "\n".join(p for p in parts if p.strip())
                 if txt.strip():
-                    last = txt
+                    cands.append(txt)
+                for c in (m.get("content") or []):
+                    if (isinstance(c, dict) and c.get("type") == "tool_use"
+                            and c.get("name") == "SubagentHandback"):
+                        msg = (c.get("input") or {}).get("message") or ""
+                        if isinstance(msg, str) and msg.strip():
+                            hands.append(msg)
                 u = m.get("usage") or {}
                 if u:
                     usage = max(usage, (u.get("input_tokens", 0) or 0)
                                 + (u.get("output_tokens", 0) or 0)
                                 + (u.get("cache_read_input_tokens", 0) or 0)
                                 + (u.get("cache_creation_input_tokens", 0) or 0))
-    return last, usage
+    # The SubagentHandback payload IS the agent's final report, by definition,
+    # so prefer it outright. Fall back to the LONGEST text block rather than the
+    # last one: an agent that signs off with a long recap of its own STATUS /
+    # FLAG_REASON lines would otherwise win over the brief itself and yield a
+    # few hundred characters (measured on the dbhw lane, 2026-09-18: a "last
+    # substantial block" rule returned 376 chars of a 40k brief). Length is the
+    # reliable discriminator here; a brief is always the biggest thing an agent
+    # emits, and main() still enforces the 400-char floor underneath.
+    if hands:
+        return hands[-1], usage
+    if not cands:
+        return None, usage
+    return max(cands, key=len), usage
 
 
 _TAIL = re.compile(
