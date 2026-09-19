@@ -93,7 +93,14 @@ def strip_host_wrapper(html: str, anchor: str = "<title>Oracle Competitive Lens"
     body = re.sub(r"(?:\s*</body>\s*</html>\s*)+$", "\n", body)
     if "__FRAME_PREAMBLE" in body:
         raise LensBuildError("host frame-runtime survived the strip")
-    return body
+    # Put back exactly ONE closing pair. The regex above cannot tell a served
+    # page (which carries an extra pair injected by the host) from stored source
+    # (which carries exactly one), so it removes every trailing pair from both.
+    # Found 2026-09-19: a parent staged with `action:"read"` + `path` is already
+    # stored source, and the built edition went out with ZERO closing tags --
+    # browsers tolerate it, which is why nobody noticed. Re-appending one is
+    # idempotent against the strip, so this cannot compound across editions.
+    return body.rstrip() + "\n\n</body></html>\n"
 
 
 # ---------------------------------------------------------------- ledger ---
