@@ -103,6 +103,64 @@ def strip_host_wrapper(html: str, anchor: str = "<title>Oracle Competitive Lens"
     return body.rstrip() + "\n\n</body></html>\n"
 
 
+def normalize_closing_tags(html: str) -> str:
+    """Collapse trailing </body></html> pairs to exactly one, and assert it.
+
+    Why this exists on top of strip_host_wrapper's re-append (2026-09-20): the
+    PUBLISHED edition-068 parent carried TWO closing pairs. The 09-19 note says
+    re-appending "cannot compound across editions" -- true only for a builder
+    that routes through strip_host_wrapper, because the strip is what makes the
+    append idempotent. A builder that appends a pair directly to stored source
+    (which already has one) gets two, and the next edition inherits them.
+    Browsers ignore the second pair, so this is invisible until someone diffs.
+
+    Call this immediately before writing the file, whatever path the html took.
+    """
+    out = re.sub(r"(?:\s*</body>\s*</html>\s*)+\Z", "\n</body></html>\n", html)
+    if len(re.findall(r"</body>\s*</html>\s*\Z", out)) != 1:
+        raise LensBuildError("page does not end in exactly one </body></html>")
+    return out
+
+
+def rewrite_pov_meta(html: str, nav_meta: dict, per_chair: dict | None = None) -> str:
+    """Rewrite povContent["meta"], which is FLAT: {chair: {viewid: "<string>"}}.
+
+    Found 2026-09-20. A guard written against the plausible-but-wrong nested
+    shape -- {viewid: {"meta": ...}} -- never matched anything and passed
+    silently, so the published parent rendered "edition 067" left-rail labels on
+    an edition-068 page (two editions stale) and "23 open" for a Gap Ledger its
+    own embedded ledger said held 22. Same class as the 09-19 chips-vs-NAV-vs-
+    ledger drift: the fix is that every one of these strings comes from ONE
+    source, nav_meta, which callers derive from len(ledger[section]).
+
+    per_chair optionally overrides a single view per chair (the Today's Read
+    tagline differs by chair and is not a count).
+    """
+    m = _POV_RE.search(html)
+    if not m:
+        raise LensBuildError("povContent block not found")
+    pov = json.loads(m.group(2))
+    touched = 0
+    for chair, views in (pov.get("meta") or {}).items():
+        if not isinstance(views, dict):
+            raise LensBuildError("povContent meta for %r is %s, expected a flat dict"
+                                 % (chair, type(views).__name__))
+        for vid, old in list(views.items()):
+            if not isinstance(old, str):
+                raise LensBuildError("povContent meta[%r][%r] is not a string" % (chair, vid))
+            new = None
+            if per_chair and chair in per_chair and vid in per_chair[chair]:
+                new = per_chair[chair][vid]
+            elif vid in nav_meta:
+                new = nav_meta[vid]
+            if new is not None and new != old:
+                views[vid] = new
+                touched += 1
+    if not touched:
+        raise LensBuildError("rewrite_pov_meta changed nothing -- shape drifted again?")
+    return html[:m.start()] + m.group(1) + json.dumps(pov, ensure_ascii=False) + m.group(3) + html[m.end():]
+
+
 # ---------------------------------------------------------------- ledger ---
 def load_ledger(html: str) -> dict:
     m = _LEDGER_RE.search(html)
