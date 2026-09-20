@@ -2178,3 +2178,15 @@ Xcode 27 ships an agent plug-in system with a documented
 `--unsafe-always-allow-all-agents` escape hatch. The counterweight worth
 recording: **this window's single worst unfixed vulnerability, a CVSS 9.2
 restricted-mode bypass, is itself in a Postgres MCP server.**
+
+**Hook-log diagnostic, captured because the 09-15 section asks for it.**
+`/tmp/claude-artifact-hook.log` holds exactly 4 records this run — `list`,
+`read`, `read`, `publish` — **all `PreToolUse`, none `PermissionRequest`**, and
+all at `mode=auto`. `/tmp/claude-bash-hook.log` holds 429 records, 209 `allow` /
+220 `pass`, again all `PreToolUse` at `mode=auto`. That shape is the healthy
+signature, and it is worth knowing what it looks like: on 09-15 the single
+`PermissionRequest` record in 437 was the command that parked the run. **Two
+things to check first if a future run parks: the event type (a
+`PermissionRequest` at all means `PreToolUse` did not clear it) and the mode
+(`mode=default` on 09-14/09-15 versus `mode=auto` today — the permission mode
+varies per cloud session and is not something the repo controls).**
