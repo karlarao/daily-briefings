@@ -2006,3 +2006,175 @@ quiet**. `community.fabric.microsoft.com` RSS is **intermittent**, not blocked �
 403 on one attempt, 200 with full post bodies on another in the same run.
 `docs.dremio.com`, `docs.firebolt.io` and Teradata's release notes could not be
 read at all, so those three vendors are unverified this window.
+
+## Run findings 2026-09-20 (edition 069)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt,
+both hooks clean.** Launched 09:02 EDT, all briefs in by ~09:20, published
+13:27 UTC, lens v34 after. `artifact-allow.sh` clean for the **12th** consecutive
+unattended run (`list`, a `read` with `path` (1.9 MB), the plain `read` a
+republish requires, and the publish — zero prompts); `bash-allow.sh` clean with
+no Bash prompt anywhere. **~3,340k research tokens, a record** (prior high
+~3,195k on 09-18).
+
+**THE WEBSEARCH CAP BOUND AGAIN, AND THE LAUNCH ORDER DID ITS JOB.** The 200-call
+session-wide budget was exhausted partway through, and the lanes that reported
+hitting it were the ones launched LAST — bigquery (17th), snowflake, databricks,
+fabric, redshift, oracle. Those are the changelog-shaped lanes the 09-13 order
+deliberately puts at the back precisely because WebFetch against a known primary
+URL is the better route for them anyway; several said so unprompted. The
+search-dependent lanes launched first (aidaily, aiappdev, nl2sql, aihw, dbhw,
+challengers, oltp, mongodb, formats) all got their searches in. **Keep the launch
+order** — this is the first run where it can be shown to have protected the
+lanes that needed it rather than merely coinciding with a quiet cap.
+
+**`povContent["meta"]` is FLAT — `{chair: {viewid: "<string>"}}` — and a guard
+written against the nested shape passed silently for editions.** I wrote a check
+for `{viewid: {"meta": ...}}`, the plausible shape; it matched nothing, raised
+nothing, and only the explicit `assert "edition 067" not in blob` afterwards
+caught it. The published 068 parent was consequently rendering **"edition 067"**
+left-rail labels on an edition-068 page (two editions stale) and **"23 open"**
+for a Gap Ledger its own embedded ledger said held **22**. Exactly the 09-19
+chips-vs-NAV-vs-ledger class. Landed `lens_guard.rewrite_pov_meta()`, which
+knows the real shape, drives every value from one `nav_meta` dict derived from
+`len(ledger[section])`, and **raises if it changed nothing** — a guard that can
+match zero things and still pass is not a guard.
+
+**The published parent carried TWO `</body></html>` pairs, which the 09-19 note
+says cannot happen.** That note's fix re-appends one pair inside
+`strip_host_wrapper` and reasons that "re-appending one is idempotent against the
+strip, so this cannot compound." True only for a builder that routes through the
+strip. A builder that appends directly to stored source — which already has one
+pair — gets two, and the next edition inherits them. Browsers ignore the second,
+so it is invisible until someone counts. Landed `normalize_closing_tags()`:
+collapse-then-assert, safe on any input, idempotent, called immediately before
+write regardless of how the html got there.
+
+**`%`-formatting collided with content for the FOURTH time, and the 09-18 answer
+is right.** A chair's Today's Read contained the literal "35% faster year over
+year" and `%`-formatting consumed it as a conversion specifier. The durable rule
+the 09-18 note states — *stop using `%` for HTML blocks that embed generated
+citations; concatenate with explicit `str()`* — is now applied to that block with
+a comment saying why. Worth promoting from "known gotcha" to "house style": any
+block mixing `cite()` output with prose should be built by concatenation.
+
+**A hand-written figure contradicted the data I had just computed, and only
+reading it back caught it.** The Longitudinal "early observations" bullet
+asserted urgent lanes "have not dropped below 11 in eight days" with a run of
+`11, 14, 13, 12, 13, 14, 13, 14`. The computed series says `11, 9, 12, 14, 11,
+14, 13, 14` — there is a 9 in it. The sentence is now generated from the series
+(`run8_txt`, `urg_max`, `ties`, `mean14`) with an assertion on today's value, so
+the prose cannot drift from the table above it. **Any number that appears in
+prose next to the table it describes should be interpolated from that table, not
+typed.** This is the 09-16 "11 vs 5" lesson in its most embarrassing form: I
+wrote the wrong numbers immediately after printing the right ones.
+
+**Flag calibration: 14 urgent, equalling the series high, and all fourteen
+survive the literal definition.** Three KEV clocks expire inside five days (Linux
+kernel trio **21 Sep** with forensic triage, Chromium V8 **23 Sep**, JFrog
+Artifactory **25 Sep**) and four have already run out (Oracle CVE-2026-21962 at
+24 days, MLflow at 18, LiteLLM and Starlette at 4, Pixel modem at 1). Six "no fix
+exists for somebody": the Linux THP write-loss bug, Aurora PostgreSQL, Percona
+MongoDB, Doris 2.x/3.x, StarRocks 3.5 LTS, Next.js 13/14 and Angular ≤19.2.25.
+Four dated cutovers inside 11 days. **Five lanes held `ok` while carrying real
+CVEs and wrote out their reasoning** — Fabric declined a **CVSS 10.0** because
+MSRC marks it `Customer Action Required: No`; BigQuery declined a 9.4 patched
+server-side in May; Open Formats declined the Polaris and parquet CVEs because
+fixes shipped; AI Hardware declined its own Triton CVEs; NL2SQL had no CVE at
+all. **AI Hardware also declined the NVIDIA PSIRT publishing move that edition
+068 flagged**, reasoning that nothing is exposed and the remedy is a two-minute
+config edit. The 09-19 note had already recorded that flag as the weakest of its
+thirteen; an agent independently reaching the same conclusion and saying why is
+the calibration rule working without being told.
+
+**Ledger health: 842 items, 44 exact + 126 fuzzy merges, 0 double-counted.**
+Tally guard bumped 170, guarded 0. Dictionary 20,887 → 21,559. Match rate 20.2%,
+squarely in the recent band, so the 09-09 length-asymmetry diagnostic was not
+needed. `curate.py`'s fatal "pin not found" did not fire; all 15 picks and all 8
+pins landed. `new_more` 475 of 705 — the known residue. **Five `[src]` links were
+attached by hand** (StarRocks 3.5, Chrome Privacy Sandbox, Next.js AVIF, Doris,
+Snowflake CLI), each from a URL already cited in that same brief for that exact
+fact, taking the card to 32 of 32 rows sourced.
+
+**`reuse_key`'s advisory again found that most of today's stories were already on
+the board.** Of the candidates probed, the Linux THP write-loss row, the
+postgres-mcp 9.2, the GitHub Actions runner enforcement, the Aurora lag, the
+StarRocks trio and the parquet CVE all already existed and were **enriched in
+place on their existing keys**. Only four rows were genuinely new (the kernel KEV
+trio, Pixel modem, Plugin4Shell, MLflow SSRF). At 69 editions "already on the
+board" remains the normal case — probe before drafting.
+
+### Lens findings (edition 069)
+
+**Seven corrections applied to the ledger before any section was generated**, per
+the 09-14 build-order rule. Two are date corrections and both move *away* from
+precision: the **NIST FIPS 140-2 historical-list move is 2026-09-22, not the 21st**
+that editions 064–068 carried (NIST's own transition page settles it), and
+**Fabric Runtime 2.0's default flip lost its date field entirely** because the row
+asserted `2026-09-30` while its own prose said Microsoft publishes no day — the
+09-16 "prose and identity data are corrected separately" failure, caught on the
+half that was missed. Also: Oracle CVE-2026-21962's day count disagreed with
+itself (22 in prose, 23 in `due`) and is now 24 everywhere, **confirmed by direct
+grep that neither the August nor the September CSPU carries the fix**; the THP row
+gained its mainline-fix-but-no-stable-release status; and the parquet row now
+records that **NVD's description contradicts the ASF advisory** while its CPE
+range agrees with it — the worst combination, because a human and a tool reading
+the same record reach opposite conclusions.
+
+**Guard 5 passed on the first assembly: 726 cited units, zero uncited.** Fifth
+consecutive edition. Mechanism unchanged since 09-15 — every row generator calls
+`cite()` inline as it emits; navigation claims about this edition's own board use
+the dated public-archive fallback because a vendor URL would be a wrong link.
+
+**Output is 7,391 bytes larger than the parent**, accounted for by 4 new patch
+rows and 1 new event against 1 retirement, seven correction paragraphs, and
+refreshed Today's Read on all four chairs. A growth needs less explaining than a
+shrink, but it is still worth stating.
+
+**Scope, on the edition's face:** 069 refreshes Today's Read on all four chairs,
+Since yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all
+seven identity sites. Claim Watch, Mirror, Question Forecast, Gap Ledger,
+Benchmarks, Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor
+Dossiers **carry forward from 068 unrevised** — no competitor shipped a perf or
+price claim worth a card today, and claims[] did not grow at all. **The quarterly
+Skills/Build re-rank across all four chairs is due 2026-10-01, eleven days out,
+and has now been flagged as approaching for seven consecutive editions.** It is
+inside the next run's reach.
+
+**Pages deploy verified by reading the `deploy` JOB.** At the first look the run
+had only a `build` job in progress — the 09-17 rule held, no re-trigger fired.
+`deploy` completed `success` at 13:27:27Z, ~28s after the push.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for an **eighth**
+consecutive week, so the Oracle Performance channel remains a standing structural
+gap and the brief says so on its face; Connor McDonald carried the lane.
+`mikedietrichde.com` is still an `sgcaptcha` shim. **CORRECTION to the standing
+note: ORDS is NOT uncovered.** `oracle.com/tools/ords/ords-relnotes.html` now 404s
+(it previously 403'd), but `ords-changelog.html` and the Database Actions download
+page both serve 200 to curl with a browser UA and carry version, build number and
+date. Also new: `api.webstatus.dev` is an uncapped route to Baseline data and
+beats the web.dev digests, which run a month behind; `docs.dremio.com` and
+`docs.firebolt.io` are **readable again** (both were listed unverified);
+Teradata remains the real gap. `repo1.maven.org` has recovered from its 09-18
+429s.
+
+**Security sweep, negative result — tenth consecutive run, and the baseline is
+byte-exact.** The Redshift agent fetched `behavior-changes.html` in both variants
+(**markdown 34,132 bytes / 24 headings vs HTML 55,977 / 27 tags — identical on
+every figure to 09-12, 09-13, 09-16, 09-17 and 09-18**) and grepped both for
+`agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills` and
+`llms.txt`: zero hits, every marker, both variants. It did the same for
+`cluster-versions.html` (markdown 131,801 / 92 headings vs HTML 218,718 / 94
+tags), establishing a baseline where none existed. **One correction to the 09-16
+note**, which recorded that the Redshift docs "now link the agent-toolkit skills
+repo in both variants": today `agent-toolkit` returns zero hits in all four
+files, so either that link was on a different page or it has been removed. No
+fetched page's suggestion was executed and no skill file was loaded by any agent.
+The *affordance* keeps widening — Oracle ships MCP servers in ORDS 26.2 whose
+`sql_run` executes arbitrary SQL within the caller's privileges, Fabric's remote
+DW MCP server exposes a single write-capable `executeSQL`, BigQuery's
+`run_bq_command` reaches reservation management with IAM as the only control, and
+Xcode 27 ships an agent plug-in system with a documented
+`--unsafe-always-allow-all-agents` escape hatch. The counterweight worth
+recording: **this window's single worst unfixed vulnerability, a CVSS 9.2
+restricted-mode bypass, is itself in a Postgres MCP server.**
