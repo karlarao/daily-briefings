@@ -2190,3 +2190,123 @@ things to check first if a future run parks: the event type (a
 `PermissionRequest` at all means `PreToolUse` did not clear it) and the mode
 (`mode=default` on 09-14/09-15 versus `mode=auto` today — the permission mode
 varies per cloud session and is not something the repo controls).**
+
+## Run findings 2026-09-21 (edition 070)
+
+**THE EXTRACTOR SILENTLY PRODUCED STUB BRIEFS AND DROPPED TWO URGENT FLAGS — fixed at
+source.** In this harness an agent returns its brief through a **`SubagentHandback` tool
+call**, and its trailing *text* block is only a short "handing back" stub. 11 of 19 agents
+this run left no usable final text at all (`not ready: …(short:46)`), and — far worse — the
+other 7 had a stub that still *parsed*: `split_contract` found a `STATUS:` line in it, so
+`extract_briefs.py` wrote 800–1,900-character "briefs" for nl2sql, aihw, mongodb, formats,
+snowflake, databricks and bigquery against 19k–37k for a real one. **MongoDB and Databricks
+both came out `ok` that way when both are `urgent`.** Nothing failed; the pipeline would
+have published seven gutted briefs and two missing flags. Caught only by eyeballing the
+per-topic character counts in the extractor's own output line.
+Fix: `_last_text()` now also keeps the last `SubagentHandback` input's `message` field and
+prefers it when it carries the `BRIEF:` marker or is simply longer. **Lesson that
+generalises: a parser that accepts a truncated input is more dangerous than one that
+rejects it. Print a size per record and look at the distribution — 816 chars next to 33,625
+is the whole tell.** Re-run with `--force` after fixing; the seven bad files were already
+on disk and `already had:` would have skipped them.
+
+**patch[] duplication paid down 170 → 137, the largest fold yet.** The 09-10, 09-11, 09-13
+and 09-15 notes all deferred this as needing a hand map rather than a threshold. It became
+unavoidable today: the radar's top 26 rows contained **five separate rows for the one
+PostgreSQL 2026-08-13 28-CVE batch**. 33 rows folded into 14 survivors — also eight Next.js
+August-criticals rows, three MongoDB intra-cluster SASL rows, three Context7 MCP rows, two
+Go GOSUMDB rows. Every loser preserved in the survivor's `aliases[]`, `first_seen` and
+`days` carried to the oldest, `assert_alias_safe` confirms no parent key left by omission.
+`tools/lens/fold_map_070.py`. **claims[] (175) and ownclaims[] (43) still carry the same
+duplication and are the next cleanup** — they need more care because each card carries
+authored counter/ask prose.
+
+**`reuse_key`'s advisory stopped two fresh slugs, and the fold map stopped nothing it
+shouldn't have.** Of 6 drafted event rows, 2 collided with a parent on the same date
+(October CPU, CORTEX_MODELS_ALLOWLIST) and were re-asserted on the older keys instead of
+minting new ones. Of 9 drafted patch rows, **6 were already tracked** — at edition 70 with
+a 30-day window, "already on the board" remains the normal case, exactly as the 09-09 note
+predicted.
+
+**A disagreement recorded rather than resolved, deliberately.** Edition 069 corrected the
+NIST FIPS 140-2 historical-list date from 21 to 22 September citing NIST's own transition
+page; today's Oracle brief reads it as the 21st. Neither is a clean primary read and the
+gap changes nothing operationally, so the row **keeps 09-22 and states the conflict**.
+A date that flip-flops across editions is worse than one carrying a stated uncertainty —
+the 09-15 Snowflake-bundle precedent applied in the other direction.
+
+**The phantom Snowflake October date is finally traced, not just deleted.** Editions
+064–066 carried a day-precise October date against bundle 2026_07; 067 dropped it as
+unpublished. Today's brief found where it actually came from: **BCR-2413**, which was
+REMOVED from the bundle on 2026-09-03 and re-issued as an *unbundled* change with a hard
+date of **2026-10-16** (Snowsight moves to an account-specific host, no opt-out).
+**Generalisable: when a bundle member is removed its date does not disappear, it relocates
+to the unbundled table. Read the bundle CHANGE LOG, not just the change list.**
+
+**Flag calibration: 11 urgent, 10 distinct stories, every one audited against the literal
+definition.** Five KEV entries past due or expiring inside four days (Artifactory 25 Sep
+with exploitation observed 27 days *before* listing; Linux kernel trio due today; Chrome V8
+23 Sep; Oracle CVE-2026-21962 25 days over; LiteLLM 5 days over), three "no fix exists for
+somebody" (Aurora PostgreSQL 39 days behind with no patched engine, the x86 THP data-loss
+bug fixed in one stable series only, Percona MongoDB), and three vendor cutovers inside ten
+days. Artifactory is the shared story across App Dev and DevOps — the 061-style overlap.
+**Eight lanes held `ok` while carrying real CVEs** and several wrote out their reasoning for
+*not* flagging: Fabric (a CVSS 10.0 with `Customer Action Required: No`), Snowflake (six
+CVEs, all patched, zero KEV entries), BigQuery (a Critical patched server-side in May),
+Open Formats (parquet corruption with a GA fix since 09-04). That asymmetry is the evidence
+the agents discriminated rather than blanket-flagged.
+
+**Guard 5 passed on the FIRST assembly again — 740 cited units, zero uncited.** Third
+consecutive edition, same mechanism as 09-15 and 09-16: every section generator calls
+`cite()` inline as it emits each row, never retrofitted. `assert_table_shape` also passed
+first try across 13 tables.
+
+**Pages: the `deploy` job's own API status lagged its real completion by ~5 minutes.** The
+job actually completed `success` at 13:42:30Z, 8 seconds after it started — but
+`get_workflow_job` kept returning `status: in_progress` until ~13:47. **The 09-14 rule (read
+the `deploy` job, not the run aggregate) needs one extension: read `completed_at`, not just
+`status`.** Polling `status` and firing the 3-minute re-trigger would have cost a needless
+rebuild here, which is exactly the 09-12 mistake. Also re-confirmed: `deploy` does not exist
+until `build` finishes, so an early look shows one job and reads like a stall.
+
+**Both hooks clean.** The Artifact hook is clean for its 13th consecutive unattended run —
+`action:"list"`, `action:"read"` with `path` (1.9 MB), the plain `action:"read"` a republish
+requires, and the edition-070 publish all ran with zero prompts. No Bash compound parked
+either, despite heavy `python3 - <<'PY'` use; the "never start a compound with `VAR=`" rule
+was held throughout.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **seventh** consecutive
+week, costing the Oracle `## Performance` channel outright again — the Oracle brief says so
+on its face rather than reporting a quiet month. `mikedietrichde.com` still captcha-blocked.
+New this run: `repo1.maven.org` returns **429** on bursts of metadata fetches (space them);
+`nvidia.com/en-us/security/` does not render its bulletin table to WebFetch but
+`raw.githubusercontent.com/NVIDIA/product-security/main/2026/<id>/<id>.md` serves Markdown
+and CSAF cleanly — and NVIDIA PSIRT moves to GitHub-only publishing on 2026-10-01.
+`www.databricks.com/blog/rss.xml` 404s (Gatsby SPA shell), so there is no working Databricks
+blog feed.
+
+**Security sweep, negative result — eighth consecutive run.** The Redshift agent fetched
+`behavior-changes.html` in both variants (markdown 34,132 bytes / 24 headings vs HTML
+55,977 / 27, the 3 extra being the page's own Topics nav) plus `cluster-versions.html` both
+ways, and grepped all four for `agent-toolkit`, `Skills for AI`, `AI coding assistant`,
+`search-skills`, `llms.txt` — **zero matches in every file**, and byte-identical to the
+09-12/09-13/09-16/09-17 measurements. The 2026-09-01 injected block is still gone; the
+markdown-variant *mechanism* persists. Affordance sightings continue to widen (Safari 27
+ships an MCP server with DOM/network access and publishes a ready-to-paste
+`claude mcp add` command in its own release notes; Android Studio preloads 23 auto-invoked
+skills; DuckDB published official Claude Code skills; Oracle ships MCP servers in SQLcl,
+ORDS, ADB and OCI Database Tools — where **service logging arrived on 21 Aug, after the
+servers shipped**). Apache Iceberg spent the window debating what its own `AGENTS.md` may
+instruct a contributor's model to do. **No fetched page's suggestion was executed by any
+agent, and no skill file was loaded.**
+
+**Scope, stated plainly:** edition 070 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity
+sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker,
+Perf Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 069 and the
+edition says so on its face** — the day's research was overwhelmingly security and deadline
+movement, and the depth went into paying down the patch[] duplication backlog instead.
+Output is 957 bytes larger than the parent: new sections and four new event rows against 33
+folded patch rows. **The quarterly Skills/Build re-rank across all four chairs is due
+2026-10-01 — 10 days out, and it has now been flagged as approaching for five consecutive
+editions. It must not slip again.**
