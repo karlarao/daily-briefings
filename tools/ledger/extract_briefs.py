@@ -70,7 +70,7 @@ if not AGENTS:
 
 def final_text(path):
     """Last assistant message's concatenated text blocks, plus token usage."""
-    last, usage = None, 0
+    last, handback, usage = None, "", 0
     with open(path, encoding="utf-8", errors="replace") as fh:
         for line in fh:
             line = line.strip()
@@ -87,12 +87,30 @@ def final_text(path):
                 txt = "\n".join(p for p in parts if p.strip())
                 if txt.strip():
                     last = txt
+                # 2026-09-21: in this harness an agent returns its brief through a
+                # SubagentHandback tool call, and its trailing *text* block is only a
+                # short "handing back" stub -- 11 of 19 agents this run. The full
+                # STATUS/FLAG_REASON/BRIEF contract is the handback's `message`
+                # field. Keep it and prefer whichever of the two is the real brief.
+                for c in (m.get("content") or []):
+                    if (isinstance(c, dict) and c.get("type") == "tool_use"
+                            and c.get("name") == "SubagentHandback"):
+                        hb = (c.get("input") or {}).get("message") or ""
+                        if hb.strip():
+                            handback = hb
                 u = m.get("usage") or {}
                 if u:
                     usage = max(usage, (u.get("input_tokens", 0) or 0)
                                 + (u.get("output_tokens", 0) or 0)
                                 + (u.get("cache_read_input_tokens", 0) or 0)
                                 + (u.get("cache_creation_input_tokens", 0) or 0))
+    # Prefer the handback when it actually carries the contract, or when the
+    # trailing text block is clearly just a stub. Never silently drop a longer
+    # real brief in favour of a shorter one.
+    if handback:
+        has_contract = re.search(r"^[`*\s]*BRIEF[`*]*\s*:", handback, re.M | re.I)
+        if has_contract or len(handback) > len(last or ""):
+            last = handback
     return last, usage
 
 
