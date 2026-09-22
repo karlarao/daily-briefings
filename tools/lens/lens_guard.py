@@ -459,6 +459,78 @@ def assert_table_shape(html: str) -> int:
             % (len(bad), lines))
     return len(tables)
 
+
+def rewrite_pov_meta(html: str, nav_meta: dict, edition: str, dslug: str) -> str:
+    """Rewrite the per-chair povContent `meta` strings and each chair's v-read `.c`.
+
+    Why this exists (2026-09-20, re-proven 2026-09-22): povContent is a SEVENTH
+    identity site that `rewrite_identity` does not touch, and its shape is FLAT --
+    {chair: {viewid: "<string>"}} -- not the nested {viewid: {"meta": ...}} a guard
+    written from memory assumes. A check against the plausible-but-wrong shape
+    matches nothing, raises nothing, and passes for editions while the published
+    page renders a stale "edition NNN" in every chair's left rail.
+
+    This raises if it changed nothing: a guard that can match zero things and
+    still pass is not a guard.
+
+    It deliberately rewrites only the meta values and the v-read `.c` chip. It does
+    NOT sweep the section bodies for an edition number, because "vs edition 070",
+    "carried from 070" and "CORRECTION (ed. 064)" are all CORRECT text on a page
+    that discusses its own edition history -- a blanket substitution corrupts the
+    correction record (2026-09-18, 2026-09-22).
+    """
+    m = re.search(r'(<script type="application/json" id="povContent">)(.*?)(</script>)',
+                  html, re.S)
+    if not m:
+        raise LensBuildError("no #povContent block found")
+    pov = json.loads(m.group(2))
+    if "meta" not in pov or "content" not in pov:
+        raise LensBuildError("povContent is not {meta:..., content:...}: %s" % sorted(pov))
+    chip = "edition %s \u00b7 %s" % (edition, dslug)
+    changed = 0
+    for chair, views in pov["meta"].items():
+        if not isinstance(views, dict):
+            raise LensBuildError("povContent.meta[%r] is %s, expected a flat dict of "
+                                 "viewid->string" % (chair, type(views).__name__))
+        for vid, val in list(views.items()):
+            if vid in nav_meta and val != nav_meta[vid]:
+                views[vid] = nav_meta[vid]
+                changed += 1
+    for chair, views in pov["content"].items():
+        vr = views.get("v-read")
+        if isinstance(vr, dict) and vr.get("c") != chip:
+            vr["c"] = chip
+            changed += 1
+    if not changed:
+        raise LensBuildError("rewrite_pov_meta changed nothing -- wrong shape or "
+                             "already-correct parent; refusing to pass silently")
+    blob = json.dumps(pov, ensure_ascii=False)
+    out, n = re.subn(r'(<script type="application/json" id="povContent">)(.*?)(</script>)',
+                     lambda mm, b=blob: mm.group(1) + b + mm.group(3), html, flags=re.S)
+    if n != 1:
+        raise LensBuildError("povContent write touched %d blocks, expected 1" % n)
+    for chair in pov["content"]:
+        if pov["content"][chair].get("v-read", {}).get("c") != chip:
+            raise LensBuildError("v-read chip did not take for chair %r" % chair)
+    return out
+
+
+def normalize_closing_tags(html: str) -> str:
+    """Collapse trailing </body></html> pairs to exactly one, then assert it.
+
+    Why this exists (2026-09-20): `strip_host_wrapper` removes trailing pairs and
+    a builder that routes through it can safely re-append one. A builder that
+    appends directly to STORED source -- which already has one pair -- gets two,
+    and the next edition inherits them. Browsers ignore the second, so it is
+    invisible until someone counts. Safe on any input and idempotent, so call it
+    immediately before write regardless of how the html was produced.
+    """
+    out = re.sub(r"(?:\s*</body>\s*</html>\s*)+$", "\n", html) + "</body></html>\n"
+    if out.count("</html>") != 1 or out.count("</body>") != 1:
+        raise LensBuildError("closing tags still unbalanced: %d </html>, %d </body>"
+                             % (out.count("</html>"), out.count("</body>")))
+    return out
+
 # ------------------------------------------------------------- self-test ---
 if __name__ == "__main__":
     page = (

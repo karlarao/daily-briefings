@@ -2310,3 +2310,173 @@ Output is 957 bytes larger than the parent: new sections and four new event rows
 folded patch rows. **The quarterly Skills/Build re-rank across all four chairs is due
 2026-10-01 — 10 days out, and it has now been flagged as approaching for five consecutive
 editions. It must not slip again.**
+
+## Run findings 2026-09-22 (edition 071)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both
+hooks clean.** Launched 09:13 EDT, briefs in over ~09:19–13:30, dashboard published
+13:34 UTC, lens v36 after. ~2,960k research tokens. The hook logs show the healthy
+signature the 09-20 note describes and is worth re-stating because it is the thing to
+check first if a future run parks: `/tmp/claude-artifact-hook.log` held exactly **4
+records** (list, `read` with `path`, the plain `read` a republish needs, publish) and
+`/tmp/claude-bash-hook.log` **304** (167 allow / 137 pass) — **all `PreToolUse`, all
+`mode=auto`, zero `PermissionRequest`**. On 09-15 the single `PermissionRequest` record
+in 437 was the command that parked the run. Artifact hook clean for its 14th
+consecutive unattended run.
+
+**`reuse_key`'s advisory had its best run yet: 11 of 12 drafted dated rows were already
+on the board.** Chrome V8, Play registration, the Databricks Supervisor API, Apple EU
+terms, the Azure Standard cutover, Snowsight's account host, the October CPU, BigQuery
+TabFM, .NET 8+9, PostgreSQL 14 and the Redshift row itself all existed under older keys
+and were re-asserted in place. Only two rows were genuinely new, and one of those
+(`redshift-odbc-1x-eos-dec31`) exists only because a date *split* off an existing row.
+At 71 editions on a 30-day window this is now so reliably the normal case that the
+right default is **draft the row, then let the advisory tell you whether it is new** —
+never assume.
+
+**A vendor moved TWO hard cutover dates with no change record, and only reading the page
+caught it.** Redshift's TLS 1.0/1.1 rejection is **2026-10-31, not 09-30**, and ODBC 1.x
+end-of-support is **2026-12-31, not 09-30** — AWS's own words: "Based on customer
+feedback, we have extended the original end-of-support date from September 30, 2026 to
+December 31, 2026." Neither move produced a document-history row, a what's-new post or
+an anchor change, and Google's index still serves a snippet of that same page reading
+"July 30, 2026", so the TLS date has now moved at least twice unannounced. **The lesson
+generalises past Redshift: for any date you are holding a team to, the citation has to
+be re-read, not re-linked.** The Redshift agent also caught it by arithmetic — the
+markdown variant came back **34,126 bytes against a 34,132 baseline, exactly −6 in both
+variants with heading counts unchanged**, which is the signature of a pure in-place text
+substitution ("September 30" → "October 31" is −2 bytes, three times). That is the
+byte-baseline earning its keep on something other than a security sweep.
+
+**The board's own JFrog KEV record was wrong, and the correction is the useful kind.**
+Edition 070 attributed the 2026-09-25 due date to CVE-2026-82329. It does not own that
+date: 82329 was KEV-added 09-02 due **09-05** (17 days over), 09-25 belongs to
+CVE-2026-42016/42018, and there is a **fourth** entry the board never carried —
+CVE-2026-66384, due 09-10, 12 days over. Four KEV entries against one product in 26
+days. The fact that changes behaviour: Wiz documented in-the-wild chaining 15 Aug – 8
+Sep reaching a persistent admin **in under five minutes** and harvesting the **Access
+private signing key**, so a patched instance stays forgeable indefinitely — revoke every
+token and reset the signing certificate. There is also a version trap: NVD says 42016 is
+fixed "before 7.133.11" but the 82329/42018 fixes land later on the same train, so the
+real floor is **7.133.29**.
+
+**The FIPS 140-2 date disagreement carried since edition 069 was never between our
+sources — it is inside NIST's own page.** The prose paragraph on the CSRC transition
+page says 21 September; the structured Transition Schedule table on the *same page* says
+22 September. Take the table. Editions 069 and 070 recorded this as a conflict between
+readings; it is one document contradicting itself, and the row now says so. **Worth
+generalising: before recording a disagreement between two sources, check whether one
+source disagrees with itself.**
+
+**Guard 5 passed on the first assembly for the fourth consecutive edition — 727 cited
+units, zero uncited — and `assert_table_shape` passed across 10 tables.** Mechanism
+unchanged since 09-15: every row generator calls `cite()` inline as it emits.
+
+**TWO over-broad assertions of my own fired on correct content, which is the 09-16
+"guard that fails on correct content trains you to bypass guards" lesson in a new
+place.** I wrote `assert "edition 070" not in blob` over the whole `povContent` JSON and
+again over the whole page. Both failed — because **"vs edition 070" is the correct text
+for Since-yesterday**, "carried from 070" is correct for carried sections, and several
+strings are historical correction prose ("CORRECTION (ed. 064)"). The fix was to assert
+the identity *sites* (each chair's `v-read.c` equals `edition 071 · 2026-09-22`, the
+runbar spans, the title, the NAV entry) rather than sweeping for a substring. **Rule: an
+identity check must name the field it checks. A substring sweep over a page that
+discusses its own edition history will always be wrong, and a blanket substitution would
+corrupt the correction record.**
+
+**Two functions CLAUDE.md records as landed on 09-20 are NOT on main.** `lens_guard.py`
+on main has no `rewrite_pov_meta` and no `normalize_closing_tags`; I implemented both
+inline in this edition's builder instead (the `povContent` meta rewrite driven from one
+`nav_meta` dict, and a collapse-then-assert on the closing tags). This is the same class
+as the 09-19 finding that the 09-18 extractor fix never reached main — **a note saying
+"landed" is a claim about a merge, and merges are what this repo keeps not doing. After
+staging tooling from main, grep it for the thing yesterday's note claims is in it.**
+(That habit is what caught it: the parent page had exactly one `</html>`, so the
+close-tag path was clean this run regardless.)
+
+**Flag calibration: 10 urgent, down from 11/14/13/14/11 — and the number came down
+without the world getting safer.** Four of yesterday's flags were KEV clocks that
+expired and stayed expired rather than resolving. All ten survive the literal
+definition, audited one at a time: seven are CVE cases (four KEV entries past due or due
+inside three days — JFrog, the Linux kernel trio, Chrome V8, LiteLLM, plus Oracle
+CVE-2026-21962 at 26 days over; and five "no fix exists for somebody" — Aurora
+PostgreSQL, Percona-MongoDB 8.0, Apache Doris 2.x/3.x, Spring 5.3–6.2, Angular
+≤19.2.25), and three are dated cutovers inside nine days (Play registration + developer
+verification 30 Sep, Databricks Supervisor API 30 Sep, Azure Standard→Premium 1 Oct).
+**10 flags, 9 distinct stories** — App Dev and DevOps both carry JFrog, and the App Dev
+row was picked for the card because it carries the fact that changes behaviour. **Nine
+lanes held `ok` while carrying real CVEs and wrote out their reasoning**: Fabric declined
+a **CVSS 10.0** marked `Customer Action Required: No` for the fourth consecutive window,
+BigQuery declined a Critical patched server-side in May for the fourth, Open Formats
+declined an 8.1 with a fix available and a config-only mitigation, Snowflake declined six
+patched driver CVEs with zero KEV entries, Redshift reported that its own urgency went
+*down*, and Database Hardware reported a month with no CVE at all rather than padding.
+
+**Ledger health: 789 items, 47 exact + 121 fuzzy merges (21.3%), 0 double-counted.**
+Tally guard bumped 168, guarded 0. Dictionary 22,140 → larger. The match rate has sat in
+the 20–22% band for four runs, so the 09-09 length-asymmetry diagnostic was not needed —
+the low absolute rate is real novelty. The 15 weakest accepted merges were eyeballed and
+all were genuine same-story rewordings. `curate.py`'s fatal "pin not found" did not fire;
+all 15 picks and all 5 pins landed. One `[src]` link was attached by hand (Doris no-fix),
+reused from that brief's own citation for that exact fact, taking the card to 29 of 29
+rows sourced.
+
+**Pages: `deploy` completed `success` at 13:34:04Z, ~2 minutes after the push.** The
+09-17/09-18 rule held — at the first look the run had only a `build` job and read as
+`queued`, because `deploy` is not created until `build` finishes. No re-trigger, no
+wasted build.
+
+**Lens output is 8,601 bytes smaller than the parent and fully accounted:** v-events
+−9,397 (a 62-day horizon against the parent's 75, which is what the spec asks for),
+v-patch −4,933 (26 rows shown of 137), v-wn −1,108, against lensLedger +5,593 (six
+corrections plus two new rows) and povContent +989. My first pass truncated event rows
+at 340 chars and came out −13,073; rather than ship a silent content reduction I raised
+the limit to 560 and re-ran. **A size drop against an inheritance parent still has to be
+explained every time, and "explained" sometimes means "fix it".**
+
+**Scope, stated plainly:** 071 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven
+identity sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise
+Tracker, Perf Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from
+070 and the edition says so on its face** — claims[] did not grow at all because no
+competitor shipped a numbered perf or price claim in the window, and the depth went into
+the six ledger corrections. **The quarterly Skills/Build re-rank across all four chairs
+is due 2026-10-01 — NINE days out, now inside a single run's reach, and flagged as
+approaching for nine consecutive editions. The next run should do it.**
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **ninth** consecutive
+week (tried `/database/rss`, `/optimizer/rss`, `/exadata/rss`, `/feed` and the JSON API),
+so the Oracle Performance channel is a standing structural gap and the brief says so on
+its face; Connor McDonald carried the lane and `mikedietrichde.com` is still an
+`sgcaptcha` shim. New this run: **`web.archive.org`'s CDX API returns 403 from the run
+VM**, which blocks the one check that would have settled the Redshift date change
+definitively — worth carrying as a standing limitation, because it means this pipeline
+can diff a vendor page only against its own recorded baseline, which is exactly why the
+baseline is valuable. Also: `docs.aws.amazon.com` served both variants to plain
+`python3 urllib` with a browser UA, no curl needed; `github.com/**/releases.atom` is 403
+to `urllib` as well as curl but fine via WebFetch; `phoronix.com` is Cloudflare-blocked to
+both WebFetch and curl now (RSS still works); `repo1.maven.org` did not 429 this run.
+For hardware lanes, **sitemap-walking a trade site beat searching it** — `servethehome.com/post-sitemap6.xml`
+gives every post with a lastmod date and was the highest-yield source in that lane.
+
+**Security sweep, negative result — eleventh consecutive run, with one measured
+deviation that is NOT the injection.** All four files fetched fresh in both variants:
+`behavior-changes.html` markdown **34,126 bytes / 24 headings** (baseline 34,132) and
+HTML **55,971 / 27** (baseline 55,977) — **−6 in each**; `cluster-versions.html` matched
+its baseline **to the byte** in both variants (131,801 / 92 and 218,718 / 94). Greps for
+`agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills` and `llms.txt`
+returned **zero matches in all four files**, and broadening to bare `skill`, `assistant`
+and `MCP` also returned zero. The −6 is the TLS date substitution, not injected content,
+and the fact that `cluster-versions.html` matched byte-for-byte is what proves the
+transport and the baseline are both sound. **No fetched page's suggestion was executed
+and no skill file was loaded by any agent.** The *affordance* keeps widening and is now
+uniformly first-party: Oracle's ORDS 26.2 `sql_run` executes arbitrary SQL within the
+caller's privileges (and OCI Logging for Database Tools MCP servers arrived **21 Aug,
+after the servers shipped**), BigQuery's managed MCP `execute_sql` is write-capable by
+default with Google's own docs recommending deny policies, Fabric's remote DW server
+exposes a single write-capable `executeSQL`, Databricks made UC Skills a first-class
+securable that agents load live over MCP, AWS backs a ChatGPT Work plugin running
+generated SQL against live Redshift, and Xcode 27 publishes
+`--unsafe-always-allow-all-agents` in Apple's own release notes. The counterweight is
+that **this window's worst unfixed vulnerability, a CVSS 9.2 restricted-mode bypass, is
+itself in a Postgres MCP server** whose project has had one commit since January.
