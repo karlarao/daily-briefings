@@ -2627,6 +2627,18 @@ two new events, two correction paragraphs and refreshed prose against four retir
 it is now inside the next run's reach. It has been flagged as approaching for ten consecutive
 editions.**
 
+**A Pages deploy can fail on a commit pushed shortly after a successful one, and it is not
+the dashboard failing.** The briefings commit deployed green at 13:34:49Z (27s after the
+push). The very next commit — CLAUDE.md only — had `build` succeed and `deploy` fail after
+**2 seconds**, which is the shape of a Pages concurrency rejection, not a content problem:
+three deployments inside twelve minutes. A single empty-commit re-trigger went green.
+**The trap for a future run: if you push docs commits after the briefings commit and then
+check "the latest run", you will see `conclusion: failure` on a run whose failure has nothing
+to do with the published dashboard.** Verify the deploy job for YOUR `DEPLOY_SHA`, which is
+what step 5b already says, and do not send a "Pages publish failed" notification on the
+strength of a later docs commit. If you want to avoid it entirely, push CLAUDE.md in the same
+commit as the dashboard or leave it to the end and accept one re-trigger.
+
 **`extract_briefs` clean: 19/19, bodies 18,265–33,026 chars.** The 09-21 stub-brief failure mode
 is absent, and the check that proves it is the one that note prescribes — print a size per record
 and look at the distribution, because 816 chars next to 33,625 is the whole tell.
