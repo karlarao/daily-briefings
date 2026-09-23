@@ -2535,9 +2535,18 @@ different benchmarks, so that is a genuine mis-merge. `tools/lens/ledger_surgery
 `id_disjoint()` for exactly this shape (never fold two rows whose hard-identifier sets are
 both non-empty and disjoint); `tools/ledger/ledger.py` has no equivalent. One wrong merge in
 161 (0.6%), on a "Worth your weekend" commentary bullet that `curate.py` excludes from the
-card anyway — so it is **recorded rather than chased**, but porting `id_disjoint` into the
-step-4c fuzzy route is the cheap durable fix, and benchmark names are the obvious token class
-to seed it with.
+card anyway — so it is **recorded rather than chased**.
+**CORRECTION, measured before this note shipped: porting `id_disjoint` as written would NOT
+have caught it.** `LS.hard_ids()` returns the empty set for both strings, because it keys on
+CVE/GHSA ids, dotted versions, alphanumeric part names and bundle ids — and "TPC-C" and
+"TPC-DS" are product nouns, not hard identifiers, so `id_disjoint(a, b)` returns False and the
+fold proceeds. The real fix is narrower and different: a **mutually-exclusive benchmark-name
+token class** (TPC-C / TPC-DS / TPC-H / TPC-E / ClickBench / MLPerf), where two rows naming
+different members never fold. Do not port `id_disjoint` expecting it to solve this. Also note
+the attempt to measure the guard's blast radius across today's 122 fuzzy merges was
+**inconclusive** — the matcher only prints its 15 weakest pairs and the parse recovered one —
+so any change to `tools/ledger/ledger.py` should be measured against a full pair dump first,
+which the tool does not currently emit. Nothing in `ledger.py` was changed this run.
 
 **Flag calibration: 13 urgent, 12 distinct stories, and all 13 survive the literal
 definition.** App Dev and DevOps both flagged JFrog (the 061-style overlap). Audited one at a
