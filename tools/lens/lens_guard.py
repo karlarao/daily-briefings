@@ -429,6 +429,85 @@ def assert_page_link_coverage(html: str, policy: dict = LINK_POLICY) -> int:
 
 
 
+def normalize_closing_tags(html: str) -> str:
+    """Collapse OR APPEND trailing </body></html> so there is exactly one pair.
+
+    Two failures motivate this, and they pull in opposite directions:
+
+    1) The published edition-071 parent carried TWO pairs. A builder that appends
+       to STORED source -- which already has one -- gets two, and every later
+       edition inherits them. Browsers ignore the second, so it is invisible
+       until someone counts (found 2026-09-20).
+    2) strip_host_wrapper() removes trailing closing pairs UNCONDITIONALLY, so a
+       page routed through it has ZERO. A collapse-only implementation therefore
+       raises "body=0 html=0" on its first real run -- which is what happened on
+       2026-09-23. The 09-19 reasoning that re-appending one pair is "idempotent
+       against the strip" holds only for the strip path; this must be total.
+
+    So: strip whatever is there, append exactly one, assert. Safe on any input
+    (zero, one or many pairs) and idempotent on its own output. Call it
+    immediately before write, regardless of how the html was produced.
+    """
+    html = re.sub(r"(?:\s*</body>\s*</html>\s*)+\Z", "", html).rstrip()
+    html += "\n</body></html>\n"
+    if html.count("</html>") != 1 or html.count("</body>") != 1:
+        raise LensBuildError("closing tags not normalised: body=%d html=%d"
+                             % (html.count("</body>"), html.count("</html>")))
+    return html
+
+
+def rewrite_pov_meta(html: str, navmeta: dict, reads: dict | None = None,
+                     stale_tokens=()) -> str:
+    """Rewrite povContent.meta, which is FLAT: {chair: {viewid: "<string>"}}.
+
+    Why this exists (2026-09-20): a guard written against the *plausible* nested
+    shape {viewid: {"meta": ...}} matched nothing, raised nothing, and passed --
+    so the published 068 parent rendered "edition 067" left-rail labels on an
+    edition-068 page and a Gap Ledger count its own ledger contradicted. A guard
+    that can match zero things and still pass is not a guard, so this one asserts
+    the shape AND asserts it changed something.
+
+    `reads`, when given, is {chair: html} for the per-chair v-read body; each
+    chair's stored `.c` chip is driven from navmeta so it cannot drift from the
+    left rail. `stale_tokens` must not survive anywhere in the block.
+    """
+    m = re.search(r'(<script type="application/json" id="povContent">)(.*?)(</script>)',
+                  html, re.S)
+    if not m:
+        raise LensBuildError("povContent block not found")
+    pov = json.loads(m.group(2))
+    if not {"meta", "content"} <= set(pov):
+        raise LensBuildError("povContent shape changed: keys=%s" % sorted(pov))
+    changed = 0
+    for chair, views in pov["meta"].items():
+        if not isinstance(views, dict):
+            raise LensBuildError("povContent.meta is no longer flat for %s" % chair)
+        for vid, val in list(views.items()):
+            if not isinstance(val, str):
+                raise LensBuildError("povContent.meta[%s][%s] is not a string" % (chair, vid))
+            if vid in navmeta and val != navmeta[vid]:
+                views[vid] = navmeta[vid]
+                changed += 1
+    for chair, body in (reads or {}).items():
+        slot = pov["content"][chair]["v-read"]
+        for k in ("t", "e", "c"):
+            if k not in slot:
+                raise LensBuildError("chair %s v-read lost its %r attribute" % (chair, k))
+        slot["h"] = body
+        if "v-read" in navmeta:
+            slot["c"] = navmeta["v-read"]
+        changed += 1
+    if not changed:
+        raise LensBuildError("rewrite_pov_meta changed nothing -- the shape moved again")
+    blob = json.dumps(pov, ensure_ascii=False).replace("</", "<\\/")
+    out = html[:m.start(2)] + blob + html[m.end(2):]
+    seg = re.search(r'id="povContent">(.*?)</script>', out, re.S).group(1)
+    for tok in stale_tokens:
+        if tok in seg:
+            raise LensBuildError("povContent still carries stale token %r" % tok)
+    return out
+
+
 def assert_table_shape(html: str) -> int:
     """Every rendered table row must have as many cells as its header has columns.
 
