@@ -2480,3 +2480,180 @@ generated SQL against live Redshift, and Xcode 27 publishes
 `--unsafe-always-allow-all-agents` in Apple's own release notes. The counterweight is
 that **this window's worst unfixed vulnerability, a CVSS 9.2 restricted-mode bypass, is
 itself in a Postgres MCP server** whose project has had one commit since January.
+
+## Run findings 2026-09-23 (edition 072)
+
+**Clean run, and the fastest on record: all 19 agents completed first try inside ~18
+minutes of wall clock.** Launched 09:10 EDT, all briefs in by ~09:28, dashboard published
+13:34 UTC, Pages `deploy` green 27 seconds after the push, lens v37 after. No suspension,
+no parked prompt. Both hooks clean and worth recording the *shape*: `/tmp/claude-artifact-hook.log`
+holds exactly 4 records (`list`, `read` with `path`, the plain `read` a republish needs, and
+the publish) and `/tmp/claude-bash-hook.log` 296 (143 allow / 153 pass) — **all `PreToolUse`,
+all `mode=auto`, ZERO `PermissionRequest` events**. That is the healthy signature the 09-20
+note describes; on 09-15 the single `PermissionRequest` record in 437 was the command that
+parked the run. ~3,055k research tokens.
+
+**The spec's edition-number formula is wrong by 2, and the parent is the only authority.**
+"EDITION NUMBER = count of ledger files ≤ today" gives 74 today (77 files, 73 dated on or
+after 2026-07-11); the parent's embedded ledger says `edition: 71`, so today is **072** —
+which is also what the 09-22 commit says. Ledger files exist for dates before edition 001,
+so the count has drifted permanently. **Read `edition` out of the parent's `#lensLedger`
+and add one; do not count files.**
+
+**`normalize_closing_tags` must collapse OR APPEND, and a collapse-only version fails
+immediately.** My first implementation only collapsed repeated `</body></html>` pairs and
+raised `body=0 html=0` on the first run — because `strip_host_wrapper` removes trailing
+closing pairs *unconditionally*, so a page routed through it has **zero**, not one or two.
+The 09-19 note's reasoning ("re-appending one pair is idempotent against the strip, so this
+cannot compound") is correct only for a builder that goes through the strip; the function has
+to be total. Fixed to strip-then-append-exactly-one and self-tested on four input shapes
+(zero pairs, one pair, two pairs, and its own output). The parent did carry **two** pairs, so
+the 09-20 diagnosis was right about the symptom.
+
+**Neither `rewrite_pov_meta` nor `normalize_closing_tags` was on main, despite the 09-20
+note recording both as landed.** That is the third distinct class of "landed on main" claim
+this file has had to withdraw (09-09 `tools/ledger/`, 09-18 the extractor fix, now these).
+Both are implemented in this run's builder and land on main-track with this commit. The
+habit that caught it is the 09-19 one: **after staging tooling from main, grep it for the
+thing yesterday's note claims is in it.**
+
+**`reuse_key`'s advisory caught a real duplicate before it shipped, for the second edition
+running.** I drafted `doris-fe-meta-unauth-31377` for today's unauthenticated Doris CVE; the
+advisory printed the same-date parents and a hard-identifier check showed CVE-2026-72524
+already on the board under **`doris-cve-2026-72524-no-fix-on-2x-3x`**, which already tracks
+exactly this story ("2.x/3.x permanently unpatched, fixed only in 4.0.8/4.1.4"). Today's
+CVE-2026-31377 *escalates* that row — it removes the authentication precondition entirely —
+so it was **enriched in place** rather than given a fresh slug. A new slug for a tracked
+story is precisely what makes `days` lie. The advisory also confirmed the two genuinely new
+event rows: 12 parent rows share 2026-09-30 and none is Galera; 1 shares 2026-10-30 and it
+is TabFM, not the Fabric activity retirement.
+
+**The step-4c matcher has no hard-identifier disjointness guard, and it made one wrong merge
+today.** "Pull the two **TPC-C** full disclosure reports" merged into yesterday's "Read the
+two **TPC-DS** full disclosure reports" at r=0.67 / p=0.72 / j=0.54. TPC-C and TPC-DS are
+different benchmarks, so that is a genuine mis-merge. `tools/lens/ledger_surgery.py` has
+`id_disjoint()` for exactly this shape (never fold two rows whose hard-identifier sets are
+both non-empty and disjoint); `tools/ledger/ledger.py` has no equivalent. One wrong merge in
+161 (0.6%), on a "Worth your weekend" commentary bullet that `curate.py` excludes from the
+card anyway — so it is **recorded rather than chased**, but porting `id_disjoint` into the
+step-4c fuzzy route is the cheap durable fix, and benchmark names are the obvious token class
+to seed it with.
+
+**Flag calibration: 13 urgent, 12 distinct stories, and all 13 survive the literal
+definition.** App Dev and DevOps both flagged JFrog (the 061-style overlap). Audited one at a
+time rather than trimmed: five KEV clocks expired or expiring (JFrog 42016/42018 due 25 Sep
+with in-the-wild chaining and a signing key that survives patching; Chromium V8 CVE-2026-87491
+due **today**; Oracle CVE-2026-21962 at 27 days with forensic triage; MLflow CVE-2026-64849 at
+21 days; Pixel modem CVE-2026-58704 at 4 days past), the THP silent-write-loss pair, and five
+"no fix exists for somebody" (Aurora PostgreSQL, Doris 2.x/3.x, Percona MongoDB 8.0, Vanna,
+MLflow's AI Gateway). **The two weakest are recorded as such rather than hidden**: `nl2sql`
+(Vanna's CVEs are real and permanently unfixable, but nothing moved this window — what is new
+is only that the unpatched state is now established as permanent) and `aihw` (the NVIDIA PSIRT
+publishing move, which **edition 068 flagged and edition 069 explicitly declined** as "nothing
+is exposed and the remedy is a two-minute config edit"; it is now 8 days out and fails
+silently, which is why it was kept — but the 069 reasoning has not been refuted, only
+outweighed by proximity). **Six lanes held `ok` while carrying real CVEs and wrote out their
+reasoning**, which is the evidence the agents discriminated: Fabric declined a **CVSS 10.0**
+because MSRC marks it `Customer Action Required: No`, BigQuery a 9.4 patched server-side in
+May, Snowflake four patched driver CVEs with no KEV entry, Open Formats the parquet KMS CVE
+because 1.18.1 is the fix, plus AI Daily and Redshift — Redshift explicitly saying its 38-day
+TLS date is **outside** the bar.
+
+**Guard 5 passed on the first assembly: 731 cited units, zero uncited.** Fourth consecutive
+edition. Mechanism unchanged since 09-15 — every row generator calls `cite()` inline as it
+emits, and navigation claims about this edition's own board use the dated archive fallback
+because a vendor URL would be a wrong link. `assert_table_shape` also passed first try across
+13 tables.
+
+**Most of today's drafted corrections had already been applied by edition 071 — check the
+board first, again.** Redshift's TLS 2026-10-31 and ODBC 1.x 2026-12-31, the FIPS 140-2 date
+and the JFrog KEV attribution were all corrected yesterday. Worth carrying forward because it
+is unusually clean: **the FIPS 21st-vs-22nd disagreement editions 069/070 recorded was never
+between our sources — it is inside NIST's own page**, whose prose says 21 September while its
+Transition Schedule table says 22 September. Take the table. Only two corrections were
+genuinely needed today:
+- `cve-2026-21962-ohs-weblogic-kev`: 26d → **27d past due**, re-verified by direct grep that
+  neither the August nor the September CSPU mentions it (zero occurrences in both) and that
+  CISA still points the fix at the **January 2026 CPU**. Being current on CSPUs does not clear it.
+- `linux-pmd-modify-dirty-bit-silent-data-loss`: **status change — the fix is RELEASED.**
+  Commit `f7491d7c` is present in **7.2.7, 6.18.53 and 6.12.111**, all published 2026-09-21;
+  the board carried "only 6.12.111" and was one day stale. Still absent from 6.6.157 with the
+  backport unreleased in `queue-6.6`, so **6.6 LTS is now the sole no-fix line** and 7.1 went
+  EOL at 7.1.13 without it. Root cause published and it is one line: `pmd_modify()` masked the
+  old PMD with `(_HPAGE_CHG_MASK & ~_PAGE_DIRTY)`, discarding the hardware dirty bit that
+  `pmd_mksaveddirty()` was meant to transfer — `pte_modify()` and `pud_modify()` keep theirs.
+
+**A second, distinct THP data-loss bug is now tracked and it has no fix anywhere.**
+CVE-2026-68086 takes the `MADV_COLLAPSE` path: `collapse_file()` can coexist with dirty folios,
+so a reopen sees `nr_thps > 0`, calls `truncate_inode_pages()` and discards them. Affected from
+5.4, with `defaultStatus: affected` and exactly one unaffected range (7.1.4 ≤ 7.1.*), and the
+record notes there is **no upstream commit** — mainline is safe only because the code was
+deleted. Verified absent from 6.6.157, 6.12.111 and 6.18.53 and from every stable queue. Two
+independent silent-data-loss bugs in one kernel subsystem in a month, one with no LTS fix, is
+worth treating as a category rather than two incidents.
+
+**Ledger health: 767 items, 39 exact + 122 fuzzy merges, 0 double-counted.** Match rate 21.0%,
+squarely in the recent band, so the 09-09 length-asymmetry diagnostic was not needed. Tally
+guard bumped 161, guarded 0. Dictionary 22,761 → 23,367. `curate.py`'s fatal "pin not found"
+did not fire: all 15 picks and all 8 pins landed. `new_more` 377 of 640 — the known residue.
+**Eight `[src]` links were attached by hand**, each verified by grep to be already cited in that
+row's own brief for that exact fact, taking the card to **33 of 33 rows sourced**.
+
+**Longitudinal prose is interpolated from the series, not typed.** Urgent lanes over the last
+eight runs: **14 · 11 · 14 · 13 · 14 · 11 · 10 · 13**. Today is 13 against a series high of 14
+and a 14-day mean of 10.8; the band has not dropped below 10 in that window. Item volume is
+drifting down (767 today against 1,012 on 09-14) while urgency holds — fewer, heavier items,
+consistent with a window of deadline movement rather than launches. The High column still is not
+comparable across days and the section says so again rather than quietly showing the number.
+
+**Scope, on the edition's face:** 072 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity
+sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 071 and the edition
+says so**. Events 84 → 82 (four retired on their dates — the NIST FIPS move, the Linux kernel
+KEV trio, the Iceberg 1.12.0 RC0 vote, the Mac Studio ship date — against two new); patch
+137 → 141. Output is **+14,696 bytes** against the parent, accounted for by four new patch rows,
+two new events, two correction paragraphs and refreshed prose against four retirements.
+**The quarterly Skills/Build re-rank across all four chairs is due 2026-10-01 — 8 days out, and
+it is now inside the next run's reach. It has been flagged as approaching for ten consecutive
+editions.**
+
+**`extract_briefs` clean: 19/19, bodies 18,265–33,026 chars.** The 09-21 stub-brief failure mode
+is absent, and the check that proves it is the one that note prescribes — print a size per record
+and look at the distribution, because 816 chars next to 33,625 is the whole tell.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **ninth** consecutive week
+(tried `/optimizer/`, `/optimizer/rss`), so the official Optimizer / In-Memory / Smart Scan /
+Exadata-monthly channel is a standing structural gap and the Oracle brief says so on its face;
+Connor McDonald carried the lane. `mikedietrichde.com` is still an `sgcaptcha` shim. New this
+run: **`community.fabric.microsoft.com` RSS returned 200 with full post bodies on the FIRST
+attempt** (521,642 bytes, 60 items) — the intermittent 403 did not recur, confirming the 09-19
+"intermittent, not blocked" reading; `galeracluster.com` now 301s **wholesale** to
+mariadb.com including deep links, so Codership's own EOL announcement is unreadable at its
+primary URL; `celerdata.com` 301s to `phoenixdata.ai` with no rebrand announcement readable;
+`docs.teradata.com` still serves navigation chrome only (Teradata unverified, not quiet);
+`docs.firebolt.io` is readable but its content stops at 4.32 from June, so Firebolt is
+**unverified rather than quiet**; Intel's newsroom 301s into a `corpredirect.intel.com` 404
+handler; `amd.com` 503s WebFetch but serves bulletin pages to curl with a browser UA.
+
+**Security sweep, negative result — eleventh consecutive run, and this time settled by byte
+arithmetic.** `behavior-changes.html`: markdown **34,126 bytes / 24 headings** vs HTML
+**55,971 / 27 tags**, against the 09-12→09-20 baseline of 34,132 / 24 and 55,977 / 27 — both
+variants **exactly 6 bytes smaller with heading counts unchanged**, fully accounted for by
+"October 31, 2026" appearing 3× where "September 30, 2026" (two characters longer) stood, plus
+a length-neutral anchor change. So the TLS date is the *only* change to that page in eleven
+days. `cluster-versions.html` grew +306 / +413 bytes with identical heading counts, consistent
+with new version rows inside existing patch sections. All five markers (`agent-toolkit`,
+`Skills for AI`, `AI coding assistant`, `search-skills`, `llms.txt`) returned **zero hits in all
+four files**, and broadening to `skill`, `MCP` and `assistant` also returned zero.
+**This resolves the carried 09-16 vs 09-20 disagreement in favour of 09-20**: `agent-toolkit`
+is absent from all four files, so the 09-16 claim that the Redshift docs "now link the
+agent-toolkit skills repo in both variants" does not hold for these pages. One regression worth
+recording: the broken first-party link `redshift/latest/mgmt/agent-skills.html` **no longer
+404s — it now 302s to the guide landing page**, which is worse, because a reader following the
+Aug-27 citation lands on a table of contents with no indication anything is missing.
+**No fetched page's suggestion was executed and no skill file was loaded by any agent.** The
+affordance keeps widening first-party: SQLcl `skills sync` writes 15 entries into every AI
+tool's auto-load directory on the box from a PR-accepting Oracle repo, Fabric's SQL DW
+operations skill is GA beside a write-capable `executeSQL`, Databricks' managed MCP services
+head to GA with **write enabled by default**, and Android Studio added an MCP Marketplace.
