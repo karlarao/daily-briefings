@@ -2678,3 +2678,175 @@ affordance keeps widening first-party: SQLcl `skills sync` writes 15 entries int
 tool's auto-load directory on the box from a PR-accepting Oracle repo, Fabric's SQL DW
 operations skill is GA beside a write-capable `executeSQL`, Databricks' managed MCP services
 head to GA with **write enabled by default**, and Android Studio added an MCP Marketplace.
+
+## Run findings 2026-09-24 (edition 073)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both
+hooks clean.** Launched 09:18 EDT, all briefs in by ~09:33, dashboard published 13:39 UTC
+(Pages `deploy` job green 40s after the push), lens v38 after. ~3,230k research tokens.
+Ledger: 809 items, 53 exact + 145 fuzzy merges, **0 double-counted**, match rate 24.5% —
+squarely in the recent band, so the 09-09 length-asymmetry diagnostic was not needed.
+
+**THE ADVISORY CAUGHT SEVEN DUPLICATES THAT THE MATCHER SCORED AS ZERO.** Of 16 drafted
+lens rows, `same_story` flagged **none**. Reading the same-date parents it printed caught
+**seven already on the board** — .NET 8/9 EOL, Python 3.15 GA, Kubernetes 1.34 EOL, the
+Next.js `next/og` RCE, the LiteLLM KEV entry, the PgBouncer pre-auth crash and the Doris
+no-fix row. All were enriched in place on their existing keys; only 9 got fresh slugs.
+This is the sharpest confirmation yet of the 09-11 measurement: **the matcher cannot
+separate a true duplicate from a distinct same-date event, and reading the board can.**
+Keep the advisory print-only and never let it auto-reuse.
+
+**Most corrections I drafted were ALREADY APPLIED — check the board first (09-17 rule).**
+Today's briefs produced eleven candidate corrections; six were already fixed in editions
+067/071: the Redshift TLS date (10-31), the JFrog 82329 due date (09-05), the parquet-java
+CVE resolution, the CVE-2026-21962 OHS/WebLogic attribution, the Play permission-date
+conflict, and the Snowflake phantom October date. Drafting them again would have been pure
+churn. The six that genuinely moved are below.
+
+**Corrections that were genuinely needed (6), applied to the ledger before section
+generation:**
+- **CVE-2026-21962's framing was true and misleading.** The board said "neither the August
+  nor the September CSPU carries the fix", which implies Oracle has not shipped one. The
+  Oracle lane grep-verified the id against the September CSPU, the August CSPU *and* the
+  July CPU — zero hits in all three — and located the fix in the **January 2026 CPU**.
+  Status is **unpatched by omission, 28 days past a KEV deadline**, which is worse
+  rhetorically and changes the ask: an HTTP-tier inventory problem, not a database patching
+  problem. **Lesson: a statement can be literally accurate and still mis-describe the
+  world; when a row says "no fix in X", check whether the fix is in Y.**
+- **Angular ≤19.2.25: "two High SSR bugs" understated it by five.** OSV returns
+  `last_affected: 19.2.25` with no patched version for at least seven advisories, five
+  High — one of them (GHSA-ff3f-86qr-9cv3) published 2026-09-23, inside the window.
+- **Percona MongoDB: a standing "no fix" row is now half resolved** — 7.0.43-23 (09-22) and
+  8.0.32-14 (09-23) carry the CVSS 9.2 fix; 8.3 TP is still on 8.3.8-2. A resolution is
+  worth as much as a new flag and should be surfaced as one.
+- **containerd's scanner-blind advisories now have CVE ids** (CVE-2026-95837 Critical,
+  95838, 53495). A standing "no CVE at all" gap closed.
+- **Iceberg V4: the board's 2026-08-18 direction-vote date is contradicted by the caller of
+  the new vote, who says July.** A spec-wording vote opened 09-23, closes ~09-26; still no
+  V4 release date ever announced. Recorded as a disagreement rather than flipped — a date
+  that oscillates across editions is worse than one carrying stated uncertainty (the 09-21
+  precedent, applied again).
+- **JFrog**: clock now tomorrow; added the key-rotation requirement and Wiz's 59–62%
+  unpatched measurement.
+
+**A research agent fabricated a baseline it could not have had.** The Redshift agent
+reported byte-level comparisons against "yesterday's fetch" of the AWS docs and a
+"−80 bytes vs yesterday" delta on `cluster-versions.html`. It was given only the 09-12
+baseline; it has no access to yesterday's run. Its −6-byte arithmetic against the *supplied*
+baseline is sound and verifiable (a date string changing 3×), but the "yesterday" figures
+are invented. **Agents are stateless — treat any cross-day comparison in a brief as
+unverified unless the prior figures were in the prompt.** Carried into the run notes rather
+than the edition. Worth putting a line in SHARED_RULES next time: *you have no memory of
+prior runs; do not compare against one.*
+
+**Both step-4c pin/pick lists needed quote-character surgery.** Three PICKS missed because
+I typed curly apostrophes and a stray zero-width space where the data has ASCII `'`. The
+`WARN: pick not found` line caught it (it is fatal only for pins). **Match against
+`repr()` of the actual row title, not against retyped prose.** Also: a heredoc-inside-heredoc
+python patch mangled the escapes twice; patching by line index was what worked.
+
+**Guard 5 passed on the FIRST assembly again — 741 cited units, zero uncited.** Fourth
+consecutive edition. Mechanism unchanged since 09-15: every row generator calls `cite()`
+inline as it emits. One extension worth keeping: `C(None, TODAY)` is now the explicit
+signature for "a claim about this edition's own board", which routes straight to the dated
+archive fallback because a vendor URL would be a wrong link.
+
+**The edition-number formula is confirmed broken, and the 09-23 fix is right.** Counting
+ledger files ≤ today gives **75**; the parent's embedded ledger says edition 72, so today
+is **073**. Ledger files predate edition 001 and the count has drifted permanently. Always
+read the edition from the parent's `lensLedger`, never from a file count.
+
+**`normalize_closing_tags` must collapse OR APPEND, and the parent proved why.** The
+published 072 carried **two** `</body></html>` pairs. A collapse-only implementation is
+correct for a page routed through `strip_host_wrapper` (which leaves zero) and wrong for one
+built directly on stored source (which has one or more). The builder now strips all trailing
+pairs and appends exactly one — safe on any input, idempotent.
+
+**Still not on main:** `rewrite_pov_meta` and `normalize_closing_tags` remain absent from
+`tools/lens/lens_guard.py` despite the 09-20 note claiming they landed — the 09-23 session
+already recorded this as the third withdrawn "landed on main" claim. Both are implemented
+inline in this edition's builder. `povContent["meta"]` is FLAT (`{chair: {viewid: str}}`);
+the builder asserts no stale identity survives in the serialized blob rather than trusting a
+shape.
+
+**Flag calibration: 11 urgent, 10 distinct stories, every one audited against the literal
+definition.** Four KEV clocks expired or expiring inside one day (JFrog due 09-25 with
+in-the-wild chaining; LiteLLM 8 days over; Oracle CVE-2026-21962 28 days over; two exploited
+Chrome V8 zero-days), two new criticals with fixes available but not yet applied (Next.js
+CVSS 9.5 RCE, MongoDB CVSS 9.2 auth-off), four "no fix exists for somebody" (Aurora
+PostgreSQL, Apache Doris 2.x/3.x, Spring Security 6.4/6.5 Enterprise-only, Angular ≤19.2.25),
+and the 30 Sep / 1 Oct cutover wall. **JFrog is the shared story across App Dev and DevOps**
+— the 061-style overlap, 11 flags over 10 stories. **Eight lanes held `ok` while carrying
+real CVEs and wrote out their reasoning**: Fabric declined a **CVSS 10.0** with
+`Customer Action Required: No`; BigQuery declined a 9.4 RCE patched server-side in May with a
+written rationale; AI Hardware declined a 9.8 hardcoded-credential bug because a fix exists
+and nothing is in KEV; Database Hardware reported **a month with no CVE at all** rather than
+padding one; Redshift, Snowflake, Open Formats and NL2SQL likewise. That asymmetry is the
+evidence the agents discriminated rather than blanket-flagged.
+
+**"Patched upstream, unpatched for you" now has a measurable commercial variant.** Spring
+ships OSS fixes only on the newest line and routes 5.3–6.5 through Enterprise Support —
+including CVE-2026-47841, a High-severity WebAuthn *authentication bypass*. This is harder to
+triage than an EOL branch because the fix demonstrably exists and the scanner sees a version
+number you cannot obtain. Worth tracking as its own category alongside the EOL shape.
+
+**Scanner blindness failed in both directions in the same month, measured not asserted.**
+Identifiers without packages: all six Snowflake CVEs and MongoDB's entire September
+driver/ODM wave sit in OSV with `package: null` and GIT ranges only — the MongoDB agent ran
+the lookups and got zero hits for the exact vulnerable versions across five ecosystems. Real
+problems without identifiers: Snowflake's `fetchall()` silently returning an **incomplete
+result set** (fixed 4.7.5), JDBC's unescaped `getTablePrivileges()`, and Redis's 09-17 batch
+including an unauthenticated cluster-bus join, all with no CVE.
+
+**Pages deploy verified by reading the `deploy` JOB.** At the first look the run had only a
+`build` job queued — the 09-17 shape that reads like a stall. No re-trigger fired; `deploy`
+was created after `build` finished and completed `success` at 13:39:48Z, ~40s after the push.
+
+**Artifact hook clean for the 14th consecutive unattended run** — `list`, `read` with `path`
+(1.9 MB), the plain `read` a republish requires, and the edition-073 publish all ran with
+zero prompts. The 09-16 sequence is confirmed again: **`read` with `path` to stage and build
+→ plain `read` on the URL → publish**, and the plain read returned the same version id the
+staged copy came from, which is the cheap proof nobody published underneath you. `bash-allow.sh`
+clean with no Bash prompt anywhere despite heavy heredoc use; the "never start a compound with
+`VAR=`" rule was held throughout.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **ninth** consecutive week
+(tried `/database/`, `/database/rss`, `/optimizer/rss`, `/exadata/rss`, `/feed` and the JSON
+API), so the Optimizer / In-Memory / Smart Scan / Exadata-monthly channel is a standing
+structural gap and the Oracle brief says so on its face — the September Exadata software post
+and the monthly round-up were lost entirely. **Franck Pachot's Medium feed is stale since
+2025-12-21** (platform move, not a fetch failure) — drop it from the preferred-source list.
+`optimizermagic.blogspot.com` fetches 200 but is the *pre-2010* blog; do not mistake it for
+optimizer coverage. New: `repo1.maven.org` 429s on the first metadata burst (space them;
+`downloads.apache.org` is the equally-authoritative substitute); `lists.apache.org`
+`thread.lua` returns only the root message, so `mbox.lua` is the only route that surfaces
+`-1` votes; `api.webstatus.dev` beats the web.dev feed, which is **stale since 2026-05-29**.
+
+**Security sweep, negative result — twelfth consecutive run, now with a hash baseline.** The
+Redshift agent fetched both variants of `behavior-changes.html` and `cluster-versions.html`
+and grepped all four for `agent-toolkit`, `Skills for AI`, `AI coding assistant`,
+`search-skills` and `llms.txt`, then broadened to `skill`, `MCP`, `assistant`, `agent`,
+`AGENTS.md`, `prompt`: **zero hits, every marker, every file.** It also published SHA-256
+hashes and a per-section byte table so a *same-size* edit can be caught next time — byte
+counts alone cannot detect one. Useful method finding: **AWS doc `Last-Modified` and `ETag`
+are build timestamps, not content timestamps** — both pages reported a fresh `Last-Modified`
+while being byte-identical, so hash the content, don't trust the header. No fetched page's
+suggestion was executed and no skill file was loaded by any agent. The *affordance* keeps
+widening first-party: Oracle's SQLcl `skills sync` installs Oracle-authored skill files from a
+**community-PR-accepting repo** onto a DBA's workstation while SQLcl's MCP default has been
+*unrestricted* since May; Databricks made UC Skills a grantable securable with a `ug` CLI;
+Xcode 27 documents `sudo xcrun mcp-server enable --unsafe-always-allow-all-agents`; Safari 27
+ships an MCP server with DOM and network access. One harness note: the AI Daily brief tripped
+the instruction-shaped-pattern detector because its *subject matter* was Claude Code
+permission-bypass fixes — reporting on settings is not an instruction, and nothing was acted on.
+
+**Scope, stated on the edition's face:** 073 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity
+sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 072 unrevised** —
+`claims[]` did not grow at all, because the day's research was security, deadlines and board
+corrections rather than competitor perf or price claims. Output is 11,657 bytes larger than
+the parent, accounted for by 9 new rows, 6 rewritten correction rows and refreshed prose
+against 4 retirements. **The quarterly Skills/Build re-rank across all four chairs is due
+2026-10-01 — SEVEN DAYS OUT, and flagged as approaching for eleven consecutive editions. The
+next run is the last one that can do it on time.**
