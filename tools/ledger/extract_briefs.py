@@ -115,7 +115,11 @@ def final_text(path):
 
 
 _TAIL = re.compile(
-    r"\n(?:-{3,}\s*\n)?\s*\*{0,2}"
+    # 2026-09-25: the prefix must allow markdown HEADING markers, not just bold.
+    # Every one of the day's 19 agents wrote "## Environment notes for the run
+    # owner"; the old pattern allowed `**` but not `#`, so the strip silently
+    # no-opped on all 19 and the chatter was mined as headlines by step 4c.
+    r"\n(?:-{3,}\s*\n)?\s*#{0,6}\s*\*{0,2}"
     r"(?:(?:Report|Notes?|Summary)\s+(?:to|for)\s+(?:the\s+)?"
     r"(?:caller|run[\s-]?owner|orchestrator)"
     r"|Caller report"
@@ -199,14 +203,11 @@ def split_contract(txt):
     # the caller", "Report to caller", "Environment notes for the run owner",
     # "Report for the run owner"), so match the shape rather than the wording:
     # an optional rule, then Report/Notes aimed at the caller/run owner.
-    TAIL = re.compile(
-        r"\n(?:-{3,}\s*\n)?\s*\*{0,2}"
-        r"(?:(?:Report|Notes?|Summary)\s+(?:to|for)\s+(?:the\s+)?"
-        r"(?:caller|run[\s-]?owner|orchestrator)"
-        r"|Caller report"
-        r"|Environment notes?(?:\s+(?:to|for)\s+(?:the\s+)?\w+(?:\s+\w+)?)?)"
-        r"\b[:\s*]", re.I)
-    mt = TAIL.search(body)
+    # 2026-09-25: this used to be a SECOND, local copy of the module-level
+    # _TAIL pattern. Fixing the prefix in one place left the other stale, and
+    # the header-contract path (which all 19 agents used that day) kept the
+    # broken copy. One definition only -- see _TAIL above.
+    mt = _TAIL.search(body)
     if mt:
         body = body[:mt.start()].rstrip()
 

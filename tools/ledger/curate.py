@@ -89,6 +89,22 @@ PIN_ONGOING = [
 ]
 
 
+# 2026-09-25: the three lists above are per-RUN data, not code -- they were
+# rewritten from scratch in source every run, which is how the 09-24 curly-quote
+# breakage happened. If curate_lists.json sits beside this file it overrides
+# them, so a run edits data and leaves the tool alone. Same contract otherwise:
+# substring match against the raw row titles, a missing PICK warns, a missing
+# PIN is fatal.
+_LISTS = os.path.join(SP, "curate_lists.json")
+if os.path.exists(_LISTS):
+    _d = json.load(open(_LISTS, encoding="utf-8"))
+    PICKS = _d.get("PICKS", PICKS)
+    EXCLUDE_ONGOING = _d.get("EXCLUDE_ONGOING", EXCLUDE_ONGOING)
+    PIN_ONGOING = _d.get("PIN_ONGOING", PIN_ONGOING)
+    print("curate: loaded %d picks / %d excludes / %d pins from curate_lists.json"
+          % (len(PICKS), len(EXCLUDE_ONGOING), len(PIN_ONGOING)), file=sys.stderr)
+
+
 def main():
     raw = json.load(open(os.path.join(SP, "whatsnew.raw.json")))
     secs = json.load(open(os.path.join(SP, "sections.json")))
