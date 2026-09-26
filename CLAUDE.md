@@ -3004,3 +3004,190 @@ the parent: 1 new event row, 8 rows enriched in place and 7 corrections against 
 retirements. **The quarterly Skills/Build re-rank across all four chairs is due
 2026-10-01 — SIX DAYS OUT. Today was the last run before it; the next run on or after
 10-01 must do it.**
+
+## Run findings 2026-09-26 (edition 075)
+
+**Clean run mechanically — all 19 agents completed first try, no suspension, no
+parked prompt — and then the extractor silently truncated 17 of 19 briefs to
+~500-character stubs.** Launched 09:10 EDT, all briefs in by ~09:25, published
+13:33 UTC, lens v40 after. ~3,440k research tokens, a new high (prior ~3,340k on
+09-20). Both hooks clean: `/tmp/claude-artifact-hook.log` holds 4 records (list,
+read-with-path, the plain read a republish needs, publish) and
+`/tmp/claude-bash-hook.log` holds 433 (246 allow / 187 pass) — **all
+`PreToolUse`, zero `PermissionRequest`, all `mode=auto`**, which is the healthy
+signature the 09-20 note describes.
+
+**THE `_TAIL` REGEX FAILED TWICE IN TWO DAYS, IN OPPOSITE DIRECTIONS, AND BOTH
+TIMES IT WAS DEFINED TWICE.** Edition 074's finding was that the caller-chatter
+strip **no-opped** on all 19 briefs (it allowed a `**bold**` prefix but not a `#`
+heading marker), so 112 agent-to-agent "Environment notes for the run owner"
+sections were mined as fake headlines. Today it **over-matched**: SHARED_RULES.md
+tells agents to put environment limits "in a short note under TL;DR", they
+dutifully wrote `*Environment note: …*` as their second paragraph, and the bare
+`Environment notes?` alternative in `_TAIL` ate everything from there down. 17 of
+19 briefs came out at 446–675 chars against 35,253 for the two that phrased it
+differently (`challengers` wrote "Note on method:", `snowflake` put its notes at
+the bottom). **This is the 09-13 lesson exactly: the prompt and the parser
+disagreed silently.** Fixed at source two ways — the bare form is gone, only an
+explicitly caller-DIRECTED heading matches now ("Report/Notes/Summary/Environment
+notes **to|for the** caller|run owner|orchestrator"), and `_strip_caller_chatter`
+refuses any strip that would remove more than half the text, because a heading
+match near the TOP of a brief is a false positive, not a tail. Both definitions
+now route through the one helper. Four-case self-test in-session.
+
+**The stubs still PARSED, which is what made this dangerous.** Each stub retained
+its `STATUS:` line, so `assemble.py` reported "built 19/19, flagged=9" and every
+downstream stage would have succeeded — 19 one-paragraph briefs, correct-looking
+statuses, a plausible dashboard. **The only tell was the size distribution the
+extractor prints: 446 next to 35,253.** Same shape as 2026-09-21. Read that line
+every run; a parser that accepts a truncated input is more dangerous than one
+that rejects it. Re-run with `--force` after fixing — the bad files are already
+on disk and `already had:` would skip them.
+
+**Most of the lens corrections drafted from the briefs were ALREADY APPLIED, for
+the third consecutive edition.** Of the ~10 I assembled while reading the
+briefs: CVE-2026-21962's "it is not a Database CVE, the fix shipped in the
+January 2026 CPU" was corrected in **ed. 073**; both Redshift dates in **ed.
+071**; Percona-MongoDB resolved in **ed. 074**; parquet CVE-2026-73334 resolved;
+containerd already carries CVE-2026-95837 *and* the "2.4.0 removed the feature"
+framing. Only four were genuinely new (Doris binaries withdrawn, the 21962 day
+count, Aurora's 44 days + the RDS/Azure comparison, and the Spring CNA/ADP
+tracing). Likewise **11 of 15 probed dated items were already on the board**.
+Check the board before drafting a correction — and budget the lens pass for
+enrichment, not authoring.
+
+**The correction that mattered: Apache Doris made its own prescribed fix
+undownloadable.** The board tracked "no fix on 2.x/3.x, fixed in 4.0.8/4.1.4".
+The 4.1.4 arm64 build was withdrawn 09-11 and **all** 4.1.4 rows were pulled from
+the download page on **2026-09-20**; the page reverted to offering **4.1.3 as
+"Latest"**, and 4.1.3 is vulnerable to all four September CVEs. The 4.1.4
+*release notes* were left published, so a reader checking the releases page sees
+a fix the download page no longer serves. 4.1.4.1 was still in VOTE today. **A
+prescribed remediation that cannot be downloaded is a different risk from one
+nobody has applied**, and no scanner models the difference.
+
+**`rewrite_pov_meta` and `normalize_closing_tags` are NOT on main, despite the
+09-19 and 09-20 notes saying they were landed.** Same class as the 09-19 finding
+that the extractor fix never reached main. `lens_guard.rewrite_identity` covers
+five of the seven identity sites (title, masthead, GEN/ED/DSLUG, both runbar
+spans); `povContent` meta + `.c` and the section-shell `data-chips` are still the
+builder's job. Both helpers were re-written locally this run and are landed with
+it. **A note saying "fixed on main" is a claim about a merge, and merges are what
+this repo keeps not doing — grep the staged copy for the thing yesterday's note
+says is in it.**
+
+**A staleness assertion that greps for the parent's edition string cannot work,
+and the failure is instructive.** My first `rewrite_pov_meta` refused any
+`povContent` containing "edition 074". It fired three times: once on legitimate
+`h`-body prose (`CORRECTION (ed. 074)` is a correction record and rewriting it
+corrupts the audit trail — the 09-18 rule), and once on `meta[*][v-wn]`, where
+**"vs edition 074" is exactly the correct value today**. A string scan cannot
+distinguish a stale label from a correct reference. The right check is an
+**equality read-back**: assert every identity field equals what the single
+`nav_meta` source of truth says. Replaced, and it passed with 44 rewrites.
+
+**`assert_alias_safe` needs the union of `events` + `retired_events`.** It
+correctly flagged the two rows retired today as "parent keys vanished" — but a
+retirement is an explicit rule, not omission, and the row is still in the ledger.
+Passing the union keeps the guard's real intent (catch a row that genuinely
+disappeared) while allowing the retirement.
+
+**Guard 5 passed on the first assembly: 725 cited units, zero uncited.** Sixth
+consecutive edition. Mechanism unchanged since 09-15 — every row generator calls
+`cite()` inline as it emits. One wrapper detail worth keeping: `C(None, TODAY)`
+is the deliberate archive-fallback form for claims about *this edition's own
+board*, and the wrapper must not pass that None into `find_url` (it raises on
+`.lower()`). `assert_table_shape` also passed first try across 10 tables.
+
+**Flag calibration: 9 urgent, 8 distinct stories, and it is the first
+single-digit reading in 12 runs.** Computed series of urgent LANES over the last
+14 runs: 11, 9, 12, 14, 11, 14, 13, 14, 11, 10, 13, 11, 12, **9**. Applying the
+definition literally, all nine pass: four KEV clocks already expired (JFrog ×4
+all past due and chained in the wild, Oracle CVE-2026-21962 at 30 days, LiteLLM
+at 10, GitLab CVSS 10.0 at 12, Pixel modem at 7), five "no fix exists for
+somebody" (Doris with its fix withdrawn, Aurora PostgreSQL at 44 days, Angular
+≤19.2.25, Next.js 13/14, Starlette 0.x), and five dated cutovers inside five days
+(Play registration 09-30, Databricks Supervisor API 09-30, Apple EU 10-01, Azure
+Databricks Standard 10-01, GitHub Actions retention 10-01). **Ten lanes held `ok`
+while carrying real CVEs** — AI Hardware pulled the entire KEV catalogue to prove
+its CVSS 9.8 wasn't listed, BigQuery declined a Critical patched server-side,
+Fabric declined on `Customer Action Required: No`, Open Formats declined because
+fixes shipped. That asymmetry is the evidence the agents discriminated.
+**The easing is real rather than a sampling artefact**: items/day stayed in band
+and three long-running exposures actually closed.
+
+**Three closures, worth as much as new flags.** Percona Server for MongoDB is
+patched (7.0.43-23 on 09-22, 8.0.32-14 on 09-23), closing a measured 14–15 day
+window and retiring a "no fix available" row. The containerd checkpoint-restore
+Critical has a CVE id at last — **CVE-2026-95837** — after runs of being tracked
+as unidentifiable, and 2.4.0 removes the feature rather than hardening it. And
+**both Redshift deadlines that read as four days out are not**: TLS 1.0/1.1 moved
+to 2026-10-31, ODBC 1.x to 2026-12-31.
+
+**AWS publishes four different dates for the same deadline, by locale.** Measured
+today: `en` = 31 Oct (anchor `tls-changes-oct2026`), `de_de`/`fr_fr` = 30 Sep,
+`es_es`/`pt_br`/`ko_kr`/`zh_cn`/`ja_jp` = **30 Aug — already passed**, and a
+search snippet still shows 31 Jan. Only `en` is authoritative. The TLS move
+carried **no changelog note at all**; its only trace is the anchor rename and the
+page shrinking exactly 6 bytes (three date strings, −2 each). Anyone whose
+compliance calendar was built from a localized AWS doc is planning against a date
+that expired four weeks ago.
+
+**"No fix exists for you" now has three mechanisms that need three different
+responses, and the App Dev lane separated them cleanly:** (a) *EOL branch* —
+Starlette 0.x, Angular ≤19.2.25, Next.js 13/14, MongoDB 8.2, Doris 2.x/3.x;
+remediation is a major upgrade. (b) *Paywall* — Spring 5.3–6.2, where the fix
+demonstrably exists but only under Enterprise Support, and 7.0.x is now the only
+branch getting OSS patches. (c) *Post-patch work* — JFrog, where the patch is
+free and immediate but insufficient, because minted admin tokens survive it. A
+patch-to-latest policy handles none of the three. The lens now states the
+category with its three mechanisms rather than as one count.
+
+**Severity is decided by whoever fills the empty field — now traced to the
+record.** Spring CVE-2026-59313 reads 2.6 from the vendor and 9.8 in NVD because
+the CNA (`vmware`) published **no CVSS metrics at all**, and a CISA-ADP
+(Vulnrichment) container added 2026-08-28 filled it with the maximal vector
+`AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H`. Spring's own vector computes to 2.6.
+**An empty CNA metrics block invites an ADP worst-case default, and that default
+is what a no-Criticals gate reads.** Same shape on parquet CVE-2026-73334, where
+NVD's prose says the fix is "presumably in 1.19" while its CPE marks 1.18.0
+unaffected — **correcting the 09-20 note, the CPE does NOT agree with the ASF
+advisory**: the prose is a release too late and the CPE a release too early.
+
+**Scanner blindness was measured by four lanes independently this run**, and it
+is now the layer's default state rather than an exception. Snowflake queried OSV
+with real affected versions and got **zero** hits for JDBC/Node/Go/CLI/core (all
+five carry `package: null`, GIT-only ranges, no GHSA alias — the one CVE a
+scanner does surface is the community-filed one). All four Doris CVEs are absent
+from OSV, two already "Deferred" at NVD with empty CPEs. Frontend found **three
+of the week's newest advisories return HTTP 404 from OSV** while a control
+returns 200 — including a Critical RCE and an Angular High with **no CVE id at
+all**. Redshift found four advisory records *modified* with no new vulnerability
+behind them, which flips a gate red on an unchanged build.
+
+**Ledger health: 798 items, 65 exact + 130 fuzzy merges, 0 double-counted.**
+Match rate 24.4%, above the recent 19–22% band, so the 09-09 length-asymmetry
+diagnostic was not needed. Tally guard bumped 195, guarded 0. Dictionary
+24,661 → 25,264. `curate.py`'s fatal "pin not found" fired once and was right to:
+I had added the Starlette row to `EXCLUDE_ONGOING` while it was still in
+`PIN_ONGOING`, which is precisely the "never exclude a row you also pin" rule.
+Three stories initially appeared twice on the card (Oracle 21962, Pixel modem,
+Starlette) — the 09-18 shape; resolved by keeping the carried row where it had a
+day count and better framing, the pick where it was richer and sourced. Final
+card: 34 rows, **34 of 34 sourced**, zero cross-bucket duplicates, 15 new.
+
+**Pages deploy verified by reading the `deploy` JOB.** At the first look the run
+had only a `build` job in progress — the 09-17 rule held, no re-trigger fired.
+`deploy` completed `success` at 13:33:08Z, ~26s after the push.
+
+**Scope, on the edition's face:** 075 refreshes Today's Read on all four chairs,
+Since yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and
+every identity site. Claim Watch, Mirror, Question Forecast, Gap Ledger,
+Benchmarks, Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor
+Dossiers **carry forward from 074 unrevised** — the day's research was security,
+deadline movement and advisory plumbing, with no competitor shipping a perf or
+price claim worth a card. Output is 6,038 bytes larger than the parent: 5 new
+event rows, 4 movements and 3 closures against 2 retirements. Events 82 → 85
+(80 after retiring 2, then +5). **The quarterly Skills/Build re-rank across all
+four chairs is due 2026-10-01 — five days out, and now inside the next run's
+reach. It has been flagged as approaching for eleven consecutive editions.**
