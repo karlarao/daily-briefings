@@ -146,6 +146,17 @@ def reuse_key(new_row: dict, parent_rows: list, datekey: str, route: str,
         it prints the same-date candidates so a duplicate is visible at build
         time instead of discovered an edition later. Silence is the bug; a noisy
         list a human skims is the fix.
+
+        CALLER CONTRACT (2026-09-27): this returns a key ALWAYS -- the declared
+    parent key when `same_as` is given, otherwise the drafted row's OWN key.
+    So `if reuse_key(...):` is always true, and a caller that tests mere
+    truthiness treats every row as a duplicate and silently adds nothing. That
+    is the 09-11 "inert" bug one layer up, and it cost a cycle today. Compare
+    against the draft instead:
+
+        hit = reuse_key(row, parent, "due", "patch")
+        if hit != row["k"]:          # a real reuse was declared
+            ...
     """
     if same_as:
         if not any(p["k"] == same_as for p in parent_rows):

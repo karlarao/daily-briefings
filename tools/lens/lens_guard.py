@@ -579,3 +579,124 @@ if __name__ == "__main__":
         raise SystemExit("page-wide link-coverage guard failed to trip")
 
     print("lens_guard self-test OK — all 5 failure modes trip their guard")
+
+
+def normalize_closing_tags(html: str) -> str:
+    """Collapse to exactly one </body></html> pair, then assert it.
+
+    Why (2026-09-20): strip_host_wrapper removes TRAILING closing pairs
+    unconditionally, so a page staged from STORED source (which already has
+    exactly one pair) comes out with zero, while a builder that appends directly
+    to stored source ends up with two. Browsers ignore the second, so it is
+    invisible until someone counts -- and the next edition inherits it. This is
+    idempotent on any input and is called immediately before write, regardless
+    of how the html got there.
+
+    The 2026-09-19 note said re-appending one pair inside strip_host_wrapper was
+    enough. It is not: that reasoning only holds for a builder that routes
+    through the strip.
+    """
+    html = re.sub(r"(?:\s*</body>\s*</html>\s*)+\Z", "", html)
+    html = html.rstrip() + "\n</body></html>"
+    if html.count("</html>") != 1 or html.count("</body>") != 1:
+        raise LensBuildError("closing-tag normalise failed")
+    return html
+
+
+def rewrite_pov_meta(html: str, nav_meta: dict, edition: str, dslug: str):
+    """Rewrite povContent's identity fields and assert them by EQUALITY.
+
+    povContent["meta"] is FLAT -- {chair: {viewid: "<string>"}}. A guard written
+    against the plausible NESTED shape matches nothing, raises nothing, and lets
+    stale labels ship: the published 068 parent rendered "edition 067" left-rail
+    labels on all four chairs (2026-09-20).
+
+    Two rules learned the hard way:
+      * Raise if nothing changed -- a guard that can match zero things and still
+        pass is not a guard.
+      * Assert by EQUALITY against nav_meta, never by scanning for the parent's
+        edition string. A scan cannot tell a stale label from a correct
+        reference ("vs edition 074" is exactly right on v-wn), and it also trips
+        on legitimate historical prose inside `h` bodies, where
+        "CORRECTION (ed. 074)" is a correction record that must NOT be rewritten
+        (2026-09-18).
+
+    Returns (html, n_changed, pov).
+    """
+    m = re.search(r'<script type="application/json" id="povContent">(.*?)</script>',
+                  html, re.S)
+    if not m:
+        raise LensBuildError("povContent block not found")
+    pov = json.loads(m.group(1))
+    changed = 0
+    for _chair, views in pov.get("meta", {}).items():
+        for vid in list(views):
+            if vid in nav_meta and views[vid] != nav_meta[vid]:
+                views[vid] = nav_meta[vid]
+                changed += 1
+    cval = f"edition {edition} \u00b7 {dslug}"
+    for _chair, views in pov.get("content", {}).items():
+        for vid, blk in views.items():
+            if isinstance(blk, dict) and "c" in blk:
+                want = cval if re.match(r"edition \d+", str(blk["c"])) else nav_meta.get(vid)
+                if want and blk["c"] != want:
+                    blk["c"] = want
+                    changed += 1
+    if not changed:
+        raise LensBuildError("rewrite_pov_meta changed nothing -- wrong shape or wrong keys")
+
+    bad = []
+    for chair, views in pov.get("meta", {}).items():
+        for vid, val in views.items():
+            if vid in nav_meta and val != nav_meta[vid]:
+                bad.append(f"meta[{chair}][{vid}]={val!r}")
+    for chair, views in pov.get("content", {}).items():
+        for vid, blk in views.items():
+            if (isinstance(blk, dict)
+                    and re.match(r"edition \d+", str(blk.get("c", "")))
+                    and blk["c"] != cval):
+                bad.append(f"content[{chair}][{vid}].c={blk['c']!r}")
+    if bad:
+        raise LensBuildError(f"povContent identity fields disagree with nav_meta: {bad}")
+
+    blob = json.dumps(pov, ensure_ascii=False).replace("</", "<\\/")
+    return html[:m.start(1)] + blob + html[m.end(1):], changed, pov
+
+# ---------------------------------------------------------- date handling ---
+ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def is_iso_date(v) -> bool:
+    """True only for a real YYYY-MM-DD.
+
+    Why this exists (2026-09-27): a builder discriminated dates by
+    `len(s) == 10`, and a patch row whose `due` field read "active now" -- also
+    ten characters -- went into date arithmetic and raised. Ledger date fields
+    carry prose as often as dates ("shipped", "no fix", "on upgrade"), so length
+    is never the test.
+    """
+    return bool(v) and bool(ISO_DATE.match(str(v)))
+
+
+def assert_not_parent_identity(html: str, parent_edition: str) -> None:
+    """Refuse a page that asserts the PARENT edition as its own.
+
+    The distinction is the whole point and it is easy to get wrong in both
+    directions (2026-09-27, twice in one build):
+
+      * "vs edition 075" on the Since-yesterday chip is CORRECT -- this edition
+        genuinely diffs against 075.
+      * "carried from 075" on a carried section's chip is CORRECT -- it
+        genuinely carries 075's content.
+      * "edition 075 \u00b7 ..." as a chip, a nav meta or a povContent `.c` is
+        the drift that shipped 067 on an edition-068 page (09-20).
+
+    So a blanket ban on the substring is as wrong as a blanket substitution of
+    it -- the same trap the 09-18 note records for historical prose like
+    "CORRECTION (ed. 064)". Ban only the identity form.
+    """
+    bad = re.findall(r"edition " + re.escape(parent_edition) + r" \u00b7[^<\"]{0,60}", html)
+    if bad:
+        raise LensBuildError(
+            "page asserts the parent edition as its own in %d place(s): %s"
+            % (len(bad), bad[:3]))

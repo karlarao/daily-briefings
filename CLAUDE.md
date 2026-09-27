@@ -2310,3 +2310,204 @@ Output is 957 bytes larger than the parent: new sections and four new event rows
 folded patch rows. **The quarterly Skills/Build re-rank across all four chairs is due
 2026-10-01 — 10 days out, and it has now been flagged as approaching for five consecutive
 editions. It must not slip again.**
+
+## Run findings 2026-09-27 (edition 076)
+
+**Clean run: all 19 agents completed first try, ~7–19 min each, no suspension, no
+parked prompt, both hooks clean.** Launched 09:12 EDT, all briefs in by ~09:31,
+published 13:39 UTC, lens v41 (edition 076) after. **~3,550k research tokens — a
+record** (prior high ~3,440k on 09-26). The Artifact hook was clean again:
+`action:"list"`, a `read` with `path` (1.9 MB), the plain `read` a republish
+requires, and the publish all ran with zero prompts; no Bash compound parked
+despite heavy `python3 - <<'PY'` use, and no compound was started with a `VAR=`
+assignment.
+
+**main is SIX DAYS STALE on tooling and I re-implemented two functions that
+already existed.** main is at `dfaa5fc` (09-21). `normalize_closing_tags` and
+`rewrite_pov_meta` — which the 09-19 and 09-20 notes say were "landed" — live on
+`origin/claude/great-clarke-fcdpu7` (09-26) along with `_strip_caller_chatter`'s
+>50% guard and a committed `SHARED_RULES.md`. I wrote my own
+`normalize_closing_tags` and pov-meta rewrite inside today's builder before
+finding them. **Seven `claude/*` branches are unmerged**, newest 09-26. This
+branch carries that tooling forward wholesale so the next run gets it from main.
+The habit that would have saved the duplication: after staging tooling from main,
+`git log -1 --format=%ci origin/main -- tools/` and compare against today's date
+before writing anything.
+
+**The extractor did NOT stub today, and the reason is fragile rather than
+fixed.** Yesterday's run found `_TAIL` over-matching and reducing 17 of 19 briefs
+to 446–675 chars. Today, using **main's unguarded copy**, all 19 came out at
+17,662–40,045 chars. The difference is only how the agents phrased their
+run-owner notes: SHARED_RULES asked for them *after* the brief under a clearly
+separate heading, and they complied, so the trailing-contract parser never had a
+near-the-top heading to eat. **The outcome of the strip therefore depends on
+agent phrasing, which is not a contract.** The >50% guard from 09-26 is now on
+main-track; keep the SHARED_RULES wording as it is, because the two together are
+what make this reliable.
+
+**`reuse_key` returns a key ALWAYS, so `if hit:` is always true — and a caller
+that tests truthiness silently adds nothing.** My first pass reported all three
+drafted patch rows as duplicates of *themselves* and added zero rows. This is the
+09-11 "inert" bug one layer up: the function is correct and advisory-only by
+design, the call site was wrong. **What exposed it was printing the count**
+("patch 145 -> 145" next to "added 0"), not the duplicate labels, which looked
+plausible. The correct test is `if hit != row["k"]`, and that contract is now
+documented in the docstring at the point of confusion. Once fixed the advisory
+did its job: it printed the two same-date Oracle peers for the Tomcat row and
+neither was the same story.
+
+**A blanket ban on the parent-edition string is as wrong as a blanket
+substitution of it — and I made the mistake twice in one build.** I asserted
+`"edition 075" not in povContent` and then the same on section `data-chips`. Both
+fired, and both were **correct content**: `"vs edition 075"` on the
+Since-yesterday chip and `"carried from 075"` on every carried section are
+exactly right. This is the 09-18 lesson (legitimate historical prose like
+"CORRECTION (ed. 064)" must not be rewritten) in assertion form. The precise
+check is the identity form only, `edition <parent> ·`, and it is now
+`lens_guard.assert_not_parent_identity()` with the distinction spelled out.
+
+**Date fields are prose as often as dates, so `len(s) == 10` is never the test.**
+A patch row whose `due` read `"active now"` — ten characters — went into date
+arithmetic and raised. Landed `lens_guard.is_iso_date()`.
+
+**Most drafted corrections were already applied — fourth consecutive run.** The
+Oracle lane reported that "the board's framing of CVE-2026-21962 as a database
+KEV row is wrong"; the board has said OHS / WebLogic Proxy Plug-in since edition
+073. The Redshift lane reported the 09-30 row "should be retired or re-dated";
+editions 071 and 074 already moved TLS to 10-31 and ODBC to 12-31 and marked the
+conflated row SUPERSEDED. Fabric Runtime 1.3's two halves were already both on
+the board. **Check the board before drafting a correction**, same as for a claim.
+The five that were genuinely needed: 21962's day count (30→31) plus the new fact
+that *no CSPU will ever carry it* because CSPUs contain no Fusion Middleware
+web-tier content; parquet CVE-2026-73334's NVD **CPE range wrong at both ends**;
+Iceberg V4's wording vote **expiring 09-26 with no `[RESULT]`** and PR #17783
+still open, language "prohibited" not "deprecated"; Percona shipping the MongoDB
+9.2 fix in 7.0.43-23 / 8.0.32-14; and Doris's 4.1.x fix being **superseded by
+hotfix 4.1.4.1, not withdrawn**.
+
+**Corrected the prose and left the data — the 09-16 trap, caught by a count.**
+My Doris correction rewrote the row text to say the fix is not withdrawn while
+its `due` field still read `"4.1.x fix WITHDRAWN"`. It surfaced because the
+no-fix total came out 18 against the parent's 19 and I went looking. **Any
+correction has to touch the prose, the `due`/`date` field and the `aliases[]`
+together.**
+
+**`reuse_key`'s advisory found that nearly every dated item today was already on
+the board.** Of ~28 probed threads — the whole 09-30/10-01 wall, every KEV entry,
+every no-fix row — only **three were genuinely new**: Tomcat 11.0.26's
+CVE-2026-86350 (a regression *introduced by the previous security patch*),
+ClickHouse 26.9's breaking upgrade, and iceberg-rust's encryption interop
+failure. At 76 editions on a 30-day window this remains the normal case.
+
+**The 09-30/10-01 wall is 25 rows and every one is distinct.** Checked row by row
+rather than assumed: no board duplication, this is accumulation across editions.
+That is the edition's headline and the competitively useful framing is that
+**almost none of them raises an error when you miss it** — Play removes a
+package, Databricks deletes an API, Snowflake grants a capability you cannot
+revoke, AKS picks your window, NVIDIA's feed just stops.
+
+**Flag calibration: 14 urgent, tying the series high, and all 14 survive the
+literal definition.** Eight KEV clocks already expired with fixes available
+(JFrog ×3 with exploitation observed and *patching insufficient without rotating
+the token-signing key*, GitLab CVSS 10.0 at 13 days, Oracle CVSS 10.0 at 31 days
+with forensic triage, Linux kernel trio, Pixel modem, Starlette, LiteLLM), six
+"no fix exists for somebody", and the 09-30/10-01/10-05 wall. **14 flags, 13
+distinct stories** — JFrog is shared by App Dev and DevOps, and the App Dev row
+was picked for the card because it carries the fact that changes behaviour.
+**Five lanes held `ok` while carrying real CVEs and wrote out their reasoning**:
+Fabric (a **CVSS 10.0** with MSRC `Customer Action Required: No`), BigQuery (a
+Critical patched server-side in May), Redshift (its two deadlines moved to 34 and
+95 days out — the agent said explicitly that Redshift now has nothing inside 14
+days), Database Hardware, Open Formats. The weakest of the 14 is **AI Daily**: the
+Gemini `antigravity-preview-05-2026` shutdown is day-precise, vendor-published
+and silently breaking (it *redirects* rather than erroring), but the population is
+narrow — the agent flagged it and said so. **AI Hardware reversed 069's call** on
+the NVIDIA PSIRT publishing move and explained why: it is now 4 days out and
+NVIDIA shipped a CVSS 9.8 Critical through that channel five days ago, so the
+feed going dark is no longer hypothetical loss.
+
+**Ledger health: 942 items (14-day high), 42 exact + 166 fuzzy merges, 0
+double-counted.** Match rate 22.1%, squarely in band, so the 09-09
+length-asymmetry diagnostic was not needed. Tally guard bumped 208, guarded 0.
+Dictionary 25,264 entries. The 15 weakest accepted merges were eyeballed and all
+were genuine same-story rewordings. `curate.py`'s fatal "pin not found" did not
+fire; all 15 picks and all 10 pins landed first try. `new_more` 543 of 786 — the
+known residue. **Two `[src]` links were attached by hand** (both Databricks),
+each from a URL already cited in that same brief for that exact fact, taking the
+card to 33 of 33 rows sourced.
+
+**Guard 5 passed on the FIRST assembly: 734 cited units, zero uncited**, and
+`assert_table_shape` passed across 10 tables. Mechanism unchanged since 09-15 —
+every row generator calls `cite()` inline as it emits, and authored prose about
+this edition's own board uses the dated public-archive fallback because a vendor
+URL would be a wrong link.
+
+**The parent again carried two `</body></html>` pairs.** The 09-19 note's fix
+re-appends one inside `strip_host_wrapper`, which is idempotent only for a
+builder that routes through the strip; a builder appending to stored source that
+already has a pair gets two, and the next edition inherits them. Collapsed to one
+and asserted. `normalize_closing_tags` from the 09-26 branch is now on main-track
+so this stops recurring.
+
+**Output is 17,304 bytes larger than the parent**, accounted for: 3 new patch
+rows, 5 correction paragraphs, refreshed Today's Read on all four chairs plus a
+scope note on each, refreshed Since yesterday, Event Horizon, Patch-Risk Radar
+and Longitudinal, and a rebuilt runbar. A growth needs less explaining than a
+shrink but it is still stated.
+
+**Pages deploy verified by reading the `deploy` JOB, per the 09-14 rule.** The
+run-level status still read `in_progress` while `deploy` had already completed
+`success` at 13:39:15Z, 22 seconds after the push. Polling the run aggregate would
+have fired a needless empty-commit re-trigger.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **ninth**
+consecutive week, so the Oracle Performance channel is a standing structural gap
+and the brief says so on its face; Connor McDonald carried the lane. **CORRECTION
+to the standing note: `mikedietrichde.com/feed/` WORKS intermittently — retry it.**
+Observed 202 / **200** / 202 across four attempts, and the 202 responses lie about
+content-type; check `grep -c "<item"` before trusting the body. That feed
+recovered nine in-window posts and was the single most productive Oracle source
+this run. Also new: **OCI Release Notes give DAY-PRECISE dates for ADB features**
+(`docs.oracle.com/en-us/iaas/releasenotes/feed`) where the four mandated ADB
+changelog pages give month only — worth adding to the topic spec. The AWS
+what's-new search API is **not** stale, the directory id moved to
+**`whats-new-v2`**; and `docs.aws.amazon.com` **soft-404s with a 302 to the guide
+root**, so dead-link checks must test TOC membership rather than status codes.
+`phoronix.com` article bodies now 403 to **both** WebFetch and curl-with-browser-UA
+(a regression from the standing note) but `phoronix.com/rss.php` and the
+`/reviews/<Category>` index pages serve fine and carry dates. `vldb.org`
+intermittently 503s to WebFetch but serves curl.
+
+**Security sweep, negative result — eleventh consecutive run, and the baseline is
+byte-exact.** The Redshift agent fetched `behavior-changes.html` and
+`cluster-versions.html` in both variants and grepped all four for
+`agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills` and
+`llms.txt`: **zero matches, 20 of 20 checks**, then broadened to `skill`,
+`assistant`, `mcp`, `agent` case-insensitively — still zero. All four files are
+**byte-identical to yesterday's measurement**, and both deltas against the older
+baseline are explained by content (the TLS date string shortening by 6 bytes,
+patch 204's new TRAILING row adding 226/289). **Heading parity across a size
+change is the signal.** No fetched page's suggestion was executed and no skill
+file was loaded by any agent. Affordance sightings keep widening: SQLcl's
+`skills sync` writes Oracle-authored instruction files into `~/.claude/skills/`,
+`~/.codex/skills/` and `~/.copilot/skills/` and **silently skips existing skills
+without `-force`**, so a stale skill looks synced; SQLcl's MCP default moved from
+restriction level 4 to **unrestricted**; ORDS 26.2.2 had to ship a runtime check
+to stop MCP pools running as a proxy user; BigQuery's **Dataform MCP server went
+GA with commit-and-push-to-remote-Git**; Xcode 27 documents
+`--unsafe-always-allow-all-agents` as a one-liner Apple itself calls
+unrecommended. Counterweight: this window's worst unfixed vulnerability, a CVSS
+9.2 arbitrary-file-read with no release in 16 months, is itself in a Postgres MCP
+server.
+
+**Scope, on the edition's face:** 076 refreshes Today's Read on all four chairs,
+Since yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and
+all eight identity sites, and applies five corrections before any section was
+generated. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks,
+Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor Dossiers
+**carry forward from 075 unrevised and the edition says so** — `claims[]` did not
+grow at all, which on a day this dense with deadlines is itself the finding.
+**The quarterly Skills/Build re-rank across all four chairs is due 2026-10-01 —
+four days out, and it is on the Event Horizon as a dated row. It has been flagged
+as approaching for eleven consecutive editions; the next run is the one that must
+do it.**

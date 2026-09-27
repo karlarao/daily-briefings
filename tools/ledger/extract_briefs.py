@@ -114,13 +114,40 @@ def final_text(path):
     return last, usage
 
 
+# Caller-directed chatter some agents append: strip it so it never reaches the
+# dashboard or gets mined as a fake headline by step 4c.
+#
+# 2026-09-26: this pattern MUST stay narrow. It previously also matched a bare
+# "Environment note:", which SHARED_RULES explicitly asks agents to write as an
+# in-brief note under the TL;DR -- so the stripper ate 17 of 19 briefs at their
+# second paragraph and left ~500-char stubs that still parsed. The bare form is
+# gone; only an explicitly caller-DIRECTED heading matches now.
 _TAIL = re.compile(
-    r"\n(?:-{3,}\s*\n)?\s*\*{0,2}"
-    r"(?:(?:Report|Notes?|Summary)\s+(?:to|for)\s+(?:the\s+)?"
-    r"(?:caller|run[\s-]?owner|orchestrator)"
-    r"|Caller report"
-    r"|Environment notes?(?:\s+(?:to|for)\s+(?:the\s+)?\w+(?:\s+\w+)?)?)"
+    # Edition 074 found the opposite failure: agents write this section as a
+    # "## Environment notes for the run owner" HEADING, and a prefix allowing
+    # only `**` matched none of them, so 112 chatter lines were mined as fake
+    # headlines. Allow a heading marker AND bold; both days' fixes, one pattern.
+    r"\n(?:-{3,}\s*\n)?\s*#{0,4}\s*\*{0,2}"
+    r"(?:(?:Report|Notes?|Summary|Environment\s+notes?)\s+(?:to|for)\s+(?:the\s+)?"
+    r"(?:caller|run[\s-]?owner|orchestrator|run\s+owner)"
+    r"|Caller report)"
     r"\b[:\s*]", re.I)
+
+
+def _strip_caller_chatter(body):
+    """Drop a caller-directed trailing section -- but only if it IS a tail.
+
+    Guard rail (2026-09-26): a heading match near the TOP of the brief is not a
+    tail, it is a false positive, and acting on it silently destroys the brief.
+    Refuse any strip that would remove more than half the text.
+    """
+    m = _TAIL.search(body)
+    if not m:
+        return body
+    kept = body[:m.start()].rstrip()
+    if len(kept) < 0.5 * len(body.strip()):
+        return body          # not a tail -- leave the brief intact
+    return kept
 
 
 def _split_trailing_contract(txt):
@@ -150,9 +177,7 @@ def _split_trailing_contract(txt):
     body = re.sub(r"(?:\n\s*-{3,}\s*)+\Z", "", body).rstrip()
     # caller-directed chatter can also land ABOVE the status block; strip it
     # with the same shape-matching rule the header-contract parser uses.
-    mt = _TAIL.search(body)
-    if mt:
-        body = body[:mt.start()].rstrip()
+    body = _strip_caller_chatter(body)
     if status != "urgent":
         flag = ""
     return status, flag, body
@@ -199,16 +224,10 @@ def split_contract(txt):
     # the caller", "Report to caller", "Environment notes for the run owner",
     # "Report for the run owner"), so match the shape rather than the wording:
     # an optional rule, then Report/Notes aimed at the caller/run owner.
-    TAIL = re.compile(
-        r"\n(?:-{3,}\s*\n)?\s*\*{0,2}"
-        r"(?:(?:Report|Notes?|Summary)\s+(?:to|for)\s+(?:the\s+)?"
-        r"(?:caller|run[\s-]?owner|orchestrator)"
-        r"|Caller report"
-        r"|Environment notes?(?:\s+(?:to|for)\s+(?:the\s+)?\w+(?:\s+\w+)?)?)"
-        r"\b[:\s*]", re.I)
-    mt = TAIL.search(body)
-    if mt:
-        body = body[:mt.start()].rstrip()
+    # Use the same narrowed pattern + tail guard as the trailing-contract path,
+    # so the two parsers cannot disagree about what counts as caller chatter
+    # (2026-09-26: they did, and this one ate 17 briefs at their 2nd paragraph).
+    body = _strip_caller_chatter(body)
 
     if status != "urgent":
         flag = ""
