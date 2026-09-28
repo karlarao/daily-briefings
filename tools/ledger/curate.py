@@ -27,38 +27,37 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    # 2026-09-26 hand curation. Order: KEV entries whose due date has ALREADY
-    # PASSED, then "no fix exists for somebody", then dated cutovers inside the
-    # window, then two corrections that change what a reader should do today.
-    # One row per distinct story; short restatements are excluded below.
-    "PASSED \u2014 CISA KEV, JFrog Artifactory: CVE-2026-66384 due 09-10",
-    "CISA KEV: LiteLLM CVE-2026-59822, added 02 Sep, remediation due 16 Sep",
-    "GitLab's CVSS 10.0 path traversal CVE-2026-85706 was patched on 2026-09-10",
-    "The 4.1.4 binaries were pulled from the download page on 2026-09-20",
-    "2.x, 3.0.x and 3.1.x are archived and explicitly get no security patches, ever.",
-    "Angular's 2026-09-23 advisory says in writing that v19 and earlier will never be fixed.",
-    "Next.js 13.x and 14.x have received zero backports",
-    "Aurora PostgreSQL has NOT shipped the 2026-08-13 batch. 44 days and counting.",
-    "Starlette 0.x is a dead end for five separate 2026 CVEs",
-    "MongoDB 8.2 reached end of life on 2026-07-31",
-    "Google Play: register every Play package name by 2026-09-30",
-    "Apple EU: unified business terms and the 5% Core Technology Commission go live 2026-10-01",
-    # Two corrections: both change a date a reader is already planning against.
-    "TLS 1.0/1.1 rejection moved from 2026-09-30 to 2026-10-31",
-    "Percona Server for MongoDB IS patched, as of last week.",
-    "containerd's checkpoint-restore Critical finally has a CVE",
+    # 2026-09-28 hand curation. The day is a deadline wall: order is cutovers
+    # inside 3 days first, then KEV clocks already expired, then "no fix exists
+    # for somebody". One row per distinct story; duplicates excluded below.
+    "1 Oct 2026 (3 days) \u2014 Native Apps bootstrap, NO opt-out, irreversible.",
+    "2026-10-01 (3 days) \u2014 GitHub Actions checks/workflow runs/statuses fall under the Actions retention setting",
+    "2026-09-28 (TODAY): OpenAI shuts down gpt-3.5-turbo-instruct, babbage-002",
+    "The download page still shows 4.1.3 as \"Latest\" \u2014 verified 2026-09-28",
+    "CVE-2026-21962 \u2014 CISA KEV due date passed 32 days ago",
+    "CVE-2026-64849 \u2014 MLflow unauthenticated full-read SSRF, CVSS 9.3, in CISA KEV",
+    "JFrog Artifactory: four KEV entries, every due date passed, and patching does not end the incident.",
+    "Two V8 zero-days sit in CISA KEV and both federal deadlines have expired.",
+    "CVE-2026-86350 (Important) is a regression in the fix for CVE-2026-41293",
+    "Aurora PostgreSQL has no engine containing the 2026-08-13 batch, 46 days on",
+    "PostGIS carries two chained memory-corruption CVEs with NO fix in any stable release",
+    "crystaldba/postgres-mcp CVE-2026-85620 is still unfixed, six weeks after the PR was opened.",
+    "CVE-2026-82306 has no fixed version named, and NVD has parked it as Deferred.",
+    "Next.js 13.x and 14.x have no fix for two Critical unauthenticated RCEs.",
+    "16 Oct 2026 (18 days) \u2014 Snowsight account-specific host, no opt-out.",
 ]
 
 # Hand-verified same-story rows kept OUT of `ongoing`: each restates a row
 # already picked or pinned. Per the 09-15 rule the SHORT duplicate is excluded
 # and the LONG survivor kept -- never both, and never a row that is also pinned.
 EXCLUDE_ONGOING = [
-    "2026-09-30 (4 days): Agent Bricks Supervisor API end of life.",
-    "2026-10-01 (5 days): Azure Databricks Standard tier auto-upgrades to Premium.",
-    "2026-10-01 (5 days) \u2014 GitHub Actions retention begins governing checks",
-    "2026-10-01 (5 days) \u2014 Apple EU unified business terms",
-    "2026-10-31 \u2014 TLS 1.0/1.1 connections rejected, provisioned and Serverless.",
-    "PASSED \u2014 CISA KEV, Starlette CVE-2026-48710, due 2026-09-16",
+    # 2026-09-28. Each restates a row already picked above; the LONGER survivor
+    # is kept and the short duplicate dropped (09-15 rule). Never a pinned row.
+    "CVE-2026-21962 is 32 days past its CISA KEV due date, and no CSPU will ever fix it.",
+    "GitHub Actions retention now covers checks, workflow runs and statuses \u2014 2026-10-01, three days out.",
+    "AKS begins auto-migrating VMAS clusters to Virtual Machines node pools on 2026-09-30, two days out.",
+    "(a) Agent Bricks Supervisor API (Beta) \u2014 EOL 2026-09-30, 2 days out.",
+    "(a) Play package registration \u2014 2026-09-30, CONFIRMED",
 ]
 
 
@@ -69,10 +68,16 @@ EXCLUDE_ONGOING = [
 # card (2026-09-14). Pins bypass the COMMENTARY heading filter for that reason,
 # and a pin that does not match is a FATAL error, not a warning (2026-09-16).
 PIN_ONGOING = [
-    "Agent Bricks Supervisor API reaches end of life 2026-09-30",
-    "Azure Databricks Standard tier end of life is 2026-10-01",
-    "On 2026-10-01 \u2014 five days out \u2014 the Actions retention setting starts governing",
-    "BCR-2373 is the credit story of the month: QAS is now on by default",
+    # 2026-09-28. The 09-30 / 10-01 wall: every one of these is a dated cutover
+    # written under a brief's "## Heads up" heading, which the sev heuristic
+    # scores `normal`. Without the pin they fall off the card entirely.
+    "2026-09-30 (2 days) \u2014 every Play package name must be registered in Play Console",
+    "2026-09-30 (2 days) \u2014 AKS auto-migrates VMAS clusters to VM node pools via the auto-upgrader.",
+    "2026-09-30 (2 days) \u2014 Agent Bricks Supervisor API (Beta) end of life.",
+    "2026-10-01 (3 days) \u2014 Azure Databricks Standard tier retires.",
+    "2026-10-01 (3 days) \u2014 Apple's unified EU business terms take effect.",
+    "CVE-2026-58704 \u2014 Pixel cellular modem, CISA KEV, remediation due 2026-09-19 (9 days PAST DUE)",
+    "MongoDB 8.2 is end-of-life (31 July 2026) and received none of the September CVE batch",
 ]
 
 
@@ -113,7 +118,7 @@ def main():
                 used.add(i)
                 break
         else:
-            print("WARN: pick not found: %s" % pat[:60], file=sys.stderr)
+            raise SystemExit("ERROR: pick not found (fix the pick text): %s" % pat[:80])
     remaining = [r for i, r in enumerate(raw["new"]) if i not in used and is_news(r)]
     # Fold same-story restatements within a topic before counting. The spec
     # excludes same-story duplicates from the lists AND the counts; this code
