@@ -3607,3 +3607,188 @@ documents `--unsafe-always-allow-all-agents`; Android Studio's BYOA hands any
 ACP agent the project graph and **emulator control**. Counterweight worth
 recording: this window's worst unfixed vulnerability in the data layer, a CVSS
 9.2 restricted-mode bypass, is itself in a Postgres MCP server.
+
+## Run findings 2026-09-29 (edition 078)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt,
+both hooks clean.** Launched 09:25 EDT, all briefs in by ~13:40, dashboard
+published 13:47 UTC, lens v43 after. `artifact-allow.sh` clean for its 21st
+consecutive unattended run (`list`, a `read` with `path` (1.9 MB), the plain
+`read` a republish requires, and the edition-078 publish — zero prompts);
+`bash-allow.sh` clean with no Bash compound parked despite heavy
+`python3 - <<'PY'` use. **~3,470k research tokens, a record** (prior high
+~3,340k on 09-20). The WebSearch 200-call cap bound again and was exhausted
+partway through; the lanes that reported it were the changelog-shaped ones
+launched LAST (oltp, oracle, bigquery), which is exactly what the 09-13 launch
+order is for. **Keep the launch order.**
+
+**A `re.sub` that looked bounded ate three `<section>` openings, and EVERY
+OTHER GUARD PASSED ON THE WRECKAGE.** The runbar rebuild used
+`re.sub(r'<div class="runbar">.*?</div>\s*</div>', …, flags=re.S)`. That reads
+as "the runbar div and its wrapper" and is nothing of the kind: with `re.S` the
+non-greedy run extends to the first such pair **anywhere**, and on this parent
+that pair sits past three section openings. Result: `v-read`, `v-wn` and
+**`v-claims` (187,120 bytes)** lost their opening tags, the file went to 12
+`<section>` against 13 `</section>` — and `assert_page_link_coverage` (710
+units, 0 uncited), `assert_table_shape` (10 tables) and
+`assert_identity_consistent` **all passed**. It was caught only by the standing
+09-09 habit of accounting for a size delta against the parent: −91,227 bytes
+with no explanation. Two durable lessons:
+- **`replace_balanced_div()` now replaces the runbar by a depth-counting scan**,
+  not a regex, and asserts the `<section>` count is unchanged across the call.
+- **`assert_structure()` is new and is the guard whose absence let this
+  through**: section count opened == closed == 15, every expected id still has
+  an opening tag, and no section body under 200 bytes. Guards 1–5 check
+  freshness, shrinkage, splice count, host wrapper and citations — **nothing
+  checked that the document was still well-formed.** Promote it if
+  `tools/lens/lens_guard.py` is ever refreshed.
+
+**The size-delta habit is the single highest-yield check in this build.** It has
+now caught a silent defect in three separate editions (09-09 flipped shells,
+09-13 patch-radar trim, today). A drop is not automatically wrong — but an
+*unexplained* drop always is. Final accounting for 078: v-events +11,888,
+lensLedger +7,332, povContent +6,329, v-patch +364, against v-read −1,169,
+v-wn −1,416, v-longitudinal −113 = **+22,640, matching the file delta exactly.**
+
+**`reuse_key`'s advisory had its best run yet: 11 of 13 drafted rows were
+already on the board.** Five drafted events collided with a same-date parent
+(Play registration, Databricks Supervisor API, Snowflake BCR-2437, Azure
+Standard tier, Apple EU terms) and one matched a key exactly (Cortex EOL);
+another two (Next.js advisories, Gemini preview endpoints) were found only by
+*reading the board*, because their drafted dates differed from the parent rows'.
+On the patch side five of six were already tracked — JFrog, containerd,
+PgBouncer, Doris and MongoDB CVE-2026-82067 — and **none of those five was
+date-keyed, so the advisory could not have surfaced them.** Only the GitHub
+runner event and the WSO2 CVE were genuinely new. At edition 78 with a 30-day
+window this is the normal case, exactly as the 09-09 note predicted; the
+practical rule is unchanged and now doubly evidenced: **draft the row, then
+probe the board by story as well as by date, before minting a slug.**
+
+**Flag calibration: 12 urgent, 11 distinct stories, every one audited against
+the literal definition.** Four KEV clocks already past due (JFrog ×4 with
+in-the-wild chaining, WSO2 CVSS 10.0 at 2 days, Oracle CVE-2026-21962 at 33
+days with forensic triage, Pixel modem at 10); six "no fix exists for somebody"
+(MongoDB 8.2, Doris 2.x/3.x, Azure's pinned PgBouncer, Aurora PostgreSQL,
+Next.js 14.x/13.x, Angular ≤19); and the deadline wall itself — eleven cutovers
+inside three days, of which Play registration (global removal), the Databricks
+Supervisor API (ceases to exist) and Snowflake BCR-2437 (uninstall is the only
+opt-out) require action. **App Dev and DevOps both flagged JFrog** — the
+061-style overlap — and the DevOps row was the one carried because it is longer
+and carries the eviction detail. **Seven lanes held `ok` while carrying real
+CVEs and wrote out their reasoning**: AI Hardware (a CVSS 9.8 hard-coded
+credential, patched, not KEV), Fabric (two Critical with MSRC
+`Customer Action Required: No`), BigQuery, Open Formats (65 unremediated CVEs in
+a Confluent Hub bundle — real, but not KEV, not exploited, and a rebuild path
+exists), Redshift, Database Hardware (said plainly that no dated item in its
+lane needs action) and NL2SQL. That asymmetry is the evidence the agents
+discriminated rather than blanket-flagged.
+
+**`curate.py`: a PIN must name a row that is actually in `ongoing`.** Three of
+the day's pins were drafted from `new` rows and the fatal "pin not found" fired
+correctly on the first — which is the 09-16 guard working. The subtler trap was
+self-inflicted: I had *also* put the ongoing twin of that story in
+`EXCLUDE_ONGOING`, so dropping the bad pin would have removed the Android
+developer-verification story from the card entirely. Fixed by promoting the
+ongoing row from EXCLUDE to PIN. **Restating the 09-15 rule in the form that
+would have prevented it: before excluding a row, check that the story survives
+somewhere else on the card.**
+
+**Ledger health: 818 items, 204 matched, 0 double-counted.** Dictionary
+26,621 → 27,235. Match rate 24.9%, at the top of the recent band, so the 09-09
+length-asymmetry diagnostic was not needed. `new_more` 448 of 672 raw — the
+within-topic fold is doing its work. **Five `[src]` links were attached by
+hand** (Snowflake BCR-2437, Spring CVE-2026-59313, delta-rs 1.0.0, Android
+developer verification, Redshift TLS), each from a URL already cited in that
+same brief for that exact fact, taking the card to **31 of 31 rows sourced**.
+
+**Promise Tracker folded 104 → 98, hand-verified.** Six rows described the one
+Fabric Runtime 2.0 default-flip promise (`fabric-runtime-20-default-late-sept`,
+`-default-sept`, `fabric-runtime2-default-sept`, `fabric-runtime-2-default`,
+`fabric-runtime-2-0-becomes-the-default-…`, `fabric-runtime2-default`) and two
+Snowflake RBAC rows were near-identical. Every loser preserved in the
+survivor's `aliases[]`; `assert_alias_safe` confirmed no parent key left by
+omission. **claims[] (175) and ownclaims[] (43) still carry the same
+duplication and remain the next cleanup** — they need a hand-verified map, not a
+threshold, because each card carries authored counter/ask prose.
+
+**Corrections applied to the ledger before any section was generated (09-14
+build-order rule):** CVE-2026-21962 advanced to 33 days past due in *both* the
+`due` field and the prose (the 09-27 trap was fixing one and leaving the other);
+the Linux kernel KEV trio to 8 days past due; the Iceberg V4 row updated with
+the **spec-wording vote PASSING 2026-09-28** (4 binding / 5 non-binding, no
+dissent, PR #17783 merging) while **the 2026-08-18 date this board carried for
+the earlier DIRECTION vote is now flagged UNVERIFIED** — the proposer's own mail
+says "In July we voted", and today's agent could not reconcile it. Still no V4
+release date, and none was attached to this vote. **A merged spec is not a ship
+date.**
+
+**Guard 5 passed on the first assembly: 735 cited units, zero uncited.** Sixth
+consecutive edition. Mechanism unchanged since 09-15 — every row generator calls
+`cite()` inline as it emits, and navigation claims about this edition's own
+board use the dated public-archive fallback because a vendor URL would be a
+wrong link. Every HTML block mixing `cite()` output with prose was built by
+**concatenation with explicit `str()`**, never `%`-formatting; that collision
+has now recurred five times across editions and concatenation is house style.
+
+**Pages deploy verified by reading the `deploy` JOB's `completed_at`.** First
+look showed only `build` in progress — the `deploy` job does not exist until
+`build` finishes (09-17), so that is not a stall. `deploy` completed `success`
+at 13:47:28Z, ~47s after the push. No re-trigger, no wasted build.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for an **eleventh**
+consecutive week (tried `/database/rss`, `/optimizer/rss`, `/exadata/rss`,
+`/coretec/rss`), so the official Optimizer / In-Memory / Smart Scan /
+Exadata-monthly channel is a standing structural gap and the Oracle brief says
+so on its face; `mikedietrichde.com/feed/` failed all five retries again (HTTP
+202 + `sgcaptcha`), matching the 09-28 regression rather than the 09-27 note.
+New this run: `amd.com` product pages and `hwbusters.com` both 503, so the EPYC
+9006 SKU/price and its CXL version rest on secondary reads and the CXL 3.1-vs-3.2
+disagreement could not be settled; `docs.pingcap.com` returns empty bodies to
+WebFetch and its releases feed is saturated with nightly tags, so **TiDB is
+unverified rather than quiet**; `spider2-sql.github.io/leaderboard.html` 404s
+(the leaderboard is on the site root); the BigQuery release-notes **Atom feed is
+incomplete relative to the HTML page** — two entries appear only in the HTML, so
+**use the HTML page as authoritative**.
+
+**Security sweep, negative result — thirteenth consecutive run, byte-exact.**
+The Redshift agent fetched `behavior-changes.html` and `cluster-versions.html`
+in both variants and grepped all four for `agent-toolkit`, `Skills for AI`,
+`AI coding assistant`, `search-skills` and `llms.txt`: **zero matches in every
+file.** Measured: behavior-changes markdown 35,410 bytes / 25 headings vs HTML
+57,431 / 28 tags (both +1 heading on the 09-28 baseline, accounted for by the
+single new "paused data-sharing producer snapshots" section appearing
+**identically in both variants** — the opposite of the 09-01 pattern);
+cluster-versions byte-identical to baseline in both. **One genuinely new
+observation, from the MongoDB lane:** `mongodb.com/docs` serves an `llms.txt`
+pointer in *both* HTML and markdown variants, but in the HTML it is wrapped in
+an element whose CSS class is literally **`layout_hiddenDirective__8D_wq`** —
+a deliberately concealed, agent-addressed element inside the page a human sees,
+rather than an agent-only variant. The content is benign (a docs index), but the
+**delivery mechanism is the inverse of the one this sweep was built to watch**
+and deserves a standing line. No fetched page's suggestion was executed and no
+skill file was loaded by any agent.
+
+**The affordance keeps widening, and one vendor shipped the first real control.**
+BigQuery's Data Transfer Service MCP server went GA with five state-mutating
+tools and Dataform's with commit-and-push to remote Git; Databricks made UC
+Skills a securable and shipped a `ug` CLI attaching Claude Code and Codex to
+Unity Gateway; Oracle's ORDS 26.3 supports administrator-defined SQL/PL-SQL MCP
+tools while SQLcl's `skills sync` writes Oracle-authored skill files into
+`~/.claude/skills`, `~/.codex/skills` and `~/.copilot/skills` in one command;
+Neon's CLI exposes `neon skills` / `neon mcp`; Cloud SQL documents remote MCP
+servers executing SQL against instances. **The counterweight worth tracking:
+Oracle's Application Identity Logon in RU 23.26.3** lets a trusted app or MCP
+server connect under its own identity carrying end-user context, so Deep Data
+Security applies per-user grants instead of a broad service account — the first
+credible alternative to the one-over-privileged-account pattern this board has
+tracked all quarter.
+
+**Scope, on the edition's face:** 078 refreshes Today's Read on all four chairs,
+Since yesterday, Event Horizon (69 dated rows), Patch-Risk Radar, Longitudinal,
+the ledger and all seven identity sites. Claim Watch, Mirror, Question Forecast,
+Gap Ledger, Benchmarks, Promise Tracker prose, Perf Signals, Build Radar, Skills
+Radar and Vendor Dossiers **carry forward from 077 unrevised** — the day's
+research was overwhelmingly deadlines and security, and the depth went into the
+structural guard and the promises fold instead. **The quarterly Skills/Build
+re-rank across all four chairs is due 2026-10-01 — TWO DAYS OUT, and it is now
+inside the next run's reach. It must not slip again.**
