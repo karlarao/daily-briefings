@@ -579,3 +579,58 @@ if __name__ == "__main__":
         raise SystemExit("page-wide link-coverage guard failed to trip")
 
     print("lens_guard self-test OK — all 5 failure modes trip their guard")
+
+# --- structure ---------------------------------------------------------------
+SECTION_IDS = ["v-read", "v-wn", "v-claims", "v-mirror", "v-questions", "v-gaps",
+               "v-events", "v-perf", "v-patch", "v-bench", "v-promises",
+               "v-longitudinal", "v-build", "v-skills", "v-dossiers"]
+
+
+def replace_balanced_div(html: str, opener: str, replacement: str) -> str:
+    """Replace exactly ONE div and its balanced close.
+
+    Why this exists (2026-09-29, measured): the edition-078 build rebuilt the
+    runbar with `re.sub(r'<div class="runbar">.*?</div>\s*</div>', ..., re.S)`.
+    That LOOKS bounded and is not -- the non-greedy run extends to the first such
+    pair ANYWHERE in the document, and on that parent the pair sat past three
+    <section> openings. v-read, v-wn and v-claims (187KB) lost their opening tags
+    and the file went to 12 <section> against 13 </section>.
+
+    A depth-counting scan cannot do that. Callers should additionally assert the
+    <section> count is unchanged across the call.
+    """
+    i = html.index(opener)
+    depth, k = 0, i
+    pat = re.compile(r"<div\b|</div>")
+    while True:
+        m = pat.search(html, k)
+        if not m:
+            raise AssertionError("unbalanced <div> while replacing %r" % opener[:40])
+        depth += 1 if m.group(0) != "</div>" else -1
+        k = m.end()
+        if depth == 0:
+            return html[:i] + replacement + html[k:]
+
+
+def assert_structure(html: str, expect_ids=None) -> int:
+    """The guard whose ABSENCE let a structurally wrecked page pass every other one.
+
+    On 2026-09-29 a bad regex removed three <section> opening tags, and
+    assert_page_link_coverage (710 units, 0 uncited), assert_table_shape (10
+    tables) and assert_identity_consistent all passed on the result. Guards 1-5
+    check freshness, shrinkage, splice count, host wrapper and citations --
+    nothing checked the document was still well-formed. This does.
+    """
+    ids = list(expect_ids or SECTION_IDS)
+    o, c = html.count("<section"), html.count("</section>")
+    if o != c or o != len(ids):
+        raise AssertionError("structure: %d <section> vs %d </section>, expected %d"
+                             % (o, c, len(ids)))
+    for vid in ids:
+        m = re.search(r'<section[^>]*id="' + re.escape(vid) + r'"[^>]*>', html)
+        if not m:
+            raise AssertionError("structure: section %s lost its opening tag" % vid)
+        body = html.find("</section>", m.end()) - m.end()
+        if body < 200:
+            raise AssertionError("structure: section %s body only %d bytes" % (vid, body))
+    return o
