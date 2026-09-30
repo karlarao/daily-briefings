@@ -3792,3 +3792,548 @@ research was overwhelmingly deadlines and security, and the depth went into the
 structural guard and the promises fold instead. **The quarterly Skills/Build
 re-rank across all four chairs is due 2026-10-01 — TWO DAYS OUT, and it is now
 inside the next run's reach. It must not slip again.**
+
+## Run findings 2026-09-30 (edition 079)
+
+**Clean run: all 19 agents completed first try in ~17 minutes, no suspension, no
+parked prompt, both hooks perfectly clean.** Launched 09:28 EDT, all briefs in by
+~09:55, dashboard published 13:53 UTC with the Pages deploy verified at
+13:55:20Z, lens edition 079 as artifact v44. **~3,945k research tokens — a
+large new record** (prior high ~3,470k on 09-29), and a record **1,014 extracted
+items**. `artifact-allow.sh` clean for its 22nd consecutive unattended run — four
+firings (`list`, a `read` with `path`, the plain `read` a republish requires, and
+the publish), **all `PreToolUse`, all `mode=auto`, zero `PermissionRequest`**.
+`bash-allow.sh` 578 firings, 465 allow / 113 pass, same signature, no compound
+parked and none started with a `VAR=` assignment.
+
+**THE TOOLING IS NOT A LINE, IT IS A LATTICE — "newest" is not "most complete."**
+The 09-29 branch (`great-clarke-3vlzsq`) has `replace_balanced_div` and
+`assert_structure` and **had DROPPED** `normalize_closing_tags`,
+`rewrite_pov_meta`, `assert_not_parent_identity` and `is_iso_date`, which live on
+the 09-28 branch. Neither is a superset. Staging from the newest branch alone
+would have shipped a build missing four guards — and the consequence was already
+visible: **the published 078 parent carries TWO `</body></html>` pairs**, which is
+exactly what `normalize_closing_tags` exists to prevent, because the builder that
+produced it did not have the function. Landed the **union** on main-track (23
+functions, verified a strict superset of all three branches).
+**New rule, generalising the 09-19 one: after staging tooling, DIFF THE FUNCTION
+SET against the previous two branches, not just against yesterday's note.**
+
+**A stale duplicate of a module on `sys.path` silently shadowed the patched one.**
+`scratchpad/lens/` and `scratchpad/tools/lens/` both held `ledger_surgery.py`,
+`lens` came first on the path, and the copy without my new `probe_story` won. The
+symptom was an `AttributeError` naming a function I had just written. Cheap to
+diagnose, but the same shape could have shadowed a *guard* and passed silently.
+**Keep one copy of the tooling per run and delete the other.**
+
+**`probe_story` is new and it earned its place immediately.** The 09-29 note
+established that `reuse_key`'s same-date advisory cannot catch a duplicate whose
+drafted date differs from the parent's — five of six patch rows that run were
+missed for exactly that reason. `probe_story` probes the board **by story**: hard
+identifiers (CVE/GHSA/version/bundle ids) score first, then content-token overlap,
+and it never decides, only prints. Today, of 11 drafted rows **5 were already
+tracked**, and **the Node 26 LTS row was found ONLY by the story probe** because
+my draft dated it 2026-10-28 while the parent row dated it 10-20 — and the parent
+turned out to be the one that was wrong, conflating Node 24's maintenance entry
+with Node 26's LTS promotion. A date-keyed advisory could never have surfaced
+that. All five were enriched in place; no fresh slugs minted.
+
+**`daycounts.py` is new: a past-due day count is the only field on the board that
+is WRONG BY DEFAULT tomorrow.** Editions 069, 077, 078 and 079 each hand-corrected
+some of these and each missed a different subset, because the figure is written in
+TWO places per row (`due` and the prose) and a correction that touches one leaves
+the other. Measured on the 078 parent: **eight of eight rows carrying a day count
+were stale**, drifts of +1 to +10 days — and the JFrog row stated **two different
+figures in its own prose** (20 and 12) on top of a third in `due`. The module
+derives the number from the row's own anchor date, rewrites both sites, and then
+ASSERTS they agree. Self-tested including the self-disagreeing row and the guard
+firing.
+
+**THE PATCH RADAR SHIPPED WRONG IN A DRY RUN AND EVERY GUARD PASSED.** My first
+ranking sorted dated rows by `days_out` **ascending**, which for past-due dates is
+the MOST NEGATIVE first — so the radar filled with July and early-August rows and
+silently dropped **CVE-2026-21962** (34 days past its KEV date, the board's
+headline), the WSO2 CVSS 10.0, the actively-exploited Apple zero-day, and the
+**entire no-fix register**. Twenty-six rows rendered; `assert_structure`,
+`assert_table_shape` and `assert_page_link_coverage` all passed. **Caught only by
+the 09-09 size-delta habit** — v-patch was 13,652 bytes smaller than the parent
+with no explanation, and looking at *why* exposed the selection. Two fixes:
+- **`due` is FREE-FORM PROSE, not a date field.** An ISO-*prefix* test missed
+  `"KEV due 2026-10-02 (2d)"` and `"FIXED 2026-09-21 in ..."`. Extract the first
+  ISO date from anywhere in the field, as `daycounts.anchor_date` already does.
+- **A hand-pinned head of eleven rows, asserted present**, then the ranked tail.
+  No ranking function knows that a 34-day-delinquent CVSS 10.0 KEV outranks a
+  3-day-old one, because |days| is a countdown and delinquency is not. Same idiom
+  as `curate.py`'s PICKS/PIN, and a typo now fails the build.
+**The size-delta habit has now caught a silent defect in four separate editions
+(09-09, 09-13, 09-29, today). It is the highest-yield check in this build.**
+
+**A guard I wrote was wrong in principle, and the ported guard's own docstring
+said why.** I asserted `"edition 078" not in povContent_blob`. That bans the
+CORRECT label: `"vs edition 078"` is exactly right on `v-wn` today, and an `h`
+body may legitimately carry `"CORRECTION (ed. 078)"` as a correction record.
+`rewrite_pov_meta` asserts by **EQUALITY against `nav_meta`** instead, and raises
+if it changed nothing. **Assert what a field should equal, never scan for what it
+should not contain** — a scan cannot tell a stale label from a correct reference.
+(44 identity fields rewritten and asserted this way.)
+
+**Guard 5 caught the Longitudinal lede, the same class as 09-17 and 09-18:** a
+claim about *this edition's own board* with no citation, where a vendor URL would
+be a wrong link. The honest citation is the dated public-archive fallback.
+Final: **718 cited units, zero uncited**, `assert_structure` 15 sections
+opened==closed, `assert_table_shape` 12 tables.
+
+**Output is +17,094 bytes, fully accounted:** v-events +2,253 (1 new row),
+v-patch +6,407 (a new Src column the parent lacked, plus the cap prose),
+lensLedger +12,220 (7 corrections, 6 new rows, 35 persisted urls),
+v-longitudinal −830 and povContent −3,102 (tighter prose than the parent),
+runbar −93, NAV +127, residue +101. **And `normalize_closing_tags` removed the
+parent's duplicate `</body></html>` pair** — 2 → 1.
+
+
+
+- **aihw flagged `urgent` on the NVIDIA PSIRT 2026-10-01 "GitHub-only" cutover.**
+  This CONTRADICTS edition 077, which RETIRED that row as a false alarm: NVIDIA's
+  own Product Security page carried the README's "will only publish" sentence PLUS
+  the clause the README omits — "all bulletins will continue to be available on the
+  Product Security website... Both ... will run in parallel." The 09-28 rule was:
+  where two first-party surfaces disagree, the FULLER one is authoritative, and a
+  README describing its own repo is not the same kind of source as the vendor's
+  security page. Today's agent cites only the README.
+  => VERIFY BOTH SURFACES MYSELF before accepting the flag. If the parallel clause
+  still stands, downgrade aihw to `ok` and say why on the brief's face.
+  The agent's THREE CVE items are correctly NOT flagged (all have shipped fixes,
+  none in KEV, no exploitation) and it said so explicitly — that reasoning is right.
+
+### RESOLVED 2026-09-30 — aihw flag DOWNGRADED to `ok`
+Verified `nvidia.com/en-us/security/` directly. The page carries BOTH:
+  "Starting October 1, 2026, NVIDIA PSIRT will **only** publish security
+   bulletins on GitHub"
+  "Both this Product Security website and the GitHub repository will run in
+   **parallel**" / "all bulletins will continue to be available on the Product
+   Security website" / "ensuring access from both sources in parallel"
+So this is not two first-party surfaces disagreeing (the 09-28 framing) — it is
+ONE page contradicting ITSELF, which is a stronger result: the "only" sentence
+is shorthand, the parallel clause is the operative detail. Nothing breaks
+tomorrow for a scraper on custhelp or an email subscriber. Edition 077's
+retirement of this row STANDS, for the second consecutive edition.
+
+GENERALISABLE, and worth a standing line: **a retired false alarm comes back.**
+The 19 agents are stateless by design, and the README's narrower "will only
+publish" sentence is what a search surfaces first, so a fresh agent re-derives
+the alarm every run. The defence is that the RETIREMENT must stay visible ON THE
+BOARD with its reasoning attached (the events[] row already says
+"CORRECTED (ed. 077) — this is NOT a cutover and needs no action"), so the
+orchestrator can catch the re-flag. It worked. Keep that row rather than
+deleting it.
+
+## TO LAND ON MAIN-TRACK THIS RUN (branch `claude/great-clarke-xvy0xz`)
+
+1. **`tools/lens/lens_guard.py` — THE UNION.** Neither branch is a superset and
+   this is a genuine regression, not staleness:
+     - `origin/claude/great-clarke-3vlzsq` (09-29, newest) HAS
+       `replace_balanced_div`, `assert_structure`  — and DROPPED
+       `normalize_closing_tags`, `rewrite_pov_meta`,
+       `assert_not_parent_identity`, `is_iso_date`.
+     - `origin/claude/great-clarke-8m2t4g` (09-28) has those four and NOT the
+       two new ones.
+   The 09-29 run evidently branched from a pre-09-27 copy. Consequence measured
+   today: the PUBLISHED 078 parent carries **two `</body></html>` pairs**, which
+   is exactly what `normalize_closing_tags` exists to stop — the guard was
+   missing from the builder that produced it.
+   **Rule for the next run: after staging tooling from the newest branch, DIFF
+   THE FUNCTION SET against the previous two branches. "Newest" is not
+   "most complete."** (Generalises the 09-19 "grep the staged copy for what
+   yesterday's note claims is in it".)
+
+2. **`tools/ledger/extract_briefs.py` — the >50% chatter-strip guard.** The
+   09-28 note says `_strip_caller_chatter`'s >50% guard "was staged and
+   present"; it is NOT in 3vlzsq. Added as `_cut_chatter()` and self-tested
+   both ways (a real trailing sign-off is stripped; the same shape appearing
+   EARLY is refused with a stderr warning and the body kept).
+
+3. **`CLAUDE.md` parity.** main = 2312 lines, gh-pages = 3794. main is 1482
+   lines / ~8 editions behind. The standing rule is that the two copies stay
+   identical, and the 09-04 note records that a disagreement between them is
+   what killed the 09-02 and 09-03 runs (the stored prompt followed main).
+   Sync main's copy from gh-pages.
+
+4. `tools/lens/sections_079.py` + the date-chip/days-past helpers (self-tested).
+
+### aiappdev flag ACCEPTED as `urgent` (audited 2026-09-30)
+Passes the literal definition on two independent counts:
+  - **Two CVEs published 2026-09-29 with NO fixed release at all** — MetaMCP
+    CVE-2026-79538 (CVSS 9.8, unauthenticated RCE, last commit 2026-02-08) and
+    `mcp-chrome-bridge` CVE-2026-102878 (CVSS 8.6, ≤1.0.31 which is still
+    npm-latest). Mechanism (d) in the no-fix taxonomy, in its purest form:
+    there is nothing to upgrade to, so the only action is removal.
+  - **LiteLLM CVE-2026-59822 is in CISA KEV, due 2026-09-16 = 14 days past due**
+    today (arithmetic checked). Fixed in 1.84.0, so it only bites pinned
+    deployments — but a pinned LLM gateway is the normal case.
+Its discrimination is good: it explicitly declined the eight vLLM advisories
+after opening each one and finding July/August publication dates all fixed by
+0.28.0 — "do not let a list's sort order become your exposure assessment."
+
+### databricks flag ACCEPTED as `urgent` (audited 2026-09-30)
+Two hard dated cutovers inside 24 hours, both verified against primary docs by
+the agent:
+  - **Agent Bricks Supervisor API (Beta) EOL TODAY 2026-09-30** — doc refreshed
+    09-29 and still carries the date; wording is "it will no longer be
+    available", not "unsupported". Migration is a rewrite, not a config change
+    (Databricks was running the agent loop; you now write it in `agent.py` on
+    Databricks Apps). Useful naming trap the agent caught: the declarative
+    Supervisor *AGENT* is NOT retiring — only the Supervisor *API*. The board
+    should carry that distinction or a reader will panic about the wrong product.
+  - **Azure Databricks Standard tier auto-upgrades to Premium TOMORROW
+    2026-10-01.** No feature loss (Premium is a superset); the exposure is the
+    bill, and the doc itself says to price it.
+It declined its CVEs and wrote out why (none in KEV, none exploited, all have
+reachable fixes) — correct.
+
+### Doc-path corrections worth carrying (databricks lane, verified 09-30)
+- `docs.databricks.com/aws/en/whats-coming/` and the learn.microsoft.com
+  equivalent both **404**. The working path is **`/release-notes/whats-coming`**.
+  This is the single highest-value page for this lane's deadline tracking, so a
+  stale path costs the whole deadline channel.
+- `ai-gateway/ug-cli` 404s; the real pages are `ai-gateway/coding-agent-ug-cli`
+  and `ai-gateway/coding-agent-supported-agents`.
+- `www.databricks.com/blog/rss.xml` still 404s (Gatsby SPA) — re-tested, the
+  standing note holds. Azure's monthly release-notes page carried the fullest
+  text and is the better primary for this lane than the AWS one.
+
+## RUNNING FLAG TALLY (9/19 in)
+ok      nl2sql    — no CVE, no deadline in lane; said so plainly
+ok      aidaily   — measured negative result: 57 reviewed advisories since 09-28,
+                    none an AI/LLM/agent package; the two security items are
+                    already-shipped fixes with no CVE
+ok      fabric    — declined a **CVSS 10.0** (CVE-2026-69843) on MSRC
+                    `Customer Action Required: No` + `E:U` + `RL:O`; Runtime 1.3
+                    EOS is today but the LTS footnote defers it to March 2027,
+                    so nothing breaks. Exactly the right call.
+urgent  aiappdev  — 2 CVEs with NO fixed release (MetaMCP 9.8, mcp-chrome-bridge
+                    8.6) + LiteLLM KEV 14d past due
+urgent  databricks— Supervisor API EOL TODAY; Azure Standard→Premium TOMORROW
+urgent  snowflake — BCR-2437 TOMORROW, no revoke path (uninstall is the only
+                    opt-out); Cortex claude-4-sonnet/openai-gpt-4.1 EOL 10-14
+urgent  frontend  — Next.js 9 advisories land TODAY (16.3.8/15.5.27); 13.4-14.x
+                    and Angular <=19.2.25 get nothing, ever
+urgent  mongodb   — CVE-2026-82067 CVSS 9.2 leaves authz silently OFF at startup;
+                    EOL 8.1/8.2 have no patched build and never will
+DOWNGRADE aihw -> ok — see the resolved audit above (NVIDIA parallel-publishing
+                    clause verified directly; ed. 077's retirement stands)
+
+!! ACTION AFTER EXTRACTION: the extractor writes status from the agent's own
+   contract, so `briefs/aihw.status` will say `urgent`. It must be rewritten to
+   `ok` with the flag_reason cleared, and the aihw brief's own text should carry
+   a line explaining why the 10-01 date needs no action. Do NOT silently drop
+   the agent's reasoning — record that the board re-derived the alarm and why
+   it was rejected.
+
+### bigquery held `ok` and audited correctly (2026-09-30)
+It answered the board's question with a NEGATIVE result, which is worth as much
+as a positive: **there is no 2026-09-30 or 2026-10-01 cutover in the BigQuery
+lane.** Nearest real deadline is TabFM token billing on 2026-10-30 (30 days out,
+outside the ~14-day bar — budgeting, not action); next is 2027-04-26. It carries
+a Critical CVE (GCP-2026-056 / CVE-2026-12717) and declined to flag it because
+the fix is server-side with no customer-reachable version and it is not in KEV —
+the same judgement prior runs made, correctly.
+
+### SOURCE RULE, third confirmation AND a new failure mode (bigquery lane)
+The standing rule "use the BigQuery release-notes HTML page, not the Atom feed"
+is confirmed a third time, now with an exact measurement: the 2026-09-21 Workday
+Data Lake remote-catalog entry appears **4 times in the HTML and 0 times in the
+feed**, while both sources agree on all 14 September dates. **The feed drops
+ENTRIES, not DATES — so a date-level comparison can never catch it.**
+
+NEW and more dangerous: **`WebFetch` against that HTML page silently returned
+nothing newer than 2026-08-31** — it dropped the whole September window and
+read as a quiet month. Raw `curl` of the same URL returns 644,116 bytes
+containing all 14 September dates. **The reliable recipe is curl the HTML and
+parse locally; WebFetch's markdown conversion truncates long docs pages without
+saying so.** That is a silent-truncation class we have not recorded before and
+it would fake a quiet month on any long changelog page.
+
+Also: `cloud.google.com/blog/products/data-analytics/rss` returns HTTP 200 with
+**zero `<item>` elements** — an empty shell easily misread as "no posts". The
+working feed is `cloudblog.withgoogle.com/products/data-analytics/rss/`.
+Dead paths found: `dataform/docs/mcp`, `mcp/docs/overview`, `sdk/docs/mcp-server`,
+`bigquery/docs/mcp` all 404; live ones are `dataform/docs/reference/mcp`,
+`mcp/control-mcp-use-iam`, `sdk/use-gcloud-mcp`.
+
+## THREE STANDING BOARD ITEMS RESOLVED TODAY (all verified against primary sources)
+
+1. **Aurora PostgreSQL's backport lag is CLOSED at 47 days.** Aurora shipped the
+   whole 2026-08-13 batch on **2026-09-29** across 18.6/17.11/16.15/15.19/14.24,
+   and 17.11's notes enumerate exactly the 28 CVE ids. The board's last reading
+   (46 days, 1 of 28) is history. Cross-provider comparison for the record:
+   Azure <=18 days (month precision), Cloud SQL inside its stated 30, Supabase
+   43, Aurora 47. **Retire the "Aurora is a month behind" row.**
+   Correction the lane also supplies: the batch is **28 CVEs, not 24** — the 24
+   numbered CVE-2026-14662..19385 plus CVE-2026-6464/-6469/-6470/-6471.
+
+2. **Apache Doris's release channel is FIXED, and fixing it exposed the worse
+   problem.** The download page now serves 4.1.4.1 as Latest and 4.0.8 as
+   Stable, and 4.1.3 is gone — closing the 076/077/078 finding. But the page now
+   states verbatim that archived branches "receive no further releases of any
+   kind, security patches included" and "a vulnerability found in one of them
+   stays unfixed there, permanently." Only 4.1 and 4.0 are maintained, so
+   **every Doris 2.x/3.0.x/3.1.x cluster is permanently unpatched** for four
+   September CVEs including an unauthenticated CVSS 7.5 FE meta-service bypass
+   and an FE RCE. Also: 4.1.4.1 carries NO security fixes — it fixes a BE
+   crasher and an MV-refresh regression in 4.1.4 — so 4.1.4 is the CVE fix point
+   and 4.1.4.1 is the build to actually deploy.
+
+3. **The x86 THP write-loss bug now has a CVE and stable fixes: CVE-2026-97945.**
+   This supersedes the board's "mainline fix, no stable release" reading. Fixed
+   in **6.12.111 / 6.18.53 / 7.2.7**; pre-6.6 unaffected. Still **no Ubuntu USN
+   and no RHSA**, so it remains mechanism (c)+(d): patched upstream, unpatched
+   for anyone on a distro kernel. Two details that make it a DATABASE problem,
+   not a Polars problem: PMD-mapped FILE THPs are affected (a durability bug,
+   not just anonymous memory), and `do_huge_pmd_numa_page()` routes through
+   `pmd_modify()` so **automatic NUMA balancing alone can trigger the loss** —
+   and DB servers are the machines most likely to be NUMA with balancing on.
+
+## 4. Iceberg V4 vote date: UNVERIFIED FLAG CLEARED — the board was right
+The 09-29 note flagged the board's **2026-08-18** direction-vote date as
+unverified because the proposer's own mail said "In July we voted". Settled today
+from the raw ASF mbox (`lists.apache.org/api/mbox.lua`, the only route that finds
+`[VOTE]` RESULT mails — `stats.lua` collapses reply chains):
+  - 2026-07-13  `[DISCUSS] Deprecate Equality Deletes in Iceberg V4`
+  - 2026-08-13  the DIRECTION vote is CALLED
+  - **2026-08-18  RESULT declared: 7 binding +1 / 17 non-binding +1, no 0, no -1**
+    — exactly the tally the board carries.
+  - 2026-09-28  the spec-WORDING vote passes 4 binding / 5 non-binding
+"In July we voted" is a loose reference to the July DISCUSS thread; there was no
+July vote. **Both records reconcile, the board's date stands, drop the flag.**
+Still NO V4 release date anywhere on the dev list — keep that row deliberately
+undated. V4 semantics were under active DISCUSS all September (field-ID tracking,
+Avro timestamp types, `_pos` semantics), which is itself the argument against
+attaching a date.
+
+Also a THREE-WAY contradiction worth carrying on the parquet row: ASF rates
+CVE-2026-73334 *moderate*, scopes it 1.12-1.18.0 and says **1.18.1 is the fix**;
+**NVD rates it 8.1 HIGH and says the fix is "presumably in version 1.19"** — i.e.
+NVD's prose asserts no fix exists. Maven Central settles it: 1.18.1 (09-04) is
+the newest parquet-hadoop and **there is no 1.19**. The board's reading is right
+and NVD is wrong. Worth stating on the row, because a reader checking NVD alone
+concludes the opposite.
+
+## 5. CVE-2026-21962 — the WHY is now on the record, not just the WHAT
+The board has said for weeks that neither the August nor September CSPU carries
+the fix. Today's Oracle lane confirmed it by direct grep again (**zero**
+occurrences in either advisory) AND found the mechanism: Oracle's CVE-to-advisory
+map lists **exactly one** advisory for it — "Oracle Critical Patch Update January
+2026". Mike Dietrich (Oracle's upgrade lead, 2026-09-22): "Release Updates (RU)
+are the primary and main vehicle to deliver security fixes" while "MRPs and CSPUs
+contain only a smaller portion, usually those fixes with really high CVE scores
+which can't wait."
+=> **34 days past due today.** The generalisable rule, which is sharper than the
+row we have been carrying: **"we patch monthly" is not an answer to "are we
+covered for CVE X".** For Fusion Middleware components like OHS the delivery path
+is the CPU/FMW stream, not the DB monthly, so coverage has to be asserted
+per-CVE against the advisory map — which Oracle does publish.
+Also: **no CSPU in October** (the monthly cadence skips CPU months), so the
+2026-10-20 CPU is the only patch event until 2026-11-17.
+
+## 6. CORRECTION TO THE BOARD — ORDS 26.3 HAS NOT SHIPPED
+The 09-29 note recorded "Oracle's ORDS 26.3 supports administrator-defined
+SQL/PL-SQL MCP tools". **ORDS 26.3 does not exist.** The changelog's release list
+tops out at **26.2.3 (August 2026)** and the download banner says "Download the
+latest release version - 26.2.3". So administrator-defined MCP tools are NOT
+available. What does exist, from 26.2 (July 2026), is ORDS as an MCP server with
+`database_list`, `schema_information` and **`sql_run`** (executes SQL/PL-SQL
+within the caller's granted privileges). Fix the affordance row — we credited a
+vendor with a control it has not shipped, which is the wrong direction to be
+wrong in.
+
+## 7. NIST FIPS 140-2: the transition HAS HAPPENED — retire it as a deadline
+CMVP now shows **0 Active FIPS 140-2 certificates and 4,418 on the Historical
+list**. The 21-vs-22 September date CANNOT be settled from primary source
+because `csrc.nist.gov/.../fips-140-3-transition-effort` now **404s**; secondary
+sources split. Recommendation applied: keep 2026-09-22 with the conflict stated
+but **retire the row as a deadline — it is a past event now**, and the
+verifiable fact is the CMVP query result. The trap that remains live and is the
+part worth carrying: `FIPS_140=TRUE` resolves to FIPS_140_2 today and to
+FIPS_140_3 once 140_2 is desupported — **same parameter value, different cipher
+policy, no error**. And it was always a NIST calendar event, not an Oracle
+deadline.
+
+## Source access, Oracle lane (12th consecutive week)
+`blogs.oracle.com` 403s HTML *and* RSS — tried `/database/rss`, `/optimizer/rss`,
+`/exadata/rss` and the specific Exadata post, all with a browser UA. The Exadata
+26.1.3.0.0 version strings above are therefore **second-hand via the search
+index**, not read from the post; verify against MOS KB922070 before scheduling.
+**Standing note to CORRECT: `mikedietrichde.com/feed/` is FLAKY, NOT BLOCKED** —
+HTTP 200 with the full feed on attempt 1, then 202+sgcaptcha on attempts 2 and 3.
+Always retry. Post pages themselves are captcha-walled, so Dietrich content comes
+from the feed's `<description>` summaries.
+
+## 8. Redshift lane corrects the board AND our own sweep record
+- **TLS deadline is 2026-10-31, not 11-01.** The vendor date on the live
+  behavior-changes page is the 31st. Fix the row. (31 days out, so still
+  correctly outside the flag bar.) ODBC 1.x EOS confirmed **2026-12-31**,
+  extended from the original 09-30 — and the doc **contradicts itself by one
+  day** (heading/body say Dec 31, the migration instruction says "before
+  December 30"). Record the conflict on the row rather than picking.
+- **Security sweep, 14th consecutive clean run, and the METHODOLOGY improved in
+  a way worth adopting permanently: parity computed as a SET DIFFERENCE, not a
+  count.** behavior-changes: 25 substantive headings in each variant,
+  **md-only = null set, html-only = null set**; the 3 extra HTML tags are the
+  page's own `<h6>Topics</h6>` nav blocks. cluster-versions: 92 in each, both
+  differences empty. 36 of 36 grep cells zero. **A matching COUNT can hide a
+  swapped heading; a set difference cannot.** Use the set difference from now on.
+- **Our own 09-29 baseline is suspect and the lane said so.** cluster-versions
+  grew +289 HTML / +226 markdown bytes, most plausibly the Patch 204 TRAILING
+  line `1.0.436211 ... Released September 22, 2026` (165 bytes in markdown). But
+  a line dated Sept 22 cannot have been in a file the 09-20 baseline measured,
+  yet the 09-29 note recorded cluster-versions as byte-identical to that
+  baseline. One of those two records is wrong. `archive.org/wayback/available`
+  returned 429 so it could not be pinned. **Lesson: a "byte-identical to
+  baseline" claim needs the baseline's own date checked against the content's
+  dates — identical bytes across a week in which the page demonstrably gained a
+  dated line is not a clean result, it is a measurement error.**
+- **The known-broken first-party link is worse than a 404: it returns HTTP 200.**
+  `redshift/latest/mgmt/agent-skills.html` serves a 2,319-byte stub with a
+  `meta refresh` to `welcome.html`, and so does the RA3-to-RG upgrade guide the
+  09-03 announcement links — the two stubs are **byte-identical**, i.e. the
+  mgmt guide's generic soft-404. **A status-code-only link checker passes both.**
+
+## 9. mobile flag ACCEPTED as `urgent`
+Three items, two of them inside 24 hours:
+  - **CVE-2026-86950** (CoreGraphics OOB write) in CISA KEV with Apple
+    confirming exploitation "in an extremely sophisticated attack against
+    specific targeted individuals"; **KEV due 2026-10-02**. Fixed only in
+    iOS/iPadOS 26.7.1 or iOS 27.
+  - **TODAY 2026-09-30**: unregistered Play package names become subject to
+    **global removal**, and developer verification starts blocking installs in
+    Brazil / Indonesia / Singapore / Thailand.
+  - **TOMORROW 2026-10-01**: Apple's unified EU terms take effect and the
+    Account Holder must **actively accept** them, or you stay on the per-install
+    Core Technology Fee instead of the 5% Core Technology Commission. An opt-in
+    that defaults to the worse outcome is exactly the shape that belongs on a
+    flag.
+
+## Quarterly Skills/Build re-rank — DECISION AND REASONING (2026-09-30)
+**Not done this edition. It fires tomorrow, and that is the literal rule.**
+The Skills Radar carries "next review 2026-10-01" and the board carries
+`skills-radar-quarterly-review` as an EVENT ROW DATED 2026-10-01. The rule is
+"on the first run on/after that date". Today is 09-30 — before. Doing it a day
+early would also make the bookkeeping inconsistent with the board's own dated
+row, which is the kind of small incoherence that later reads as a bug.
+
+The 09-28 and 09-29 notes both pressed for it ("the next run is the one that
+must do it"), and the honest answer is that the re-rank has NOT yet slipped —
+10-01 has not arrived. What HAS happened thirteen times is the note flagging it
+as approaching, which is not the same failure.
+
+**So instead of doing it early, this run removes the excuse for doing it late:**
+`scratchpad/rerank_inputs_2026-10-01.json` holds the 90-day trend derivation
+tomorrow's run would otherwise have to redo, and the numbers already point
+somewhere specific:
+
+  theme volume over 83 ledgers, by month (Jul -> Aug -> Sep):
+    open-format-internals    2245    304 ->  761 -> 1180
+    agent-operable-mcp       1793    227 ->  563 -> 1003   <-- steepest climb
+    ai-workload-perf         1113    106 ->  338 ->  669
+    claim-forensics           886     96 ->  253 ->  537
+    memory-economics          711    113 ->  263 ->  335
+    linux-io-observability     273     41 ->   84 ->  148   <-- thinnest, is a hedge
+
+**The re-rank case this supports, for tomorrow to accept or reject:**
+- `agent-operable-tooling-mcp` is currently **emerging** and has the steepest
+  curve on the board (4.4x Jul->Sep). Today alone: Dataform MCP GA with
+  `push_git_commits`, DTS MCP GA with 5 mutating tools, SQLcl `skills_sync` as
+  an MCP TOOL, UC Skills as a securable governed by VOLUME privileges, Fabric
+  Core+IQ MCP GA, and the window's worst unfixed data-layer CVE (CVSS 9.2) is
+  itself in a Postgres MCP server. **Promote to compounding.**
+- `memory-economics-capacity-2` is currently **emerging** and today gave it the
+  hardest evidence it has ever had: 4Q26 DRAM +10-15% QoQ, NAND +15-20%, a
+  64GB RDIMM at $8,260 (=$198k for 24 slots), memory at ~35% of server BOM.
+  **Promote to compounding.**
+- `modern-linux-io-observability` is the **hedge** and stays one — but note it
+  was the lane that produced today's single most consequential finding
+  (CVE-2026-97945 silent write loss), so the hedge is paying option value.
+- `claim-forensics-benchmarking` earned its keep twice today: the StarTree
+  125k-QPS claim (one TPC-H query, 200MB, on 242 vCPU, competitor number
+  ESTIMATED by the vendor) and the Tencent TPC-DS result whose own executive
+  summary carries three mutually inconsistent dates.
+Retire/replace at most 2 bets, per the rule, and set next review 2027-01-01.
+
+## A non-finding worth recording so nobody panics next time
+Three agents' handbacks (frontend, mongodb, mobile) came back to the
+orchestrator as `<persisted-output> Output too large (~50KB)` with only a 2KB
+preview inline. **That truncation is in the ORCHESTRATOR'S VIEW ONLY.**
+`extract_briefs.final_text()` reads the agent's `.jsonl` transcript directly and
+gets the whole `SubagentHandback` payload — verified non-destructively before
+extraction (52,911 / 50,552 / 52,440 raw chars, bodies 52,062 / 49,823 / 51,492).
+No action needed and no `--force` re-run required. Checking this took one
+command and is worth doing whenever a handback is persisted rather than shown,
+because a truncated payload and a truncated display look identical from here —
+and the 09-21 disaster was precisely a parser accepting a truncated input.
+
+## Ledger + curation, edition 079 (2026-09-30)
+**A RECORD 1014 items across 19 topics, and the match rate fell to 15.5%
+(46 exact + 111 fuzzy = 157). I ran the 09-09 diagnostic and it EXONERATED the
+matcher, twice over — so nothing was changed.**
+1. **Length asymmetry: absent.** Today's titles median 125 chars against the
+   dictionary's 112 — a ratio of **1.12**, where the 09-09 pathology was ~2.0.
+   `TITLE_CAP` left at 200.
+2. **Sampled novelty, and the first attempt at this was CIRCULAR — worth
+   recording as a trap.** I first sampled `new` rows against
+   `archive/ledger/keys.json` and every single one came back at jaccard 1.00,
+   which looked like a catastrophic matcher failure. It was not: `ledger.py`
+   runs `stamp()` and WRITES keys.json at the end of its own run, so the
+   dictionary I loaded already contained today's items. **Any post-run
+   comparison against keys.json is self-fulfilling.** Re-ran against the
+   pre-run snapshot (`keys.json.presnapshot`, taken before ledger.py — cheap
+   insurance and the only reason this was recoverable): **11 of 14 genuinely
+   new, 2 borderline, 1 possible miss.** That is the conservative-merge rule
+   behaving as designed.
+=> The low rate is **real novelty**, and today's shape matches the 09-18
+precedent almost exactly (that run also hit ~14% behind MLPerf v6.1, JDK 27 and
+Iceberg). Today: JDK 27 GA, Python 3.15 (tomorrow), Iceberg 1.12.0 GA, MongoDB
+9.0 GA, Debezium 3.7, ClickHouse 26.9, Doris 4.1.4.1, PostgreSQL 19 Beta 4,
+Redshift Patch 205, MLPerf v6.1, SQLAlchemy 2.1, NATS 2.15, Valkey 9.2-rc1,
+OTel Collector 1.68.
+
+**A NEW cause of item-count inflation, and it is self-inflicted in a way I
+endorse.** SHARED_RULES asks agents to "write out your reasoning for not
+flagging", and they did — at length. The extractor cannot tell a news headline
+from a reasoning bullet, so rows like "parquet-java CVE-2026-73334 — not
+flagged.", "PyPI:snowflake-cli → {}, i.e. zero." and "Full-text search became a
+two-vendor race inside Postgres" all count as items. **246 of 897 `new` rows sit
+under a COMMENTARY heading** and are already excluded from `new_more`, but the
+rest inflate the raw count and depress the match rate.
+**Consequence for the board: the Longitudinal "Items" column is NOT comparable
+across editions once the prompt asks for more reasoning prose.** The section
+should say so, the way the "High" column already does. I would rather keep the
+reasoning and lose the comparability than the reverse — the reasoning is what
+lets a reader trust an `ok`.
+
+**Curation: 15 picks, 8 pins, all landed; `new_more` 636 of 897.**
+`EXCLUDE_ONGOING` deliberately left EMPTY — with pins sorting first and the list
+capped at 12, exclusion buys nothing and can only re-create the 09-15/09-29 trap
+where an exclusion deletes the row a pin wants. **The fatal pin guard fired once
+and was right:** I wrote `Apple’s` where the extracted row has a STRAIGHT
+apostrophe (0x27). Fixed by anchoring the substring PAST the apostrophe so the
+quote style cannot matter — a better fix than correcting the character, because
+it removes the whole class. That is the 09-28 quoting trap, third occurrence.
+**Card is 30 of 30 rows sourced**, four links hand-attached (JFrog advisories,
+two Doris oss-security posts, one Snowflake NVD record), each asserted present
+in its own brief before attaching.
+
+## Pages deploy: the 09-21 rule paid off again, measurably
+`deploy` job `completed_at` = **2026-09-30T13:55:20Z**, ~105s after the push
+(13:53:35 start). But `get_workflow_job` was still returning
+`status: in_progress` when polled at ~13:57, i.e. **the API status lagged real
+completion by over two minutes**, and the run-level status read `queued`
+throughout. Polling `status` and firing the spec's 3-minute empty-commit
+re-trigger would have cost a needless Pages build — exactly the 09-12 mistake.
+**Read `completed_at` on the `deploy` job. Not `status`, not the run aggregate.**
+Also re-confirmed: `deploy` does not exist until `build` finishes, so an early
+look showing one job is not a stall.
+One more thing worth recording for the next run: `list_workflow_runs` filtered
+by `branch=gh-pages` + `event=dynamic` returned a STALE page (newest entry
+2026-09-12, run 129 of 175). Querying the workflow by id
+(`resource_id=307758682`) returned the correct newest-first list. **Do not trust
+the filtered listing; query the workflow id.**
