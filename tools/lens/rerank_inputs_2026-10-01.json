@@ -1,0 +1,46 @@
+{
+ "generated": "2026-09-30",
+ "window_start": "2026-07-08",
+ "window_end": "2026-09-29",
+ "ledgers": 83,
+ "theme_volume": {
+  "open-format-internals": 2245,
+  "agent-operable-mcp": 1793,
+  "ai-workload-perf": 1113,
+  "claim-forensics": 886,
+  "memory-economics": 711,
+  "linux-io-observability": 273
+ },
+ "theme_by_month": {
+  "open-format-internals": {
+   "2026-07": 304,
+   "2026-08": 761,
+   "2026-09": 1180
+  },
+  "agent-operable-mcp": {
+   "2026-07": 227,
+   "2026-08": 563,
+   "2026-09": 1003
+  },
+  "ai-workload-perf": {
+   "2026-07": 106,
+   "2026-08": 338,
+   "2026-09": 669
+  },
+  "claim-forensics": {
+   "2026-07": 96,
+   "2026-08": 253,
+   "2026-09": 537
+  },
+  "memory-economics": {
+   "2026-07": 113,
+   "2026-08": 263,
+   "2026-09": 335
+  },
+  "linux-io-observability": {
+   "2026-07": 41,
+   "2026-08": 84,
+   "2026-09": 148
+  }
+ }
+}
