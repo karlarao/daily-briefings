@@ -4337,3 +4337,213 @@ by `branch=gh-pages` + `event=dynamic` returned a STALE page (newest entry
 2026-09-12, run 129 of 175). Querying the workflow by id
 (`resource_id=307758682`) returned the correct newest-first list. **Do not trust
 the filtered listing; query the workflow id.**
+
+## Run findings 2026-10-01 (edition 080) — THE QUARTERLY RE-RANK, executed on its due date
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both
+hooks clean.** Launched 09:23 EDT, all briefs in by ~09:47, dashboard published with the
+Pages `deploy` job verified `success` at 13:52:02Z (67s after the push), lens as artifact
+**v45**. ~3,750k research tokens, 879 extracted items. `artifact-allow.sh` clean for its
+**23rd consecutive unattended run** — exactly four firings (`list`, a `read` with `path`,
+the plain `read` a republish requires, and the publish), **all `PreToolUse`, all
+`mode=auto`, zero `PermissionRequest`**. `bash-allow.sh` 496 firings, 238 allow / 258
+pass, same signature, no compound parked and none started with a `VAR=` assignment.
+
+### THE RE-RANK — done, and the prep note's recommendation was half wrong
+
+It had been flagged as approaching for **eight consecutive editions**. Derived fresh from
+84 ledgers (2026-07-08 → 2026-09-30) and **normalised per ledger-day**, which is the step
+that changed the answer: July is a partial month (23 ledgers against 31 and 30), so raw
+Jul→Sep ratios are inflated ~1.30× uniformly.
+
+    theme                    Jul/d  Aug/d  Sep/d  growth
+    ai-workload-perf           7.0   20.7   37.3   5.37x
+    claim-forensics            6.3   12.7   25.8   4.07x
+    linux-io-observability     2.2    3.7    8.2   3.70x
+    agent-operable-mcp        11.9   21.9   41.8   3.52x
+    open-format-internals     18.7   37.5   63.8   3.40x
+    memory-economics           5.0    9.0   13.0   2.60x
+
+**Outcome: one promoted, one added, zero retired, one held against our own prep note.**
+7 bets (4 compounding / 2 emerging / 1 hedge), next review **2027-01-01**.
+
+- **PROMOTED `agent-operable-tooling-mcp`** emerging → compounding. Second-highest
+  absolute volume on the board and continuous structural evidence.
+- **ADDED `unpatchable-remediation-triage`** [emerging], derived from the same ledgers:
+  no-fix triage (1,010 items, 21.5/day Sep, 4.67×), KEV delinquency (402, 11.7/day,
+  10.38×), scanner-blind advisories (285, 8.3/day, **38×** from a near-zero July base).
+  The no-fix facet alone outranks two existing bets, and nothing covered it.
+- **HELD `memory-economics-capacity-2` at emerging, against the 09-30 prep note**, which
+  pressed to promote it on "the hardest evidence it has ever had". Two reasons. Its
+  normalised trend is the **weakest of all six**. And decisively, **the dbhw lane withdrew
+  both figures that note cited** (below).
+- **Build Radar: zero retired, zero added, statuses unchanged, ONE sharpened.** A re-rank
+  that changes little is a real outcome — the rule permits replacing up to two bets, it
+  does not require it. `ru-manifests-audited-tpc` gains a fix-availability-manifest leg
+  from the measured scanner-blindness trend.
+
+**The 09-30 prep note mis-read its own table, and it is worth recording because the note
+will be read again.** It annotated `agent-operable-mcp` as "steepest climb" at 4.4×. On
+its own numbers `ai-workload-perf` was 6.31× and `claim-forensics` 5.59× — the marker sat
+on the row with the second-highest TOTAL, not the steepest climb. Both steeper bets were
+already compounding, so the promotion conclusion survived; the stated reason did not.
+
+### AN AGENT CORRECTED THE ORCHESTRATOR'S OWN CONTEXT, TWICE — and once it changed a decision
+
+1. **The 09-30 note's two DRAM figures are both wrong.** I passed them to the dbhw lane as
+   context and it checked them against primary quote sources. **"$8,260 for a 64GB RDIMM"
+   does not reproduce** — the most recent dated quote is **$1,630** (2026-09-08), with a
+   four-month series $1,350 → $1,380 → $1,590 → $1,630; the agent's hypothesis, offered as
+   hypothesis, is a CNY quote read as USD (8,260 CNY ≈ $1,160). And **"memory ~35% of
+   server BOM" is too LOW**, not too high: HPE's CEO puts DRAM and NAND together above
+   **50%**. The lane's story is real and arguably *stronger* than we claimed — but a status
+   change resting on two unverified numbers is not a status change. **This is the single
+   most useful result of the run: it changed the re-rank.**
+2. **The Iceberg V4 vote date.** I passed "2026-08-18, superseded from 08-20" and the
+   formats lane went to the primary dev-list mail: the caller's own text says "In July we
+   voted on the direction", so the direction vote was **July 2026, month only**, and
+   neither 08-18 nor 08-20 appears in the thread's history. Also: the spec says
+   **prohibited**, not deprecated, and PR #17783 **merged 2026-09-29**.
+3. The snowflake lane independently re-confirmed the 09-18 finding that the "Supervisor API
+   EOL" item is **not Snowflake's** — it checked four surfaces, found zero hits, and
+   attributed it to Databricks rather than inventing a date.
+
+**Generalisable: put carried context in front of the agents deliberately, because a lane
+with primary sources in hand is the cheapest auditor of the orchestrator's own notes.**
+
+### I DRAFTED TWO CORRECTIONS AND BOTH WERE UNNECESSARY — one would have destroyed provenance
+
+The 09-17 lesson ("check the board before drafting a correction") recurred, harder.
+- **Redshift TLS.** The agent reported "the 09-30 TLS cliff did not happen; it is 10-31",
+  which is true of the world. But the board **already fixed it in edition 071** and split
+  the ODBC end-of-support into its own 2026-12-31 row, with the conflated patch row marked
+  SUPERSEDED in 074. My overwrite would have destroyed provenance the board had earned:
+  that AWS moved that date **with no document-history row, no what's-new post and no anchor
+  change**, and that Google's index still serves "July 30, 2026" from the same page — i.e.
+  the date has moved at least **twice** unannounced. **Reverted; left byte-identical.**
+- **Iceberg V4.** Already undated, and edition 073 already recorded the July-vs-08-18
+  disagreement explicitly. Narrowed to an **append** that settles it, with an assertion
+  that the prior text is preserved verbatim.
+**The sharper form of the rule: an agent reporting the world correctly is not evidence the
+board is wrong. "Already handled" is the common case at 80 editions.**
+
+### Verification work worth repeating
+
+- **Every KEV anchor verified against the CISA catalog itself** (version 2026.09.30, 1,730
+  entries), not against the previous edition's arithmetic. All **nine** past-due figures
+  match `daycounts` exactly. The 09-30 note built `daycounts` to derive the count from the
+  row's own anchor; this closes the loop by confirming the **anchors**, so a right-looking
+  count derived from a wrong anchor cannot hide. `knownRansomwareCampaignUse` is "Unknown"
+  for all nine — no row should claim ransomware association.
+- **The ingress-nginx board contradiction was a FALSE conflict.** The board held both "no
+  fix possible" and "fixed in 1.13.9". Both are true: controller v1.13.9 / v1.14.5 /
+  v1.15.1 all exist, all published **2026-03-19**, the project's final releases, and the
+  README says maintenance ran "until March 2026" with no further security updates after.
+  Edition 079's "Sources now conflict" framing was the wrong diagnosis. Folded 3 → 1.
+
+### Tooling notes
+
+- **`rewrite_identity` DOES now cover the runbar's Edition and Generated spans** — the
+  09-18 note says it provably changed nothing there, and that is **stale** for the
+  main-track union `lens_guard`. Measured directly. What it still does not touch is
+  `Inputs`, `Run tokens` and `Skills review`; the last matters today because the re-rank
+  moves it. Rewrote those three with anchored `subn` count checks and read all six back.
+- **`assert_not_parent_identity` flags the form its own docstring blesses.** The docstring
+  says "vs edition 079" is correct; the regex `edition 079 ·` cannot see the `vs ` prefix,
+  so my `v-wn` chip "vs edition 079 · quarterly re-rank" failed the build. The guard is
+  protecting a real class (the 09-20 drift), so I reworded to "vs 079" rather than loosen
+  it. **For the next run: add `(?<!vs )(?<!from )` so it implements its own docstring.**
+- **`build.py --synthesis` takes RAW MARKDOWN, not JSON.** I wrote `{"synthesis": "..."}`
+  and the encoding assertion correctly caught the literal `\n` escapes. The guard worked
+  exactly as designed, on my error.
+- **`apply_harness_tokens.py` takes harness FIRST, sections second.** Reversed args give a
+  confusing `TypeError`; not a bug.
+- **The patch-radar pin list had two keys that do not exist** (`starlette-badhost-kev-no-0x-backport`,
+  `angular-19-eol-unpatched-ssr`); the real ones are `starlette-badhost-48710-kev` and
+  `angular-v19-permanent-eol-unpatched`. Made a bad pin **fatal** rather than a warning.
+- **The no-fix register needed hand-auditing, not a regex.** My first predicate matched
+  'unpatched'/'enterprise' inside unrelated `due` values and returned 23 against a true
+  **22**, and it wrongly counted `'no fix path via scanners'` — which is scanner blindness,
+  not a missing fix. Read all 66 non-ISO `due` values and carved it out explicitly.
+- **Event Horizon needed a window.** 87 rows is a list, not a horizon; capped to −14..+60
+  days (71 rows) with 16 outside the window kept in the ledger.
+- **`event=dynamic` + branch on `list_workflow_runs` returned stale rows** (newest was
+  09-12 against 174 total). Dropping the event filter returned the correct newest run.
+  Use the branch filter alone.
+
+### Ledger, folds and curation
+
+- **Step 4c: 879 items, 42 exact + 110 fuzzy = 152 merges, 0 double-counted.** Tally guard
+  bumped 152, guarded 0. Dictionary 28,092 → 28,819. Match rate 17.3%, in band, and the
+  09-09 length diagnostic **exonerated the matcher again** (today 126 chars median against
+  the dictionary's 98 = ratio **1.29**, where the pathology was ~2.0) so nothing was changed.
+- **patch 158 → 148 and claims 175 → 171**, hand-verified, every loser in the survivor's
+  `aliases[]`, `assert_alias_safe` clean on seven sections. **Four proposed groups were
+  DECLINED and recorded in `fold_map_080`'s docstring** so the next run does not re-propose
+  them — notably the two `postgres-mcp` rows, which are *different products*
+  (crystaldba vs awslabs), and the two JFrog rows, which are distinct KEV entries with
+  distinct due dates.
+- **The claims cluster held two live self-contradictions**, not just duplicates: the board
+  asserted both "2026_06 auto-enable STILL undated — SEVENTH consecutive edition" and
+  "RESOLVED: now Enabled by Default". And one loser key, `snowflake-2026-06-still-disabled-sep4`,
+  **encoded the opposite of its own text** — a slug that lies about its contents is worse
+  than a duplicate, because a probe by key finds the wrong answer.
+- **Curation: 12 picks, 6 pins, all landed, zero cross new/ongoing story overlap** (checked
+  by shared CVE id — the 09-18 defect). Six rows got `[src]` by hand from URLs already
+  cited in those same briefs; 30 of 30 rows sourced.
+- **Guard 5 passed on the FIRST assembly: 737 cited units, zero uncited.** Mechanism
+  unchanged since 09-15 — `cite()` called inline by each row generator.
+
+### Flag calibration: 11 urgent, 10 distinct stories
+
+App Dev and DevOps both flagged JFrog (the 061-style overlap). Every flag audited
+individually; the full per-lane audit with discrimination evidence is in the session.
+Highlights of the *declining* side, which is where the calibration shows: Fabric declined a
+**CVSS 10.0** on MSRC `Customer Action Required: No` (fourth consecutive edition);
+MongoDB declined its own **CVSS 9.2 auth-disabled** flaw because it is patched and CISA's
+SSVC says `exploitation: none`, and refused to claim "no fix for a supported population"
+for 8.2 because MongoDB's CNA record does not list 8.2 as affected; AI Hardware parsed the
+whole KEV catalog and found **no NVIDIA, AMD or Intel accelerator entry at all**; BigQuery
+declined its always-on `execute_sql` as "your next access review, not your pager".
+
+**AI Hardware independently re-verified the NVIDIA PSIRT false alarm** — fetched both
+surfaces, confirmed the "will run in parallel" clause verbatim, and **recorded the
+verification rather than re-raising the alarm**. Third consecutive edition the retirement
+holds, and the first where a fresh stateless agent got there unprompted. **Keep that row
+on the board with its reasoning attached — it is what made this work.**
+
+### Scope, stated plainly
+
+Edition 080 refreshes **Skills Radar and Build Radar across all four chairs** (the
+re-rank), Today's Read on all four chairs, Since yesterday, Event Horizon, Patch-Risk
+Radar, Longitudinal, the ledger and all seven identity sites. Claim Watch, Mirror, Question
+Forecast, Gap Ledger, Perf Signals, Benchmark Scoreboard, Promise Tracker and Vendor
+Dossiers **carry forward from 079 and the edition says so on its face**. Output is
+**+8,332 bytes**, fully accounted: v-skills +4,060 (7 bets, up from 6), v-read +3,898,
+v-events +1,689, v-longitudinal +975, v-build +350, against v-patch −5,175 (the 10-row
+fold), v-wn −1,277 and lensLedger −6,468 (14 rows folded out), with povContent +10,307 for
+four chairs' refreshed bodies; residue −27 bytes.
+
+### Source access
+
+`blogs.oracle.com` 403s HTML *and* RSS for a **twelfth** consecutive week, and the Oracle
+lane verified that Noveljic (last post 2025-07-14), Houri (2023-02-05) and Hoogland
+(2021-04-09) are genuinely dormant rather than blocked. Its framing is the one to carry:
+CBO / In-Memory / Smart-Scan behaviour across RUs is now "effectively unobservable from
+outside MOS" — a change in the information environment, not a quiet quarter. New:
+`hpcwire.com` bodies 403 both routes but `hpcwire.com/feed/` serves **full** article bodies
+and pages back a month; `jedec.org` 403s both routes; `chinaflashmarket.com` carries dated
+DDR5 RDIMM quotes; `phoronix.com` bodies are Cloudflare-403 but `rss.php` works.
+**WebSearch never bound for any lane** — fourth consecutive run; keep the launch order.
+
+**Security sweep, negative result — twelfth consecutive run, and the method improved.** The
+Redshift agent fetched both variants of `behavior-changes.html` and `cluster-versions.html`
+and grepped all four for every marker: zero hits. Its framing is better than byte-matching
+and should replace it: behavior-changes grew **+1,278 bytes markdown AND +1,454 HTML**,
+gaining exactly one heading in **each** variant, accounted for by the new paused-producer
+section — "**an agent-only injection grows the markdown without growing the HTML, and that
+is not what happened here. The symmetry is the test.**" No fetched page's suggestion was
+executed and no skill file was loaded by any agent. Affordance sightings keep widening:
+`oracle/skills` plus SQLcl 26.3's `skills sync` writing into Claude, Codex *and* Copilot
+directories in one command, and Fabric's "Govern Skills" advertising itself to coding
+assistants through the OneLake catalog.
