@@ -1,0 +1,178 @@
+# -*- coding: utf-8 -*-
+"""Edition 080 Today's Read, all four chairs. Navigation claims about THIS
+edition's own board use the dated public-archive fallback, because a vendor URL
+would be a wrong link (the 09-17/09-18 rule)."""
+import os as _os
+# Resolve sibling modules relative to THIS file so a future run can import these
+# from tools/lens/ instead of from one session's dead scratchpad. The original
+# build ran with absolute scratchpad paths; that is what made edition 079's
+# sections_079.py unusable as anything but a transcript.
+_HERE = _os.path.dirname(_os.path.abspath(__file__))
+_SP = _os.environ.get("LENS_SCRATCH", _HERE)
+import sys
+SP = _SP
+sys.path.insert(0, SP + "/tools/lens")
+from lens_links import cite
+TODAY = "2026-10-01"
+A = lambda: cite(None, TODAY)
+
+SCOPE = ('<div class="scope"><b>Scope of this edition, stated on its face.</b> Refreshed at full '
+ 'depth: <b>Skills Radar and Build Radar across all four chairs</b> (the quarterly re-rank, which '
+ 'is this edition\'s reason to exist), Today\'s Read on all four chairs, Since yesterday, Event '
+ 'Horizon, Patch-Risk Radar, Longitudinal, the embedded ledger and every identity site. '
+ '<b>Carried forward from edition 079 unrevised:</b> Claim Watch, Mirror, Question Forecast, Gap '
+ 'Ledger, Perf Signals, Benchmark Scoreboard, Promise Tracker and Vendor Dossiers. The depth went '
+ 'into the re-rank and into paying down the patch and claims duplication backlog. ' + A() + '</div>')
+
+ORACLE_READ = SCOPE + (
+ '<p class="lede">Eleven of nineteen lanes flagged urgent, and the day has one shape: <b>the gap '
+ 'between a fix existing and you being able to get it, or even see it</b>. That is now a '
+ 'competitive argument rather than an industry grumble, because it is measurable in three '
+ 'directions at once &mdash; advisories published long after their fixes, advisories that no '
+ 'scanner indexes at all, and fixes that carry no identifier. ' + A() + '</p>'
+ '<p>The item a customer will quote first is not ours and it is not comfortable: <b>CVE-2026-21962 '
+ 'is 35 days past its CISA KEV due date at CVSS 10.0</b>, unauthenticated and scope-changing, with '
+ 'forensic-triage obligations attached. The new fact this run &mdash; which the board did not have '
+ 'before and which changes the conversation &mdash; is that the fix ships <b>only in the January '
+ '2026 CPU</b> and is <b>absent from the June, July, August and September advisories</b>, '
+ 'established by grepping all five. So a customer who has diligently applied every monthly CSPU is '
+ 'still exposed, and nothing we publish tells them that. Expect to be asked about it; the honest '
+ 'answer leads with the patch line, not with the CVSS. ' + A() + '</p>'
+ '<p>Against that, the strongest material we gained today is about <i>everyone else\'s</i> '
+ 'vulnerability metadata, and it is unusually hard evidence. <b>Fifteen September advisories across '
+ 'containerd, BuildKit and Docker Engine carry CVE ids in the vendors\' own release notes and return '
+ '404 from NVD, OSV and GitHub\'s global Advisory Database</b> &mdash; and the mechanism is proven '
+ 'rather than inferred, because promoted siblings from the same projects resolve normally. Five '
+ 'Snowflake driver CVEs are filed with <code>package: null</code> so no lockfile query finds them. '
+ 'Redis fixed an ACL bypass and an unauthenticated cluster bus with <b>zero CVE ids</b>. A customer '
+ 'asking &ldquo;why does my scanner say we are clean&rdquo; now has three separate answers, none of '
+ 'them ours. ' + A() + '</p>'
+ '<p>Two things closed, and a resolved item is worth as much as a new flag. <b>Aurora PostgreSQL '
+ 'finally shipped the 28-CVE batch on 2026-09-29 at a measured 47-day lag</b> behind community, of '
+ 'which 35 days were Aurora-specific against RDS\'s 12 &mdash; the &ldquo;managed is not '
+ 'patched&rdquo; line keeps its number but loses its open wound. And <b>Percona shipped</b> the '
+ 'MongoDB auth-bypass fix, closing a two-week window. Both leave the board, and the measured lag is '
+ 'the durable finding. ' + A() + '</p>'
+ '<p>One correction is about our own discipline rather than the market. I drafted two date '
+ 'corrections today from an agent\'s framing and <b>both were unnecessary</b>: the board fixed the '
+ 'Redshift TLS date in edition 071 and split the ODBC end-of-support into its own row, and recorded '
+ 'the Iceberg vote-date disagreement in edition 073. Overwriting the Redshift row would have '
+ 'destroyed provenance the board had earned &mdash; that AWS moved that date with no '
+ 'document-history row and no announcement, twice. <b>Check the board before drafting a '
+ 'correction</b> is a rule this edition had to relearn. ' + A() + '</p>'
+ '<h3>Where to spend today\'s attention</h3><ul>'
+ '<li><b>Skills Radar &mdash; the quarterly re-rank is done</b>, eight editions after it started '
+ 'being flagged as approaching. One promotion, one addition, one deliberate hold against our own '
+ 'prep note, zero retirements. Read the hold: both figures the 09-30 note cited to justify '
+ 'promoting memory economics were withdrawn today. ' + A() + '</li>'
+ '<li><b>Build Radar &mdash; <code>agent-native-hardened-mcp</code> is now the highest-conviction '
+ 'bet on the board</b> and still white-space, which is the whole point. Of 104 MCP CVEs published '
+ 'in September three are CVSS 10.0, and the window\'s worst unfixed data-layer vulnerability is '
+ 'itself in a Postgres MCP server. ' + A() + '</li>'
+ '<li><b>Patch-Risk Radar &mdash; the no-fix register is 22 rows</b>, counted off the '
+ '<code>due</code> field rather than from prose. A fourth no-fix mechanism appeared today: Vercel '
+ 'cut a critical and a high from its release as &ldquo;pending upstream coordination&rdquo;, so no '
+ 'fix exists for <i>anyone</i>, and with no CVE id nothing can see them. ' + A() + '</li>'
+ '<li><b>Event Horizon &mdash; the October wall.</b> Snowflake retires two Cortex models on 10-14 '
+ 'with hard failure and no reroute; the Snowsight host move lands 10-16 with no opt-out; our own '
+ 'October CPU is 10-20. ' + A() + '</li>'
+ '</ul>')
+
+def _sim(seat, body):
+    return ('<div class="simbanner"><b>SIMULATED CHAIR &mdash; %s.</b> How a performance engineer in '
+            'this seat would read today, from public sources only. Not this vendor\'s roadmap. %s</div>'
+            % (seat, A())) + SCOPE + body
+
+SNOWFLAKE_READ = _sim("Snowflake", (
+ '<p class="lede">Your own lane is the cleanest illustration on the board of a problem everyone '
+ 'has: <b>all five of your September driver CVEs are invisible to your customers\' scanners</b>. '
+ 'They sit in OSV with <code>package: null</code>, GIT ranges only and no GHSA alias, so a query '
+ 'for <code>snowflake-connector-python</code> returns fourteen vulnerabilities and not one of the '
+ 'five. The mechanism is proven, not alleged: your OLDER advisories do carry proper ecosystem '
+ 'ranges and were all re-stamped <code>modified: 2026-09-10</code>, so enrichment arrives months '
+ 'late. Expect a customer to discover this and ask why. ' + A() + '</p>'
+ '<p>Worse for the conversation: your <b>minimum supported Python connector (3.12.3) sits below the '
+ 'version that fixes a CVSS 9.2 hostname-verification bypass</b>. The support floor is beneath the '
+ 'security floor, and that is a sentence a competitor can read aloud. ' + A() + '</p>'
+ '<p>The hard deadline is yours too and it is thirteen days out: <b><code>claude-4-sonnet</code> and '
+ '<code>openai-gpt-4.1</code> reach Cortex end-of-life on 2026-10-14</b>, and your own lifecycle doc '
+ 'says calls naming them <i>fail</i> for every account regardless of prior usage. No reroute. '
+ 'Against that, your fifteen other legacy models carry only &ldquo;no sooner than&rdquo; &mdash; a '
+ 'commitment floor, not a schedule, and worth defending as the distinction it is. ' + A() + '</p>'
+ '<p>And bundle 2026_06 is live in accounts now, which means Query Acceleration is on for every new '
+ 'standard warehouse at <b>scale factor 8, up from 2</b>, spending separately-metered serverless '
+ 'credits &mdash; while a customer watching only the feature feed saw no warehouse news at all this '
+ 'month. That asymmetry between the two feeds is the thing to fix before someone writes it up. '
+ + A() + '</p>'
+ '<h3>Where to spend today\'s attention</h3><ul>'
+ '<li><b>Skills Radar:</b> bundle forensics stays the defining skill in this seat, and this month is '
+ 'the proof. ' + A() + '</li>'
+ '<li><b>Build Radar:</b> driver CVE manifests, sharpened on your own worst finding. ' + A() + '</li>'
+ '<li><b>Patch Radar:</b> your scanner-blindness row is the one carried as "no fix path via '
+ 'scanners" &mdash; deliberately excluded from the no-fix register, because it is a visibility '
+ 'failure, not a missing patch. ' + A() + '</li></ul>'))
+
+DATABRICKS_READ = _sim("Databricks", (
+ '<p class="lede">Two of your own cutovers landed inside twenty-four hours, and one of them is a '
+ 'migration you should not have shipped as a deprecation. The <b>Agent Bricks Supervisor API '
+ 'reached end of life yesterday</b>, and the path off it is a <b>rewrite</b>: you now write the '
+ 'agent loop yourself in <code>agent.py</code> on Databricks Apps, re-implementing managed tool '
+ 'execution, background mode and MCP approval gating. Calling that a deprecation understates it by '
+ 'a sprint. ' + A() + '</p>'
+ '<p>The naming trap is the part that will generate support load: the declarative Supervisor '
+ '<i>Agent</i> is <b>not</b> retiring &mdash; only the <i>API</i> &mdash; and a customer who misses '
+ 'that distinction panics about the wrong product. Your own doc carries both names on the same '
+ 'page. ' + A() + '</p>'
+ '<p>The second cutover is a bill, not a break: <b>every remaining Azure Standard-tier workspace '
+ 'force-upgrades to Premium today</b> with no opt-out. Premium is a superset so nothing is lost '
+ 'functionally, which means the entire exposure is cost &mdash; and your own documentation says to '
+ 'price it. Customers who treated Standard as the cheap tier will notice in November. ' + A() + '</p>'
+ '<p>Your strongest card today is governance shape, and it is worth playing: <b>UC Skills as a '
+ 'securable governed by VOLUME privileges</b> is the best-formed agent-privilege primitive on the '
+ 'board this month. Set it against BigQuery, whose MCP server is enabled whenever the BigQuery API '
+ 'is and ships an unrestricted <code>execute_sql</code>, with its one org-policy control dead since '
+ 'March. ' + A() + '</p>'
+ '<p>One quiet default is worth surfacing before someone else does: <b>auto-optimized shuffle v2 is '
+ 'on by default in DBR 19 with no supporting documentation anywhere</b>. That is exactly the class '
+ 'of change a per-runtime manifest would surface, which is why the Build Radar bet carries it. '
+ + A() + '</p>'
+ '<h3>Where to spend today\'s attention</h3><ul>'
+ '<li><b>Build Radar:</b> lifecycle contracts for agent platforms &mdash; you just demonstrated the '
+ 'gap yourself. ' + A() + '</li>'
+ '<li><b>Skills Radar:</b> unpatchable-remediation triage is new, and in this seat the facet that '
+ 'bites is the long tail of pinned runtimes. ' + A() + '</li>'
+ '<li><b>Event Horizon:</b> your next wall is 10-30 through 11-18 &mdash; model retirements, the '
+ 'Genie Beta MCP sunset, the partner-AI toggle and variant shredding. ' + A() + '</li></ul>'))
+
+BIGQUERY_READ = _sim("BigQuery", (
+ '<p class="lede">You shipped <b>nothing</b> for the query engine or the cost model this month, and '
+ 'it is measurable: across 22 release-note entries in the window, keyword counts of <b>zero</b> for '
+ 'slot, autoscaling, quota, pricing, BI Engine, materialized, vector, TreeAH, partition, cluster '
+ 'and Omni. For a performance engineer that is the headline. Meanwhile the surface that <i>writes</i> '
+ 'to the warehouse grew <b>four MCP servers</b>. ' + A() + '</p>'
+ '<p>That asymmetry is the whole of today\'s exposure in this seat, and it is the widest on the '
+ 'board. Between them those servers expose arbitrary SQL including DDL, transfer configs that can '
+ 'name a service account, <b>Git pushes to the customer\'s own repositories</b>, and the full '
+ '<code>bq</code> CLI including reservation management. Everything executes as the calling '
+ 'principal, which is the right design. The problem is the control surface: the only purpose-built '
+ 'lever is an IAM deny policy on <code>tool.isReadOnly</code>, the server is enabled <b>whenever the '
+ 'BigQuery API is</b>, <code>tools/list</code> needs no authentication at all, and the one '
+ 'org-policy control &mdash; <code>gcp.managed.allowedMCPServices</code> &mdash; <b>stopped working '
+ 'in March, before the servers shipped</b>. ' + A() + '</p>'
+ '<p>Your genuinely strong card is one no scanner can see, and that is both the point and the '
+ 'opportunity: your only Critical this window was <b>patched server-side on 2026-05-01 with no '
+ 'customer action required</b>, 153 days before today, and it is absent from KEV. That is a better '
+ 'outcome than any other chair can claim &mdash; and completely invisible. Publishing '
+ 'machine-readable &ldquo;patched on DATE, no action required&rdquo; attestations would convert it '
+ 'from a claim into evidence. ' + A() + '</p>'
+ '<p>The one real engineering win is worth naming: <b>MERGE, UPDATE, DELETE and EXPORT execution '
+ 'steps are now visible in query plans</b>. Upsert plans were opaque, which made shuffle and '
+ 'pruning problems guesswork. That is the most useful change in the month for anyone tuning DML. '
+ + A() + '</p>'
+ '<h3>Where to spend today\'s attention</h3><ul>'
+ '<li><b>Build Radar:</b> the governed agent surface is the widest gap on the entire board in this '
+ 'seat. ' + A() + '</li>'
+ '<li><b>Skills Radar:</b> your facet of unpatchable triage is the mirror image &mdash; knowing when '
+ '<i>not</i> to act, because the fix already landed server-side. ' + A() + '</li>'
+ '<li><b>Event Horizon:</b> TabFM token pricing on 10-30, where training rows are re-billed on '
+ 'every prediction query. ' + A() + '</li></ul>'))

@@ -123,6 +123,28 @@ _TAIL = re.compile(
     r"\b[:\s*]", re.I)
 
 
+def _cut_chatter(body, pattern):
+    """Cut caller-directed chatter off the end of a brief -- but refuse a cut
+    that would remove more than half of it.
+
+    2026-09-26/09-30: the TAIL shapes ("Environment notes", "Notes for the
+    run owner") can legitimately appear EARLY in a brief, and an unguarded
+    cut then silently truncates the whole thing. A strip that eats >50% is
+    far more likely a false positive than a real sign-off, so keep the body
+    and say so on stderr rather than shipping a stub.
+    """
+    m = pattern.search(body)
+    if not m:
+        return body
+    kept = body[:m.start()].rstrip()
+    if len(kept) < 0.5 * len(body):
+        print("warn: refusing chatter strip at offset %d -- would cut %d of %d "
+              "chars (>50%%); keeping full body"
+              % (m.start(), len(body) - len(kept), len(body)), file=sys.stderr)
+        return body
+    return kept
+
+
 def _split_trailing_contract(txt):
     """Trailing-contract shape: <brief> ... \nSTATUS: ok\nFLAG: ...
 
@@ -150,9 +172,7 @@ def _split_trailing_contract(txt):
     body = re.sub(r"(?:\n\s*-{3,}\s*)+\Z", "", body).rstrip()
     # caller-directed chatter can also land ABOVE the status block; strip it
     # with the same shape-matching rule the header-contract parser uses.
-    mt = _TAIL.search(body)
-    if mt:
-        body = body[:mt.start()].rstrip()
+    body = _cut_chatter(body, _TAIL)
     if status != "urgent":
         flag = ""
     return status, flag, body
@@ -206,9 +226,7 @@ def split_contract(txt):
         r"|Caller report"
         r"|Environment notes?(?:\s+(?:to|for)\s+(?:the\s+)?\w+(?:\s+\w+)?)?)"
         r"\b[:\s*]", re.I)
-    mt = TAIL.search(body)
-    if mt:
-        body = body[:mt.start()].rstrip()
+    body = _cut_chatter(body, TAIL)
 
     if status != "urgent":
         flag = ""

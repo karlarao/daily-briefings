@@ -173,3 +173,47 @@ def assert_alias_safe(new_rows: list, parent_rows: list, label: str) -> None:
     missing = [p["k"] for p in parent_rows if p["k"] not in have]
     if missing:
         raise SystemExit(f"{label}: {len(missing)} parent keys vanished: {missing[:5]}")
+
+
+def probe_story(new_row: dict, parent_rows: list, warn=print, limit: int = 8) -> list:
+    """ADVISORY, complementary to reuse_key: probe the board BY STORY, not by date.
+
+    Why this exists (measured 2026-09-29): of six drafted patch rows that run,
+    FIVE were already tracked -- JFrog, containerd, PgBouncer, Doris and MongoDB
+    CVE-2026-82067 -- and *none of those five was date-keyed*, so `reuse_key`'s
+    same-date advisory could not have surfaced any of them. They were found only
+    by reading the board. Two more on 09-28 (Next.js advisories, Gemini preview
+    endpoints) were missed by the date advisory for the same reason: the drafted
+    date differed from the parent row's.
+
+    So the practical rule the notes converged on -- "draft the row, then probe
+    the board by story AS WELL AS by date, before minting a slug" -- needs a
+    mechanism, not just discipline. This is it.
+
+    Ranking is deliberately crude and RECALL-oriented: a hard identifier in
+    common (CVE/GHSA id, dotted version, bundle id) is near-proof of the same
+    story and sorts first; otherwise content-token overlap. It NEVER decides --
+    it prints candidates for a human to read, exactly like reuse_key. Silence is
+    the bug.
+    """
+    t = new_row.get("t") or ""
+    k = new_row.get("k") or ""
+    mine_ids = hard_ids(t) | hard_ids(k)
+    mine_tok = toks(t)
+    scored = []
+    for p in parent_rows:
+        pt = (p.get("t") or "") + " " + (p.get("k") or "")
+        shared = mine_ids & hard_ids(pt)
+        j = jac(mine_tok, toks(p.get("t") or ""))
+        if shared:
+            scored.append((2.0 + len(shared), sorted(shared), j, p))
+        elif j >= 0.30:
+            scored.append((j, [], j, p))
+    scored.sort(key=lambda r: -r[0])
+    if scored:
+        warn("  [probe_story] %d candidate(s) may already track %r:"
+             % (len(scored), k))
+        for _, shared, j, p in scored[:limit]:
+            why = ("ids=" + ",".join(shared)) if shared else ("jaccard=%.2f" % j)
+            warn("      %-52s %-22s %s" % (p["k"][:52], why, (p.get("t") or "")[:60]))
+    return [p for _, _, _, p in scored[:limit]]
