@@ -4547,3 +4547,192 @@ executed and no skill file was loaded by any agent. Affordance sightings keep wi
 `oracle/skills` plus SQLcl 26.3's `skills sync` writing into Claude, Codex *and* Copilot
 directories in one command, and Fabric's "Govern Skills" advertising itself to coding
 assistants through the OneLake catalog.
+
+## Run findings 2026-10-02 (edition 081)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:23 EDT, briefs in 09:40–09:52, dashboard published with the Pages `deploy`
+job verified `success` at 13:54:03Z (28s after the push), lens as artifact **v46**.
+`artifact-allow.sh` clean for its **24th consecutive unattended run** — exactly four firings
+(`list`, a `read` with `path`, the plain `read` a republish requires, and the publish), **all
+`PreToolUse`, all `mode=auto`, zero `PermissionRequest`**. `bash-allow.sh` 418 firings, same
+signature, nothing parked. **~3,850k research tokens, a record** (prior high ~3,750k on 10-01),
+931 extracted items.
+
+### THE FINDING THAT MATTERS MOST: I seeded a claim into two lanes and one of them laundered it back
+
+I put the same carried claim into BOTH the appdev and devops prompts: *"patching alone is not
+enough — the Access token signing key must be rotated"* (JFrog). **appdev went to the vendor
+advisory and reported a primary-source NEGATIVE** — the words "rotate", "revoke" and "signing
+key" appear nowhere in JFrog's remediation text; what it actually prescribes is upgrade, and *if
+you cannot upgrade quickly*, set `additionalJoinKeys` and restart the Access service, a
+**pre-upgrade workaround** whose purpose is to stop rogue **service registration**. **devops
+repeated my framing back to me as if corroborating it.** Two lanes, one claim, one audit and one
+echo.
+**Generalisable, and it cuts against the 10-01 note rather than with it:** that note said "put
+carried context in front of the agents deliberately, because a lane with primary sources is the
+cheapest auditor of the orchestrator's own notes." True — and the other half is that **seeding
+the same assertion into two lanes manufactures false corroboration.** Seed carried context as a
+**question** ("verify whether X"), never as a statement. The dbhw DRAM audit is the same shape
+with a happier ending.
+**And the board was right all along.** It already carried all four JFrog KEV entries including
+CVE-2026-66384, and it already declined the rotation claim in favour of Wiz's observed-exploitation
+framing. So appdev corrected **my prompt**, not the board — the 10-01 lesson ("an agent reporting
+the world correctly is not evidence the board is wrong") applied to my own notes.
+
+### Day counts: derive from the row's own anchor, because one was WRONG not merely stale
+
+Recomputing four KEV counts from each row's own `dueDate` caught one that was **wrong**, not
+stale: CVE-2026-66384 read "26 days past" against a 2026-09-10 anchor that gives **22**. The
+others were ordinary staleness (21962 35→36, JFrog 82329 26→27, 42016/42018 6→7, WSO2 4→5). The
+09-30 `daycounts` idea and the 10-01 anchor verification together are what make this cheap —
+**assert the stated count equals `today − anchor` rather than incrementing yesterday's number.**
+Also found: the parent's **runbar said "34d" while its own patch row said "35d"** for 21962 — two
+identity-adjacent figures disagreeing inside one published edition. 081 drives the runbar flag
+and the rows from one source.
+
+### `assert_not_parent_identity` is still incomplete, one step further than 10-01 found
+
+The 10-01 note added `(?<!vs )(?<!from )(?<!ed\. )` so the guard would stop failing legitimate
+backward references. It failed again today on **"Diffed against edition 080"** — as plainly a
+backward reference as "vs edition 080". Added `(?<!against )`, self-tested six cases (a bare
+`edition 080 · …` self-assertion still raises). **Landed on main.** The lesson is not the regex:
+it is that a guard whose docstring blesses a *class* of phrasing needs its lookbehind set driven
+from that class, or it will keep failing correct prose one preposition at a time.
+
+### FOUR GUARD FUNCTIONS CLAUDE.md CLAIMED WERE LANDED WERE NOT ON MAIN
+
+main's `tools/lens/lens_guard.py` had **17 functions and none of** `rewrite_pov_meta` (09-20),
+`normalize_closing_tags` (09-20), `assert_not_parent_identity` (09-30/10-01) or `daycounts`
+(09-30). They only ever lived in session scratchpads, so the drift classes they exist to catch
+were unguarded again. Re-implemented all four with self-tests and **landed on main (21 defs)**.
+Confirmed genuinely present and correct on main: `rewrite_identity` **does** cover the runbar
+spans. **The habit that caught this: after staging tooling from main, grep it for the thing
+yesterday's note claims is in it.** A note saying "landed" is a claim about a merge.
+
+### An explicit retirement is not an omission, and the alias check could not tell
+
+`assert_alias_safe` failed with "26 parent keys vanished" — correctly, by its own logic. But
+those 26 events left by the **explicit date-passed retire rule** and are recorded in
+`retired_events`. Guard 2's intent (no row leaves by omission) is satisfied; the guard just
+cannot see a deliberate exit. Ran it against *parent minus keys retired today* and all seven
+sections passed. **If the alias check is ever promoted, teach it to read `retired_events` —
+otherwise every edition that retires a past-dated row trips a guard that is not actually unhappy.**
+
+### Flag calibration: 11 urgent, and I DOWNGRADED one at the agent's own invitation
+
+The MongoDB agent returned `urgent` but did something no agent has done before: **it wrote out
+the case for both statuses and explicitly handed the call to the orchestrator.** I downgraded it
+to `ok`. Reasoning, recorded so it is auditable: its strongest card was "Mongoid ≤7.5 is
+unpatched for an unauthenticated CVSS 9.2", but the remediation is a bump to **7.6.2 within the
+same major line** — the agent itself calls it cheap — and the 7.6 branch is supported to
+2026-12-31. Nothing is in KEV, CISA's SSVC says `exploitation: none`, and the nearest day-precise
+date is 28 days out. Contrast the three lanes kept urgent on that same limb: Doris (project
+states archived branches get no security patches *ever*), Angular ≤19.2.25 and Next.js 13/14
+(vendor says "will not be patched"), and the kernel bug (Red Hat `Fix deferred` — nothing to
+install at all). **Those are "no fix exists for somebody"; a cheap in-major bump is not.** The
+scanner-blindness finding loses nothing by the downgrade — it is the lane's best work and ships in
+the brief either way — but **discoverability is not in the urgent definition, and stretching it
+to cover that would make the flag mean "important" instead of "act now".** A downgrade on the
+rule, not trimming to a number: ten other lanes stayed urgent and an eleventh was added.
+**Keep inviting agents to hand borderline calls up with both cases written out.** It cost nothing
+and made the decision reviewable.
+
+### Cross-lane hand-off worked, unprompted and at zero cost
+
+aidaily returned `ok` but flagged the GitHub Actions `macos-14` brownouts (3 days out, jobs
+*fail*), declined to flag its own lane because CI runners are out of scope, **named DevOps as the
+owner and said it would rather I double-flag than lose it.** DevOps independently found it and
+flagged it as one of six act-now items. No double-flag needed. nl2sql did the same for BigQuery
+(`AI.KEY_DRIVERS` GA is the exact condition a paper in its own window says breaks exact-result SQL
+evaluation). **An agent declining an out-of-scope item and naming the owning lane is the
+behaviour to keep.**
+
+### Measurement failure was the day's actual story, measured six independent ways
+
+Six lanes separately queried OSV/NVD for real advisories and got nothing: containerd's Critical
+checkpoint-restore flaw (which *now has* CVE-2026-95837 — the board's "no CVE id" note is stale,
+found by two lanes), ten BuildKit advisories, Parquet CVE-2026-73334 absent entirely, every
+Snowflake driver CVE with `package: null`, all seven CPython fixes, Spring CVE-2026-59313 with no
+affected range six weeks after disclosure, and **zero NVIDIA/AMD accelerator CVEs in either
+database**. Severity disagreed with itself on five records, and the Spring seven-point gap finally
+has a cause: **vendor vs CISA-ADP secondary assessment**, not vendor vs NVD. Red Hat scored silent
+data loss `C:N/I:N/A:H`.
+
+### Corrections applied to the ledger before any section was generated
+
+- **The kernel row read as FIXED.** It said "FIXED 2026-09-21 … 6.6 LTS still has none"; the
+  vendor trackers say Red Hat is `Fix deferred` for **both RHEL 9 and RHEL 10** and Ubuntu marks
+  **24.04 LTS `needed`**. Upstream-fixed is not fixed-for-you, and the exposed 6.6→7.2 band is
+  where most 2026 production database servers live.
+- **Iceberg V4's direction vote, corrected a third time and finally day-precise from the
+  primary: 2026-08-12** (dev-list mail-archive msg14669) — not 08-18, not 08-20, and not the
+  10-01 note's "July, month only". And there are **two** votes: the 08-12 direction vote and a
+  separate `[VOTE][SPEC]` (09-23→09-28, 4 binding / 5 non-binding) which is the one that gated
+  PR #17783's merge on 09-29. Still undated: V4 "has not been formally adopted".
+- **Two THP data-loss CVEs deliberately NOT folded** — CVE-2026-97945 (`pmd_modify`) and
+  CVE-2026-68086 (`collapse_file`) are different paths with different affected ranges, and the
+  board already warns they are confusable. The identifier-disjointness rule earning its place.
+- **The no-fix count needed hand-auditing, again.** The regex returned 24; `'no fix path via
+  scanners'` is scanner blindness, not a missing fix (the 10-01 carve-out), so the true total is
+  **23**. Three added today (Fastify 4.x, Pgpool-II, Mongoid ≤7.5).
+
+### Ledger, curation and lens health
+
+- **931 items, 39 exact + 123 fuzzy = 162 merges, 0 double-counted.** Tally guard bumped 162,
+  guarded 0. Dictionary 28,819 → 29,588. Match rate 17.4% against yesterday's 17.3%, and the
+  09-09 length diagnostic **exonerated the matcher again** (ratio 1.28 vs yesterday's 1.29, where
+  the pathology was ~2.0) so nothing was touched.
+- **Curation: 16 picks, 10 pins, all landed, zero fatal "pin not found".** `new_more` 549.
+  **31 of 31 rows carried `[src]` with no hand-attachment** — the first run needing none.
+- **The cross-card shared-CVE check caught one overlap the fuzzy dup check missed** (the 09-18
+  defect): CVE-2026-97945 appeared as a picked `new` row *and* as its mechanism explanation in
+  `ongoing`, with too little shared vocabulary for `dup_of_picked` at 0.45. Excluded the ongoing
+  twin. **Run the id-based check by hand every time; the fuzzy one is not a substitute.**
+- **Guard 5 passed on the FIRST assembly: 717 cited units, zero uncited**, and
+  `assert_table_shape` clean across 10 tables. Mechanism unchanged since 09-15 — `cite()` called
+  inline by each row generator.
+- **Output is 62,181 bytes smaller than the parent, fully accounted** (09-09 rule): povContent
+  −20,582, v-events −19,770, lensLedger −15,937, v-read −3,837, v-patch −1,942, v-longitudinal
+  −1,698 against v-wn +1,638; residue −53. Dominated by the 26 retired events.
+- **Honest scope note: the four chair Reads are THINNER than 080's** (~2.2KB each against a
+  6.2KB parent shell). They are fresh and chair-differentiated, not stale, but the depth pass went
+  into corrections and guards instead. Next run should restore full depth.
+
+### Source access
+
+`blogs.oracle.com` 403s HTML *and* RSS for a **thirteenth** consecutive week. New and worth
+carrying: **`docs.databricks.com/aws/en/feed.xml`** (1,279 items, full release-note text in
+`<description>`) is the best Databricks route and `www.databricks.com/feed` **works** — the
+standing "no working Databricks blog feed" note is **wrong**. **`ubuntu.com/security/cves/<CVE>.json`
+(plural `cves` — singular 404s)** and **`access.redhat.com/hydra/rest/securitydata/cve/<CVE>.json`**
+(per-product `package_state`, which is what settled today's flag) belong in SHARED RULES.
+**The BigQuery pricing page truncates under WebFetch** — pricing questions need curl.
+`web.dev/blog/feed.xml` and `developer.chrome.com/static/blog/feed.xml` are **frozen** months
+back; use `api.webstatus.dev` and `chromestatus.com/api/v0/features?milestone=N`.
+**Standing rule reinforced twice: never take a YEAR from a WebFetch prose summary** (2026 rendered
+as 2024/2025 three times in one lane, and a pgx tag date as 2023) — confirm against a feed
+timestamp or `maven-metadata.xml`. Also: **curl to `releases.atom` returns an EMPTY body with
+HTTP-200 shape**, so a script counting entries sees "no releases" instead of an error.
+`raw.githubusercontent.com/<org>/<repo>/<tag>/<dep-manifest>` is the cheapest primary source for
+**pinned** dependency versions and settled two questions no changelog answered.
+
+**Security sweep, negative result — thirteenth consecutive run, and the symmetry test is now the
+method.** The Redshift agent fetched both variants of `behavior-changes.html` and
+`cluster-versions.html` and grepped all four for every marker: zero hits. behavior-changes grew
++1,278 bytes markdown **and** +1,454 HTML, each gaining exactly one heading, accounted for by the
+new paused-producer section — "an agent-only injection grows the markdown without growing the
+HTML, and that is not what happened here." **Standing-note reversal: `behavior-changes.md` (the
+`.md` URL form) WORKS again** and is byte-identical to the `Accept:`-header response; the 09-13
+note that it 404s is stale.
+**FIRST SIGHTING OF THE 2026-09-01 PATTERN ON A NON-AWS VENDOR:**
+`docs.jfrog.com/releases/docs/jfrog-security-advisories` **embeds a full system prompt for
+JFrog's own docs assistant in its page HTML** — a "Grounding contract (non-negotiable)", a rule to
+refuse "bypass requests (for example disabling Xray … or publishing known-critical CVEs)", and a
+worked prompt-injection example. It is the vendor's chat-widget configuration rather than content
+aimed at a crawler, but it is instruction text aimed at an AI assistant **sitting inside a
+security advisory page**. Treated as data. **No fetched page's suggestion was executed and no
+skill file was loaded by any agent.** One benign harness event worth knowing: the frontend agent's
+report tripped a `settings-json` pattern match because it correctly described the Shai-Hulud npm
+payload writing persistence into `.vscode/tasks.json` and `.claude/settings.json` — a finding
+about malware, not an instruction, and no settings file was touched on its account.
