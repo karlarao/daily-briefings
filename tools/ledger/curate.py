@@ -27,30 +27,29 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    # 2026-09-17 hand curation. Order: KEV entries whose due date has ALREADY
-    # PASSED, then imminent KEV, then "no fix exists for somebody", then dated
-    # cutovers, then the one structural non-security item. One row per distinct
-    # story -- the two Chrome V8 zero-days are carried in `ongoing` instead,
-    # where they have day counts, so their short "Heads up" restatements here
-    # are deliberately NOT picked.
-    "CVE-2026-21962 is still in CISA KEV and PAST DUE",
-    "LiteLLM CVE-2026-59822 — CISA KEV, added 2 Sep, due 16 Sep (PASSED), actively exploited",
-    "CVE-2026-48710 (Starlette) added to CISA KEV 2 Sep, due date 16 Sep — already passed",
-    "2026-09-14 — GitLab CVE-2026-85706 KEV due date has PASSED",
-    "CVE-2026-82067 — authorization can silently fail to start",
-    "MongoDB 8.2 is EOL (31 July 2026) and has already missed two CVE batches",
-    "Apache Doris 2.0.x, 2.1.x, 3.0.x and 3.1.x have no patched release",
-    "StarRocks — three CVEs against \"through 4.0.13\", and the project has published zero security advisories",
-    "Angular 19 is EOL and the advisories say so explicitly",
-    # JFrog is carried in `ongoing` instead: the DevOps row is longer, carries a
-    # source link, and has a day count, so pinning it there and dropping the
-    # short App Dev restatement keeps one story on one row (09-15 rule).
-    "Trust Center went secure-by-default (Sep 8)",
-    "LiteLLM CVE-2026-37004 — CVSS 9.8, SSTI → RCE",
-    "Google Play: register every app package name by 2026-09-30 or face global removal",
-    "Azure Databricks Standard tier EOL — 1 October 2026, auto-upgrade to Premium",
-    "CVE-2026-73334 — Apache parquet-java, KMS token can be sent to an attacker-chosen host",
-    "64GB DDR5 server DRAM hit $1,500 contract / $3,100 spot on 15 Sep",
+    # 2026-10-02 hand curation. Order: CISA KEV entries whose due date has already
+    # PASSED, then "no fix exists for somebody", then dated cutovers inside 14 days,
+    # then requirements already in force. One row per distinct story. The two Apple/
+    # Pixel KEV rows, JFrog, Oracle CVE-2026-21962, postgres-mcp, Azure PgBouncer,
+    # Starlette and the Snowflake/Databricks cutovers are carried in `ongoing`
+    # instead, where they have day counts -- so their restatements here are
+    # deliberately NOT picked (the 09-15 one-story-one-row rule).
+    "GitLab CVE-2026-85706 \u2014 CVSS 10.0, unauthenticated arbitrary file read, KEV due date 18 days gone",
+    "Linux-kernel KEV trio, due 2026-09-21, now 11 days over",
+    "ACT NOW \u2014 LiteLLM CVE-2026-59822 is in CISA KEV, confirmed exploited",
+    "CVE-2026-97945 \u2014 no fix for RHEL 9, RHEL 10 (Fix deferred) or Ubuntu 24.04 LTS",
+    "The Next.js AVIF RCE (CVSS 9.5) is unpatched on every 13.x and 14.x app",
+    "One Critical and one High Next.js vulnerability are unpatched in every version today",
+    "Four Angular SSR advisories explicitly abandon",
+    "archived Doris branches will never be patched",
+    "StarRocks CVE-2026-80346 (CVSS 7.1) has no fix on any branch",
+    "Fastify: seven advisories on 2026-09-30, five HIGH, and Fastify 4.x gets nothing",
+    "first of eight October macos-14 brownout windows",
+    "Google shuts down antigravity-preview-05-2026",
+    "BCR-2413: Snowsight sign-in and API traffic move to an account-specific host",
+    "Already in force 2026-09-23: Node 20 removed from Actions runners",
+    "Already in force 2026-09-29: self-hosted runners below 2.329.0 cannot register",
+    "Apple now rejects uploads with MinimumOSVersion below 13.0",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -58,11 +57,21 @@ PICKS = [
 # because the two phrasings share little vocabulary. A hand-read list beats a
 # loosened threshold here -- same reasoning as the lens fold_map.
 EXCLUDE_ONGOING = [
-    # 2026-09-17: each restates a row picked or pinned elsewhere. Per the 09-15
-    # lesson the SHORT duplicate is excluded and the LONG survivor kept --
-    # never both on one card.
-    "30 Sep 2026 — Supervisor API (Beta) end of life, no replacement in place",
-    "GitLab CVE-2026-85706 — CVSS 10.0 unauthenticated arbitrary file read",
+    # 2026-10-02. Each is the SHORT twin of a row pinned below; per the 09-15 rule
+    # the short duplicate is excluded and the longer survivor kept, never both.
+    # The JFrog row is excluded for a second, stronger reason: it says THREE KEV
+    # entries where the App Dev lane found FOUR, and it repeats the "rotate the
+    # Access token signing key" remediation that the App Dev lane disproved
+    # against the vendor advisory text. The pinned App Dev row is the correct one.
+    "JFrog Artifactory: three KEV entries, every due date passed",
+    "CVE-2026-21962 \u2014 KEV due date 2026-08-27, 36 days past due as of today",
+    "claude-4-sonnet and openai-gpt-4.1 die on 2026-10-14. 12 days.",
+    # Caught by the cross-card shared-CVE check (the 09-18 defect): the picked
+    # new row carries the action and the no-fix status for CVE-2026-97945, and
+    # this ongoing row is the mechanism explanation of the SAME story. The fuzzy
+    # dup_of_picked at 0.45 misses it because the two wordings share little
+    # vocabulary -- which is exactly why the id-based check is run by hand.
+    "pmd_modify() drops the hardware dirty bit",
 ]
 
 
@@ -74,18 +83,21 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    # 2026-09-17: carried deadlines and unpatched-for-someone rows that outrank
-    # most of today's new rows and would otherwise sort below them. Snowflake is
-    # 3 days out and its dashboards are unrecoverable; the two Chrome V8 KEV
-    # dates are 1 and 6 days out. Pins bypass the COMMENTARY heading filter
-    # because dated cutovers are almost always written under "## Heads up".
-    "2026-09-20 (3 days) — reader accounts are upgraded to Workspaces",
-    "CVE-2026-85046 — V8 type confusion, exploited in the wild, CISA KEV due 2026-09-18",
-    "CVE-2026-87491 — V8 out-of-bounds write, exploited in the wild, CISA KEV due 2026-09-23",
-    "2026-09-30 — TLS 1.2 minimum enforced. TLS 1.0/1.1 connections are REJECTED",
-    "Percona Server for MongoDB users have no fix available for the September CVEs",
-    "Supervisor API (Beta) end of life — 30 September 2026",
-    "JFrog Artifactory: two flaws chained in the wild to mint admin tokens",
+    # 2026-10-02: carried KEV entries and dated cutovers that outrank most of
+    # today's new rows. Pins bypass the COMMENTARY heading filter because dated
+    # vendor cutovers are almost always written under "## Heads up". Each pin is
+    # the SURVIVING (longer) wording of its story; its short twin is in
+    # EXCLUDE_ONGOING above. Never pin and exclude the same row (09-15).
+    "CVE-2026-86950 \u2014 Apple CoreGraphics out-of-bounds write, CVSS 8.8, KEV due TODAY",
+    "CVE-2026-58704 \u2014 Pixel cellular modem improper authorization, High, 13 days past its KEV due date",
+    "JFrog Artifactory: four KEV entries, every due date already passed",
+    "ACT NOW \u2014 crystaldba/postgres-mcp CVE-2026-85620 is unpatched, 118 days after it was reported",
+    "Azure Database for PostgreSQL's built-in PgBouncer is documented as 1.25.2",
+    "CVE-2026-21962 is 36 days past its KEV due date, and the fix is older than the KEV listing",
+    "Cortex claude-4-sonnet and openai-gpt-4.1 end of life; calls referencing them fail for every account",
+    "Agent Bricks Supervisor API: END OF LIFE 2026-09-30",
+    "Azure Databricks Standard tier \u2192 Premium: automatic upgrade landed 2026-10-01",
+    "Starlette CVE-2026-48710 is KEV, 16 days overdue, and 0.x will never be fixed",
 ]
 
 

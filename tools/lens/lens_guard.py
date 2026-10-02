@@ -459,6 +459,122 @@ def assert_table_shape(html: str) -> int:
             % (len(bad), lines))
     return len(tables)
 
+# ------------------------------------------------- povContent identity ---
+def rewrite_pov_meta(html: str, nav_meta: dict, chairs: tuple | None = None) -> str:
+    """Rewrite povContent["meta"][chair][viewid] AND content[chair][viewid]["c"].
+
+    Why this exists (2026-09-20): povContent["meta"] is FLAT --
+    {chair: {viewid: "<string>"}} -- and a guard written against the plausible
+    nested shape {viewid: {"meta": ...}} matched nothing, raised nothing, and
+    passed silently for editions while the published page rendered the PREVIOUS
+    edition's left-rail labels. A guard that can match zero things and still
+    pass is not a guard, so this one raises when it changed nothing.
+
+    `nav_meta` is the same {viewid: "<string>"} dict refresh_nav() takes, so the
+    left rail, the chair labels and the section chips are all driven from ONE
+    source -- which is what stops the 2026-09-19 chips-vs-NAV-vs-ledger class of
+    disagreement.
+    """
+    m = _POV_RE.search(html)
+    if not m:
+        raise LensBuildError("povContent block not found")
+    pov = json.loads(m.group(2))
+    meta = pov.get("meta")
+    if not isinstance(meta, dict) or not meta:
+        raise LensBuildError("povContent.meta missing or not a dict")
+    sample = next(iter(meta.values()))
+    if not isinstance(sample, dict):
+        raise LensBuildError(
+            "povContent.meta is not {chair: {viewid: str}} -- shape drifted, "
+            "fix this function rather than letting it no-op")
+    targets = chairs or tuple(meta)
+    changed = 0
+    for chair in targets:
+        for vid, text in nav_meta.items():
+            if vid in meta.get(chair, {}):
+                if meta[chair][vid] != text:
+                    changed += 1
+                meta[chair][vid] = text
+            cview = pov.get("content", {}).get(chair, {}).get(vid)
+            if isinstance(cview, dict) and "c" in cview:
+                if cview["c"] != text:
+                    changed += 1
+                cview["c"] = text
+    if not changed:
+        raise LensBuildError(
+            "rewrite_pov_meta changed nothing -- either the viewids do not match "
+            "povContent's keys or nav_meta is already the parent's text")
+    blob = json.dumps(pov, ensure_ascii=False)
+    return html[:m.start()] + m.group(1) + blob + m.group(3) + html[m.end():]
+
+
+def assert_not_parent_identity(html: str, parent_edition: str,
+                               parent_dslug: str | None = None) -> None:
+    """Refuse a page that still names the PARENT edition as its own.
+
+    Legitimate backward references are allowed and must not trip this: a
+    Since-yesterday chip reading "vs 079", a carried-section label reading
+    "carried from 079", and historical prose ("CORRECTION (ed. 064)") are all
+    correct. Only a bare self-assertion is a defect.
+
+    2026-10-01: the previous regex could not see the "vs " prefix its own
+    docstring blessed, so a correct chip failed the build. The lookbehinds below
+    implement the docstring (requested by that run's notes).
+    """
+    pat = re.compile(r"(?<!vs )(?<!from )(?<!ed\. )(?<!against )edition %s(?![0-9])" % re.escape(parent_edition))
+    hits = [m.start() for m in pat.finditer(html)]
+    if hits:
+        ctx = [html[max(0, i - 60):i + 40].replace("\n", " ") for i in hits[:5]]
+        raise LensBuildError(
+            "page still asserts the PARENT edition %s in %d place(s):\n  %s"
+            % (parent_edition, len(hits), "\n  ".join(ctx)))
+    if parent_dslug:
+        bad = re.findall(r"<title>Oracle Competitive Lens — %s</title>"
+                         % re.escape(parent_dslug), html)
+        if bad:
+            raise LensBuildError("title still carries the parent date %s" % parent_dslug)
+
+
+def normalize_closing_tags(html: str) -> str:
+    """Collapse trailing </body></html> pairs to exactly one, then assert it.
+
+    Why this exists (2026-09-20): the published parent carried TWO pairs, which
+    the 09-19 note said could not happen. That note's fix re-appends one pair
+    inside strip_host_wrapper() and reasons the strip makes it idempotent -- true
+    only for a builder that ROUTES THROUGH the strip. A builder that appends
+    directly to stored source (which already has one pair) gets two, and the
+    next edition inherits them. Browsers ignore the second, so it is invisible
+    until someone counts. Safe on any input, idempotent, and cheap: call it
+    immediately before write regardless of how the html got there.
+    """
+    body = re.sub(r"(?:\s*</body>\s*</html>\s*)+\Z", "", html).rstrip()
+    out = body + "\n</body></html>\n"
+    if out.count("</html>") != 1 or out.count("</body>") != 1:
+        raise LensBuildError(
+            "closing tags not normalized: </body>=%d </html>=%d"
+            % (out.count("</body>"), out.count("</html>")))
+    return out
+
+
+def daycounts(text: str, today: str) -> list:
+    """Every 'N days past due' / 'N days out' figure in `text`, recomputed.
+
+    Returns [(stated, anchor_date, actual, ok)] so a build can assert the prose
+    agrees with the anchor it cites. Added 2026-09-30 after an edition shipped a
+    day count derived from the previous edition's arithmetic rather than from the
+    row's own date; 10-01 closed the other half by verifying the ANCHORS against
+    the CISA catalog, so a right-looking count on a wrong anchor cannot hide.
+    """
+    from datetime import date as _d
+    t = _d.fromisoformat(today)
+    out = []
+    for m in re.finditer(r"(\d{4}-\d{2}-\d{2})[^.;)]{0,80}?(\d+)\s*d(?:ays?)?\b", text):
+        anchor, stated = m.group(1), int(m.group(2))
+        actual = abs((t - _d.fromisoformat(anchor)).days)
+        out.append((stated, anchor, actual, stated == actual))
+    return out
+
+
 # ------------------------------------------------------------- self-test ---
 if __name__ == "__main__":
     page = (
