@@ -129,6 +129,54 @@ def fold(rows: list, datekey: str, route: str) -> tuple[list, int]:
     return out, folded
 
 
+_CVE_RE = re.compile(r"(?:CVE|GHSA)[-A-Za-z0-9]*-[0-9A-Za-z]{4,}", re.I)
+
+
+def advise_patch_peers(new_row: dict, parent_rows: list, warn=print) -> list:
+    """ADVISORY peer finder for `patch[]`, which `reuse_key` cannot cover.
+
+    WHY (asked for by the 2026-10-03 notes): `reuse_key`'s advisory is DATE-keyed,
+    and a patch row's `due` is usually prose ("no fix on 4.x (fix only in 5.12.2)",
+    "fix exists, paywalled"), so same-date grouping finds nothing. Two duplicate
+    patch rows shipped that day and were caught only by the hand audit of the
+    no-fix register.
+
+    Two routes, both advisory -- this NEVER reuses or folds a key, it only prints
+    candidates so a duplicate is visible at build time:
+      1. HARD ID -- the row shares a CVE/GHSA id with a parent row. For security
+         rows this is the strong signal.
+      2. SLUG STEM -- the row's key shares its leading product token with a
+         parent key (fastify-*, spring-*, mongodb-*).
+
+    On recall vs precision: the 2026-09-10 note rightly warns that the anchor
+    route is far too eager for patch rows, where every row shares "cve"/"kev"/
+    "cvss". That warning is about AUTO-FOLDING. An advisory can afford recall,
+    because silence is the bug and a list a human skims is the fix. Folding still
+    requires hand verification -- each patch card carries authored prose, so a
+    wrong merge destroys writing rather than a timeline row.
+    """
+    mine_ids = {m.group(0).upper() for m in
+                _CVE_RE.finditer(new_row.get("k", "") + " " + new_row.get("t", ""))}
+    stem = new_row.get("k", "").split("-")[0].lower()
+    hits = []
+    for p in parent_rows:
+        if p.get("k") == new_row.get("k"):
+            continue
+        pid = {m.group(0).upper() for m in
+               _CVE_RE.finditer(p.get("k", "") + " " + p.get("t", ""))}
+        shared = mine_ids & pid
+        if shared:
+            hits.append(("id", p, sorted(shared)))
+        elif stem and len(stem) > 3 and p.get("k", "").lower().startswith(stem + "-"):
+            hits.append(("stem", p, [stem]))
+    if hits:
+        warn(f"  [advise_patch_peers] {len(hits)} candidate(s) may be the same story "
+             f"as {new_row.get('k')!r}:")
+        for route, p, why in hits:
+            warn(f"      ({route:4}) {p['k']:52} {str(p.get('t',''))[:66]}  <- {','.join(why)}")
+    return hits
+
+
 def reuse_key(new_row: dict, parent_rows: list, datekey: str, route: str,
               same_as: str | None = None, warn=print):
     """Build-time key reuse.
