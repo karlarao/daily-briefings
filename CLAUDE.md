@@ -5282,3 +5282,56 @@ every run, so a rising flag count partly measures how long the register has been
   AI/LLM tooling in CISA KEV at all. Re-parsed today (catalog 2026.10.02, 1,733 entries): **five
   AI/ML entries are present** (LiteLLM 59822, 42271, 42208, MLflow 64849, Ray 2025-62593). The
   narrower true statement is **"nothing AI/LLM was ADDED in this window."**
+
+### Post-run cleanup 2026-10-04 — what "landed" means, stated precisely
+
+The section above says the three fixes were "fixed and landed". **They are landed on the
+branch `claude/great-clarke-34g6kh`, NOT on `main`** — commit `72026af`, awaiting Karl's
+merge. Saying it plainly because the 09-19 and 10-02 entries both record runs that lost a
+day to a prior note asserting "fixed on main" about a merge that never happened. The habit
+those entries prescribe still holds and is the only reliable check: **after staging tooling
+from main, import it and call the function yesterday's note claims is in it.**
+
+What is on the branch, and how it was verified before commit:
+- `tools/lens/lens_common.py` — **new to main-track.** It existed only on the unmerged
+  10-03 branch, where it did not import.
+- `tools/lens/lens_guard.py` — the 10-03 branch's version (eight helpers main lacked:
+  `assert_not_parent_identity`, `assert_structure`, `daycounts`, `daycounts_rows`,
+  `is_iso_date`, `normalize_closing_tags`, `replace_balanced_div`, `rewrite_pov_meta`)
+  plus today's two fixes. Checked as a **strict superset** of main's function set by
+  `comm`-ing the two `^def` lists — nothing on main is dropped.
+- `tools/lens/ledger_surgery.py` — main's version plus `advise_patch_peers`; same superset
+  check.
+- `tools/lens/fold_map_083.py` — new.
+- `tools/lens/lens_links.py` — **already identical to main**, so not touched.
+
+Every module was imported and each fix exercised against positive *and negative* controls
+in the landed copy, not the scratchpad: `assert_not_parent_identity` 11/11 (three
+capital/lower/upper runbar forms raise; `vs`/`carried from`/`ed.`/`against`/`prior`/
+`superseding`/`edition 0834`/`edition 084` all pass, so the correction record survives);
+`daycounts_rows` reports a prose field whose stated count is wrong, ignores one that is
+right, and ignores `{"first_seen": …, "days": 9}` JSON-ish noise entirely; `advise_patch_peers`
+returns the CVE peer by hard identifier. **A guard that can match zero things and still pass
+is not a guard** — that is why the negative controls are run, not just the positive ones.
+
+**`tools/ledger/curate.py` was deliberately NOT ported from the 10-03 branch.** Its whole
+delta against main is the daily `PICKS` / `EXCLUDE_ONGOING` / `PIN_ONGOING` string lists —
+verified by filtering the diff for any line carrying `def`/`if`/`for`/`return`/`import`,
+which returned **one comment line and nothing else**. Those lists are per-day data that
+each run rewrites, so porting them moves no logic and lands stale picks. The 09-17
+branch-hunt lesson is to check an unmerged branch for content main lacks; here the check
+was run and the answer was "nothing structural".
+
+**The designated branch had been DELETED on the remote, not merely merged.** The prior
+session concluded "already merged into origin/main" from a stale remote-tracking ref;
+`git ls-remote` showed zero matching heads and `git remote prune origin` pruned it. So
+`--force-with-lease` failed with `stale info` (there is no remote tip to lease against) and
+the correct action was a plain `push -u` creating the branch fresh from `origin/main`.
+**If a force-with-lease is rejected as stale, check whether the ref exists at all before
+reaching for `--force`.**
+
+Still unmerged and still carrying content main lacks: **`claude/great-clarke-1ek8wh`** (the
+10-03 branch) — now only its `curate.py` data lists, since this branch carries its
+`lens_common.py` and `lens_guard.py` forward. Branch deletion remains something a run
+cannot do (HTTP 403 from the GitHub App credential, recorded 09-17), so the superseded
+`claude/*` branches accumulate until Karl removes them.
