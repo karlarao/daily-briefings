@@ -5335,3 +5335,283 @@ Still unmerged and still carrying content main lacks: **`claude/great-clarke-1ek
 `lens_common.py` and `lens_guard.py` forward. Branch deletion remains something a run
 cannot do (HTTP 403 from the GitHub App credential, recorded 09-17), so the superseded
 `claude/*` branches accumulate until Karl removes them.
+
+## Run findings 2026-10-05 (edition 084)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both
+hooks clean.** Launched 09:29 EDT, briefs in 09:36–09:52, dashboard published with the
+Pages `deploy` job verified `success` at **13:53:22Z** (38s after the push), lens as
+artifact **v49**. `artifact-allow.sh` clean for its **27th consecutive unattended run** —
+`list`, a `read` with `path` (1.97 MB), the plain `read` a republish requires, and the
+publish, all with zero prompts. `bash-allow.sh` clean with no Bash prompt anywhere
+despite heavy `python3 - <<'PY'` use. **~3,615k research tokens**, 915 extracted items.
+
+### THE MISTAKE TO READ FIRST: a tool that errored fell through to a reassuring default
+
+I called `advise_patch_peers(led, k, t)`. Its real signature is
+`advise_patch_peers(new_row: dict, parent_rows: list)`. It raised
+`'str' object has no attribute 'get'` on **all ten** drafted patch rows — and my wrapper
+caught the exception, set `peers=[]`, and then printed **"(no peer -> genuinely new)"**
+for every one of them. The output read like ten clean verdicts.
+
+**Called correctly, 9 of those 10 rows were already on the board**, nearly all by shared
+CVE id: pg_partman 61781 → `pg-partman-7-cves-managed-frozen`, Doris 31377 →
+`doris-cve-2026-72524-no-fix-on-2x-3x`, StarRocks 80346 → `starrocks-cve-trio-4014`,
+the BuildKit batch → `buildkit-ten-advisories-cache-poison` (three shared ids), Angular →
+`angular-ssr-xss-cve-2026-69149`, Next.js 13/14 → `nextjs-critical-rce-aug25` (both ids),
+containerd → `containerd-checkpoint-restore`, MongoDB 82067 → its exact-CVE row. **I would
+have minted eight duplicate rows and made `days` lie on eight stories.**
+
+**The rule the 10-04 note gives — "after staging tooling, IMPORT it and call the function
+yesterday's note claims is in it" — is necessary and not sufficient. Extend it: a helper
+that raises must never fall through to a default that looks like a result.** My
+`except: peers=[]` turned a hard failure into a soft, confident, wrong answer. Where a
+run wraps a guard or advisory in `try`, the `except` branch must print **"ADVISORY DID NOT
+RUN"** and fail the step, never emit the empty-set reading. Same class as the 10-04
+`assert_not_parent_identity` finding (a guard inert at its own primary target) and the
+09-20 `rewrite_pov_meta` one (a check that matched nothing and passed) — three editions
+running, the failure is a check that is *silent* rather than *wrong*.
+
+### My own verification had the same defect twice more in one build
+
+- **The `assert_not_parent_identity` positive controls were false passes.** I passed the
+  int `83` where it wants the string `"083"`, so all three "ok raise" lines were a
+  `TypeError` from `re.escape`, not the guard firing. Re-run with `"083"`: **11/11**, three
+  capital/lower/upper forms raising and eight backward-reference phrasings passing. **A
+  positive control that raises for the wrong reason is worse than no control** — it
+  reports the guard healthy while testing nothing.
+- **My double-escape assertion was the too-broad version the 09-16 note already fixed in
+  `build.py`.** It flagged the devops brief for a literal `\n` — which is correct content,
+  `curl -w "%{http_code}\n"` inside a code span, sitting alongside 161 real newlines. The
+  signature is *literal `\n` **AND** zero real newlines*; `build.py`'s own narrowed guard
+  passed the file. I re-derived a bug the repo had already fixed, because I wrote the check
+  from memory instead of reading the one in the file.
+
+### The `%`-formatting collision, for the FIFTH time, with the rule already written down
+
+The Databricks chair's Today's Read contains "~15% faster MERGE/UPDATE" and I built the
+block with `%`-formatting. The 09-18 note states the durable answer and the 09-20 note
+promoted it to house style: **any block mixing `cite()` output with prose is built by
+concatenation with explicit `str()`, never `%`.** Recorded 09-17, 09-18 (three times in one
+build), 09-20, and now today. The rule is right; the gap is that nothing *enforces* it. The
+cheap enforcement, if a future run wants it: generate those blocks through a helper that
+takes a list of fragments, so there is no format string to collide with.
+
+### A prose-vs-data drift shipped in edition 083 and is worth measuring every run
+
+**Edition 083's runbar and v-patch lede both render "26 no-fix rows" against an embedded
+ledger that holds 22.** Checked under four predicates ('no fix'; + 'no patch'; + unfixed /
+no fixed; + never / permanent) — the first three all give **22** on the parent, and the
+fourth gives 23 only by catching `mongodb-cve-82067-auth-disabled`, whose `due` reads
+"RESOLVED everywhere still supported · NEVER on 8.2" and is a *resolved* row, not a no-fix
+one. So the authoritative `due` route is right and the rendered 26 was four high.
+Edition 084 ships the measured **23 board-wide, 1 added today** (pgvector) as two numbers
+from one source. **This is the 09-16 / 09-20 class and the 10-04 note caught itself doing
+it ("I claimed 3 left when the measurement said 2") — so assert the rendered count against
+`len([r for r in patch if 'no fix' in r['due'].lower()])` before writing, every run.**
+
+### Three NAV entries were two editions stale, inherited straight from the parent
+
+`v-perf`, `v-bench` and `v-promises` read **"carried from 081"** on an edition-083 parent and
+would have ridden into 084, because they were absent from my `nav_meta` dict and
+`refresh_nav` only rewrites what it is given. Exactly the 09-09 and 09-19 NAV-drift class.
+Fixed by driving **every** carried-section chip from `len(ledger[sec])` and adding a
+hard assertion: `set(re.findall(r"carried from (0\d\d)", NAV)) - {PARENT_ED}` must be empty.
+That assertion is the durable part — it catches the next entry someone forgets to list.
+
+### My own Longitudinal prose contradicted the series I had just computed
+
+The bullet said urgent lanes "have not dropped below 9 … and today's 10 is the
+**second-highest** of that run". The computed series is `10, 12, 12, 11, 11, 10, 9, 10`:
+four runs are higher, so today is **joint 5th of eight**. Caught by reading the rendered
+text back against the data. Now generated from the series (floor, ceiling, ordinal and the
+count above it are all interpolated), so the sentence cannot drift from the table above it.
+**Third consecutive edition where the fix is "interpolate the number, never type it"** —
+09-16 (NAV vs runbar), 09-20 (the eight-day run), today.
+
+### Checking the board before drafting corrections paid off exactly as 10-04 predicted
+
+I drafted six corrections from today's briefs. **Four were already applied:**
+- **Redshift TLS 10-31 and ODBC 1.x 12-31** — corrected in ed. 071, with the conflating row
+  marked SUPERSEDED in ed. 074. Today's lane read both off AWS's own page and they match.
+  **Nothing was corrected, and the edition says so on its face** — because ed. 083 asserted
+  a correction here that the board did not need, and the honest repair is to state that the
+  record was already right rather than quietly not mention it.
+- **Percona-MongoDB** — already RESOLVED (ed. 074) for every production line; today's lane
+  independently confirms 7.0.43-23 / 8.0.32-14, with only the 8.3 tech preview short.
+- **`pg-28-cves-aug13`** — already marked resolved.
+- **CVE-2026-21962's scope** — already correctly recorded as OHS / WebLogic proxy plug-in.
+What genuinely needed writing was **enrichment**, not correction, which is a different and
+cheaper operation: day counts, and the facts the board lacked.
+
+### What the briefs actually added to the board
+
+- **Iceberg V4's equality-delete ban stopped being provisional.** The parent recorded the
+  spec-wording vote as OPEN (ed. 073). It **closed 2026-09-28** (4 binding / 5 non-binding
+  +1, no dissent) and **PR #17783 merged 2026-09-29**. **V4 itself is still undated** and
+  the row stays deliberately dateless — the 1.13 Java thread proposes "early next January"
+  with nothing agreed. Four editions of invented V4 dates make "undated" the correct answer.
+- **The Postgres 28-CVE batch resolved WITH A TRAP, now counted.** Aurora shipped the full
+  set 2026-09-29 at 47 days. Its **2026-09-14 interim releases carried exactly ONE** of the
+  28 (CVE-2026-14671), and the 21 Aug releases carried one that is not in the 28 at all
+  (CVE-2026-6472). **Anyone who patched in September and recorded the fleet as done was
+  still 27 CVEs short.** The 10-04 note predicted this shape; today it is measured.
+- **The exposure has migrated from the engine to the extension catalogue, and that layer
+  has no SLA.** Engine currency is now solved on RDS, Aurora, Cloud SQL and Azure. Against
+  that: **pg_partman CVE-2026-61781 (CVSS 9.9)** is fixed only in 5.5.0, which no GA managed
+  Postgres ships (all at 5.4.3 or lower; the only RDS entry carrying 5.5.0 is PG19 Beta 4)
+  **and 5.5.0 is a breaking upgrade**; **pgvector CVE-2026-103484 (8.8)** is fixed only in
+  0.8.7 against 0.8.2 on RDS/Aurora/Azure. **Mitigation without a patch: HNSW indexes are
+  not reachable by the pgvector CVE** — only IVFFlat builds are.
+- **The unpublished-CVE mechanism got bigger and the failure was located one level down.**
+  The whole 2026-09-30 BuildKit batch — **twelve** ids — is 404 at MITRE, 404 in OSV and
+  zero-result at NVD; containerd's two are still 404 at 34 days; a Kubernetes record from
+  April is **178 days** unpublished. The locating detail: **the GHSAs are also 404 in OSV**,
+  i.e. these are repository-level advisories never promoted into GitHub's global database,
+  which is what OSV ingests. Controlled comparison holds — the 534xx containerd siblings
+  propagated completely with full SEMVER ranges.
+- **A new own-side landmine: there is currently no validated FIPS option.** NIST's primary
+  record settles the date — **2026-09-21** for the move to the Historical list; the 22nd
+  dates on the same page are all 2019–2021 *submission* milestones, which is how three
+  editions misread it. **Both CMVP certificates our 26ai guide names (#4506, #4697) are now
+  Historical** while the 140-3 replacements sit at "Comment Resolution". So Exadata 26.2's
+  "OL9 supports FIPS 140-3" is an algorithm-and-mode statement, not a certificate. Recorded
+  as an ownclaim with the arm: the quiet risk is the *opposite* of the carried one — 140-3
+  mode needs **both** `FIPS_140` and `FIPS_140_3`, so nothing flips under you; the danger is
+  sitting in 140-2 mode against a Historical module with no warning. Industry-wide, so never
+  lead with it.
+- **The Supervisor API confusion is settled and the docs are the evidence.** What retired
+  2026-09-30 is the **`Supervisor API (Beta)`** — the OpenResponses-compatible
+  `POST ai-gateway/mlflow/v1/responses` endpoint — and the migration target is **custom
+  agents on Databricks Apps**, NOT the Agent Bricks Supervisor Agent, which is GA and
+  unaffected. The page was last touched **on its own retirement day** and is still
+  future-tense; the roadmap page was edited 2026-10-01, after the EOL, and still files it
+  under "upcoming". **Doc tense cannot tell you whether a Databricks cutover has landed** —
+  two more pages (entitlement enforcement, Standard-tier EOL, the latter `NOINDEX`) have the
+  same defect.
+
+### Flag calibration: 10 urgent, 9 distinct stories, every borderline recorded
+
+**JFrog Artifactory is the shared story** across App Dev and DevOps — the 061-style overlap.
+Limb split: eight on limb (a), two on limb (b).
+- **Expired KEV clocks dominate**, which is new: GitLab 10.0 at 21 days overdue with
+  `forensicTriage: Yes`, Oracle's Fusion Middleware CVE at 39, LiteLLM at 19, four JFrog
+  entries all passed, WSO2 at 8 with no OSS release (two GitHub PRs to apply by hand).
+- **JFrog is the one where patching is not the remedy** — rotate the Access `private.key`
+  and sweep for planted Groovy plugins, because both survive the upgrade. That fact, not the
+  CVSS, is why App Dev's row was picked for the card over DevOps's.
+- **Two limb-(b) cutovers inside 14 days**: Databricks Sonnet 4 at 4 days ("workloads stop
+  working"), Snowflake BCR-2413 at 11 days with no opt-out. The macos-14 brownout began
+  **today at 14:00 UTC**, i.e. already in force.
+- **Nine lanes held `ok` while carrying real CVEs and wrote out their reasoning** — Fabric
+  declined a **CVSS 10.0** with `Customer Action Required: No`; BigQuery declined a 9.4
+  patched server-side in May and absent from OSV; Open Formats declined the Parquet 8.1
+  because the fix is a patch bump and CISA's own SSVC records `exploitation: none`; Database
+  Hardware reasoned out loud that **a procurement price trend has no cliff** and declined;
+  MongoDB declined four 9.2s because every one has a reachable in-branch fix; Redshift
+  declined four Critical driver CVEs as out-of-window with drop-in fixes. **Snowflake
+  explicitly declined its own three driver CVEs** while reporting that they are invisible to
+  OSV — the right split between "act now" and "your scanner is lying to you".
+- **The calibration tension, restated:** standing no-fix rows re-qualify every run, so a
+  rising flag count partly measures how long the register has been accumulating. The
+  register (23) is the better trend line than the flag count (10).
+
+### Ledger, curation and lens health
+
+- **915 items, 45 exact + 119 fuzzy = 164 matched (17.9%)**, squarely in the 17–22% band, so
+  the 09-09 length diagnostic was not needed. All 15 weakest accepted merges were eyeballed
+  and every one is a genuine same-story rewording. **Dictionary 31,037 → 31,788. Tally guard
+  bumped 164, guarded 0, 0 double-counted.**
+- **Curation: 15 picks, 5 pins, all landed, no fatal "pin not found". 29/29 card rows sourced
+  with no hand attachment** (second consecutive run at 29/29). `new_more` 546. The hand
+  cross-card check found **zero** genuine CVE-id overlap between a picked `new` row and any
+  `ongoing` row — two apparent hits were my own regex matching the bare word "CVEs", which
+  is worth remembering before trusting that check: bound it to `CVE-\d{4}-\d+`.
+- **Guard 5 passed on the FIRST assembly: 723 cited units, zero uncited** — mechanism
+  unchanged since 09-15, `cite()` called inline by each row generator. `assert_table_shape`
+  clean across 13 tables, `assert_structure` 15 sections, alias safety clean with no parent
+  key lost by omission (the 3 retired events are date-retirements and are excluded
+  explicitly), exactly one closing `</body></html>` pair.
+- **`daycounts_rows` found 9 stale counts my own stage-1 pass missed**, because I replaced
+  only the `due` spellings and the same numbers also live in `t` prose. Fixed by driving the
+  repair **from the detector's own output** rather than from a hand list — the right pattern,
+  since the detector already knows the row, field, stated and actual values. Residual
+  disagreements: **0**, plus the 2 documented `pg-28-cves-aug13` exemptions (47 days is a
+  measured historical lag, not a countdown).
+- **Output is 37,398 bytes larger than the parent, fully accounted** (09-09 rule):
+  v-patch **+16,148** and v-events **+15,866** (both regenerated with full act columns and
+  today's enrichments), lensLedger **+8,587**, against povContent **−1,660**, v-read −918,
+  v-wn −293, v-longitudinal −26, chrome −350.
+- **Edition formula note:** the spec's "count ledger files ≤ today" gives **85** for
+  2026-10-04 where the real edition is 083 — it has drifted by 2 (same-day reruns and skipped
+  lens days). **The parent artifact's own embedded `edition` field is authoritative**; today
+  is parent + 1 = 084. Do not recompute from file counts.
+
+### Source access
+
+- **`blogs.oracle.com` 403s HTML *and* RSS for a THIRTEENTH consecutive week** (tried
+  `/exadata/software-2026-se` and `/exadata/rss` with curl and a browser UA), so the official
+  Optimizer / In-Memory / Smart Scan / Exadata-monthly channel is a **structural gap** and the
+  Oracle brief's `## Performance` category says so on its face rather than reporting a quiet
+  month. `mikedietrichde.com` still an `sgcaptcha` shim. Connor McDonald and oracle-base
+  carried the lane; Jonathan Lewis and Tanel Poder are genuinely dormant, not blocked.
+- **CORRECTION to the standing note: the AWS Big Data blog's Redshift CATEGORY feed is NOT
+  stale.** The 10-04 note recorded it stuck at 2026-07-14; today it returned 200 with its
+  newest post dated **2026-09-28**, tracking the main feed. Both are current.
+- **CORRECTION to the standing note: `community.fabric.microsoft.com` RSS is not
+  intermittent today** — it returned **HTTP 200 on the first attempt**, 1,029,577 bytes, 60
+  items with full post bodies in `<description>`. No retry needed. Article pages remain
+  Cloudflare-403, so the feed body is still the only route to the content.
+- New and useful: `cveawg.mitre.org/api/cve/<id>` remains the only reliable publication-state
+  check and is uncapped; `api.osv.dev/v1/query` by POST likewise; `api.webstatus.dev` beats
+  the web.dev Baseline digests; `github.com/NVIDIA/product-security` serves CSAF and Markdown
+  where the custhelp portal 403s. Dead or stale: `aws.amazon.com/api/dirs/items/search` for
+  what's-new is **two years stale** (newest `postDateTime` 2024-05-16) while returning 200;
+  the AWS what's-new RSS holds only ~9 days; `googleapis/python-bigquery`'s changelog has been
+  frozen at 3.40.1 since February while PyPI is at 3.46.1, so a release watcher pointed there
+  has been blind for eight months.
+- `phoronix.com` now 403s curl-with-browser-UA as well as WebFetch — a regression against the
+  10-04 note, and it removes the main source of independent server-CPU benchmarks.
+
+### Security sweep, negative result — thirteenth consecutive run
+
+The Redshift agent fetched `behavior-changes.html` and `cluster-versions.html` in **both**
+variants and did the test that actually matches the 2026-09-01 attack shape — **diffing the
+heading SETS**: `behavior-changes` HTML 57,431 bytes / 28 headings vs markdown 35,410 / 25;
+`cluster-versions` HTML 219,007 / 94 vs markdown 132,027 / 92. **Markdown-only headings:
+NONE, the empty set, in both files.** Every HTML-only extra is the page's own nav chrome
+(`Topics` jump lists, a `Note` admonition). All five markers returned **0 hits in all four
+files**. The separate agent-only variant still exists and is still served; the injected
+content does not. **No fetched page's suggestion was executed and no skill file was loaded by
+any agent**, confirmed across all 19 lanes.
+
+Worth recording as context rather than a finding: the affordance is now being advertised
+*openly* rather than injected. AWS's site-wide nav carries a top-level "Agent Toolkit — Give
+AI coding agents up-to-date docs and AWS resource access" promotion that is **absent from both
+doc variants** — the opposite of the covert pattern. Oracle's ORDS 26.3.0 lets admins register
+arbitrary SQL/PL-SQL as MCP tools and SQLcl's `skills sync` installs skill files from a
+**community-pull-request GitHub repository** into auto-loaded per-user directories such as
+`~/.claude/skills/` (and SQLcl's MCP default moved from restriction level 4 to *unrestricted*);
+BigQuery's Data Transfer Service MCP server went GA exposing **create/update/delete** on
+ingestion configs with a selectable service account; Google shipped an Android CLI with 20+
+auto-loadable skills including one that audits Play policy compliance. The counterweight, the
+same week: **Apple announced tighter Full Disk Access consent naming autonomous AI agents as
+the reason.**
+
+### Scope, stated plainly
+
+Edition 084 refreshes Today's Read on all four chairs, Since yesterday, Event Horizon,
+Patch-Risk Radar, Longitudinal, the embedded ledger and all seven identity sites. **Claim
+Watch, Mirror, Question Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers carry forward from 083 unrevised and
+the edition says so on its face** — no competitor shipped a perf or price claim worth a card,
+and the day's research was overwhelmingly security, advisory-pipeline failure and deadline
+movement. `claims[]` did not grow. The quarterly Skills/Build re-rank was executed on its due
+date 2026-10-01 and is next due **2027-01-01**.
+
+**Still carried, still unfixed:** `claims[]` (171) and `patch[]` (156) hold the same
+same-story duplication the 09-10 / 09-11 / 09-13 notes describe, and they still want a
+hand-verified fold map rather than a threshold, because each card carries authored
+counter/ask prose. Also still queued: **per-item severity stored in the public ledger**, which
+is the only way to make the Longitudinal "High" column comparable across days instead of a
+classifier artifact — flagged for the fourth consecutive edition.
