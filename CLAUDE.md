@@ -5862,3 +5862,236 @@ of every other server** — naming rug-pull tool definitions, which install-time
 does not cover. The AI App Dev lane also found an actively malicious MCP server pushed
 through 23 PRs in 74 minutes that rewrites its tool metadata into instructions **after
 exactly three calls**, so code review cannot see it.
+
+## Run findings 2026-10-07 (edition 086)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:23 EDT, briefs in 09:31–09:52, dashboard published with the Pages deploy
+verified at **13:54:13Z** (~38s after the push), lens as artifact **v51**. `artifact-allow.sh`
+clean for its **29th consecutive unattended run** (`list`, a `read` with `path`, the plain
+`read` a republish needs, and the publish). **~3,605k research tokens — a new high** (prior
+~3,365k on 10-06), 840 extracted items after the extractor fix below.
+
+### THE BUG TO READ FIRST: the extractor was publishing agent-to-agent chatter
+
+`extract_briefs.py`'s TAIL pattern strips the "Report to the caller" / "Environment notes"
+block agents append for the orchestrator. It allowed an optional `**bold**` prefix but **not a
+markdown heading**, and `## Environment notes` is how **18 of 19 agents wrote it today**. So
+every one of those sections survived into the published dashboard *and* was mined by step 4c as
+headlines. Two rows reached the Since-yesterday candidate set before I noticed: *"One summarizer
+error caught and corrected…"* and *"Large-page truncation: several Atom feeds…"*.
+
+Fixing it removed **162 non-headlines (1,002 → 840 items)** and lifted the day-over-day match
+rate from **18.6% → 21.7%**, back inside the recent band. The 09-12 note already said *"match the
+SHAPE of those headings, not one wording"* — bold and bare prose were covered, `#` was not.
+Now `(?:#{1,4}\s*)?` with a six-shape self-test plus a false-positive control (a mid-brief
+mention of the phrase must survive, and does).
+
+**The generalisable part: a low match rate can be a denominator problem, not a matcher problem.**
+I ran the 09-09 length diagnostic first and it *exonerated* the matcher — today/dictionary median
+ratio **1.26** against the 2.16 failure signature — so I left every threshold alone and went
+looking for what was inflating the item count instead. Had I trusted the rate and retuned, I
+would have loosened a healthy matcher to compensate for junk input.
+
+### I re-implemented two guards that already existed
+
+Early in the run I wrote `rewrite_pov_meta()` and `normalize_closing_tags()` into `lens_guard.py`
+from the 09-20 note's description, self-tested them against the real parent, and only later found
+both already live in **`lens_extra.py`** on `claude/great-clarke-k77umg` — more mature than mine
+(a `require=` floor, a flat-shape type check per entry, a rebuilt self-test). That is this repo's
+own "check the board before drafting a correction" lesson, self-inflicted on tooling. **The root
+cause is not carelessness, it is that `lens_extra.py` and `patch_radar.py` are still not on
+main** — they exist only on daily `claude/*` branches, which is the same tax the 09-10 → 09-16
+notes paid six times for `tools/ledger/`. Both are landed on main-track by this branch.
+
+### Twice today the BOARD was more accurate than the day's research
+
+This is the inverse of the usual correction direction and worth naming:
+- **Angular.** The Frontend lane reported "seven unpatched advisories, five new this window". The
+  board has carried **thirteen** since edition 074, sourced as eleven in OSV plus two that exist
+  only on GitHub. Seven is the window-visible subset. I amended the row to hold **both** numbers
+  rather than revising thirteen down to seven.
+- **pgvector.** The OLTP lane reported CVE-2026-103484 at face value; the board already recorded
+  (10-06) that only the `ivfflat` build path is reachable and **HNSW is not**.
+
+**A fresh brief is not automatically newer than the board.** Probe first, and when the board is
+more precise, amend it with the new corroboration instead of overwriting it.
+
+### probe_identifiers: 6 of 10 drafted rows were already tracked
+
+Including `redshift-odbc-1x-eos-dec31` **under that exact key**. Only Vitess's advisory sextet was
+genuinely new on the patch side. One sharp edge to carry: **noun collisions produce hits you must
+READ, not count.** My draft for the Databricks CLI row returned five "peers" that were all
+Snowflake *bundle* rows (the noun "bundle"), and the Iceberg 1.12.0 draft hit the V4 row on the
+product noun alone. `assert_probed` correctly refuses an undeclared row; it cannot tell you a hit
+is spurious. The count is a prompt to look, not a verdict.
+
+### A chip and its own lede disagreed, and only reading them back caught it
+
+The `v-events` shell chip said **"18 inside 14d"** while the section lede said **19** — from one
+dict, in one build. Cause: `nav_meta` used `0 <= days <= 14` and the generator used an unbounded
+`days <= 14`, and I had added an **already-shipped** row (Iceberg 1.12.0, dated 09-30) whose
+negative day count satisfied only the looser test. **A shipped release is not "inside 14 days".**
+Both now use one predicate, and the lede states the shipped row explicitly rather than hiding it
+in a count. Driving chips from one dict does not help if two call sites compute the value
+differently — same family as 09-16's "11 vs 5" and 09-20's typed-not-interpolated figures.
+
+**The Longitudinal assertion also fired, correctly:** `assert today_u == 10` failed because
+`longitudinal.json` had been computed *before* today's ledger file existed, so its last row was
+10-06. Recomputed. An assertion that compares prose to the table it describes is cheap and catches
+staleness no guard can see.
+
+### Pages: the run aggregate was authoritative, and the MCP listing lies
+
+Deploy verified `success` at **13:54:13Z**, ~38s after the push — the 10-06 rule ("read both the
+`deploy` job and the run aggregate; first terminal success wins") applied without needing the job
+endpoint at all.
+
+**New and worth knowing: `mcp__github__actions_list` with `method=list_workflow_runs` returns a
+STALE FIRST PAGE when filtered by branch/event.** Three calls returned an identical top row dated
+2026-10-03 while `total_count` climbed 101 → 127 → 143 — so it was seeing new data and serving
+cached ordering. **Passing the workflow id as `resource_id` returns current data** (run 190,
+head_sha matched, first try). `get_commit` on the SHA is the other reliable cross-check. A listing
+whose `total_count` moves while its rows do not is the tell.
+
+### Flag calibration: 10 urgent, 9 distinct stories
+
+Series over the last eight runs is `12, 11, 11, 10, 9, 10, 12, 10` — today sits **below** the
+fourteen-day mean of 11.1, which is worth stating because the day *reads* far heavier than that.
+Audited one at a time; all ten pass the literal definition.
+- **Four KEV clocks already expired:** JFrog ×3 at 32/12/12 days where **patching is not the
+  remedy** (appdev, shared with devops), GitLab 10.0 at 23, Apple CoreGraphics exploited with its
+  date passed (mobile), and ours — Oracle CVE-2026-21962 at **41**.
+- **Three "no fix exists for somebody":** Vitess (six High advisories naming untagged releases),
+  Doris 2.x/3.x (the download page now states the no-patches policy *in writing*), MongoDB 8.2.
+- **Three in force and blocking:** the Databricks CLI Terraform removal (today), three Play
+  requirements, and Power BI Desktop ≤ March 2026 losing OneDrive/SharePoint save.
+- **Nine lanes held `ok` while carrying real CVEs and wrote out their reasoning** — AI Hardware
+  declined ~105 local-privilege NVIDIA CVEs with fixes on every branch; AI App Dev declined 13
+  vLLM plus ~10 LiteLLM advisories, all fixed; Fabric declined **its own CVSS 10.0** because MSRC
+  marks it `Customer Action Required: No`, writing *"a 10.0 you cannot act on is not an emergency —
+  it is a transparency disclosure"*; MongoDB declined 56 CVEs; Open Formats declined the Parquet
+  8.1 on a narrow population; BigQuery, Redshift, Database Hardware and NL2SQL had no qualifying
+  CVE at all. **AI Daily held the OpenAI GPT-4/o-series API shutdown at `ok` because it lands
+  2026-10-23 — 16 days out, just outside the bar.** That is the rule working, not an oversight.
+
+### The no-fix register churned rather than grew
+
+**Closed two long-carried rows:** Aurora PostgreSQL caught up on 2026-09-29 at a **measured 47
+days** behind community (community 08-13 → RDS 08-25 → Azure same month → Aurora 09-29), and
+Percona Server for MongoDB is current on every production line, naming CVE-2026-82067 explicitly
+in 8.0.32-14. **Opened three:** Vitess, pgvector-on-managed (Azure publishes 0.8.2 against a fix
+in 0.8.7), MongoDB 8.2.
+
+**A fourth variant of "patched upstream, unpatched for you" appeared, and it is the nastiest
+because it is invisible from the advisory side: the fix shipped BEFORE the advisory.** uv patched
+a Windows path traversal in 0.12.18 on **2026-09-22**; GHSA-2cv4-cqwr-gwf7 published **2026-10-05**.
+A team driven purely by advisory feeds was two weeks behind a fix that already existed. The
+taxonomy is now (1) EOL branch (2) no-backport-by-policy (3) paywalled fix — Spring 5.3–6.2 need
+Enterprise Support while only 7.0.9 is OSS (4) fix-before-advisory. **None moves a scanner number
+the way you would expect.**
+
+### Scanner blindness: severity is now inversely correlated with visibility
+
+containerd's **Critical** checkpoint-restore escape finally got an id (CVE-2026-95837) and it is
+absent from **NVD, the GitHub Advisory Database and OSV simultaneously**, 36 days after
+publication — while its two **Moderate** DoS siblings are fully indexed with SEMVER ranges. A
+no-Criticals CI gate passes a vulnerable containerd without comment. Alongside: all six Vitess
+GHSAs return "not found" from OSV; Parquet's CVE-2026-73334 is absent from OSV entirely *and*
+**NVD's own record contradicts itself** (description says the fix is "presumably in 1.19", the CPE
+range says 1.12.2–1.18.0 affected — the CPE is right), so a human and a scanner reading the same
+record reach opposite conclusions. Snowflake's picture improved by exactly one of five.
+
+### Vendor docs are a lagging indicator, and they fail in the dangerous direction
+
+**Four independent stale-future-tense failures in one day**, every one of which tells a reader
+they still have time: the Databricks migration doc advertises an opt-out the CLI removed hours
+earlier; its entitlements doc says "will become the default" ten days after enforcement; Azure's
+pricing page says Standard "will be retired" a week after it was; Fabric's Runtime 2.0 doc states
+an *elapsed* September window in future tense. Add the structural move — Redshift's
+`behavior-changes.html` relocated from the `dg` guide to `mgmt`, and the dead `dg` URL returns
+**HTTP 200 with a 2,347-byte JS shell**, so a status-code-only check reads as success and yields an
+empty page. **Verify against changelogs, version artifacts and `whats-coming` pages, never prose.**
+
+### Lens health
+
+- **Guard 5 passed on the FIRST assembly: 735 cited units, zero uncited.** Mechanism unchanged
+  since 09-15 — `cite()` called inline by each row generator. `assert_table_shape` clean across 13
+  tables, `assert_structure` 15 sections, `assert_not_parent_identity` clean, all four identity
+  sites agree, alias-safe with the one date-retirement excluded, exactly one closing pair.
+- **Corrections AMENDED, never replaced** (the 10-06 rule): seven rows patched, **every one grew**
+  — the ledger gained 7,765 bytes rather than losing authored prose.
+- Events 68 → 70 (3 added, 1 date-retired), patch 160 → 161. Output **+24,000 bytes, accounted to
+  +15**: v-events +11,356, lensLedger +7,765, povContent +2,484, v-wn +1,714, v-longitudinal +350,
+  v-patch +312, v-read +4.
+- Scope on the edition's face: Today's Read ×4 chairs, Since yesterday, Event Horizon, Patch-Risk
+  Radar, Longitudinal, the ledger and every identity/chip site refreshed. Everything else
+  **carries forward from 084** — and the chips still say "carried from 084", deliberately: 085
+  carried those sections unrevised too, so 084 is the edition that last revised them. Bumping the
+  label to 085 would be a false claim.
+- **Still carried, still unfixed:** `claims[]` (171) and `patch[]` (161) hold the known same-story
+  duplication; per-item severity in the public ledger (which is what would make the Longitudinal
+  "High" column comparable) is flagged for a **sixth** consecutive edition.
+
+### Source access
+
+- **`phoronix.com` has REGRESSED past its standing note and is now effectively gone**: only
+  `rss.php` serves: every article page returns a Cloudflare "Just a moment" interstitial to curl
+  with a browser UA *and* 403 to WebFetch. Confirmed independently by the Database Hardware and
+  OLTP lanes. Downgrade the note to **RSS only, article bodies unreachable**.
+- **`git.kernel.org/pub/scm/linux/security/vulns.git/plain/cve/published/<year>/<CVE>.json` is
+  authoritative and uncapped for exact affected/fixed kernel ranges, and beat NVD** (whose CPE
+  block was empty for CVE-2026-97945). It settled the THP write-loss question: fixed from 6.6.158,
+  6.12.111, 6.18.53, 7.2.7 and 7.3-rc4 — and 7.0/7.1 appear **nowhere** in the fixed list, so a
+  host on an unmaintained 7.0/7.1 stable branch has no fix. Secondary coverage claiming 6.18.34 /
+  7.0.11 is wrong.
+- **`debezium.io/feed.xml` is an ATOM feed, not RSS** — entries use `<published>` and
+  `<content type="html">`, so a grep for `<pubDate>` returns nothing and **looks like a dead
+  feed**. Full post bodies are in `<content>`. Correct the standing note.
+- **The CISA KEV JSON feed** (`cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json`,
+  1.77 MB, catalogVersion 2026.10.04, 1,734 entries) was independently recommended by three lanes
+  as the best single route for KEV date arithmetic — one curl yields every `dateAdded`/`dueDate`.
+  Add it to SHARED RULES.
+- `blogs.oracle.com` 403s HTML *and* RSS for a **fifteenth** consecutive week; `mikedietrichde.com`
+  still an `sgcaptcha` shim; `pachot.net` 503'd this run. Connor McDonald and oracle-base carried
+  the lane. New: **`docs.oracle.com/en-us/iaas/releasenotes/feed/` gives DAY-precise dates for ADB
+  Serverless/Dedicated, Data Safe, GoldenGate, HeatWave and Exadata Insights** where the ADB docs
+  pages are month-precision only — but it holds just 50 items, so pair it with the docs pages.
+- Other corrections: `wiz.io` 403s WebFetch but serves curl with a browser UA;
+  `index.crates.io/<a>/<b>/<name>` is the working route for published crate versions
+  (`crates.io/api/v1` is challenged); `repo1.maven.org` 429s after ~6 metadata fetches, again;
+  **Airbyte is UNVERIFIED rather than quiet** (releases.atom stale at v2.0.0 / 2025-10-15, docs
+  release-notes 404). Databricks: **`release-notes/whats-coming` is the highest-value page in that
+  lane and is not in the standing notes** — several dated cutovers (Supervisor API EOL, variant
+  shredding, the partner-AI toggle) appear there and **never in a monthly release note**. Its Oct
+  page also carries an entry dated **two days in the future**; filter on the parsed date.
+- **WebSearch did not bind for any of the 19 agents** — lanes reported 2–17 calls and several said
+  the cap was never hit. Keep the launch order.
+
+### Security sweep, negative result — sixteenth consecutive run
+
+The Redshift agent fetched `behavior-changes.html` and `cluster-versions.html` in **both** variants
+and did the heading-SET diff that matches the 2026-09-01 attack shape. behavior-changes **HTML
+57,431 B / 28 headings vs markdown 35,410 / 25**; cluster-versions **219,007 / 94 vs 132,027 / 92**
+— and the behavior-changes figures moved **+1,454 / +1,278 bytes and +1 heading in BOTH variants**
+against the 10-05/10-06 baseline, fully accounted for by one genuinely new section (paused
+data-sharing producer snapshots) plus the inserted ODBC-extension sentence. **A delta in both
+variants is benign; a markdown-only delta is the signature to alarm on.** All five markers
+(`agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills`, `llms.txt`) returned
+**0 hits in all four files**, broadened to `skill`/`assistant`/`MCP` with the same result.
+**No fetched page's suggestion was executed and no skill file was loaded by any agent**, confirmed
+across all 19 lanes.
+
+Affordance sightings keep widening, recorded as data: **BigQuery's Data Transfer Service MCP
+server went GA carrying `create_transfer_config` / `update_transfer_config` /
+`delete_transfer_config` and a selectable `service_account_name`** — privilege delegation through a
+tool call, with plaintext secrets strictly disallowed as the one real guardrail; Oracle ships MCP
+in **ORDS 26.3 (now requiring an `ORDS_MCP_SERVER` role under RBAC)** and **SQLcl 26.3 with
+`skills_sync`**; Fabric's Core MCP Server and Databricks' Genie One MCP are both GA; Safari 27
+ships a local MCP server with DOM and network reach; dlt 1.31.0 gained a background agent runtime
+that executes loops from `AGENT.md` with declared data-access grants. Counterweights the same
+month: Anthropic's `verbatim_prompts` (no `@path` expansion, no slash-command dispatch — turn it on
+for every untrusted-input path), LiteLLM disabling stdio MCP servers by default, VS Code 1.141
+making agent sandboxing enterprise-enforceable, and macOS tightening Full Disk Access **naming
+autonomous agents as the reason**. The counter-example worth keeping: this window's single worst
+unfixed vulnerability, a CVSS 9.2 restricted-mode bypass, **is itself in a Postgres MCP server**.
