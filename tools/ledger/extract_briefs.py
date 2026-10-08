@@ -200,7 +200,12 @@ def split_contract(txt):
     # "Report for the run owner"), so match the shape rather than the wording:
     # an optional rule, then Report/Notes aimed at the caller/run owner.
     TAIL = re.compile(
-        r"\n(?:-{3,}\s*\n)?\s*\*{0,2}"
+        # 2026-10-07: agents overwhelmingly emit this as a MARKDOWN HEADING
+        # ("## Environment notes") -- 18 of 19 briefs this run. The old pattern
+        # allowed bold (**) but not "#", so every one of those sections survived
+        # into the dashboard AND was mined by step 4c as fake headlines. Allow an
+        # optional heading prefix. Shape, not wording (the 2026-09-12 rule).
+        r"\n(?:-{3,}\s*\n)?\s*(?:#{1,4}\s*)?\*{0,2}"
         r"(?:(?:Report|Notes?|Summary)\s+(?:to|for)\s+(?:the\s+)?"
         r"(?:caller|run[\s-]?owner|orchestrator)"
         r"|Caller report"
