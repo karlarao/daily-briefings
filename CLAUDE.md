@@ -6095,3 +6095,222 @@ for every untrusted-input path), LiteLLM disabling stdio MCP servers by default,
 making agent sandboxing enterprise-enforceable, and macOS tightening Full Disk Access **naming
 autonomous agents as the reason**. The counter-example worth keeping: this window's single worst
 unfixed vulnerability, a CVSS 9.2 restricted-mode bypass, **is itself in a Postgres MCP server**.
+
+## Run findings 2026-10-08 (edition 087)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:25 EDT, briefs in by ~09:45, dashboard published with the Pages deploy
+verified at **13:55:53Z** (~40s after the push), lens as artifact **v52**. `artifact-allow.sh`
+clean for its **30th consecutive unattended run** (`list`, a `read` with `path`, the plain
+`read` a republish needs, and the publish). **~3,905k research tokens — a new high** (prior
+~3,605k on 10-07); 909 extracted items, the most yet.
+
+### THE FINDING TO READ FIRST: my stale expectations, not the board
+
+I came in carrying six "corrections to make" from the CLAUDE.md notes and **four of them were
+already applied to the board**: Iceberg V4's spec PR merged (ed. 086), Redshift's TLS date at
+2026-10-31 with a SUPERSEDED row explaining the old conflation (ed. 086), JFrog's *four* KEV
+entries (ed. 071), and Fabric's Spring-2027 ODBC date as `fabric-odbc-desktop-gateway-spring-2027`.
+Today's lanes reported three of those as "CORRECTION to carried context" — and they were right
+that the **CLAUDE.md prose** was stale, not that the board was wrong.
+
+**The generalisable part: this file and the lens ledger drift apart, and the ledger is the one
+that is right.** The 10-07 note said "check the board before drafting a correction"; the sharper
+form is **check the board before trusting a note in this file**, because the board is corrected
+every edition and these notes are appended. The probe that settled it took one script and
+printed each drafted row against every parent row matching its nouns.
+
+### The reuse_key advisory had its best run: 3 of 3 drafted events already existed
+
+Every event row I drafted collided with a key the board already held — `python-315-ga-oct9`,
+`snowflake-cortex-eval-default-swap-oct13`, `gha-ubuntu-latest-2604-migration-oct19` — so all
+three were **re-asserted in place** and not one fresh slug was minted. This is the 09-19
+"absorption happened one step earlier" pattern at full strength, and it is the clearest
+vindication yet of the 09-11 correction (make duplicates visible at build time; never silently
+reuse, never silently ignore).
+
+**The counter-lesson from the patch side, which is the 10-07 edge restated: noun collisions
+produce hits you must READ, not count.** The MCP-SDK draft returned 12 "peers", all of them
+different stories sharing the noun `mcp` (Chainlit, Context7, LiteLLM, Grafana); the btree_gist
+draft returned 12 on `cidr`/`terraform`/`odbc` noise. All three patch rows were genuinely new.
+
+### assert_must_show fired twice and was right both times — and the ranking had a real gap
+
+The radar guard refused to ship a 24-row cut that dropped named must-show rows, exactly as
+designed. Two distinct causes, and neither was fixed by raising the cap:
+
+1. **A real ranking gap.** `patch_radar.rank` had no band for *new this edition, a fix exists,
+   action still outstanding*. The MCP TypeScript SDK row landed in band 3 (the 118-row
+   everything-else band) and fell off. Fixed by giving band 3 the **same `_touched` tie-break
+   band 1 already had**, on band 1's own stated rationale: within a long band, the rows that
+   moved are the ones a reader has not seen. All bands now return 3-tuples so they stay
+   comparable; 4-assertion self-test in-session. **This is on main-track.**
+2. **Two rows that genuinely did not belong in the top 24**, and saying so was the fix:
+   `mongodb-cve-82067` has `RESOLVED on every supported branch` in its `due` so the ranking
+   correctly sorts it last, and containerd **has a fix** (2.2.9/2.3.6/2.4.1) — its finding is a
+   *reporting* defect, so it belongs in Today's Read, not the radar. Both were removed from
+   must_show with the reason recorded in the source.
+
+**A third thing the guard exposed: I had misused the `due` field.** The MCP SDK row carried
+`2026-10-06`, which was the *publication* date — and `patch_radar`'s own docstring names that as
+root error #3 ("a bare past date in `due` overwhelmingly means *fixed then*, not *due then*").
+Re-stated as `no fix for credentials persisted pre-upgrade (rotate them)`, which is both true and
+the band the row belongs in. **A guard that keeps firing on the same row is often telling you a
+field is wrong, not that the guard is.**
+
+### The cap is binding, and the edition says so instead of hiding it
+
+Bands 0–2 now hold **41 rows** (11 past-due, 27 no-fix, 3 due inside 30 days) against a 24-row
+cap, so **17 genuinely actionable rows sit behind the cut** and band 3 can never surface. Rather
+than raise the cap and turn the radar back into a list, the lede states the number. Worth
+watching: if band 0+1 keeps growing, the cap stops being a readability device and starts being a
+filter.
+
+### The no-fix register got a fifth shape, and one that is new in kind
+
+26 rows carry no fix for somebody, **counted from each row's `due` field** (prose-matching
+returns 37; the gap is rows that merely *discuss* an unpatched thing — the 10-07 reason to state
+it from one field). Two refinements to that predicate this run: exclude `no fix below <version>`
+(a fix exists above it — vLLM) and `no fix path via scanners` (a visibility row). The 26 sort
+into **5 EOL-branch, 2 no-backport-by-policy, 4 upstream-abandoned, 3 managed-lag-with-no-GA-build,
+and 1 unfixable by design**.
+
+**That last category is new to this board.** btree_gist's `inet`/`cidr` GiST opclasses rely on an
+approximate representation and *sometimes miss rows they should return* — bug #19000 showed an
+index returning **zero rows** where a seq scan matched. It cannot be repaired without breaking
+on-disk compatibility; the 1.9 mitigation marks them non-default but **was committed to master
+only and never backported**, so PG 14–18 still silently picks the broken opclass today, and PG 19
+refuses to `pg_upgrade` a cluster containing one. Every other no-fix row is *unpatched*; this one
+is *unpatchable*, wrong right now, with no CVE to scan for.
+
+### Edition 086 shipped with two `</body></html>` pairs — the 09-20 defect was live
+
+The staged parent carried **two closing pairs**, which the 09-19 note claimed could not happen and
+the 09-20 note explained could (a builder appending to stored source, which already has one pair,
+gets two). `normalize_closing_tags()` collapsed it to one. **Call it immediately before write
+regardless of how the html got there** — that is the whole point of the 09-20 fix and it only
+works if it is unconditional.
+
+### Flag calibration: 12 urgent, 12 distinct lead stories
+
+Series over the last eight runs is `11, 11, 10, 9, 10, 12, 10, 12`, a 14-day mean of **11.0**, and
+a series high of **14** (set 09-16, 09-18, 09-20, 09-27). So today is above the mean and below the
+peak — "a heavy day inside a heavy month", which is what the Longitudinal prose now says,
+interpolated from the table rather than typed. Audited one at a time; all twelve pass the literal
+definition. Shared coverage without duplicated flags: **JFrog appears in both App Dev and DevOps**
+but they flagged on different leads (JFrog vs Argo CD), the 061-style overlap handled correctly.
+
+**Seven lanes held `ok` while carrying real CVEs and wrote out their reasoning** — AI Daily
+declined Langflow's 9.9 (patched, current line four releases past the fix) and held the OpenAI
+2026-10-23 shutdown at 15 days, one day outside the bar, for the second consecutive run; AI
+Hardware verified the KEV catalog contains **zero** NVIDIA/AMD/Intel-accelerator entries and
+declined 114 driver CVEs as local-privilege with fixes on every branch; Database Hardware reported
+**no CVE at all** in the window rather than padding; Open Formats declined Nessie/Lakekeeper/Polaris
+as all-fixed; BigQuery declined a May-patched server-side Critical as a republication; Redshift's
+correction *downgraded* its own lane. That asymmetry is the evidence the agents discriminated.
+
+### Ledger health
+
+909 items, **46 exact + 145 fuzzy = 191 merges, 0 double-counted**, dictionary 33,034 → 33,752.
+Match rate **21.0%**, squarely in the recent band, so the 09-09 length diagnostic was not needed.
+All 15 weakest accepted merges were eyeballed and every one was a genuine same-story rewording.
+`curate.py`'s fatal "pin not found" did not fire; all 17 picks and all 6 pins landed. `new_more`
+517.
+
+**One curation decision worth recording: six act-now stories were PINNED rather than picked.**
+Oracle's KEV row, the Databricks CLI removal, Power BI Desktop, the Snowsight cutover, the Cortex
+EOL and Doris are all **carried** in `ongoing` with honest day counts — putting a 42-day-overdue
+KEV entry under "🆕 New" is simply false. That is the 09-18 lesson (two bullets in one brief can
+produce a new key *and* a match) applied deliberately at curation time rather than discovered
+afterwards. 37 of 37 card rows carry a source; one `[src]` was attached by hand from a URL the
+Fabric brief already cited for that exact fact.
+
+### Lens health
+
+- **Guard 5 passed on the FIRST assembly: 725 cited units, zero uncited.** Mechanism unchanged
+  since 09-15 — `cite()` called inline by each row generator, never retrofitted; claims about this
+  edition's own board use the dated public-archive fallback because a vendor URL would be a wrong
+  link. `assert_table_shape` clean across 10 tables, `assert_structure` 15 sections,
+  `assert_not_parent_identity` clean, exactly one closing pair.
+- **All seven identity sites rewritten and read back**, with an explicit cross-site assertion that
+  the runbar, NAV and section chips agree on the three figures that appear in more than one place
+  (18 inside 14d, 26 no-fix, 12 urgent lanes). The runbar is rebuilt **whole** because its label
+  and value sit in separate spans, so no contiguous `Edition 086` literal exists to match (09-18).
+- **Corrections AMENDED, never replaced** (the 10-06 rule): seven rows patched, **every one grew**,
+  +6,724 bytes of authored prose rather than any lost.
+- events 70 → 68 (2 date-retired into `retired_events`, none dropped), patch 161 → 164. Output
+  **+8,131 bytes** against the parent — accounted to the three new patch rows, seven amendments and
+  the refreshed sections, against two retirements and one collapsed closing pair.
+- Scope on the edition's face: Today's Read ×4 chairs, Since yesterday, Event Horizon, Patch-Risk
+  Radar, Longitudinal, the ledger and every identity/chip site refreshed. Everything else **carries
+  forward from 084** and the chips still say so deliberately — 085, 086 and 087 all carried those
+  sections unrevised, so 084 remains the edition that last revised them. **Claim Watch did not grow
+  at all** (171 claims, 44 own-claims): no competitor shipped a perf or price claim worth a card,
+  which is the third consecutive edition with that shape.
+- **Still carried, still unfixed:** the known same-story duplication in `claims[]` (171) and
+  `patch[]` (164); per-item severity in the public ledger, which is what would make the
+  Longitudinal "High" column comparable, is flagged for a **seventh** consecutive edition.
+
+### Source access
+
+- **CORRECTION to a standing note: `mikedietrichde.com/feed/` is WORKING again** — HTTP 200,
+  105,796 bytes of `application/rss+xml`, no `sgcaptcha` shim — and it was the single most
+  productive source in the Oracle lane (7 in-window posts, all patching-operational). The
+  "captcha-blocked" note is stale. `connor-mcdonald.com/feed/` and `oracle-base.com/blog/feed`
+  also 200.
+- **REGRESSION: both documented kernel-mailing-list routes are dead.** `lore.kernel.org` now
+  serves an **Anubis proof-of-work challenge** instead of search results, and the `ratatoskr.run`
+  LKML mirror returns Cloudflare 403 — so the standing "ratatoskr works" note no longer holds and
+  three kernel patch series could not be read at source.
+- `blogs.oracle.com` 403s HTML *and* RSS for a **sixteenth** consecutive week (probed
+  `/database/rss`, `/optimizer/rss`, `/exadata/rss`, `/feed` and the site's JSON API, all 403 with
+  an identical 1,450-byte body). The Oracle `## Performance` channel is a structural gap and the
+  brief says so on its face. `pachot.net/rss.xml` now **resets the connection** (worse than its
+  503 last run).
+- **The HTTP-200-with-a-JS-shell failure is now measured across five vendors and has fingerprints:**
+  **2,347 bytes** on `docs.aws.amazon.com`, **~13 KB** on `docs.databricks.com`, 325 bytes on
+  `kafka.apache.org/downloads`, ~13 KB for Teradata, ~10 KB for Yellowbrick, 30 KB on two
+  `docs.snowflake.com` paths. **Size-check every doc fetch**; a status code is not a result.
+- `mcp__github__actions_list` with `resource_id` = the workflow id returned current data first try,
+  confirming the 10-07 finding that the branch/event-filtered listing serves a stale first page.
+- `repo1.maven.org` 429'd after **three** metadata fetches (worse than the ~6 in the standing note).
+- **WebSearch did not bind for any of the 19 agents** — lanes reported 1–8 calls and several said
+  the cap was never hit. Keep the launch order.
+
+### Security sweep, negative result — seventeenth consecutive run
+
+The Redshift agent fetched `behavior-changes.html` and `cluster-versions.html` in **both** variants
+and did the heading-SET diff that matches the 2026-09-01 attack shape. behavior-changes is
+**byte-identical to the 10-07 baseline** (HTML 57,431 / 28 headings vs markdown 35,410 / 25);
+cluster-versions moved **−278 B HTML / −247 B markdown with heading counts unchanged**. **A delta in
+both variants at a consistent ratio is benign; a markdown-only delta is the signature to alarm
+on** — and there were **zero markdown-only headings in either file**, the inverse of the attack
+shape. All five markers (`agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills`,
+`llms.txt`) returned **0 hits in all four files**, broadened to `skill`/`assistant`/`MCP` with the
+same result. **No fetched page's suggestion was executed and no skill file was loaded**, confirmed
+across all 19 lanes.
+
+**The counterweight is now stronger than the affordance news, which is new.** Against the usual
+spread (Fabric's Core MCP GA, Oracle's ORDS 26.3 and SQLcl 26.3 `skills_sync`, Databricks'
+`aitools install` writing skill files into three agents' directories, BigQuery's DTS MCP server
+with five mutating tools and a selectable `service_account_name`), this window the agent surfaces
+produced **their own Criticals**: the MCP TypeScript SDK credential exfil, GitLab's self-hosted AI
+Gateway prompt-template sandbox escape at 9.9, `next dev`'s MCP endpoint leaking project paths, and
+Postgres MCP Pro's unauthenticated 9.2 unfixed 124 days after public report. Oracle's ORDS added the
+`ORDS_MCP_SERVER` role gate a full release **after** shipping the capability. One sighting worth
+recording as data: `docs.snowflake.com`'s HTML carries an **`<aside class="sr-only">`** reading
+"For AI agents: documentation index at /llms.txt" — present for screen readers and invisible to a
+sighted human. Not agent-only (the markdown variant carries the equivalent), so not the 09-01
+shape, but the imperative phrasing now appears in a channel humans do not read.
+
+### Two retractions this file owes
+
+- **The Xcode 27 `--unsafe-always-allow-all-agents` flag could not be confirmed and should be
+  treated as withdrawn.** A full-text grep of Apple's own Xcode 27 release notes returns **zero**
+  hits for `unsafe`, `always-allow` or `allow-all`, and no source documents it. What *is*
+  primary-source documented is a security layer that "monitors and controls filesystem access by
+  coding agents and any processes they spawn".
+- **The Safari MCP note overstates the reach.** The command is `safaridriver --mcp`, gated behind
+  "Allow remote automation and external agents" in Safari → Settings → Developer, which must itself
+  be unhidden via an Advanced setting; Apple states the server runs locally and sends captured data
+  only to the agent you run. Carry the precondition, not just the capability.
