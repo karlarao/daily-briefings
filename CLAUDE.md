@@ -6574,6 +6574,57 @@ reasons also hands out every skill in that schema.
 "added the gate a release after shipping the capability" reading is right for ORDS and the version
 numbers were wrong.
 
+## PRIVACY BREACH FOUND 2026-10-11 — lens CONTENT is committed in the PUBLIC repo
+
+**Read this before committing anything under `tools/lens/`.** The stored prompt's
+rule is absolute: *"NEVER write oracle-lens.html (or any lens content) into the git
+repo or any file that gets committed/pushed — the repo and gh-pages are PUBLIC.
+Build it ONLY in the session scratchpad. Publish ONLY via the Artifact tool."*
+Two committed files break it:
+
+- **`tools/lens/build_lens_030.py` — on `main` itself**, since ~2026-09-23. It
+  carries a full chair lede ("The line a customer quotes at you first this
+  week…", "a trust-play gap standing wide open, and it costs nothing to walk
+  through"), the Claim Watch **counter/ask prose** ("Our counter is not a
+  competing multiplier…", "Offer to model their actual workload shape…"), and the
+  **Mirror** section's self-criticism ("Stop citing 30x", "this is one of our own
+  counter-stories, and it overreaches", Gap #1 widening).
+- **`tools/lens/build_lens_088.py` — on `claude/great-clarke-1w7mu8`**, with the
+  same `READ_LEDE` block for all four chairs ("That is the position to defend this
+  week", "our own KEV entry is 43 days past due").
+
+Neither is MOS-internal, customer-named or Oracle-confidential material — the
+inputs were public sources throughout — but it is **internal competitive framing
+written for one reader, sitting in a public repository**, which is exactly what the
+rule exists to prevent. It was introduced by runs that landed their point-in-time
+build script "for provenance"; the docstring of `build_lens_088.py` says so in as
+many words. The reasoning was good and the rule still outranks it.
+
+**What this run did:** deleted both files on this branch, and did **NOT** commit
+edition 089's `build_lens_089.py` (it carries the same class of prose — four hits
+on "our own …" in the chair ledes). `assemble_lens_089.py` was also withheld rather
+than audited line by line. The reusable machinery is unaffected and stays:
+`lens_guard.py`, `lens_extra.py`, `lens_links.py`, `patch_radar.py`,
+`ledger_surgery.py`, the fold maps and `probe_board.py` are all content-free
+(checked by grep, not assumed). `corrections_064.py` carries ledger **row** prose
+— dated vendor facts, not positioning — so it stays, but it is the nearest thing to
+a borderline case and a future run should not treat it as a precedent.
+
+**What this run could NOT do, and what Karl has to decide.** Deleting a file does
+not remove it from git history, and the repo is public, so the content may already
+be cloned, cached or indexed. Only Karl can choose among: rewriting history
+(`filter-repo` on those paths, force-push, which breaks every existing clone),
+leaving history as is and accepting the exposure, or making the repo private. A run
+must not do any of those unasked. Also note `claude/great-clarke-1w7mu8` still
+carries `build_lens_088.py` until it is merged or deleted.
+
+**Standing rule for every future run, stated so it cannot be re-derived away:**
+a point-in-time lens build script is **not** committable, however good the
+provenance argument is. If a future run wants the record, commit the *machinery* and
+keep the edition's prose in the scratchpad — the published artifact is already the
+provenance. **Grep any file you are about to put under `tools/lens/` for chair
+ledes, counter/ask prose and Mirror text before `git add`.**
+
 ## Run findings 2026-10-11 (edition 089) — and the 10-10 gap day
 
 **2026-10-10 (Saturday) NEVER RAN.** No commit, no `archive/2026-10-10.html`, no
