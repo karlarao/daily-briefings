@@ -27,36 +27,30 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    # 2026-10-09 hand curation. Order: KEV clocks expired or inside the bar,
-    # then "no fix exists for somebody", then requirements already in force,
-    # then dated cutovers, then the board corrections and RESOLUTIONS (a prior
-    # edition's urgent resolving is worth as much as a new flag -- 09-12).
-    # NOT picked, deliberately: Oracle CVE-2026-21962, the Databricks CLI
-    # Terraform removal, the CoreGraphics KEV date, Power BI Desktop, K8s 1.34
-    # EOL, the Play API-36 extension and the Atlas log-export cutoff -- all
-    # seven are CARRIED in `ongoing` with honest day counts and are PINNED
-    # below instead. Putting a 43-day-overdue KEV entry under "New" is false
-    # (the 09-18 lesson: two bullets in one brief can produce a new key AND a
-    # match, which puts one story on the card twice).
-    "CISA added Apache Struts CVE-2016-3081 and Strapi CVE-2023-22894 to KEV on 2026-10-08",
-    "Argo CD: four criticals, all CVSS 9.9, patched 7 Oct",
-    "pgvector CVE-2026-103484",
-    "Next.js 13.x and 14.x will not be patched.",
-    "Apache Doris 2.0.x / 2.1.x / 3.0.x / 3.1.x: no fix, ever",
-    "StarRocks 3.5 LTS: no release since 3.5.21 (28 Aug)",
-    "Postgres MCP Pro's CVSS 9.2 restricted-mode bypass has no fix",
-    "The quiet headline: Mongoid shipped eight CVEs on 2026-09-18",
-    "Apache Polaris CVE-2026-97395 (CVSS 8.1)",
-    "Go 1.27.2 and 1.26.9 (2026-10-08): 15 advisories",
-    "Pgpool-II patched seven CVEs on 2026-09-29",
-    "Bundle 2026_07 goes enabled-by-default during release 10.37, which is running now.",
-    "ODBC \u2192 ADBC: the default flip starts this month",
-    "Android developer verification went into effect 2026-09-30",
-    "OpenAI shuts down 17 model and fine-tune entries.",
-    "Correction to the carried note: this is NOT a database CVE.",
-    "Carried item RESOLVED (1/2): CVE-2026-82067 is patched on every supported branch.",
-    "Correction to carried context: Aurora PostgreSQL is no longer behind on the 28-CVE batch.",
-    "CARRIED-CONTEXT CORRECTION \u2014 the board conflates two containerd advisory batches.",
+    # 2026-10-11 hand curation (edition 089). Order: KEV clocks expired or
+    # expiring inside 3 days, then "no fix exists for somebody", then dated
+    # vendor cutovers inside the 14-day bar, then the two board RESOLUTIONS
+    # (a prior edition's urgent resolving is worth as much as a new flag -- 09-12).
+    # NOTE this run: the gap day (2026-10-10 never ran) means every carried
+    # countdown is 2 days stale; these picks are today's NEW wording, so they
+    # are correct as written.
+    "CISA KEV added Apache Struts CVE-2016-3081",
+    "Apple CoreGraphics CVE-2026-86950",
+    "CVE-2026-21962 verified: still in CISA KEV",
+    "Argo CD: four 9.9 criticals",
+    "runner brownouts resume tomorrow",
+    "10.37 (Oct 8",
+    "NO FIX EXISTS FOR AZURE",
+    "LiteLLM, Critical, CVSS 9.9, and it has no CVE id",
+    "CVE-2026-104850",
+    "Next.js 13.4.0",
+    "five advisories, every one with no fixed version",
+    "Go 1.27.2 / 1.26.9 fix 13 stdlib CVEs",
+    "8.2/8.1 are still unfixed by omission",
+    "CVE-2026-31377, unauthenticated access to FE meta-service",
+    "Google shuts down four preview endpoints",
+    "the silent MADV_FREE + THP data-loss bug now has a fix",
+    "Percona Server for MongoDB is unpatched" ,
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -64,12 +58,14 @@ PICKS = [
 # because the two phrasings share little vocabulary. A hand-read list beats a
 # loosened threshold here -- same reasoning as the lens fold_map.
 EXCLUDE_ONGOING = [
-    # 2026-10-09: same-story duplicates of a PINNED row, plus one urgent-scored
-    # row that is a release date rather than a deadline. Never exclude a row
-    # you also pin (09-15) -- each of these is a DIFFERENT row from its pin.
-    "Power BI Desktop from March 2026 or earlier can no longer save/share",
-    "Run pq-adbc-advisor against your biggest workspace this week",
-    "DuckDB 2.0 GA is expected in the second half of October",
+    # Meta/negative-result and weekend-exercise bullets: real content in the
+    # brief, but not "what changed since the last run".
+    "No BigQuery security bulletin was published",
+    "No new Oracle entries entered CISA KEV",
+    "Dry-run the ClickHouse 26.9 upgrade",
+    "Measure your own managed-rollout lag",
+    # second key for the pinned Genie sunset -- same story, undated wording
+    "/api/2.0/mcp/genie is deprecated",
 ]
 
 
@@ -81,18 +77,15 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    # 2026-10-09: act-now stories that are CARRIED rather than new, so they
-    # belong in `ongoing` with their day counts. Pins bypass the COMMENTARY
-    # heading filter because dated cutovers are almost always written under
-    # "## Heads up" (the 09-16 fix), and a missing pin is a SystemExit by
-    # design. Pin the SURVIVING wording (09-15).
-    "CVE-2026-21962 is 43 days past its CISA KEV due date",
-    "ALREADY IN FORCE \u2014 Databricks CLI v1.20.0 (2026-10-07) removed the Terraform deployment engine",
-    "2026-10-13 \u2014 CISA KEV due date for CVE-2026-86950",
-    "Already in force this month: Power BI Desktop March 2026 or earlier can no longer save or share",
-    "2026-10-27 (18 days): Kubernetes 1.34 end of life",
-    "2026-11-01 \u2014 Play target API 36 extension expires",
-    "Atlas Push-Based Log Export stops accepting new configurations on 2026-10-30",
+    # Carried dated cutovers just outside the 14-day bar with no recovery path
+    # once the date passes -- worth a row WITH an honest day count rather than a
+    # pick (the 09-18 rule: do not file a carried story under "New").
+    # The Genie pin is deliberately the DATED wording: the same story is carried
+    # on a second key whose text omits the date, and two rows for one story on a
+    # 60-second card is the 09-18 failure. Pin the dated/longer one, exclude the
+    # other -- never pin and exclude the same row (09-15).
+    "Atlas Push-Based Log Export stops accepting new configurations",
+    "2026-10-31 (20 days)",
 ]
 
 
