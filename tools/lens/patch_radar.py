@@ -31,6 +31,45 @@ OVERDUE_RE = re.compile(r"past due|passed|overdue", re.I)
 # A live KEV / actively-exploited clock, for the band-0 promotion below.
 KEV_RE = re.compile(r"\bKEV\b|actively[- ]exploited|under .{0,24}exploitation", re.I)
 DATE_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})")
+# A CVSS score as the briefs actually write it: "CVSS 9.9", "CVSS 3.1 9.8",
+# "CVSS 4.0 9.4", "(9.8 CRITICAL)", "cvss:3.1/...  9.8". Deliberately loose on
+# the prefix and strict on the number so a version string ("Doris 3.1.x") and a
+# day count ("47 days") cannot be read as a severity.
+_CVSS_RE = re.compile(
+    r"cvss[^0-9]{0,12}(?:[2-4]\.[01][^0-9]{0,8})?(10(?:\.0)?|[0-9]\.[0-9])"
+    r"|\b(10\.0|[0-9]\.[0-9])\s*(?:CRITICAL|HIGH)\b", re.I)
+
+
+def max_cvss(row: dict) -> float:
+    """Highest CVSS asserted anywhere in the row, or 0.0 when none is.
+
+    A row may name several scores (a vendor score and a CISA-ADP score that
+    disagree by seven points -- see the 2026-10-11 note). The radar ranks on the
+    WORST claim in the row, because that is the one that decides whether a reader
+    stops reading email; which authority is right is the row's prose to argue.
+    """
+    hay = " ".join(str(row.get(k) or "") for k in ("t", "due"))
+    best = 0.0
+    for m in _CVSS_RE.finditer(hay):
+        val = m.group(1) or m.group(2)
+        try:
+            v = float(val)
+        except (TypeError, ValueError):
+            continue
+        if 0.0 <= v <= 10.0:
+            best = max(best, v)
+    return best
+
+
+def sev_tier(row: dict) -> int:
+    """Coarse severity tier, LOWER sorts first (0 = most severe).
+
+    Coarse on purpose. A 9.9 and a 9.8 are the same reader action, so bucketing
+    keeps the band's recency signal meaningful inside a severity class instead of
+    letting a 0.1 difference reorder the whole band.
+    """
+    v = max_cvss(row)
+    return 0 if v >= 9.0 else (1 if v >= 7.0 else 2)
 
 
 class RadarError(RuntimeError):
@@ -71,7 +110,17 @@ def rank(row: dict, today: date):
             and KEV_RE.search((row.get("due") or "") + " " + (row.get("t") or ""))):
         return (0, n, 0)
     if "no fix" in due:
-        return (1, 0 if row.get("_touched") else 1, 0)
+        # 2026-10-12: band 1 gained a severity key. Until today it sorted ONLY on
+        # `_touched`, so the no-fix register's internal order was arbitrary within
+        # each half -- and `assert_must_show` caught the consequence on 2026-10-11:
+        # a row carrying four CVSS 9.9s (Argo CD, no CVE ids, absent from OSV and
+        # NVD) ranked #36 inside a 32-row no-fix band and fell off a 26-row cap.
+        # The 10-11 note named the fix as "a severity key inside band 1, not a
+        # bigger cap"; this is it. Severity outranks recency here because the
+        # register is long and slow-moving: a 9.9 a reader has seen before still
+        # matters more than a 5.3 they have not. Tiers are coarse (see sev_tier)
+        # so `_touched` still orders rows of comparable severity.
+        return (1, sev_tier(row), 0 if row.get("_touched") else 1)
     if n is not None and 0 <= n <= 30:
         return (2, n, 0)
     # 2026-10-08: band 3 gained the same touched tie-break band 1 already had.
