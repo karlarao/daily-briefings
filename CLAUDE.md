@@ -7392,3 +7392,27 @@ digests. `repo1.maven.org` returned **429 on a single metadata fetch**, so the s
 burst warning now triggers on one request. `cveawg.mitre.org/api/cve/<id>` returning
 `CVE_RECORD_DNE` is the cleanest available test that a CVE id is a phantom — worth adding
 to the toolkit after today.
+
+### Two git findings from this run's own publishing, both worth not repeating
+
+**1. A `git push | tail` retry loop silently reports success on failure.** I wrote the
+branch push as `if git push origin <b> 2>&1 | tail -3; then echo "PUSH OK"; ...` — and a
+shell pipeline's exit status is the **last** command's, so it is `tail`'s, which is always
+0. The push was rejected and the loop printed `PUSH OK`. It was caught only because the
+next command showed the branch had not moved. **Never test a push through a pipe.** Run
+`git push ...` bare and branch on `$?`, or capture with
+`out=$(git push ... 2>&1); rc=$?; echo "$out"`. The same shape appears wherever the
+routine pipes a command into `tail`/`head` for brevity and then tests it — the dashboard
+push happened to be written without the pipe, which is why it worked.
+
+**2. The designated `claude/*` branch's remote had been DELETED, and that makes
+`--force-with-lease` fail in a confusing way.** `git fetch origin <branch>` said
+`couldn't find remote ref`, while the stale local tracking ref still pointed at the old
+head — so the lease expected a commit that no longer exists anywhere and the push was
+rejected as `stale info`, which reads like a concurrent-writer conflict rather than
+"the branch is gone". The fix is `git remote prune origin` and then a **plain** push,
+which recreates the branch. Diagnostic that distinguishes the two cases: if
+`git fetch origin <branch>` says `couldn't find remote ref`, the branch is gone and no
+force is needed; if it fetches and the head differs from yours, that is a real concurrent
+writer and the 09-15 rebase rule applies. Worth knowing that branches now get cleaned up
+after merging, so an existing local `claude/*` branch may track nothing.
