@@ -67,9 +67,28 @@ def sev_tier(row: dict) -> int:
     Coarse on purpose. A 9.9 and a 9.8 are the same reader action, so bucketing
     keeps the band's recency signal meaningful inside a severity class instead of
     letting a 0.1 difference reorder the whole band.
+
+    CORRECTION, 2026-10-12, within hours of shipping the first version:
+    `assert_must_show` rejected the build and was right. The first cut returned
+    the BOTTOM tier for a row with no CVSS at all, which reads "unscored" as
+    "low" -- and on the real board 10 of 32 no-fix rows carry no score of any
+    kind, among them a silent Prometheus TSDB data-loss bug, an unauthenticated
+    pre-credential PgBouncer crash, and a kernel THP bug that discards dirty
+    folios. Two of those were must-show rows and the cap dropped them.
+
+    Absence of a score is not evidence of low severity; it is an unmeasured
+    item. This window's own strongest finding is that the most consequential
+    things frequently carry no CVSS -- AMD's TLBI erratum has no CVE at all,
+    and three of Argo CD's four 9.9s were never assigned one. So an unscored row
+    sorts in the MIDDLE tier: never above a measured Critical, never below a
+    measured Low.
     """
     v = max_cvss(row)
-    return 0 if v >= 9.0 else (1 if v >= 7.0 else 2)
+    if v >= 9.0:
+        return 0
+    if v == 0.0 or v >= 7.0:        # unmeasured ranks with High, not with Low
+        return 1
+    return 2
 
 
 class RadarError(RuntimeError):

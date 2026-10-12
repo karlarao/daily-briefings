@@ -27,30 +27,41 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    # 2026-10-11 hand curation (edition 089). Order: KEV clocks expired or
-    # expiring inside 3 days, then "no fix exists for somebody", then dated
-    # vendor cutovers inside the 14-day bar, then the two board RESOLUTIONS
-    # (a prior edition's urgent resolving is worth as much as a new flag -- 09-12).
-    # NOTE this run: the gap day (2026-10-10 never ran) means every carried
-    # countdown is 2 days stale; these picks are today's NEW wording, so they
-    # are correct as written.
-    "CISA KEV added Apache Struts CVE-2016-3081",
-    "Apple CoreGraphics CVE-2026-86950",
-    "CVE-2026-21962 verified: still in CISA KEV",
-    "Argo CD: four 9.9 criticals",
-    "runner brownouts resume tomorrow",
+    # 2026-10-12 hand curation (edition 090). Order: KEV clocks expiring today or
+    # tomorrow, then today/tomorrow vendor cutovers, then "no fix exists for
+    # somebody", then the dated cliffs inside 14 days.
+    # Rewritten every run against TODAY's wording. PICKS bypass the COMMENTARY
+    # heading filter by design, so a dated cutover written under "## Heads up"
+    # can still be picked -- which is most of them.
+    # NOTE (09-18 rule): four stories that LOOK like today's biggest news are
+    # deliberately NOT here -- the Snowflake 10-14 model removal, the Aurora
+    # 28-CVE correction, the Atlas log-export retirement and the Genie MCP
+    # sunset all MATCHED existing dictionary keys, so they are carried rows with
+    # honest day counts and they belong in `ongoing` as pins. Filing a carried
+    # story under "New" is the failure that put one story on the card twice.
+    "CISA KEV due date for CVE-2026-86950",
+    "The real Struts KEV entry is CVE-2016-3081",
+    "Second KEV entry in this lane, also expired 2026-10-11",
+    "macos-14 brownout is live right now",
+    "Azure Storage GPv1 retirement, forced and irreversible",
     "10.37 (Oct 8",
-    "NO FIX EXISTS FOR AZURE",
-    "LiteLLM, Critical, CVSS 9.9, and it has no CVE id",
-    "CVE-2026-104850",
-    "Next.js 13.4.0",
-    "five advisories, every one with no fixed version",
-    "Go 1.27.2 / 1.26.9 fix 13 stdlib CVEs",
-    "8.2/8.1 are still unfixed by omission",
-    "CVE-2026-31377, unauthenticated access to FE meta-service",
-    "Google shuts down four preview endpoints",
-    "the silent MADV_FREE + THP data-loss bug now has a fix",
-    "Percona Server for MongoDB is unpatched" ,
+    "BCR-2413, a network change with no opt-out",
+    "Argo CD: four CVSS 9.9 Criticals, and the 2.x line gets nothing",
+    "OpenAI shuts down a large legacy batch",
+    "Already past due: CVE-2026-21962",
+    "is in CISA KEV, added 2026-09-02",
+    "Aurora PostgreSQL ships pgvector 0.8.2",
+    "CONFIRMED, unchanged: Azure's built-in PgBouncer is 1.25.2",
+    "status is now a published policy",
+    "StarRocks 3.5 LTS has had no release since 3.5.21",
+    "The 8.2 gap, stated precisely",
+    "is still unfixed, and the project looks dormant",
+    "Equality deletes are now PROHIBITED in Iceberg V4",
+    "Vercel has pre-announced an out-of-band",
+    "one is an unauthenticated auth bypass with no fix for v4",
+    "Percona Server for MongoDB has shipped the fix",
+    # The run's sharpest correction: our own lead CVE id was a phantom.
+    "CVE-2026-61882 DOES NOT EXIST",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -60,12 +71,14 @@ PICKS = [
 EXCLUDE_ONGOING = [
     # Meta/negative-result and weekend-exercise bullets: real content in the
     # brief, but not "what changed since the last run".
+    "No product in this lane is in CISA KEV",
     "No BigQuery security bulletin was published",
-    "No new Oracle entries entered CISA KEV",
-    "Dry-run the ClickHouse 26.9 upgrade",
-    "Measure your own managed-rollout lag",
-    # second key for the pinned Genie sunset -- same story, undated wording
-    "/api/2.0/mcp/genie is deprecated",
+    "Inventory your pgvector version everywhere",
+    "Read the Pgpool-II watchdog CVEs as an architecture review",
+    "Dry-run the scene-lifecycle migration",
+    "Why nothing here is urgent, stated explicitly",
+    # same-story second key for a row picked above
+    "TODAY, 14:00 UTC 12 Oct",
 ]
 
 
@@ -77,15 +90,20 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    # Carried dated cutovers just outside the 14-day bar with no recovery path
-    # once the date passes -- worth a row WITH an honest day count rather than a
-    # pick (the 09-18 rule: do not file a carried story under "New").
-    # The Genie pin is deliberately the DATED wording: the same story is carried
-    # on a second key whose text omits the date, and two rows for one story on a
-    # 60-second card is the 09-18 failure. Pin the dated/longer one, exclude the
-    # other -- never pin and exclude the same row (09-15).
-    "Atlas Push-Based Log Export stops accepting new configurations",
-    "2026-10-31 (20 days)",
+    # Carried dated cutovers the title-only sev heuristic ranks `normal` because
+    # they carry no CVE id and no deprecation keyword, yet are the most
+    # consequential dated items on the card. A pin bypasses the COMMENTARY
+    # filter (09-16) and must name the SURVIVING wording -- never a row that
+    # EXCLUDE_ONGOING also kills (09-15).
+    "hard model removal",                       # Snowflake, 2026-10-14, queries FAIL
+    "Genie MCP Beta endpoint",                  # Databricks, 2026-10-31
+    "TabFM on BigQuery switches to token billing",   # 2026-10-30
+    "Atlas Push-Based Log Export stops accepting NEW configurations",  # 2026-10-30
+    # Two board RESOLUTIONS. A prior edition's urgent resolving is worth as much
+    # as a new flag (09-12), and both of these retire a carried "no fix" claim.
+    "Aurora is no longer behind on the 28-CVE batch",
+    # The new urgent that is a carried key rather than a new one.
+    "pgvector 0.8.7 fixes CVE-2026-103484",
 ]
 
 
