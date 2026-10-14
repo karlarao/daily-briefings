@@ -7701,3 +7701,213 @@ and the two parent-data defects. Events 70 → 72 (+3 new, 1 retired), patch 172
 parent, accounted for by the new rows, three full re-confirmation paragraphs prepended to
 enriched rows, four correction paragraphs and refreshed prose on four chairs. Quarterly
 Skills/Build re-rank due **2027-01-01**.
+
+## Run findings 2026-10-14 (edition 092)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:24 EDT, all 19 briefs in by ~09:50, dashboard published 13:56 UTC, lens
+**version 57** (`1791986954-9250`). **~3,870k research tokens** (fourth-highest; 10-11 ~4,209k,
+10-13 ~4,010k, 10-12 ~3,990k). Artifact hook clean for its **16th consecutive unattended run** —
+`/tmp/claude-artifact-hook.log` holds exactly 4 records (list, `read` with `path`, the plain `read`
+a republish needs, publish), **all `PreToolUse`, all `mode=auto`, zero `PermissionRequest`**;
+`bash-allow.sh` 503 records, 247 allow / 256 pass, same shape. That is the healthy signature the
+09-15 note asked to be able to recognise. Ledger health: **900 items, 43 exact + 147 fuzzy = 190
+matched (21.1%), 0 double-counted**; dictionary 36,731 → 37,441; tally guard bumped 190, guarded 0.
+Title-length diagnostic **1.15×** (healthy band), so the 09-09 check exonerated the matcher for a
+sixth consecutive run and no threshold was touched.
+
+### Flag calibration: 13 urgent, 12 distinct stories
+
+Equal to yesterday; the series high is 14 (reached 09-16, 09-18, 09-20, 09-27). Audited one at a
+time. **Four KEV clocks past due** (Oracle CVE-2026-21962 at 48 days with forensic triage — and the
+Oracle lane *grepped the September CSPU advisory for the id and got zero hits*, which is the
+evidence that closes the "wait for the next CPU" argument rather than restating it; Apple
+CVE-2026-86950 at 1 day; Pixel CVE-2026-58704 at 25 days with forensic triage; LiteLLM at 28).
+**Seven "no reachable fix"**: Mongoid 7.2–7.5 (unauthenticated 9.8 that permanently deletes
+records, no release since 2023), Argo CD v2.x (four 9.9s, "Patched versions: None"), the
+shmem/tmpfs THP dirty-bit bug (no fix for 6.12/6.6/6.1 LTS), StarRocks CVE-2026-80346 (unfixed on
+*every* released train), NVIDIA AIStore (a collapsed-`host_net` cluster cannot boot into the 5.0
+that carries the fix), Go 1.25 (EOL, missed the 15-CVE stdlib batch), Struts 2.3/2.5.
+**Two dated cutovers inside 14 days** plus the Oracle JDK 21 licence change on 10-20.
+**Six lanes held `ok` while carrying real Criticals and wrote out their reasoning** — BigQuery
+measured a third consecutive zero (32 release-note entries, 26 keywords, zero hits), Databricks
+parsed 4,536 MSRC vulnerabilities across two months for zero Azure Databricks entries, Fabric
+parsed the full 25 MB October CVRF for zero Fabric/Synapse/OneLake/Power BI, Open Formats declined
+Parquet's 8.1 because every affected version has a reachable config mitigation, Redshift declined
+its TLS cutover at 17 days and named the day it enters the bar, NL2SQL reported no dated deadline
+rather than inventing one.
+
+### THE DAY'S LEAD, MEASURED IN NINE LANES: a clean scan is evidence of nothing
+
+Not one vulnerability — the machinery for finding them, and this time with **controls**:
+
+- **Frontend ran the best methodology of the run.** Against npm's own bulk advisory endpoint,
+  `vite@8.3.2` → **0** advisories, `vite@6.4.3` → **0**, `storybook@10.6.1` → **0**, while the
+  controls behaved correctly (`vite@5.0.0` → 17, `next@14.2.35` → 23). All five GHSA ids 404 from
+  OSV while CVE-bearing siblings from the same week resolve. **So the common factor is the MISSING
+  CVE ID, not the project** — which generalises the 10-13 Vite finding.
+- **Kubernetes' own CVE feed lists two ids that do not exist.** CVE-2026-2270 and CVE-2026-76654
+  both return `CVE_RECORD_DNE` from MITRE and `totalResults: 0` from NVD a month after
+  publication, while the k8s feed links each to a cve.org record.
+- **containerd cites ids that resolve nowhere**: CVE-2026-95839 (named in three release notes) is
+  DNE, and `GHSA-hc94-p972-ch66` (named in all four) 404s on GitHub and is absent from OSV.
+- **BuildKit's ten advisories are absent from OSV at 14 days** — a full query returns 17 records
+  whose newest is 2026-08-19.
+- **Parquet**: `org.apache.parquet:parquet-hadoop` returns literally `{}` at 35 days for a CVSS-8.1
+  credential-exfiltration issue **with a GA fix**. And **Arrow 26.0.0 fixed the same design with no
+  CVE at all**, closed as a plain configurability request a week after the Parquet CVE published.
+- **MongoDB proves it is vendor-side, not tooling**: `mongoid@7.5.4`, `mongoid@9.0.11` and
+  `mongo-driver/v2@v2.9.1` each return zero, while **`pymongo@4.18.1` correctly returns three
+  GHSAs** — inside one vendor the Python team files machine-readable advisories and the Go and Ruby
+  teams do not.
+- Plus: StarRocks' GHSA page is **empty** against three published CVEs; Snowflake CLI CVE-2026-92903
+  (8.2) has no OSV record *ever* for either package name and discloses as "Security improvements";
+  ~15 High Vitess advisories carry "CVE ID: None known"; Gradle's three Highs have no CVE id at all.
+
+**The decidable question, best phrased by the DevOps lane: "worth deciding explicitly whether your
+release gate reads advisory publication or fix availability — because right now it is reading
+neither."** A gate written as "no Criticals" measures advisory-metadata completeness.
+
+### A `CVE_RECORD_DNE` is a point-in-time measurement, not a permanent property
+
+The 10-13 note recorded four phantom ids. **One has materialised: CVE-2026-77459 was published at
+MITRE on 2026-10-13T16:26:47Z**, six days after Argo CD's own advisory cited it, CVSS 9.9. So that
+probe was correct *at the time* and is now stale. **Re-probe before repeating a DNE claim.** The
+counter-example in the same run: MariaDB's CVE-2026-92262 has been DNE for **two months**, and the
+OLTP lane did the work the board never did — the ids actually fixed in MariaDB's August releases
+are six Oracle-MySQL-assigned CVEs scoring **2.7 to 6.6**, so the 9.9 headline has no corroborating
+record anywhere.
+
+### THE BOARD IS AHEAD OF THIS FILE, AND TODAY IT WAS 19 OF 21
+
+`probe_identifiers`/key probing found **19 of 21 candidate rows already on the board — the highest
+ratio in the series.** Only three were genuinely new (the shmem THP bug, Storybook's 9.4, StarRocks
+CVE-2026-80346); seven were **enriched in place** rather than given fresh slugs. And **five of
+today's drafted corrections were already applied here**: the Spring CISA-ADP framing (10-09), the
+Parquet NVD self-contradiction (10-07), the Iceberg V4 spec PR being merged rather than open
+(10-07), the Fabric Runtime 2.0 lapsed window (10-07), and the Databricks Claude Sonnet 4
+retirement (already retired as a dated event on 10-13). **Fourth consecutive edition where checking
+the board first would have saved the work.** Three of those five were in *this file's* carried
+context and wrong there — **the board is canonical, these notes are not.**
+
+### Two cross-lane reconciliations that only exist because two agents disagreed
+
+1. **AMD TLBI #1718 — neither hardware lane had it right alone.** AI Hardware established the
+   automatic workaround (`X86_BUG_TLBI`) is in **no** stable branch, grepping six series. Database
+   Hardware established a **reachable mitigation DOES ship** — the `tlbi=` cmdline switch, in
+   6.18.y since 2026-08-19, so boot `tlbi=ipi`. Both true. The row now says both and **left the
+   no-fix register for "a fix you must opt into"**, which is a materially different instruction to
+   give a fleet. Two lanes covering one story is what produced that.
+2. **The `claude-4-sonnet` retirement was a three-platform story.** AI Daily: on Anthropic's
+   platform the 2026-10-15 date is phantom (`claude-sonnet-4-20250514` retired 2026-06-15; the only
+   10-15 belongs to `claude-haiku-4-5`'s "not sooner than" *floor* on an Active model). Databricks:
+   it retired **2026-10-09**, five days ago, so the action is retrospective. Snowflake: the Cortex
+   judge model hits hard EOL **today**. Three platforms, three clocks, one model name — **a
+   model-retirement row must name its platform.**
+
+### Patch radar: `assert_must_show` fired twice and found two genuine ranking bugs
+
+Both fixed in the tool, cap untouched at 26, with self-tests including negative controls:
+
+1. **A KEV clock fell OUT of band 0 the day after its deadline passed.** The band-0 clause required
+   `0 <= n <= 14`, so apple-coregraphics-86950 (actively exploited, due 2026-10-13) dropped to band
+   3 overnight. **A KEV entry is MORE urgent the day after its deadline, not less** — the obligation
+   is now breached. Now accepts any `n <= 14`; it ranks #7.
+2. **The no-fix predicate could not see better prose.** It was a bare `"no fix" in due` substring
+   test and missed **"no reachable fix"** — the phrase a run reaches for when the fix exists but
+   cannot be applied. **First time in four editions of this class where the ROW was right and the
+   PREDICATE was wrong**, so the fix belongs in the tool: a future run will write that phrase again
+   because it is more accurate. Now a tight regex anchored to `due` only (the 10-13 note measured a
+   prose-wide predicate matching 23 of 160 rows).
+3. **And `mark_touched` took a single marker string while the build writes two.** Mongoid's row
+   carried "RE-CONFIRMED 10-14" rather than "CORRECTED 10-14", so it was never flagged touched and
+   fell off the cap. **A row whose claim was re-measured has moved as much as one whose text was
+   corrected.** Now variadic, with single-string back-compat.
+
+**Three must-shows were WITHDRAWN rather than force-ranked**, which is the other half of using that
+guard honestly: Vitess, StarRocks CVE-2026-82306 and AMD TLBI all genuinely *improved* today. A
+risk radar is for what you must act on; a row that moved toward "fixed" is Since-yesterday
+movement, not radar material. Storybook was withdrawn for the mirror reason — its fix is reachable
+with a named version, which is ordinary patching.
+
+### `assert_alias_safe` has no notion of `retired_events`, and that is guard 2's real contract
+
+The three past-dated events retired this edition read as "3 parent keys vanished". They left by the
+**explicit retire rule** and are preserved in `retired_events` — which is precisely what guard 2
+permits. Rather than loosen `assert_alias_safe`, this run added a named check asserting the
+*destination*: every parent key must be present, aliased, **or in `retired_events`**. Worth
+promoting into `ledger_surgery` next to the alias check. Also held: **the recurring `macos-14`
+brownout window was NOT retired** on a past instance (six more published windows before 11-02) —
+the 10-13 rule working.
+
+### Four ledger corrections, applied before any section was generated
+
+- **PostgreSQL 19 GA slipped three weeks, 2026-10-29 → 2026-11-19**, RC2 inserted 11-12. The
+  release manager's words for the cycle are "atypical". **So 2026-11-12 now carries RC2, the 14–18
+  minor release and PostgreSQL 14's EOL at once.** Beta 4's five reverts are unchanged.
+- **Azure GPv1: the month-only reading was right and today found the SOURCE of the wrong day** —
+  Microsoft's own two pages contradict each other, the milestone table saying "October 2026" while
+  a sibling upgrade page says "October 13, 2026" and "Q1 2026". **Rule this yields, sharper than
+  the old one: treat a day-precise date that appears only in PROSE as unverified until the
+  milestone table carries it.**
+- Two key-pair folds (AMD TLBI, Argo CD), every loser preserved in `aliases[]`.
+- **A correction I drafted and did NOT need, for the fourth consecutive edition** — see above.
+
+### The Aurora lag finding is RESOLVED, and the lag MOVED
+
+The carried "Aurora runs weeks behind community/RDS/Azure" row is closed for the 2026-08-13 batch:
+Aurora shipped all five majors on 2026-09-29. **But the residual managed lag moved from the engine
+to the EXTENSIONS and the pooler, where nothing watches it** — pgvector is 0.8.2 on RDS, Aurora
+*and* Azure against upstream 0.8.7 (five releases, four memory-safety fixes, including two HNSW
+index-corruption fixes and an 8.8 RCE), and Azure's PgBouncer is pinned at 1.25.2 and went from
+three unpatched CVEs to **six** today. **Engine-version dashboards are the wrong instrument.**
+
+### Other findings worth not re-deriving
+
+- **Guard 5 earned its keep again on the same class as 09-17/10-13** — two uncited units, both
+  claims about *this edition's own board* (which key folded into which), where a vendor URL would
+  be a wrong link and the dated archive fallback is the honest citation. Final: **735 cited units,
+  zero uncited**; `assert_table_shape` 10 tables, `assert_structure` 15 sections.
+- **An unclosed paren per chair block** cost one cycle: `NAME = (` followed by implicit string
+  concatenation and a trailing `+ attention([...])` whose `])` closed only the inner call. Python
+  then read the next assignment as a continuation and reported "perhaps you forgot a comma" at the
+  *first* line of the block. Bisecting prefixes misleads here (every prefix cut mid-function looks
+  broken); `ast.parse` on the whole file points at the right place.
+- **`refresh_rows` returns a report list, not a tuple**, and `patch_radar.select` asserts
+  internally. Both cost a cycle to rediscover.
+- **A SIXTH delivery mechanism for agent-directed content, and the first that is a DIRECTIVE
+  rather than a pointer.** `docs.dynamo.nvidia.com/llms.txt` carries a heading literally reading
+  "## Instructions for AI Agents" that tells the fetcher to **connect to an MCP server** at
+  `_mcp/server` — and the AI Hardware lane verified the asymmetry: that string appears **0 times**
+  in the human HTML of the same site. Register now: markdown-variant (AWS 09-01), `aria-hidden`
+  (CockroachDB), `sr-only` aside (Snowflake), a visually-hidden div whose class is literally named
+  **`hiddenDirective`** (MongoDB, site-wide, CSS fetched and confirmed `clip:rect(0,0,0,0)`),
+  an openly first-party git repo (Oracle `skills sync`, unpinned `main`), and this.
+  **And the CockroachDB block is a MINTLIFY PLATFORM FEATURE, not a Cockroach authoring choice** —
+  the page now ships `_mintlify-banner-script` alongside the `llms-txt-v2` flag, so every
+  Mintlify-hosted docs site with it on carries the same hidden block. That retroactively explains
+  the Firebolt sighting. **No fetched page's suggestion was executed and no skill file was loaded
+  by any of the 19 agents.**
+- **New source technique, and it is how the best number of the day was obtained:** `tpc.org`
+  executive-summary PDFs are **not readable by WebFetch** (it sees raw FlateDecode streams) but
+  extract cleanly with **`pdftotext -layout`** on the saved file. That is how DB Hardware got the
+  audited 3-year cost sheet showing **software at 76.1% of TCO, compute at 7.5%, and provisioned
+  IOPS at 1.6× the entire compute bill**.
+- **`phoronix.com` is confirmed regressed by two independent lanes** — Cloudflare JS challenge to
+  curl-with-browser-UA as well as 403 to WebFetch. The standing "serves fine to curl" note is out
+  of date. `git.kernel.org` is the better substitute anyway.
+- **Pages deploy verified by reading the `deploy` JOB and its `completed_at`** (the 09-14 rule plus
+  the 10-13 extension). `build` succeeded 13:55:53Z, `deploy` completed `success` **13:56:18Z**,
+  ~41s after the push. No re-trigger, no wasted build. At the first look the run had only a `build`
+  job, which is the 09-17 "deploy does not exist yet" shape — not a stall.
+
+**Scope, on the edition's face:** 092 refreshes Today's Read on all four chairs, Since yesterday,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites. Claim
+Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals, Build
+Radar, Skills Radar and Vendor Dossiers **carry forward from 091 and the edition says so** — no
+competitor shipped a perf or price claim worth a card, `claims[]` did not grow, and the depth went
+into the correction pass, the two radar-ranking fixes and the enrichment of seven existing rows.
+Events 72 → 69 (3 retired, 0 added — every dated candidate was already on the board), patch
+174 → 175 (+3 new, 7 enriched, 2 folded). Output **2,106,649 bytes, +4,122** against the parent,
+accounted for by the new rows and enrichment prose against two folds and three retirements.
+Quarterly Skills/Build re-rank due **2027-01-01**.
