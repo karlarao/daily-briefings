@@ -115,9 +115,26 @@ def refresh(text: str, own: str, today: str, *, window: int = 60):
             left.append((stated, snip))
             continue
         actual = abs(delta)
-        if stated == actual:
+        # 2026-10-15: the noun has to agree with the number. The 10-15 run
+        # rewrote a Snowflake row from 2 to 1 and shipped "**1 days**" onto the
+        # one row that lands tomorrow -- the single most-read countdown on the
+        # board. Only the NUMBER span was ever replaced, so a correct rewrite
+        # produced incorrect prose, and the plurality case is reached precisely
+        # when a deadline is one day out. Group 2 exists on COUNT (3 groups) and
+        # not on COMPACT ("2d out"), whose noun is already number-blind.
+        noun_edit = None
+        if len(c.groups()) >= 3 and c.group(2):
+            want = "day" if actual == 1 else "days"
+            have = c.group(2)
+            if have.lower() != want:
+                want = want.upper() if have.isupper() else want
+                noun_edit = (c.start(2), c.end(2), want)
+        if stated == actual and noun_edit is None:
             continue
-        edits.append((c.start(1), c.end(1), str(actual)))
+        if stated != actual:
+            edits.append((c.start(1), c.end(1), str(actual)))
+        if noun_edit:
+            edits.append(noun_edit)
         fixed.append((stated, actual, snip))
 
     for a, b, rep in reversed(edits):          # right-to-left keeps offsets
@@ -141,3 +158,35 @@ def refresh_rows(rows: list, today: str, *, datefield: str = "date",
                 report.append({"k": r.get("k"), "field": f,
                                "fixed": fixed, "left": left})
     return report
+
+
+def _selftest() -> str:
+    """Plurality + sense cases. 2026-10-15."""
+    cases = [
+        # (text, own date, today, expected substring)
+        ("<b>2026-10-16</b> &mdash; 2 days", "2026-10-16", "2026-10-15",
+         "1 day"),
+        ("2026-10-16 (2 days out)", "2026-10-16", "2026-10-15", "1 day out"),
+        ("2026-10-16 (1 days out)", "2026-10-16", "2026-10-15", "1 day out"),
+        ("2026-10-17 (1 day out)", "2026-10-17", "2026-10-15", "2 days out"),
+        ("2026-10-13 (1 days past due)", "2026-10-13", "2026-10-15",
+         "2 days past due"),
+        ("2026-10-14 (2 days past due)", "2026-10-14", "2026-10-15",
+         "1 day past due"),
+        ("2026-10-16 (2d out)", "2026-10-16", "2026-10-15", "1d out"),
+        # untouched: no date adjacent to the count
+        ("47 days behind community", "2026-10-16", "2026-10-15",
+         "47 days behind"),
+    ]
+    ok = 0
+    for text, own, today, want in cases:
+        got, _f, _l = refresh(text, own, today)
+        if want in got:
+            ok += 1
+        else:
+            print("  FAIL", repr(text), "->", repr(got), "want", repr(want))
+    return f"{ok}/{len(cases)}"
+
+
+if __name__ == "__main__":
+    print("countdowns self-test:", _selftest())

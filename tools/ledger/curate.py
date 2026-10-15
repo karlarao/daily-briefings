@@ -24,84 +24,80 @@ import ledger as L
 # change in version control; 2026-09-12 did.
 COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "heads up"}
 
-# Titles hand-picked for the card, in display order. Matched by substring
-# against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    # 2026-10-14 hand curation (edition 092). Order: KEV clocks already expired,
-    # then "no reachable fix for somebody", then dated cutovers inside 14 days.
+    # 2026-10-15 hand curation (edition 093). Order: the day's lead (two unauth
+    # RCEs no scanner can see), then KEV clocks already expired, then "no
+    # reachable fix for somebody", then dated cutovers inside 14 days.
     # Rewritten every run against TODAY's wording. PICKS bypass the COMMENTARY
     # heading filter by design, so a dated cutover written under "## Heads up"
     # can still be picked -- which is most of them.
     #
-    # 09-18 RULE APPLIED FOUR TIMES TODAY. These stories are in BOTH `new` (a
-    # fresh key off one bullet) and `ongoing` (a match off another bullet in the
-    # same brief), and putting a carried story under "New" is simply false. In
-    # each case the pick is DROPPED and the carried row kept with its honest day
-    # count, pinned below: Kubernetes 1.34 EOL (day 3), ubuntu-latest -> 26.04
-    # (day 12), and the BigQuery TabFM cutover (day 7). The fourth is a
-    # cross-lane overlap rather than a key split: LiteLLM CVE-2026-59822 is in
-    # `new` from BOTH AI App Dev and AI Daily, so only the App Dev wording --
-    # which carries the reachable fix version -- is picked.
+    # 09-18 RULE APPLIED SEVEN TIMES TODAY -- a record. These stories sit in
+    # BOTH `new` (a fresh key off one bullet) and `ongoing` (a match off another
+    # bullet in the same brief), and putting a carried story under "New" is
+    # simply false. In each case the pick is DROPPED and the carried row kept
+    # with its honest day count, pinned below: BCR-2413 (day 4, lands tomorrow),
+    # Apple CVE-2026-86950 (day 3), ubuntu-latest -> 26.04 (day 13), Kubernetes
+    # 1.34 EOL (day 2), Argo CD's no-fix tail (day 2), the Doris trio (day 6)
+    # and the macos-14 brownout (day 2, also tomorrow).
     #
-    # ONE DELIBERATE EXCEPTION, recorded because it bends the 09-18 rule.
-    # Oracle CVE-2026-21962 is a 48-day-old story that the matcher gave a FRESH
-    # key (the day count in the headline changes every run, which is exactly
-    # what defeats the fuzzy match), and there is no carried row to pin instead.
-    # It is picked anyway because its own title states "48 days overdue" -- the
-    # row is self-labelling, so no reader is misled about its age. The 09-18
-    # rule exists to stop a DAY COUNT lying; here the title carries the truth.
-    "PgBouncer 1.26.1 — SCRAM authentication bypass, patched today, no backport.",
-    "Mongoid CVE-2026-93762: unauthenticated CVSS 4.0 9.2",
-    "AIStore: CVSS 10.0 unauthenticated RCE, and the fix is a one-way two-hop migration.",
-    "CVE-2026-21962 — CVSS 10.0, CISA KEV, due 2026-08-27, now 48 days overdue",
-    "KEV due 2026-10-13, now 1 day past due, and the fix is in the OLD train",
-    "KEV due 2026-09-19, now 25 days past due, forensicTriage",
-    "LiteLLM's KEV clock is 28 days past due.",
-    "Argo CD's 2026-10-07 batch: four CVSS 9.9 Criticals, and v2.x has no patch for them.",
-    "shmem/tmpfs THP loses the dirty bit on zap, and there is no fix for 6.12/6.6/6.1 LTS",
-    "crystaldba/postgres-mcp — CVSS 9.2 Critical, unauthenticated, NO FIX.",
-    "Storybook: Critical CVSS 9.4 — a malicious website can rewrite your story files",
-    "Angular ≤19.2.25: seven High advisories with no fixed version",
-    "any authenticated user can drop a legacy synchronous MV in any database, and there is still no fix",
-    "Go 1.25 is EOL and did not get the 2026-10-08 batch of 15 stdlib CVEs.",
-    "Oracle JDK 21 drops to the OTN licence with the 20 October 2026 CPU — 6 days out.",
-    "2026-10-14 (today): Cortex eval metric version v1 and judge model claude-4-sonnet reach end of life",
+    # ONE DELIBERATE EXCEPTION, carried over from 10-14 and still sound.
+    # Oracle CVE-2026-21962 is a 49-day-old story the matcher gives a FRESH key
+    # every run, because the day count in its headline is what defeats the fuzzy
+    # match, and there is no carried row to pin instead. It is picked anyway
+    # because its own title states "49 days past due" -- the row self-labels, so
+    # no reader is misled about its age. The 09-18 rule exists to stop a DAY
+    # COUNT lying; here the title carries the truth.
+    "Upgrade today: next@16.4.1 or next@15.5.28, plus React 19.3.1",
+    "Storybook 10.6.2, 9.1.21 and 8.6.19 all shipped 2026-10-12",
+    "2026-10-11 — already passed. CISA KEV remediation date for CVE-2016-3081",
+    "CVE-2026-21962 — 49 days past due, re-measured today",
+    "Pixel CVE-2026-58704 re-checked: now 26 days past due",
+    "LiteLLM CVE-2026-59822: the clock is 29 days past due",
+    "Mongoid shipped a coordinated 5-branch security release",
+    ".NET shipped 24 CVEs in one Patch Tuesday (2026-10-13) and the one to act on is Kestrel",
+    "CVE-2026-103484 is the one that matters: 8.8 HIGH, IVFFlat out-of-bounds write",
+    "The pooler count went from three to six, and the transition is datable to yesterday.",
+    "StarRocks CVE-2026-80346 — no fix on any train, 50 days after publication.",
+    "Go 1.25 is EOL and confirmed to have missed the whole 15-CVE batch",
+    "2026-10-23 (8 days) — OpenAI shuts down 29 legacy model IDs",
+    "2026-10-20 (5 days) — Oracle JDK 21 permissive licensing ends",
+    "Practical gate design, from the above: key on fixed version reached",
 ]
 
-# Hand-verified same-story rows to keep out of `ongoing`: each restates a story
-# already carried in PICKS above, and the fuzzy dup check does not catch it
-# because the two phrasings share little vocabulary. A hand-read list beats a
-# loosened threshold here -- same reasoning as the lens fold_map.
 EXCLUDE_ONGOING = [
     # "Worth your weekend" exercises that the extractor caught as headlines.
     # Real content in the brief, but not "what changed since the last run".
-    "Dry-run the 9.0 per-operation memory limit",
-    "Run EXPLAIN CHANGES against every dynamic table DDL change",
-    "Audit SELinuxMount exposure before touching 1.37",
+    # NOTE (09-15): never exclude a row that PIN_ONGOING also names -- the fold
+    # runs before pinning, so an exclude can delete the row a pin is trying to
+    # keep and the pin then reports "not found". None of these is pinned.
+    "Size the 9.0 per-operation memory limit before you upgrade",
+    "Benchmark SGLang's Agentic-Aware Tail-Optimized LRU",
+    "Run the SALUS question against your own eval set",
+    "Test enable_large_strings_opt_in on a clone",
+    "Dry-run ubuntu-26.04 and macos-15 across your whole workflow set",
+    "Dry-run the Vitess 24.0.5 charset removal",
 ]
 
 
-# Ongoing rows that MUST appear regardless of the sev heuristic's verdict.
-# Why this exists (2026-09-14): ledger.extract_items scores sev from the title
-# alone, so "Workspace entitlement control is enforced ... as of 2026-09-14 and
-# opt-out is gone" scored `normal` -- no CVE id, no deprecation keyword -- and
-# sorted below 113 other normals, even though it is the day's single biggest
-# vendor deadline and its topic is flagged urgent. A hand-verified pin beats
-# loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
     # Carried dated cutovers and carried KEV clocks the title-only sev heuristic
     # ranks `normal` because they carry no CVE id in the headline, yet are the
     # most consequential dated items on the card. A pin bypasses the COMMENTARY
     # filter (09-16) and must name the SURVIVING wording -- never a row that
     # EXCLUDE_ONGOING also kills (09-15). None of these is in the exclude list.
-    "2026-10-27 — Kubernetes 1.34 EOL",              # 13 days, carried at day 3
-    "ubuntu-latest migrates from Ubuntu 24.04 to 26.04",  # auto-flip starts 10-19
-    "TLS 1.0/1.1 connections rejected from 2026-10-31",   # 17 days, ranked `normal`
-    "TabFM on BigQuery moves to token-based billing",     # 2026-10-30, ranked `normal`
-    "Genie One MCP Beta endpoint",                   # 2026-10-31 sunset
-    "Atlas Push-Based Log Export",                   # 2026-10-30 stops new configs
-    "variantShredding is added automatically",        # 2026-11-18, breaks DBR 15.4
-    "All three JFrog Artifactory CVEs are now in CISA KEV",  # exploited in the wild
+    #
+    # Two of these land TOMORROW and both score `normal` on the title-only
+    # heuristic, which is exactly why the pin mechanism exists.
+    "BCR-2413 — Snowsight account-specific sign-in host, 2026-10-16, no opt-out",
+    "GitHub Actions macos-14 brownout",                    # 10-16 14:00 UTC, tomorrow
+    "KEV, breached: Apple CVE-2026-86950 due 2026-10-13",  # 2 days past, exploited
+    "ubuntu-latest migrates from Ubuntu 24.04 to 26.04",   # auto-flip starts 10-19
+    "Kubernetes 1.34 reaches upstream End of Life 2026-10-27",  # 12 days
+    "No fix will ever exist for: Argo CD 2.x and 3.0–3.2",      # four 9.9s
+    "Apache Doris 2.0.x–2.1.x, 3.0.x and 3.1.x have no fix",    # major upgrade only
+    "Spring CVE-2026-59313: both halves of the standing item confirmed",
+    "Runtime 1.3's end-of-support date has passed and 1.3 is STILL the default",
 ]
 
 

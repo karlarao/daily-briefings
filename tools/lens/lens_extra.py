@@ -101,9 +101,27 @@ def normalize_closing_tags(html: str) -> str:
 # "against" and "compared with" join the vocabulary 2026-10-06: the Since-
 # yesterday lede legitimately reads "This edition against edition 084", which
 # is a backward reference, not a claim to be 084.
+# 2026-10-15: a DIRECTIONAL qualifier may be separated from the value by INLINE
+# MARKUP. assert_not_parent_identity fired on a CORRECT Since-yesterday line
+# reading "Diff against <b>edition 092 / 2026-10-14</b>": "against" was already
+# in the vocabulary, but `lead.rstrip()` ended in "<b>", so the anchored pattern
+# could not see it. A tag does not change whether a reference is qualified, and
+# bolding the edition number is the obvious thing to write, so the blind spot
+# would recur.
+#
+# The tolerance is deliberately NOT extended to the bare nouns "edition"/"ed.".
+# First cut allowed tags after every alternative and the module's own self-test
+# caught it within the minute: `<span class="lbl">Edition</span><span
+# class="val">083</span>` -- the split-span RUNBAR, the single identity site the
+# 2026-09-18 note records as unfindable by a contiguous regex -- stopped raising,
+# because "Edition" plus markup read as a backward reference. It is the opposite:
+# a directional word ("against", "vs", "since") qualifies what follows it across
+# markup, while a bare label followed by markup and a number IS the assertion.
+# So the noun route still requires the value to sit immediately after it.
 _BACKREF = re.compile(
-    r"(?:carried (?:forward )?from|vs\.?|versus|against|compared (?:with|to)|"
-    r"relative to|since|ed\.|edition)\s*$", re.I)
+    r"(?:(?:carried (?:forward )?from|vs\.?|versus|against|compared (?:with|to)|"
+    r"relative to|since)(?:\s*</?(?:b|i|em|strong|span|code)[^>]*>)*"
+    r"|ed\.|edition)\s*$", re.I)
 
 
 _LEDGER_BLOCK = re.compile(

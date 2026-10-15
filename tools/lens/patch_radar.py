@@ -91,7 +91,29 @@ def sev_tier(row: dict) -> int:
     return 2
 
 
-NO_FIX_RE = re.compile(r"no (?:\w+ )?fix|unpatchable|no patch\b|never (?:be )?patched", re.I)
+# 2026-10-15: extended to "no advisory". assert_must_show rejected the build and
+# was right for the third time, and for the same reason as 2026-10-14 -- the ROW
+# was right and the PREDICATE was wrong. The day's lead row is Next.js 16.4.1 /
+# 15.5.28, two UNAUTHENTICATED RCEs whose `due` reads "no public advisory --
+# upgrade by release note": the GHSA ids 404, the affected ranges are unpublished,
+# and npm's own endpoint returns 0 advisories for the vulnerable versions. It
+# ranked #57, below 26 rows a reader would act on later, because the register's
+# predicate could only see a missing FIX.
+#
+# An advisory that does not exist is the same reader action as a fix that does not
+# exist: you cannot scope your exposure, you cannot verify you are done, and no
+# gate will tell you. It belongs in the same band. And it generalises rather than
+# patching one row -- this window's whole finding is advisories that have not been
+# published, so a run will reach for this phrasing again.
+#
+# Deliberately NOT matched: "advisory" on its own, or "advisory drop", so an
+# ordinary disclosure record cannot wander into the no-fix register. The negation
+# has to be adjacent to the noun.
+NO_FIX_RE = re.compile(
+    r"no (?:\w+ )?fix|unpatchable|no patch\b|never (?:be )?patched"
+    r"|no (?:public |published |ecosystem )?advisor(?:y|ies)"
+    r"|advisor(?:y|ies) (?:not|never) published",
+    re.I)
 
 
 class RadarError(RuntimeError):
