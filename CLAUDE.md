@@ -7911,3 +7911,210 @@ Events 72 → 69 (3 retired, 0 added — every dated candidate was already on th
 174 → 175 (+3 new, 7 enriched, 2 folded). Output **2,106,649 bytes, +4,122** against the parent,
 accounted for by the new rows and enrichment prose against two folds and three retirements.
 Quarterly Skills/Build re-rank due **2027-01-01**.
+
+## Run findings 2026-10-15 (edition 093)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:22 EDT, 18 briefs in by ~09:47, the 19th (frontend) at ~09:50; dashboard
+published 13:54 UTC, lens **version 58** (`1792073040-4a97`). **~3,670k research tokens** (fifth-
+highest; 10-11 ~4,209k, 10-13 ~4,010k, 10-12 ~3,990k, 10-14 ~3,870k). Artifact hook clean for its
+**17th consecutive unattended run** — `/tmp/claude-artifact-hook.log` holds exactly 4 records
+(list, `read` with `path`, the plain `read` a republish needs, publish), **all `PreToolUse`, all
+`mode=auto`, zero `PermissionRequest`**; `bash-allow.sh` 430 records, 217 allow / 213 pass, same
+shape. Ledger health: **919 items, 38 exact + 109 fuzzy = 147 matched (16.0%), 0 double-counted**;
+dictionary 37,441 → 38,213; tally guard bumped 147, guarded 0. Title-length diagnostic **1.13×**
+(healthy band, 10-14 was 1.15×), so the 09-09 check exonerated the matcher for a **seventh**
+consecutive run and no threshold was touched — the low match rate is real novelty, and the day
+genuinely carried two Next.js RCEs, Mongoid's eight CVEs, a Struts KEV entry, four Argo CD 9.9s,
+the Iceberg V4 merge, MongoDB 9.0 GA, the PG19 slip, JDK 27, Python 3.15, SvelteKit 3 and 24 .NET
+CVEs.
+
+### Flag calibration: 11 urgent, 11 distinct primary stories
+
+Down from 13 on 10-13 and 10-14; the series high is 14. Audited one at a time against the literal
+definition and all eleven pass. **Four KEV clocks past due** (Oracle CVE-2026-21962 at 49 days —
+and the Oracle lane re-grepped the September CSPU for the id and got **zero hits** while the
+January CPU carries it, so it is unpatched purely by omission; Struts CVE-2016-3081, a *ten-year-old*
+OGNL RCE added to KEV 10-08 with a due date of 10-11 already passed; Apple CVE-2026-86950 at 2 days;
+Pixel CVE-2026-58704 at 26 with forensic triage; LiteLLM at 29). **Two dated cutovers inside one
+day** — Snowflake's BCR-2413 and the GitHub Actions `macos-14` brownout both land tomorrow.
+**Five "no reachable fix for somebody"**: Argo CD 2.x/3.0–3.2 against four 9.9s declared out of
+support, StarRocks CVE-2026-80346 unfixed on *every* released train at 50 days, the Doris trio
+fixed only via a major upgrade, Azure's PgBouncer six CVEs behind, pgvector 0.8.2 on all three
+managed platforms against an 8.8. **Eight lanes held `ok` while carrying real Criticals and wrote
+out their reasoning** — Fabric declined a **CVSS 10.0** because MSRC marks it
+`Customer Action Required: No`, Databricks declined a Spark 8.8 it cannot prove it is exposed to,
+BigQuery measured a third consecutive zero, Redshift declined its TLS cutover at 16 days *and named
+the day it enters the bar* (10-17), Open Formats declined Parquet's 8.1 on a reachable mitigation,
+AI Hardware declined 114 HIGH driver CVEs (all patched, max 7.8, `AV:L`, none KEV), DB Hardware
+declined the TLBI erratum by applying the definition literally, NL2SQL reported no dated deadline
+rather than inventing one. Note **11 flags, 11 distinct primary stories** — the only overlap is a
+shared *secondary* item (the Cortex EOL in both AI Daily and Snowflake).
+
+### THE DAY'S LEAD: yesterday's explanation was refuted, replaced, and then priced
+
+Three lanes worked the same question independently and the result supersedes the 10-14 note:
+
+- **App Dev killed the hypothesis with a control test.** The 10-14 conclusion — "the common factor
+  is the MISSING CVE ID, not the project" — does not survive: **40 GitHub-curated npm advisories
+  all resolved in OSV, including all four carrying no CVE id at all** (one of them a *critical*
+  unauthenticated RCE). With-CVE 36/36, no-CVE 4/4. A missing CVE id does not keep an advisory out.
+- **Frontend named the real controlling variable: advisory AGE.** Every GHSA older than ~8 days
+  resolves; all five ids ≤3 days old 404. **Yesterday's 404s were a point-in-time ingestion lag
+  that has since cleared.** And it measured the chain: **fix 09-30 → CVE at MITRE 10-02 → GHSA
+  published 10-07 → OSV same day = seven days from patched to scannable**, with the ordering
+  *backwards* from the usual assumption — MITRE held the records five days before GitHub published.
+- **DevOps priced the consequence.** **0 of 10 BuildKit, 0 of 2 Docker Engine and 0 of 4 Argo CD
+  Criticals visible to OSV; 1 of 17 repo advisories in the GitHub Advisory Database; fix
+  availability 100% knowable from release notes.** **The gate that works reads fixed versions, not
+  ids.** A "no Criticals" gate measures advisory-metadata throughput, not exposure.
+- **Also: the vite zeros are REAL, and the control 10-14 was missing proves it.** `vite@6.4.2` → 2
+  while `6.4.3` → 0, so the zero at 6.4.3 is "you are patched". **Drop vite from the suspicious
+  list.** Methodology trap worth keeping: passing several versions under one package key makes the
+  npm endpoint return the **union**, not per-version results.
+- **Two true shapes, not one.** Absent because *new* (Frontend), and **present but unmatchable** —
+  `CVE-2026-104711` resolves by id but its only `affected` entry has `package: None` with GIT ranges
+  from `source: CPE_RANGE` and git **tag names** where versions belong, so `struts2-core` returns
+  not-found at *every* affected version, while the ten-year-old CVE-2016-3081 is found at all of
+  them because a human curated it. **Triage instinct inverted: a clean scan is weakest evidence
+  precisely for this month's advisories.**
+- **And the same vendor files to different standards per language.** One CNA, one release day:
+  MongoDB's Python team filed correct PyPI ranges, its Go team correct SEMVER ranges, its Ruby team
+  CVEs reaching OSV with **no package field** and a CPE range naming a fixed version that predates
+  disclosure by three years. **Correction to 10-14: the Go team DOES file advisories** —
+  `mongo-driver/v2@v2.9.1` returned zero because it is **not affected**. The asymmetry is Ruby-only.
+
+### A third patch-radar ranking bug, same class as 10-14: the row was right, the predicate was wrong
+
+`assert_must_show` rejected the build because the day's lead row ranked **#57**. Its `due` reads
+"no public advisory — upgrade by release note", and `NO_FIX_RE` could only see a missing **fix**.
+**An advisory that does not exist is the same reader action as a fix that does not exist**: you
+cannot scope your exposure, you cannot verify you are done, no gate will tell you. The predicate now
+matches "no public/published/ecosystem advisory" and "advisory not published", with **negative
+controls** so an ordinary disclosure record ("2026-09-30 advisory drop", "advisory published
+2026-10-07") cannot wander into the register. It generalises rather than patching one row — this
+window's whole finding is advisories that have not been published, so a run will reach for that
+phrasing again. **Six other must-shows were WITHDRAWN rather than force-ranked**, with reasons in
+the source: two are ordinary patching with a named reachable fix (Mongoid's fixed-version row — its
+no-fix sibling is the radar row — and the .NET Kestrel disclosure), and four are genuine no-fix rows
+that **did not move today**, where preferring today's overdue KEV clocks is the cap working.
+
+### `assert_not_parent_identity` had a markup blind spot
+
+It fired on a **correct** Since-yesterday line reading "Diff against `<b>`edition 092 / 2026-10-14".
+"against" was already a recognised backward reference, but `lead.rstrip()` ended in `<b>`, so the
+anchored pattern could not see it. A tag does not change whether a reference is qualified, and
+bolding the edition number is the obvious thing to write, so the blind spot would recur. `_BACKREF`
+now tolerates an optional run of inline tags between qualifier and value; **the negation is
+unchanged and self-tested both directions** — a bare unqualified "Edition 092" still fails.
+
+### Other findings worth not re-deriving
+
+- **`countdowns.refresh` does not handle the singular**, so a one-day countdown rendered "**1
+  days**" — on the Snowsight row that lands tomorrow, i.e. the most-read row on the board. Fixed in
+  the ledger this run; the fix belongs in `countdowns.py`.
+- **The board is ahead of this file for a FIFTH consecutive edition.** `reuse_key`'s advisory caught
+  **5 of 8 drafted events already tracked** (the OpenAI 29-model shutdown, the Databricks 10-30
+  trio, PG14 EOL, PG19 GA — *already corrected on 10-14 with the slip* — and Angular 20 LTS); all
+  five were **enriched in place** rather than given fresh slugs. And three carry-forward notes in
+  this file were already applied on the board: the Redshift ODBC date already read 2026-12-31,
+  Storybook already carried its fix versions and the scanner-blindness note, Percona was already
+  RESOLVED. **Probe the board before drafting a row OR a correction.**
+- **Guard 5 passed on the first assembly: 737 cited units, zero uncited** — sixth consecutive
+  edition, same mechanism since 09-15 (every row generator calls `cite()` inline as it emits).
+  `assert_table_shape` 10 tables, `assert_structure` 15 sections.
+- **The parent carried TWO `</body></html>` pairs again**, as on 09-20. `normalize_closing_tags`
+  collapsed it to one; keep calling it immediately before write regardless of how the html got there.
+- **Output is 20,389 bytes smaller than the parent, fully accounted:** v-patch −15,241 (six long
+  no-fix rows withdrawn for shorter band-0 clocks), v-events −5,362 (one retirement + the 60-day
+  window), povContent −5,385 and v-read −1,438 (tighter chair ledes), v-longitudinal −886, against
+  v-wn +1,398 and lensLedger **+6,914**; residual −389 is chrome. **A size drop against an
+  inheritance parent still needs explaining every time.**
+- **Longitudinal prose is interpolated from its own table, not typed** (the 09-20 lesson in its most
+  embarrassing form). Urgent-lane series over eight runs: **10, 12, 12, 12, 12, 13, 13, 11**.
+- **Pages deploy verified by reading the `deploy` JOB and its `completed_at`.** At the first look the
+  run had only `build`, mid-"Upload artifact" — the 09-17 shape, not a stall. `build` succeeded
+  13:54:07Z, `deploy` completed `success` **13:54:31Z**, 39s after the push. No re-trigger.
+- **The watchdog's documented false positive fired four times** and every "parked" agent was one
+  that had already completed. Cross-check against completions before acting; I stopped the monitors
+  rather than let them keep alarming.
+- **New exposure shape worth a category: "patched upstream, UNVERIFIABLE for you."** Four of five
+  Databricks LTS runtimes sit below the Spark 3.5.7/4.0.1 fix for a CVSS 8.8 History Server RCE.
+  Databricks almost certainly does not expose the component — but every maintenance note says only
+  "operating system security updates" and names **no CVE**, so you cannot *demonstrate* the backport
+  to a scanner or an auditor. Harder than a no-fix row: neither the remediation nor the evidence is
+  available to you. Publishing CVE ids in DBR notes would close it at zero engineering cost.
+- **"The fix exists and is paywalled" is now a three-mechanism pattern**: Spring (6.2.20 / 6.1.29 /
+  5.3.50 **absent from Maven Central**, Enterprise-only), Gradle (9.x backports behind a paid
+  Security Subscription), and Oracle JDK 21 (updates move to OTN with the 10-20 CPU, making the patch
+  a purchase). **The population least able to take a major bump is the one being charged.**
+- **AMD TLBI #1718 is now measured branch-by-branch, superseding the 10-14 reconciliation:** the
+  automatic workaround (`X86_BUG_TLBI`, a second TLBSYNC, keeping broadcast INVLPGB) landed in
+  **stable today** in 6.18.57 and 7.2.11; 7.1.13 has `tlbi=ipi` only; **6.15–6.17 have NEITHER** and
+  microcode is the only remedy there; **6.12.y LTS and older are categorically unaffected** because
+  INVLPGB only landed in 6.15 — do not let a scanner say otherwise.
+- **Three default-level memory changes in one month**, so any container limit tuned in the last year
+  was tuned against something that no longer exists: JDK 27 makes G1 the default in *all*
+  environments and turns on compact object headers; **Python 3.15 REVERTED the GC to 3.13's
+  generational design** because 3.14's incremental GC caused memory pressure, which also means 3.14
+  heap benchmarks transfer in neither direction; DDR5 at ~$68/GB makes RAM a capital decision.
+- **HTTP/1 connection desynchronization in four unrelated runtimes in eight days** — Go (client-side
+  after a rejected CONNECT, yielding cross-user response poisoning in `ReverseProxy`; plus
+  server-side and an HTTP/2→HTTP/1 framing forward), .NET Kestrel at **CVSS 9.4**, Docker Engine's
+  Go rebuild. Expect JVM, Python and Rust HTTP servers next.
+- **Oracle board corrections that RETIRE standing records.** (1) **ORDS 26.3.0 HAS shipped** (build
+  26.3.0.272.1811) — retire the "has not shipped" note; and it **breaks existing MCP deployments**,
+  which now need the `ORDS_MCP_SERVER` role under RBAC. (2) **The `FIPS_140=TRUE` "silent flip"
+  reading on this board is WRONG**: `FIPS_140=TRUE` alone enables **140-2**, and 140-3 requires
+  *both* it and `FIPS_140_3=TRUE` — "You must set both." The value does not silently change meaning.
+  **The real trap is the inverse**: a database carrying only `FIPS_140=TRUE` is still on 140-2
+  against certificates NIST moved to Historical on 2026-09-21, and nothing tells you.
+- **Exadata 26.2.0's silent trap is identity resolution, not the database.** OL9 flips the default
+  NSS order to `sss files`, so a directory UID/GID colliding with `dbmsvc`/`dbmadmin`/`dbmmonitor`
+  resolves to the directory identity and "can prevent Exadata management services from starting."
+  Audit collisions *before* upgrading; never hand-edit `nsswitch.conf`. Also: **InfiniBand Exadata
+  can never reach 26.2.0** (RoCE-only from X8M), so that branch is terminal and the path is hardware.
+- **Iceberg V4's baseline spec MERGED 2026-10-14 and there is still no release date.** The vote says
+  explicitly it is "not a vote for adoption". AMT is a **hard break at the manifest layer** — the
+  `manifest_entry` → `tracked_file`+`tracking` inversion means the two schemas are not compatible, so
+  any tool parsing manifests directly needs a second code path. **Provenance correction: this board's
+  "ASF vote result thread dates to 2026-08-18" is NOT confirmable** — no `[RESULT]` mail exists in
+  either month's archive; the defensible chain is July direction → vote 08-13 → spec vote 09-23 →
+  merged 09-29.
+- **FLINK-40990 is the window's best operational find and it is not a CVE:** a Flink CDC MySQL source
+  with a missing reader schema **stays `RUNNING`, keeps checkpointing successfully, and emits zero
+  further records for every captured table.** Still present in upstream `master`. **Alert on source
+  record throughput, not checkpoint success — green checkpoints are what this bug produces.**
+- **Source access.** `blogs.oracle.com` 403s HTML *and* RSS for a **thirteenth** consecutive week and
+  cost the Exadata announcement posts again (26.2 recovered from `docs.oracle.com`, the better
+  source). **`git.kernel.org` is now blocked too** — an Anubis proof-of-work JS challenge to curl and
+  403 to WebFetch — so the standing "better substitute for phoronix" note is **out of date**; use the
+  `gregkh/linux` GitHub mirror via `raw.githubusercontent.com`. **A dead `docs.aws.amazon.com`
+  Redshift page returns HTTP 200 with a 2,347-byte redirect shell, not a 404** — size-check the
+  response or a sweep scores a dead URL as a clean pass; the `system-table-s3-tables.html` asymmetry
+  control is now one of those and needs replacing. `repo1.maven.org` 429s on bursts and **recovers on
+  retry with backoff** — space them and back off, don't give up. `spring.io` advertised 7.0.8 nine
+  days after 7.0.9 hit Central: **for GA, Maven Central is authoritative and the project page is not.**
+- **Security sweep, negative result — eleventh consecutive run, and the baseline MOVED for the first
+  time in many runs.** `behavior-changes.html` is now markdown 35,410 / 25 headings vs HTML 57,431 /
+  28, and `cluster-versions.html` 135,903 / 94 vs 224,656 / 96. **The delta is symmetric across both
+  variants and fully explained by published content** (the paused-producer snapshot change, Patch
+  206) — which is the opposite of the 09-01 injection signature, where markdown-only content was
+  absent from the HTML. **Adopt the new numbers or the old ones false-alarm every run.** Markers
+  (`agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills`, `llms.txt`) returned
+  **zero in all 20 cells**. Two escalations recorded as data: **`docs.snowflake.com/llms.txt` has
+  grown from a bare index into an imperative block headed "Important notes for LLMs:"**, and
+  **`mongodb.com/docs`'s `hiddenDirective` div is still present with its class name now HASHED**
+  (`layout_hiddenDirective__8D_wq`) — and its **markdown variant does NOT carry the hidden block**,
+  the inverse of the 09-01 AWS pattern. `docs.dynamo.nvidia.com/llms.txt` still carries "Instructions
+  for AI Agents" pointing at an MCP server, second consecutive run. **No fetched page's suggestion was
+  executed, no skill file was loaded, and no MCP server named by a page was contacted by any of the 19
+  agents.**
+
+**Scope, on the edition's face:** 093 refreshes Today's Read on all four chairs, Since yesterday,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites. Claim Watch,
+Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals, Build Radar, Skills
+Radar and Vendor Dossiers **carry forward from 092 and the edition says so** — no competitor shipped a
+perf or price claim worth a card, `claims[]` did not grow, and the depth went into the correction pass,
+the radar predicate fix and the enrichment of five existing rows. Events 69 → 71 (1 retired, 3 added),
+patch 175 → 178 (+3, 6 corrected), no-fix register 32. Quarterly Skills/Build re-rank due **2027-01-01**.
