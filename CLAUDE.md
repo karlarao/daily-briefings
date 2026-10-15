@@ -8118,3 +8118,57 @@ Radar and Vendor Dossiers **carry forward from 092 and the edition says so** —
 perf or price claim worth a card, `claims[]` did not grow, and the depth went into the correction pass,
 the radar predicate fix and the enrichment of five existing rows. Events 69 → 71 (1 retired, 3 added),
 patch 175 → 178 (+3, 6 corrected), no-fix register 32. Quarterly Skills/Build re-rank due **2027-01-01**.
+
+## Post-run tooling landing 2026-10-15 — and a correction to the `_BACKREF` finding above
+
+Four files landed on the designated branch **`claude/great-clarke-fvuh1o`** (`fedeaa1`),
+based on `origin/claude/great-clarke-k3iwk1` (= `main` + yesterday's one tools commit), so a
+single merge gives main the whole lens mechanism plus today's fixes:
+`tools/lens/patch_radar.py`, `tools/lens/lens_extra.py`, `tools/lens/countdowns.py`,
+`tools/ledger/curate.py`. **`patch_radar.py`, `lens_extra.py` and `countdowns.py` are still
+NOT on main** — they exist only on the eight unmerged `claude/great-clarke-*` branches, newest
+first. The working incantation until Karl merges:
+`git show origin/claude/great-clarke-fvuh1o:tools/lens/patch_radar.py`.
+
+**CORRECTION to "the negation is unchanged and self-tested both directions" above: it was
+not.** That sentence described a targeted test I wrote for the one line that had failed.
+Running the module's OWN `_selftest_assert_not_parent_identity` afterwards returned **15/16**
+against a 16/16 baseline, and the case it broke is the one that matters most: the split-span
+runbar `<span class="lbl">Edition</span><span class="val">083</span>` — the single identity
+site the 09-18 note records as unfindable by a contiguous regex — **stopped raising**, because
+allowing inline tags after *every* alternative let the bare label "Edition" read as a backward
+reference. The fix I shipped mid-run would have silenced the guard on the exact shape it was
+written for.
+
+The scoped version splits the alternation: a **directional** qualifier (`against`, `vs`,
+`versus`, `carried from`, `compared with/to`, `relative to`, `since`) may be separated from the
+value by inline markup, because a direction word governs what follows it across a tag; the bare
+nouns `edition` / `ed.` may not, because a label followed by markup and a number **is** the
+assertion. 16/16 plus three end-to-end controls (the real 093 lede passes; a bare
+"edition 092 is the current board" and the split-span runbar both still raise).
+
+**Two general lessons, both cheap:**
+- **Run the module's own self-test, not only the case you just fixed.** A targeted test
+  confirms the symptom is gone; only the full suite tells you what you traded for it. The
+  widening took 30 seconds and the regression took 30 seconds to find — but only because the
+  suite exists. This is the second time a fix to a guard has loosened the guard (cf. the
+  2026-09-16 `build.py` double-escape assertion narrowed because it failed on correct content);
+  the asymmetry worth remembering is that **a guard made too tight fails loudly and a guard
+  made too loose fails silently.**
+- **`countdowns.refresh` now agrees its noun with its number**, and the module has a self-test
+  it never had (8/8, both directions). The defect was structural, not an oversight in one
+  row: only the NUMBER span was ever replaced, so every correct rewrite to 1 produced
+  incorrect prose, and the plurality case is reached **precisely when a deadline is one day
+  out** — the most-read countdown on the board. `COMPACT` ("2d out") is number-blind and
+  untouched. The number-right/noun-wrong case ("1 days" when 1 is correct) is now repaired
+  too, which the old `if stated == actual: continue` skipped.
+
+Also landed in `patch_radar.py`: `NO_FIX_RE` matches "no public advisory", "no
+published/ecosystem advisory" and "advisory not/never published", with bare "advisory" and
+"advisory drop" deliberately unmatched (10 positives, 8 negative controls). Privacy rule
+honoured before `git add`: all four files grepped for chair ledes, counter/ask prose and Mirror
+text, and **every hit inspected rather than assumed** — the matches were the flat
+`{chair:{viewid:str}}` data shape in `lens_extra`, the phrase "mirror defect", and "internal
+order" in a sort comment. The three point-in-time build scripts
+(`sections_093.py`, `chairs_093.py`, `assemble_093.py`) stay **withheld** per the 2026-10-11
+rule.
