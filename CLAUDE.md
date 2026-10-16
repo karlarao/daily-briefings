@@ -7911,3 +7911,193 @@ Events 72 → 69 (3 retired, 0 added — every dated candidate was already on th
 174 → 175 (+3 new, 7 enriched, 2 folded). Output **2,106,649 bytes, +4,122** against the parent,
 accounted for by the new rows and enrichment prose against two folds and three retirements.
 Quarterly Skills/Build re-rank due **2027-01-01**.
+
+## Run findings 2026-10-16 (edition 094)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:14 EDT, 18 briefs in by ~09:33, the 19th (formats) a minute later;
+dashboard published 13:40 UTC, Pages `deploy` job `success` at **13:40:34Z, 32s after the
+push**; lens **version 59** (`1792158652-460b`). **~3,535k research tokens** (mid-pack; the
+10-11 high is ~4,209k). Artifact hook clean for its **18th consecutive unattended run** —
+`list`, `read` with `path`, the plain `read` a republish requires, and the publish, all with
+zero prompts. Ledger health: **751 items, 44 exact + 110 fuzzy = 154 matched (20.5%), 0
+double-counted**; dictionary 38,213 → 38,810; tally guard bumped 154, guarded 0. Match rate
+is *up* from yesterday's 16.0% and squarely in band, so the 09-09 length diagnostic was not
+needed for an eighth consecutive run.
+
+### Flag calibration: 15 urgent — a new series high — and all fifteen survive the literal definition
+
+Previous ceiling was 14 (10-05, 10-11). Audited one at a time rather than trimmed, per the
+09-10 rule. **Two cutovers firing during the run** (Snowflake BCR-2413, unbundled with no
+opt-out, and the GitHub Actions `macos-14` brownout whose window opened at 14:00 UTC).
+**Two CISA KEV clocks past due under active exploitation** (Apple CVE-2026-86950 at 3 days,
+Pixel CVE-2026-58704 at 27 with forensic triage). **Eight lanes on "no reachable fix for
+somebody"** — Argo CD's four 9.9s, Next.js 13/14, the AMD TLBI erratum's five EOL kernel
+branches, StarRocks, Doris, postgres-mcp, Azure's PgBouncer, Mongoid. **Four dated cutovers
+inside 14 days**, led by the 20 Oct Oracle CPU. Overlap: **15 flags, ~13 distinct primary
+stories** — the Oracle CPU is shared by `oracle` and `appdev` (the JDK 21 licence flip), and
+the 22–23 Oct model-retirement wall by `aidaily` and `aiappdev`. **Four lanes held `ok`
+while carrying real Criticals and wrote out their reasoning**: Fabric declined a **CVSS
+10.0** because MSRC marks it `Customer Action Required: No`; Redshift declined its TLS
+cutover at **15 days and named the day it enters the bar (10-17), showing the arithmetic**;
+AI Hardware declined 114 driver CVEs (all patched, max 7.8, `AV:L`, none KEV) *and*
+declined the NVIDIA PSIRT publishing move it had flagged on 10-08; Open Formats declined
+three real defects with reachable fixes and said FLINK-40990 was too young to assert.
+
+### THE DAY'S LEAD: three lanes measured scanner visibility, disagreed, and the disagreement is the result
+
+Yesterday's conclusion was that advisory **age** is the controlling variable. Today that is
+refined rather than confirmed, because three independent measurements did not agree:
+
+- **DevOps**: 3 of 11 container/CD advisory ids resolved in OSV; **three of Argo CD's four
+  Criticals carry no CVE id at all**.
+- **Frontend**: **all nine** frontend GHSAs published since 09-30 return 404 from OSV, two
+  also absent from GitHub's global DB that Dependabot reads.
+- **App Dev**: checked **both ways** and reached the opposite conclusion — the unmatchable
+  `package: null` shape is an artifact of **CVE-first lookup**; package-keyed queries
+  returned properly-ranged records every time (fast-jwt 8 hits, handlebars 3, AHC 12).
+
+**They reconcile into TWO failure modes with different half-lives, and conflating them is
+what made the single-variable answer wrong.** (1) *Ingestion lag* clears in about a week —
+App Dev's advisories were 8 days old and resolved, Frontend's were 2–4 days old and did not;
+same mechanism, opposite result, explained entirely by the clock. (2) *Filing quality* never
+clears — Mongoid's eight GHSAs are **four weeks old**, still Unreviewed with no ecosystem,
+and GitHub states outright that **Dependabot will not alert**; Argo CD's three Criticals have
+no id to lag *into*. **The rule's direction is unchanged — read fixed versions from release
+notes — but the reasoning now covers both classes, and a clean scan remains weakest evidence
+precisely for the current month.**
+
+### A FOURTH `NO_FIX_RE` predicate gap, and for the fourth time the row was right
+
+`assert_must_show` rejected the build because the AMD TLBI row ranked out. Its `due` says
+five kernel branches **"are all EOL and will never receive it"** — a no-fix row by any human
+reading, and the natural phrasing when the unreachable thing is a **backport** rather than a
+patch that does not exist. `never patched` was matched; `never receive it` was not. Extended
+and anchored to an explicit object (`it / the fix / a backport / …`) so prose merely
+containing "never" cannot drift in — the 10-13 measurement of a loose predicate matching 23
+of 160 rows is why this stays tight. **New `_selftest_no_fix()`: 18/18, 10 positives and 8
+negative controls** including "the vendor will never publish numbers" and "never reproduced
+on unmodified upstream". Landed in `tools/lens/patch_radar.py`.
+
+**Two more things the same guard caught, both my error rather than the ranking's:** I never
+called `mark_touched`, so band 1's recency key saw nothing as moved; and I had put **fast-jwt**
+on the must-show list when it is ordinary patching with a named reachable fix on every line —
+**withdrawn rather than force-ranked**, per the 10-15 precedent. The remaining three
+(Argo CD, Mongoid, postgres-mcp) were genuinely re-measured today, so they were **enriched
+with today's measurement and marked touched** — honest, and it is what made them rank.
+
+### The board was ahead of this file for a SIXTH consecutive edition
+
+Today's Oracle lane "settled" CVE-2026-21962 as a Fusion Middleware CVE fixed in the January
+CPU. **The board has carried exactly that since edition 083**, and 10-06, 10-08 and 10-09 each
+re-confirmed it by enumeration. What is actually new is a cleaner primary citation: Oracle's
+own **CVE-to-advisory map** attributes the id to **advisory [1042]** directly, rather than
+inferring it from CSPU greps returning zero — *and that also explains why the greps always
+returned zero and always will*: CSPUs carry targeted new fixes and hold no Fusion Middleware
+web-tier content. **The grep was the wrong instrument, not a finding.**
+The row had accreted **five stacked `CORRECTED`/`AMENDED` blocks all restating one
+conclusion** (~4,000 chars). **Compacted to one authoritative statement with the history in a
+single line** — accretion like that is how a board stops being readable, and compaction is a
+maintenance task worth doing deliberately rather than waiting for a fold.
+
+### Corrections applied to the ledger before any section was generated
+
+- **AMD TLBI #1718 — this board was wrong and said so on its face.** Edition 093 recorded
+  that 7.1.13 carries `tlbi=ipi`. **Released 7.1.13 contains neither** the erratum work nor
+  the parameter; it exists only on the unreleased `linux-7.1.y` branch head, and 7.1 is EOL.
+  So the escape hatch is reachable only on 6.18.y and 7.2.y — the two branches that already
+  carry the real fix. **Five branches (6.15.y, 6.16.y, 6.17.y, 7.0.y, 7.1.y) never get it.**
+  Also recorded: the microcode remedy exists but is **not packaged** (pushed 09-23, newest tag
+  20260916), and the detection trap — on 6.15–6.17 the `tlbi` bug flag *does not exist*, so a
+  clean `/proc/cpuinfo` there tells you nothing. Check `uname -r` first.
+- **`linux-73-carries-amd-tlbi-1718` marked SUPERSEDED** — 7.3 is no longer "first to carry
+  the workaround"; it shipped in stable the day before.
+- **Iceberg V4 enriched, still deliberately undated** — baseline AMT spec merged 2026-10-14,
+  vote text says in terms it is "not a vote for adoption", no release date ever announced.
+- **Retired** the past-dated Oracle CPU *pre-release announcement* row.
+
+### Other findings worth not re-deriving
+
+- **`reuse_key`'s advisory had a strong run: 13 of 15 probed stories were already tracked.**
+  Only fast-jwt and Hazelcast were genuinely new (plus a Next.js row for the October CVEs,
+  distinct from the August batch). At 94 editions "already on the board" remains the normal
+  case. Two apparent duplicate *pairs* were checked and are genuinely distinct rows — Mongoid's
+  no-fix row vs its fixed-version sibling, and postgres-mcp's specific CVE vs the broader
+  three-server category row. **Probe before drafting, then read before folding.**
+- **Guard 5 passed on the first assembly: 717 cited units, zero uncited** — seventh consecutive
+  edition, same mechanism since 09-15 (every row generator calls `cite()` inline).
+  `assert_table_shape` 10 tables, `assert_structure` 15 sections.
+- **`assert_not_parent_identity` caught my own prose**, correctly: the Since-yesterday bullet
+  opened "Edition 093 recorded that…", an unqualified backward reference. Rewritten as "The
+  10-15 edition recorded…". The scoped `_BACKREF` landed on 10-15 is doing exactly the job it
+  was narrowed for.
+- **`rewrite_pov_meta` refused to be a no-op and was right.** I had rewritten `meta` by hand
+  in the same build, leaving the helper nothing to change, and its `require>=1` fired.
+  Resolved by giving the helper sole ownership of `meta` — the manual loop now sets only the
+  chair bodies and `.c`. **A guard that can match zero things and still pass is not a guard;
+  the corollary is that you must not quietly take its job away either.**
+- **The parent carried TWO `</body></html>` pairs again** (as on 09-20 and 10-15).
+  `normalize_closing_tags` collapsed it to one. Keep calling it immediately before write.
+- **Output is 8,507 bytes LARGER than the parent**, accounted for: three new patch rows, four
+  enriched rows and the compaction of the 21962 row (a net *saving* there), against a longer
+  Since-yesterday carrying the three-way reconciliation. A growth needs less explaining than a
+  shrink, but it is still worth stating.
+- **Longitudinal prose is interpolated from its own table, with an assertion on today's value.**
+  Urgent-lane series over eight runs: **12, 12, 12, 12, 13, 13, 11, 15**. Worth recording the
+  divergence: **items fell to 751 from 919 — the lowest in ten runs — while urgent lanes hit
+  their high.** Those normally move together, so a narrower but far more actionable day is the
+  real shape of 10-16.
+- **`curate.py` ran clean: 16 picks, 5 pins, all landed, no fatal "pin not found".** The 09-18
+  rule applied **four times** — BCR-2413, Pixel CVE-2026-58704, StarRocks CVE-2026-80346 and
+  BigQuery TabFM each sat in *both* `new` and `ongoing`; each pick was dropped and the carried
+  row pinned with its honest day count. Card is **30 of 30 rows sourced** (one `[src]` attached
+  by hand for BCR-2413, from a URL the Snowflake brief already cites for that exact fact).
+- **BigQuery corrected a standing note in this file.** `run_bq_command` is **not** a BigQuery
+  MCP tool and is not in the prebuilt BigQuery toolbox; Google's docs (updated 10-13) route
+  agents to a **separate remote Google Cloud CLI MCP server** for scheduling, permission and
+  reservation management. The capability did not go away — it **relocated to a surface further
+  from BigQuery-specific review**. Also wrong in the old note: "IAM as the only control" — the
+  managed server documents a 3,000-row cap, a 3-minute query timeout, `execute_sql_readonly`
+  and Model Armor, while the self-hosted toolbox defaults to **50** rows. Two surfaces, two
+  caps, 60× apart. Name which server you mean.
+- **A new standing category: the agent tool plane is generating its own CVE class**, and the
+  shape is always a second entry point inheriting none of the first one's checks —
+  postgres-mcp's 9.2 with no release in 17 months, Nginx-UI's four Highs because its MCP path
+  skips the UI's directive validation, LiteLLM's MCP proxy auth bypass *with a public exploit*,
+  the MCP Python SDK's unbounded sessions, and BigQuery's own CVE-2026-15829 SQL injection in a
+  prebuilt MCP tool. Ask of your own stack: does the MCP path enforce the same authz as the
+  HTTP path?
+- **Source access.** `blogs.oracle.com` 403s HTML *and* RSS for a **fourteenth** consecutive
+  week — Optimizer / In-Memory / Smart Scan / Exadata-monthly remain a standing structural gap
+  and the Oracle brief says so on its face. **`mikedietrichde.com` is READABLE AGAIN** — RSS
+  and article HTML both 200, zero `sgcaptcha`, superseding the standing block note; Dietrich
+  carried much of the Oracle lane. New: `apex.oracle.com/en/platform/release-notes/` 403/503,
+  GoldenGate release notes 404, `docs.oracle.com` book landing pages return title blocks only
+  (use `toc.htm`); `cdn.kernel.org` serves full stable ChangeLogs to plain curl and the
+  `gregkh/linux` mirror serves per-branch file contents — together a complete substitute for
+  the blocked `git.kernel.org`; `phoronix.com` **review** URLs are Cloudflare-challenged while
+  news URLs work via RSS; `repo1.maven.org` 404s to plain curl but serves via WebFetch.
+- **Security sweep, negative result — twelfth consecutive run, baseline byte-exact.** The
+  Redshift agent fetched `behavior-changes.html` and `cluster-versions.html` in both variants
+  and matched the 10-15 baseline on **every figure** (35,410 / 25 vs 57,431 / 28; 135,903 / 94
+  vs 224,656 / 96). Markers returned **zero in all four files**, broadened to `skill`, `MCP`
+  and `AI assistant`: still zero. No markdown-only content, i.e. **no asymmetry** — the
+  signature that matters is absent. Also confirmed: Apple's Xcode release notes serve an
+  agent-facing `.md` variant that is byte-equivalent to the human page — the *mechanism* is
+  spreading, the injected content is not. Affordance sightings recorded as data only:
+  `docs.snowflake.com/llms.txt` still carries its imperative "Important notes for LLMs" block
+  (benign and accurate this run), `mongodb.com/docs` still serves a visually-hidden
+  `hiddenDirective` div naming an MCP server, `docs.dynamo.nvidia.com/llms.txt` still carries
+  "Instructions for AI Agents", and SQLcl's `skills sync` writes into `~/.claude/skills`,
+  `~/.codex/skills` and `~/.copilot/skills` with no review step. **No fetched page's suggestion
+  was executed, no skill file was loaded, and no MCP server named by a page was contacted by
+  any of the 19 agents.**
+
+**Scope, on the edition's face:** 094 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity
+sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 093 and the
+edition says so** — no competitor shipped a perf or price claim worth a card, `claims[]` did
+not grow, and the depth went into the correction pass, the compaction and the no-fix register.
+Events 71 → 70 (1 retired), patch 178 → 181 (+3, 5 corrected or re-measured), **no-fix
+register 32 → 33, its highest**. Quarterly Skills/Build re-rank due **2027-01-01**.

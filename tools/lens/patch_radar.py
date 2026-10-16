@@ -109,11 +109,39 @@ def sev_tier(row: dict) -> int:
 # Deliberately NOT matched: "advisory" on its own, or "advisory drop", so an
 # ordinary disclosure record cannot wander into the no-fix register. The negation
 # has to be adjacent to the noun.
+# 2026-10-16: FOURTH predicate gap caught by assert_must_show, and for the
+# fourth time the ROW was right and the PREDICATE was wrong. The AMD TLBI
+# erratum row states that five kernel branches "are all EOL and will never
+# receive it" -- which is a no-fix row by any reading a human would give it,
+# and is the natural phrasing when the unreachable thing is a BACKPORT rather
+# than a patch that does not exist. "never patched" was already matched;
+# "will never receive it" was not. Anchored to an explicit object (it / the
+# fix / a backport / ...) so that prose merely containing "never" cannot drift
+# into the register -- the 10-13 measurement of a loose predicate matching 23
+# of 160 rows is the reason this stays tight.
 NO_FIX_RE = re.compile(
     r"no (?:\w+ )?fix|unpatchable|no patch\b|never (?:be )?patched"
+    r"|never (?:receive|get)s? (?:it|them|this|the fix|a fix|the patch|a patch"
+    r"|the backport|a backport|the workaround)"
     r"|no (?:public |published |ecosystem )?advisor(?:y|ies)"
     r"|advisor(?:y|ies) (?:not|never) published",
     re.I)
+
+
+def _selftest_no_fix() -> str:
+    pos = ["no fix", "no reachable fix", "NO fix for 13.x or 14.x", "unpatchable",
+           "no patch available", "will never be patched",
+           "are all EOL and will never receive it",
+           "6.15-6.17 will never get the backport",
+           "no public advisory", "advisory not published"]
+    neg = ["fixed 16.4.1 / 15.5.28", "fixed 6.3.0 / 6.3.1 / 6.3.4",
+           "2026-09-30 advisory drop", "advisory published 2026-10-07",
+           "the vendor will never publish numbers",
+           "never reproduced on unmodified upstream",
+           "2026-10-20", "RESOLVED 2026-10-03 - fixed on every affected series"]
+    ok = sum(1 for x in pos if NO_FIX_RE.search(x)) + sum(1 for x in neg if not NO_FIX_RE.search(x))
+    bad = [x for x in pos if not NO_FIX_RE.search(x)] + [x for x in neg if NO_FIX_RE.search(x)]
+    return "%d/%d%s" % (ok, len(pos) + len(neg), ("  FAILED: " + repr(bad)) if bad else "")
 
 
 class RadarError(RuntimeError):
