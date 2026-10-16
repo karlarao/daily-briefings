@@ -8362,3 +8362,26 @@ edition says so** — no competitor shipped a perf or price claim worth a card, 
 not grow, and the depth went into the correction pass, the compaction and the no-fix register.
 Events 71 → 70 (1 retired), patch 178 → 181 (+3, 5 corrected or re-measured), **no-fix
 register 32 → 33, its highest**. Quarterly Skills/Build re-rank due **2027-01-01**.
+
+### Post-run: I deleted 254 lines of this file and had to put them back
+
+Landing the 094 notes, I copied the main-track CLAUDE.md over the gh-pages one on the
+assumption that main-track was the superset. **It was not.** The edition-093 run findings and
+the post-run `_BACKREF` correction were committed to **gh-pages directly** on 10-15 and never
+reached the `claude/*` lineage, so the copy deleted both sections. Caught immediately by
+reading the `git diff --stat` — **183 insertions against 254 deletions on a commit that was
+supposed to only add a section** — and restored by rebuilding from the gh-pages file and
+appending only the new section. Both copies are now byte-identical at 69 sections, and the
+two 10-15 sections have been carried onto main-track so the divergence is actually closed
+rather than papered over.
+
+**Two durable lessons, both cheap:**
+- **"Keep the two copies identical" does not tell you which direction to copy.** This file has
+  warned since 09-04 that the branches disagree; what it never said is that *either* side can
+  be ahead. gh-pages gets direct pushes (it is the publish branch) and `claude/*` gets the
+  tooling, so each accumulates content the other lacks. **Diff the target before overwriting
+  it, and reconcile rather than replace.**
+- **An insertion/deletion count is a cheap integrity check on any wholesale file copy.** A
+  commit that should only append has no business reporting deletions, and `--stat` says so in
+  one line before the push. The same check would have caught this at zero cost if run before
+  `git add` rather than after.
