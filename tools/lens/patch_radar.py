@@ -36,7 +36,7 @@ DATE_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})")
 # the prefix and strict on the number so a version string ("Doris 3.1.x") and a
 # day count ("47 days") cannot be read as a severity.
 _CVSS_RE = re.compile(
-    r"cvss[^0-9]{0,12}(?:[2-4]\.[01][^0-9]{0,8})?(10(?:\.0)?|[0-9]\.[0-9])"
+    r"cvss[^0-9]{0,12}(?:v?[2-4](?:\.[01])?[^0-9]{0,8})?(10(?:\.0)?|[0-9]\.[0-9])"
     r"|\b(10\.0|[0-9]\.[0-9])\s*(?:CRITICAL|HIGH)\b", re.I)
 
 
@@ -201,6 +201,23 @@ def rank(row: dict, today: date):
     # it is the more accurate phrase. Kept tight and anchored to `due` only --
     # the 10-13 note measured a loose prose-wide predicate matching 23 of 160
     # rows because rows legitimately DISCUSS unpatched things.
+    # 2026-10-17: band 3 has had the `_touched` tie-break since 10-08, but band 3
+    # is UNREACHABLE under the cap -- band 0 plus a 33-row band 1 fills the whole
+    # window -- so the tie-break ordered rows nobody ever saw. assert_must_show
+    # caught the consequence on four rows at once: LMCache's unauthenticated 9.8
+    # ZeroMQ-pickle RCE, the Claude Agent SDK's 9.2 argument injection and React's
+    # own unauthenticated 9.5, all ADDED today, plus LiteLLM's 9.9 re-measured
+    # today -- every one of them a measured Critical, and every one ranked below
+    # 180 rows because its `due` names a fix. That is the 10-13 fault one band
+    # over: within the visible window the rows that MOVED are the ones a reader
+    # has not seen, and "a fix exists" is what makes a row ordinary only when the
+    # row is STATIC. A Critical published three days ago is not ordinary patching
+    # just because the maintainer shipped a release. Kept deliberately narrow --
+    # `_touched` AND a MEASURED CVSS >= 9.0 (tier 0 only, so an unscored or High
+    # row still cannot jump) -- and it borrows band 1's front-half key rather
+    # than inventing a band, because it is the same reader action: act now.
+    if row.get("_touched") and sev_tier(row) == 0 and not NO_FIX_RE.search(due):
+        return (1, 0, 0, 0)
     if NO_FIX_RE.search(due):
         # 2026-10-12: band 1 gained a severity key. Until today it sorted ONLY on
         # `_touched`, so the no-fix register's internal order was arbitrary within
@@ -285,3 +302,88 @@ def count_no_fix(rows: list) -> int:
     a ledger holding 22, because the figure was prose. Always derive it.
     """
     return sum(1 for r in rows if "no fix" in (r.get("due") or "").lower())
+
+def _selftest_touched_critical() -> str:
+    """The 2026-10-17 promotion, both directions. 10 cases."""
+    from datetime import date as _d
+    t = _d(2026, 10, 17)
+    ok = n = 0
+
+    def chk(label, row, want_promoted):
+        nonlocal ok, n
+        n += 1
+        promoted = rank(row, t)[:2] == (1, 0)
+        if promoted == want_promoted:
+            ok += 1
+        else:
+            print("  FAIL %s: promoted=%s want=%s key=%s" % (label, promoted, want_promoted, rank(row, t)))
+
+    # PROMOTED: touched, measured Critical, a fix exists.
+    chk("new 9.8 w/ fix", {"k": "a", "_touched": True, "due": "fixed 0.5.6",
+                           "t": "CVSS 9.8 unauthenticated RCE"}, True)
+    chk("new 9.5 w/ fix", {"k": "b", "_touched": True, "due": "fixed 19.3.1",
+                           "t": "unauthenticated CVSS 9.5 RCE, no CVE id"}, True)
+    chk("re-measured 9.9", {"k": "c", "_touched": True, "due": "patched 1.103.1",
+                            "t": "CVSS 9.9 privilege escalation"}, True)
+    # NOT promoted: untouched, or not Critical, or already band 0/1/4.
+    chk("untouched 9.8", {"k": "d", "_touched": False, "due": "fixed 0.5.6",
+                          "t": "CVSS 9.8 unauthenticated RCE"}, False)
+    chk("touched 8.8 (High)", {"k": "e", "_touched": True, "due": "fixed 1.2.3",
+                               "t": "CVSS 8.8 authentication bypass"}, False)
+    chk("touched unscored", {"k": "f", "_touched": True, "due": "fixed 2.0",
+                             "t": "silent data loss, no CVE and no score"}, False)
+    chk("touched 5.3 (Medium)", {"k": "g", "_touched": True, "due": "fixed 9.9.9",
+                                 "t": "CVSS 5.3 info leak"}, False)
+    chk("touched 9.8 RESOLVED", {"k": "h", "_touched": True, "due": "RESOLVED 2026-10-01",
+                                 "t": "CVSS 9.8 was fixed"}, False)
+    # A no-fix Critical still goes through band 1 proper (same key, but via the
+    # register) -- asserted so the promotion cannot be mistaken for the register.
+    nf = {"k": "i", "_touched": True, "due": "no fix on 2.x", "t": "CVSS 9.9 bypass"}
+    n += 1
+    ok += 1 if rank(nf, t) == (1, 0, 0, 0) else 0
+    # An overdue KEV row must still win band 0 outright.
+    kev = {"k": "j", "_touched": True, "due": "2026-10-01 (16d PAST DUE)",
+           "t": "CISA KEV, CVSS 9.8, actively exploited"}
+    n += 1
+    ok += 1 if rank(kev, t)[0] == 0 else 0
+    return "%d/%d" % (ok, n)
+
+def _selftest_cvss() -> str:
+    """The 2026-10-17 scoring-version gap, both directions. 14 cases.
+
+    Found by assert_must_show rejecting the build for the FIFTH time on a row
+    that was right and a predicate that was wrong. The optional scoring-version
+    group required a MINOR -- it matched "CVSS v3.1 8.6" and "CVSS v4.0 9.5" but
+    not "CVSS v4 9.2", which is how a run naturally writes a CVSS 4.0 score. The
+    consequence was silent and board-wide, not local to today: three rows scored
+    0.0 and therefore sorted as UNMEASURED (tier 1) while asserting a Critical,
+    among them one of today's must-show rows and a 9.5 Next.js RCE that only
+    ranked at all because its `due` put it in the no-fix register. A severity
+    key that reads a Critical as unscored is worse than no severity key, because
+    it fails in the direction of silence.
+    """
+    cases = [
+        ("CVSS v4 9.2 argument injection", 9.2),      # the row that caught it
+        ("CVSS v4 9.5 unauthenticated RCE", 9.5),
+        ("CVSS 4 9.2", 9.2),
+        ("CVSS v4 10.0 in CISA KEV", 10.0),
+        ("CVSS v3.1 8.6 HIGH", 8.6),                  # unchanged
+        ("CVSS v4.0 9.5 / v3.1 8.9", 9.5),            # unchanged, takes the worst
+        ("CVSS 9.2 Critical", 9.2),                   # unchanged
+        ("CVSS 4.0 = 9.2 CRITICAL", 9.2),             # unchanged
+        ("CVSS v2 7.5", 7.5),
+        ("9.8 CRITICAL per NVD", 9.8),                # second alternative
+        # negative controls: nothing here is a CVSS score
+        ("Spring Boot 4.2 shipped today", 0.0),
+        ("CVSS v4 with no score published", 0.0),
+        ("fixed in 9.0.12 / 8.1.13", 0.0),
+        ("Kubernetes 1.34 reaches EOL", 0.0),
+    ]
+    ok = 0
+    for text, want in cases:
+        got = max_cvss({"t": text})
+        if abs(got - want) < 1e-9:
+            ok += 1
+        else:
+            print("  FAIL %-38r got=%s want=%s" % (text, got, want))
+    return "%d/%d" % (ok, len(cases))

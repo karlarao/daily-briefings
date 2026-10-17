@@ -25,36 +25,36 @@ import ledger as L
 COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "heads up"}
 
 PICKS = [
-    # 2026-10-16 hand curation (edition 094). Order: KEV clocks already expired,
-    # then the cutover firing TODAY, then unauthenticated RCEs, then "no
-    # reachable fix for somebody", then dated cutovers inside 14 days.
-    # Rewritten every run against TODAY's wording. PICKS bypass the COMMENTARY
-    # heading filter by design, so a dated cutover written under "## Heads up"
-    # can still be picked -- which is most of them.
+    # 2026-10-17 hand curation (edition 095). Order: unauthenticated RCEs shipped in
+    # the last three days, then "no reachable fix for somebody", then dated cutovers
+    # inside 14 days. Rewritten every run against TODAY's wording. PICKS bypass the
+    # COMMENTARY heading filter by design, so a dated cutover written under
+    # "## Heads up" can still be picked -- which is most of them.
     #
-    # 09-18 RULE APPLIED FOUR TIMES TODAY. These stories sit in BOTH `new` (a
-    # fresh key off one bullet) and `ongoing` (a match off another bullet in the
-    # same brief); putting a carried story under "New" is simply false. In each
-    # case the pick is DROPPED and the carried row kept with its honest day
-    # count, pinned below: BCR-2413 (day 2, fires today), Pixel CVE-2026-58704
-    # (day 2, 27 days past KEV due), StarRocks CVE-2026-80346 (day 2, still no
-    # fix on any train) and BigQuery TabFM token billing (day 8).
-    "Apple CVE-2026-86950 — KEV deadline expired 13 Oct",
-    "macos-14 is being browned out right now",
-    "Next.js: two unauthenticated RCEs (CVSS v4 9.5)",
-    "Storybook: Critical 9.4 dev-server code injection",
-    "Argo CD: four CVSS 9.9 repo-server RCEs",
-    "AMD TLBI Erratum #1718 — the workaround shipped",
-    "PgBouncer 1.26.1 fixes an 8.8 SCRAM auth bypass",
-    "URGENT / no fix your tooling will find: eight Mongoid CVEs",
-    "CVE-2026-85620 — postgres-mcp restricted-mode bypass",
-    "fast-jwt dropped five advisories at once",
-    "ORDS is the one to pre-stage",
-    "2026-10-20 — Oracle JDK 21 leaves permissive licensing",
-    "2026-10-23 (7 days) — OpenAI legacy snapshot shutdown",
-    "Apache Doris 2.0.x / 2.1.x / 3.0.x / 3.1.x: five September CVEs",
-    "PostgreSQL's output_plugin_libraries GUC",
-    "2026-10-30 (14 days) — THE FLAG. Three pay-per-token models retire",
+    # 09-18 RULE APPLIED EIGHT TIMES TODAY. These stories sit in BOTH `new` (a fresh
+    # key off one bullet) and `ongoing` (a match off another bullet, sometimes in a
+    # different lane); putting a carried story under "New" is simply false. In each
+    # case the pick is DROPPED and the carried row kept with its honest day count,
+    # pinned below: Redshift TLS (d13), Databricks Genie MCP (d14), Kubernetes 1.34
+    # EOL (d11), Argo CD's four 9.9s (d2, carried by devops not appdev), Apple
+    # CVE-2026-86950 (d4), Pixel CVE-2026-58704 (d2), StarRocks CVE-2026-80346 (d3)
+    # and Play Console registration (d2).
+    "React: unauthenticated RCE in React Server Components",
+    "React's own release notes hide the fix",
+    "Next.js: two Critical 9.5 RCEs + a High DoS",
+    "PgBouncer 1.26.1 (2026-10-14) fixes an authentication bypass",
+    "Azure Database for PostgreSQL's built-in PgBouncer is 1.25.2",
+    "LiteLLM: privilege escalation to proxy admin, CVSS 9.9, no CVE assigned",
+    "Vitess 23.0.8 / 24.0.5 (2026-10-13) fix an 8.8 SQL injection",
+    "No fix will ever exist for Apache Doris 2.0/2.1/3.0/3.1",
+    "Five kernel branches are EOL and exposed to erratum #1718 forever",
+    "The microcode remedy is now packaged",
+    "The Next.js 13.x/14.x \"no reachable fix\" row is confirmed",
+    "2026-10-30 — TabFM on BigQuery becomes token-billed",
+    "Oracle's VP for upgrade/patching published the measurement that retires",
+    "RU 23.26.3 raises the minimum SGA, and it was not documented",
+    "2026-11-12 (26 days out) — PostgreSQL 14 EOL",
+    "MongoDB 8.2 has been EOL since 2026-07-31 — 78 days ago",
 ]
 
 EXCLUDE_ONGOING = [
@@ -63,9 +63,14 @@ EXCLUDE_ONGOING = [
     # NOTE (09-15): never exclude a row that PIN_ONGOING also names -- the fold
     # runs before pinning, so an exclude can delete the row a pin is trying to
     # keep and the pin then reports "not found". None of these is pinned.
-    "Run pq-adbc-advisor against your biggest workspace",
-    "Select AI for Java",
-    "October 2026 Pixel bulletin adds three Pixel-specific Criticals",
+    "Audit seLinuxMount before you touch 1.37",
+    "Two releases, both faceting, nothing in the vector layer",
+    "Query plans now show UPDATE, DELETE, MERGE and EXPORT steps",
+    # Same story as the PINNED d3 StarRocks row ("has no fixed release on any
+    # train"), extracted from a second bullet in the same brief. One story must
+    # not appear twice on one card -- the 09-18 rule, applied within `ongoing`
+    # rather than across new/ongoing. The pinned row carries the honest day count.
+    "CVE-2026-80346 re-measured: STILL unfixed on every released train",
 ]
 
 
@@ -74,15 +79,16 @@ PIN_ONGOING = [
     # ranks `normal` because they carry no CVE id in the headline, yet are the
     # most consequential dated items on the card. A pin bypasses the COMMENTARY
     # filter (09-16) and must name the SURVIVING wording -- never a row that
-    # EXCLUDE_ONGOING also kills (09-15). None of these is in the exclude list.
-    #
-    # The first fires TODAY and scores `normal` on the title-only heuristic,
-    # which is exactly why the pin mechanism exists.
-    "2026-10-16 (TODAY) — BCR-2413, Snowsight account-specific sign-in host",
-    "Google Pixel CVE-2026-58704 — 27 days past its KEV due date",
-    "StarRocks CVE-2026-80346 — no fix on any train, 51 days and counting",
-    "2026-10-30 (14 days) — TabFM on BigQuery moves to token billing",
-    "2026-10-30 — legacy Teams and Outlook activities can no longer be ADDED",
+    # EXCLUDE_ONGOING also kills (09-15). None of these is in the exclude list,
+    # and none of the eight is also picked (see the 09-18 note above).
+    "2026-10-31 (+14 days) — TLS 1.0/1.1 connections rejected",
+    "2026-10-31 (14 days) — Beta Genie MCP endpoint",
+    "2026-10-27 — Kubernetes 1.34 upstream end of life",
+    "Argo CD: four CVSS 9.9 repo-server escapes, and v2.x has no patch and never will",
+    "2026-10-13 — PASSED: CISA KEV due date for Apple CVE-2026-86950",
+    "Pixel CVE-2026-58704 — cellular modem improper authorization",
+    "StarRocks CVE-2026-80346 has no fixed release on any train",
+    "PAST / IN FORCE — Play Console app registration",
 ]
 
 
