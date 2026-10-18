@@ -112,6 +112,42 @@ def write_ledger(html: str, ledger: dict) -> str:
     return out
 
 
+def stamp_ledger_identity(ledger: dict, dslug: str, edition: int) -> dict:
+    """Set the embedded ledger's OWN date/edition header. Mutates and returns it.
+
+    THE EIGHTH IDENTITY SITE, found 2026-10-13 on the edition-090 parent. Five
+    identity sites said 090 / 2026-10-12 and the Since-yesterday card correctly
+    said "vs edition 089" -- while `#lensLedger` itself still carried
+    {"date": "2026-10-11", "edition": 89}, one edition stale. Nothing caught it:
+    `rewrite_identity` covers the title, masthead, JS constants and the two
+    runbar spans, and `assert_identity_consistent` reads back exactly those.
+
+    This is the worst site to let drift, because `assert_parent_fresh` reads
+    these two fields -- so a drifted ledger makes TOMORROW's freshness guard
+    raise STALE PARENT against a parent that is perfectly current, and the
+    documented response to that is to skip the lens step entirely. A silent
+    cosmetic drift in edition N becomes a false fatal in edition N+1.
+    """
+    ledger["date"] = dslug
+    ledger["edition"] = int(edition)
+    return ledger
+
+
+def assert_ledger_identity(html: str, dslug: str, edition: int) -> None:
+    """Read the ledger back out of the built page and refuse a disagreement.
+
+    Pairs with stamp_ledger_identity the way assert_identity_consistent pairs
+    with rewrite_identity: stamping proves intent, reading back proves the page.
+    """
+    led = load_ledger(html)
+    got = (led.get("date"), led.get("edition"))
+    want = (dslug, int(edition))
+    if got != want:
+        raise LensBuildError(
+            f"embedded ledger identity disagrees: got {got}, expected {want}. "
+            "Call stamp_ledger_identity(ledger, dslug, edition) before write_ledger.")
+
+
 # ------------------------------------------------------------- freshness ---
 def assert_parent_fresh(parent: dict, expect_date: str | None = None,
                         expect_edition: int | None = None,
@@ -578,4 +614,28 @@ if __name__ == "__main__":
     else:
         raise SystemExit("page-wide link-coverage guard failed to trip")
 
-    print("lens_guard self-test OK — all 5 failure modes trip their guard")
+    # --- the eighth identity site (added 2026-10-13) ---
+    led_page = ('<title>Oracle Competitive Lens — 2026-10-13</title>'
+                '<script type="application/json" id="lensLedger">'
+                '{"date": "2026-10-11", "edition": 89, "claims": []}</script>')
+    try:
+        assert_ledger_identity(led_page, "2026-10-13", 91)
+    except LensBuildError as e:
+        assert "embedded ledger identity disagrees" in str(e), e
+    else:
+        raise SystemExit("ledger-identity guard failed to trip")
+    led = load_ledger(led_page)
+    stamp_ledger_identity(led, "2026-10-13", 91)
+    fixed = write_ledger(led_page, led)
+    assert_ledger_identity(fixed, "2026-10-13", 91)      # now passes
+    # and the drift it prevents: a stale ledger header fails tomorrow's freshness
+    try:
+        assert_parent_fresh({"date": "2026-10-11", "edition": 89},
+                            expect_date="2026-10-12", expect_edition=90)
+    except LensBuildError as e:
+        assert "STALE PARENT" in str(e), e
+    else:
+        raise SystemExit("freshness guard should reject a drifted ledger header")
+
+    print("lens_guard self-test OK — all 5 failure modes trip their guard, "
+          "plus the ledger-identity site")
