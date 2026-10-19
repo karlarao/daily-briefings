@@ -366,7 +366,29 @@ def prior_ledger_path(dirpath, today_date):
 SEV_RANK = {"normal": 0, "high": 1, "urgent": 2}
 
 
-def build(today, today_date, keys, prior, prior_date, names):
+def aged_out_ref(dirpath, today_date, days=AGED_OUT_DAYS):
+    """The ledger date the aged-out count must be measured against.
+
+    The naive form -- count entries whose last_seen is EXACTLY today-7 -- reads
+    0 whenever today-7 was a GAP DAY with no run, because no entry can carry a
+    last_seen on a date nobody researched. That failure is silent: the card
+    simply says nothing aged out, which is indistinguishable from a genuinely
+    quiet week. (Identified 2026-10-17; it did not bite on 10-18 only because
+    2026-10-11 happened to have a run. Landed 2026-10-19.) The honest reference
+    is the most recent ledger date at or before today-days; if there is none
+    (the first week), nothing can have aged out and the caller gets None.
+    """
+    target = (datetime.strptime(today_date, "%Y-%m-%d")
+              - timedelta(days=days)).strftime("%Y-%m-%d")
+    cand = []
+    for fn in os.listdir(dirpath):
+        m = re.fullmatch(r"(\d{4}-\d{2}-\d{2})\.json", fn)
+        if m and m.group(1) <= target:
+            cand.append(m.group(1))
+    return max(cand) if cand else None
+
+
+def build(today, today_date, keys, prior, prior_date, names, aged_ref=None):
     entries = keys["entries"]
     prior_sev = {}
     if prior:
@@ -411,10 +433,14 @@ def build(today, today_date, keys, prior, prior_date, names):
                 row["days"] = int(e.get("seen_count", 0)) + 1
                 ongoing.append(row)
 
-    # aged out: entries whose last_seen is exactly AGED_OUT_DAYS before today
-    target = (datetime.strptime(today_date, "%Y-%m-%d")
-              - timedelta(days=AGED_OUT_DAYS)).strftime("%Y-%m-%d")
-    aged_out = sum(1 for e in entries.values() if e.get("last_seen") == target)
+    # aged out: entries last seen on the reference day and not since. The
+    # reference comes from aged_out_ref() -- the most recent ledger date at or
+    # before today-AGED_OUT_DAYS -- NOT the literal calendar date, which
+    # silently reads 0 when that day was a gap day with no run.
+    if aged_ref is None:
+        aged_ref = (datetime.strptime(today_date, "%Y-%m-%d")
+                    - timedelta(days=AGED_OUT_DAYS)).strftime("%Y-%m-%d")
+    aged_out = sum(1 for e in entries.values() if e.get("last_seen") == aged_ref)
 
     return {"prev_date": prior_date, "new": new, "changed": changed,
             "ongoing": ongoing, "aged_out": aged_out}
@@ -511,7 +537,13 @@ def main():
 
     prior_path, prior_date = prior_ledger_path(a.ledger_dir, a.date)
     prior = json.load(open(prior_path)) if prior_path else None
-    wn = build(today, a.date, keys, prior, prior_date, names)
+    aged_ref = aged_out_ref(a.ledger_dir, a.date)
+    nominal = (datetime.strptime(a.date, "%Y-%m-%d")
+               - timedelta(days=AGED_OUT_DAYS)).strftime("%Y-%m-%d")
+    if aged_ref != nominal:
+        print("aged-out reference: %s (today-%d = %s has no ledger)"
+              % (aged_ref, AGED_OUT_DAYS, nominal), file=sys.stderr)
+    wn = build(today, a.date, keys, prior, prior_date, names, aged_ref=aged_ref)
 
     st = stamp(today, a.date, keys)
     print("stamp: bumped=%(bumped)d guarded=%(guarded)d created=%(created)d" % st, file=sys.stderr)
