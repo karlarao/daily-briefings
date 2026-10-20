@@ -9410,3 +9410,45 @@ edition 097 unrevised and the edition says so on its face** — no competitor sh
 price claim worth a card, `claims[]` did not grow at all, and the depth went into the correction
 pass, the no-reachable-fix register and the calendar. Events 70 → 67 after five retirements;
 patch 186 → 190; no-fix register **35 → 36**. Quarterly Skills/Build re-rank due **2027-01-01**.
+
+## Post-run 2026-10-20 — this run staged `ledger.py` from `main`, which is 19 editions stale
+
+**The tooling tax has a sharper edge than "a run has to find the files": a run can
+find the WRONG files and never notice.** This run staged `tools/ledger/ledger.py`
+from `origin/main` and it worked, so nothing complained — but main's copy predates
+**yesterday's `aged_out_ref` gap-day fix**, which landed only on
+`claude/great-clarke-x3nyyj`. The naive form counts entries whose `last_seen` is
+exactly today−7 and silently reads **0** when today−7 was a gap day. It cost nothing
+today purely by luck: 2026-10-13 was a run day, so `archive/ledger/2026-10-13.json`
+exists and both forms agree. On a run following a gap it would have published a quiet
+zero.
+
+main is behind by more than that one function. It has **no**
+`tools/lens/countdowns.py`, `lens_extra.py`, `patch_radar.py` or `probe_board.py` at
+all, and older `lens_guard.py` / `ledger_surgery.py` / `ledger.py`. Thirteen
+`claude/great-clarke-*` branches (10-06 … 10-19) each carry a superset of the one
+before.
+
+**Rule, sharper than the 09-19 habit:** that note said *after staging tooling from
+main, grep it for the thing yesterday's note claims is in it*. That is necessary but
+not sufficient — it only catches what a note happens to mention. **Stage from the
+NEWEST `claude/great-clarke-*` branch, not from `main`, and say in the run which
+branch you staged from.** The incantation today would have been
+`git show origin/claude/great-clarke-x3nyyj:tools/ledger/ledger.py`. Cheap check
+before launch: `git diff --name-status origin/main origin/claude/great-clarke-<newest>`
+— if that prints anything, main is not the source of truth.
+
+**Today's branch is based on `x3nyyj`, so ONE merge brings main fully current.**
+`claude/great-clarke-y9ebiz` = x3nyyj + four new reusable tools + the three
+edition-098 scripts, and x3nyyj is already a descendant of main, so the merge is a
+fast-forward. Landed: `tools/ledger/derive_lists.py`, `tools/handback_poll.py`,
+`tools/lens/longitudinal.py`, `tools/lens/events_table.py`, plus
+`corrections_098.py` / `ledger_098.py` / `build_098.py`.
+
+**One of those four tried to write into the repo, and that is worth recording as a
+class.** `longitudinal.py` dumped its series json beside `__file__` — fine in the
+scratchpad where it was written, a **public-web-root write** once the file lives at
+`tools/lens/`. Any helper promoted from the scratchpad into `tools/` has to have its
+output paths re-read with that move in mind: `os.path.dirname(__file__)` means two
+different places before and after landing. It now requires an explicit out path and
+refuses to guess.
