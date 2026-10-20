@@ -9452,3 +9452,13 @@ scratchpad where it was written, a **public-web-root write** once the file lives
 output paths re-read with that move in mind: `os.path.dirname(__file__)` means two
 different places before and after landing. It now requires an explicit out path and
 refuses to guess.
+
+**And the memory itself was a month stale on main.** `CLAUDE.md` on `main`,
+`x3nyyj` and every branch in between is **153,280 bytes ending at "Run findings
+2026-09-21 (edition 070)"** — byte-identical across all of them, i.e. nobody has
+synced it in a month, against 676,887 bytes on `gh-pages`. The standing rule that
+the two copies stay identical has simply not been held since 09-21. Today's branch
+carries the full `gh-pages` copy (a strict prefix check confirms it is pure append,
+no edit to earlier text), so the same merge that lands the tooling also brings the
+memory current. `.claude/settings.json` and both hooks ARE byte-identical across
+the two branches — that half of the rule held.
