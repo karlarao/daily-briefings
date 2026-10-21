@@ -207,9 +207,21 @@ def merge_parent(ledger: dict, parent: dict, superseded: dict | None = None,
     dropped = 0
     if drop_events_before and "events" in ledger:
         before = len(ledger["events"])
-        ledger["events"] = [e for e in ledger["events"]
-                            if e.get("date", "9999-99-99") >= drop_events_before]
-        ledger["events"].sort(key=lambda e: e.get("date", "9999-99-99"))
+        # An UNDATED event must be kept, and the board spells "undated" two ways:
+        # on the edition-098 parent, 7 rows carry date=None and 1 carries date="".
+        # The original form (`e.get("date", "9999-99-99")`) handled NEITHER -- the
+        # default only applies when the key is ABSENT, so None raised
+        # TypeError on the comparison and "" compared less than any real date and
+        # was silently DROPPED. Undated rows are exactly the ones held undated on
+        # purpose (Iceberg V4, Fabric Runtime 2.0, Snowflake's Cortex RBAC as of
+        # today), so losing one is losing a deliberate editorial decision.
+        # Found 2026-10-21 when the first undated row reached this path.
+        def _keep(e):
+            d = e.get("date")
+            return (not d) or d >= drop_events_before
+        ledger["events"] = [e for e in ledger["events"] if _keep(e)]
+        # Undated rows sort last, which is where the renderer puts their TBD chip.
+        ledger["events"].sort(key=lambda e: e.get("date") or "9999-99-99")
         dropped = before - len(ledger["events"])
     return carried, dropped, keys
 

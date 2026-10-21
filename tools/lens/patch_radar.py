@@ -119,8 +119,25 @@ def sev_tier(row: dict) -> int:
 # fix / a backport / ...) so that prose merely containing "never" cannot drift
 # into the register -- the 10-13 measurement of a loose predicate matching 23
 # of 160 rows is the reason this stays tight.
+# 2026-10-21: FIFTH predicate gap caught by assert_must_show, and for the fifth
+# time the ROW was right and the PREDICATE was wrong. StarRocks 3.5's `due` reads
+# "merged on branch-3.5, UNRELEASED - reachable only via 4.0.16 / 4.1.6": the
+# fixes for a 9.8 unauthenticated Ranger RCE are committed and no release carries
+# them. That is mechanism 6 of this board's own no-reachable-fix register
+# ("patched in git, never released as a binary", added 2026-10-20), so a row
+# stating it belongs in band 1 by the register's own definition -- it ranked #30
+# instead. It is also the phrasing a run will reach for again, because the only
+# way to SEE mechanism 6 is to diff a tag's pom against its branch, and
+# "merged but unreleased" is how you then write it up.
+# Deliberately anchored: "unreleased" must sit near merged/committed/branch
+# wording, so a row merely mentioning an unreleased version cannot drift in.
 NO_FIX_RE = re.compile(
-    r"no (?:\w+ )?fix|unpatchable|no patch\b|never (?:be )?patched"
+    # NOTE the character class: an earlier try used [^.;] and failed on the very
+    # row it was written for, because "branch-3.5," contains a period. Version
+    # numbers are full of dots; only ';' and newline are safe separators here.
+    r"(?:merged|committed|fixed)[^;\n]{0,60}\bunreleased\b"
+    r"|\bunreleased\b[^;\n]{0,40}(?:merge|commit|branch)"
+    r"|no (?:\w+ )?fix|unpatchable|no patch\b|never (?:be )?patched"
     r"|never (?:receive|get)s? (?:it|them|this|the fix|a fix|the patch|a patch"
     r"|the backport|a backport|the workaround)"
     r"|no (?:public |published |ecosystem )?advisor(?:y|ies)"

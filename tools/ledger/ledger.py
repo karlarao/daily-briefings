@@ -130,6 +130,23 @@ def strong_anchors(title):
     return out
 
 
+_HARD_ID = re.compile(
+    r"\b(?:CVE-\d{4}-\d{3,7}|GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4})\b", re.I)
+
+
+def hard_ids(text):
+    """Exact advisory identifiers ONLY -- CVE and GHSA ids, nothing else.
+
+    Deliberately narrower than strong_anchors(), which also returns dotted
+    versions ("1.2", "9.9") and part names. Those collide constantly: on
+    2026-10-21 "CVSS 9.9" matched an unrelated Argo row and "TLS 1.0/1.1"
+    matched three. An exact CVE or GHSA id does not collide -- it names one
+    advisory -- which is what makes it safe to merge on without a similarity
+    floor (see the shared-id route in match_all).
+    """
+    return {m.group(0).lower() for m in _HARD_ID.finditer(text or "")}
+
+
 def slug(title, maxwords=7):
     ws = content_words(title)[:maxwords]
     s = "-".join(re.sub(r"[^a-z0-9]+", "", w) for w in ws if re.sub(r"[^a-z0-9]+", "", w))
@@ -302,6 +319,7 @@ def match_all(today, today_date, keys):
             title = it["title"]
             anc = strong_anchors(title)
             cw = content_words(title)
+            hid = hard_ids(title)
 
             # Cheap prune first: token overlap costs a set op, ratio costs O(n*m).
             # Only the handful of candidates that share real vocabulary are worth
@@ -313,24 +331,45 @@ def match_all(today, today_date, keys):
                 ce = cache.get(cand)
                 if ce is None:
                     ct = entries[cand].get("title", "")
-                    ce = cache[cand] = (ct, content_words(ct), strong_anchors(ct))
+                    ce = cache[cand] = (ct, content_words(ct), strong_anchors(ct),
+                                        hard_ids(ct))
                 j = jaccard(cw, ce[1])
                 if j >= 0.30 or (anc & ce[2]):
                     shortlist.append((j, cand, ce))
-            shortlist.sort(key=lambda x: -x[0])
+            # Candidates sharing an exact CVE/GHSA id jump the queue: their
+            # token overlap is often near zero (a verdict about a CVE shares
+            # little vocabulary with the claim it judges), so sorting by
+            # jaccard alone can push the right candidate past the [:8] cut.
+            shortlist.sort(key=lambda x: (bool(hid & x[2][3]), x[0]), reverse=True)
 
             best, best_r, best_why = None, 0.0, ""
-            for j, cand, (ct, _cwc, canc) in shortlist[:8]:
+            for j, cand, (ct, _cwc, canc, chid) in shortlist[:8]:
                 r = ratio(title, ct)
                 pr = partial_ratio(title, ct)
                 shared_anchor = bool(anc & canc)
+                # SHARED EXACT ID route (added 2026-10-21, measured not guessed).
+                # Same topic + the same CVE/GHSA id = the same story, however the
+                # two sentences are worded. This exists because the carried-context
+                # prompts make agents write headlines that JUDGE a prior claim
+                # ("CVE-2026-21962 is NOT changed by the October CPU") rather than
+                # restate it, and a verdict shares almost no vocabulary with the
+                # claim: that pair scores r=0.28 / j=0.06 while sharing the exact
+                # id. The match rate fell to 7.6% on 2026-10-21 and the countdowns
+                # a reader acts on (Redshift TLS at 10 days) were reading day 1.
+                # Dry-run before enabling: 30 extra merges, ALL 30 hand-read and
+                # all genuine same-story pairs. Narrow on purpose -- hard_ids()
+                # excludes dotted versions, so "CVSS 9.9" cannot trigger it, and
+                # the same-topic bucket plus the claimed-set rule still hold.
+                shared_id = bool(hid & chid)
                 ok = (r >= 0.90
+                      or shared_id
                       or (r >= 0.62 and (shared_anchor or j >= 0.50))
                       or (pr >= 0.78 and (shared_anchor or j >= 0.45))
                       or (j >= 0.60 and shared_anchor))
                 if not ok:
                     continue
-                score = max(r, pr * 0.98) + (0.10 if shared_anchor else 0.0)
+                score = (max(r, pr * 0.98) + (0.10 if shared_anchor else 0.0)
+                         + (0.50 if shared_id else 0.0))
                 if score > best_r:
                     best, best_r, best_why = cand, score, (
                         "r=%.2f p=%.2f%s j=%.2f" % (r, pr, "+anchor" if shared_anchor else "", j))
