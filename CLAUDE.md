@@ -9462,3 +9462,281 @@ carries the full `gh-pages` copy (a strict prefix check confirms it is pure appe
 no edit to earlier text), so the same merge that lands the tooling also brings the
 memory current. `.claude/settings.json` and both hooks ARE byte-identical across
 the two branches — that half of the rule held.
+
+## Run findings 2026-10-21 (edition 099)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:19 EDT in two batches (nine search-dependent lanes, then ten
+changelog-shaped, per the 09-13 order); first brief in at ~09:20, the last (Snowflake) at
+~09:25; dashboard published **13:36:08Z** with the Pages `deploy` job `success` **28s after the
+push**; lens **version 64** (`1792590365-6072`). **~2,370k research tokens** — about 58% of
+yesterday's ~4,065k, and the reason is mine, not the world's (below). **11 urgent, 8 ok, 0 slow.**
+
+### I RAN THE RESEARCH AGENTS ON SONNET, AND IT SHOWS IN THE BRIEFS
+
+Worth recording because it changes how every other number in this run reads. I passed
+`model: "sonnet"` on all 19 Agent calls. Consequences, measured:
+- **Agents finished in 65s–250s** against 6–12 minutes on recent runs, and averaged **7–36 tool
+  calls** against 60+.
+- **Briefs ran 7.4k–16k characters** against yesterday's 26k–58k. They are *not* stubs (the
+  2026-10-21-style stub failure is 800–1,900 chars with a parsing `STATUS:` line) — every one
+  carries the full skeleton, real primary links and honest "Filtered out" coverage gaps.
+- **607 extracted items** against 880 yesterday, which is why the Longitudinal Items column
+  drops. **That column is research volume, not news volume**, and the edition says so on its face.
+- Quality held where it matters: the Oracle lane read the CPU risk matrices, the Frontend lane
+  re-ran the full 25-advisory OSV enumeration, the Challengers lane diffed poms, the Redshift
+  lane ran the byte-level sweep. Several lanes wrote out their reasoning for *not* flagging.
+**The honest trade: shorter, faster, cheaper briefs with the same verification discipline and
+visibly thinner coverage breadth** — multiple lanes said outright which priorities they did not
+reach. If a future run wants yesterday's depth, do not pass a model override.
+
+### THE DAY'S LEAD: three patch days, three different outcomes
+
+Yesterday two of three patch events had not landed when measured. Today:
+- **Oracle's CPU PUBLISHED** — Rev 1 dated 2026-10-20, read at 13:25 UTC (617 KB, 1,739 CVE-id
+  mentions). **1,295 patches**, 70 rows ≥9.8, max **10.0** in E-Business Suite Workflow
+  Notification Mailer (not a DB component). **Database Server took 14 patches at max 9.8** — the
+  pre-release page implied 13 at 8.8, so yesterday's reading needed correcting.
+- **Node.js SHIPPED on schedule at 10:38Z** — 10 CVEs, 4 High, led by **CVE-2026-111497**, a
+  Brotli decoder out-of-bounds write Node itself describes as permitting RCE. EOL lines get nothing.
+- **Kubernetes STILL shipped nothing** — a *second* consecutive day. Every `stable-1.3x` pointer
+  serves the 2026-09-23 batch; v1.34.13 and v1.37.2 probes 404. So the Go CONNECT-desync fixes
+  are in **no** Kubernetes binary, nine days after the postponed target.
+
+**And the sharpest single fact is a remediation you cannot read.** Oracle APEX takes
+**CVE-2026-101521, CVSS 9.8, remote and unauthenticated**, affecting 24.1.0–24.1.21,
+24.2.0–24.2.20 and 26.1.0–26.1.4. Oracle's risk matrix lists affected ranges **only**, names no
+fixed version, and `apex.oracle.com` returned 403 to every attempt. The implied builds
+(24.1.22 / 24.2.21 / 26.1.5) are inference. **A 9.8 you can name and cannot patch is worse than
+one you have not heard of**, and yesterday's row predicted exactly this.
+
+**Worth carrying: the top of this CPU is bundled third-party code.** The 9.8 in Database Server
+is OpenSSL (CVE-2026-75803); both MySQL 9.8s are curl (CVE-2026-9547) and OpenSSL
+(CVE-2025-15467). A scanner reporting only Oracle first-party CVEs misses the worst rows.
+
+### THE LEDGER MATCH RATE FELL TO 7.6% — MEASURED, THEN FIXED NARROWLY
+
+Yesterday's 12.6% was already diagnosed as prompt-induced. Today it fell to **46 of 607 (7.6%)**.
+Diagnosed before changing anything, in this order:
+1. **Length asymmetry RULED OUT.** Today's titles run a median **113** chars against the 45-day
+   candidate pool's **128** — ratio **0.88**. The 09-09 signature is 2.16; the 10-20 measurement
+   was 1.059. Measure against the pool the matcher actually searches, not the whole dictionary.
+2. **The verdict-phrasing count did not explain it either** — only 36 of 607 titles (5.9%) match
+   an explicit CONFIRMED/VERIFIED/RE-MEASURED pattern, nowhere near enough for ~30 lost merges.
+3. **So I measured the actual pairs**, and that settled it. Every one of the big carried
+   stories — CVE-2026-21962, Spring CVE-2026-59313, Argo CD, Redshift TLS — shares a hard
+   identifier with its dictionary entry and scores **0.28–0.50 similarity**, under the 0.62 gate:
+
+       today: "CVE-2026-21962 is NOT changed by the October CPU..."
+       dict : "CVE-2026-21962 — CISA KEV, CVSS 10.0, ... 54 days past due..."
+       ratio=0.281  partial=0.318  jaccard=0.059  shared hard id=cve-2026-21962
+
+   **A verdict about a claim shares almost no vocabulary with the claim.** And it now compounds:
+   yesterday's titles were *also* verdicts, so the dictionary stores verdict-shaped titles and
+   today's verdicts do not match yesterday's either.
+
+**THE FIX, measured not guessed: a shared EXACT CVE/GHSA id in the SAME TOPIC merges regardless
+of wording.** Dry-run first: 30 candidate extra merges, **all 30 hand-read, all 30 genuine
+same-story pairs**. Then applied: fuzzy merges **39 → 69**, total **76 of 607 (12.5%)**, exactly
+the +30 predicted. Landed in `tools/ledger/ledger.py` as a new `hard_ids()` helper plus one route
+in `match_all`, with the candidate shortlist re-sorted so id-sharing peers jump the `[:8]` cut
+(their jaccard is often ~0.05, so sorting by overlap alone buried them).
+**`hard_ids()` is deliberately narrower than `strong_anchors()`** — CVE and GHSA ids only, no
+dotted versions — because "CVSS 9.9" matched an unrelated Argo row and "TLS 1.0/1.1" matched
+three. That narrowness is the whole reason the route is safe without a similarity floor.
+
+**What the fix does NOT do, stated plainly: it cannot heal yesterday's fragmentation.** The
+repaired rows now read **day 2–3** for stories genuinely weeks old, because they matched
+dictionary entries that were themselves minted fresh yesterday. Redshift TLS is still day 1 —
+no CVE id to key on, and at r=0.50/j=0.43 it misses every gate by a genuine margin, so it is
+**pinned by hand in `curate.py`** rather than chased with a looser threshold. Said so on the
+Longitudinal section's face.
+**The durable fix is upstream and needs Karl: the per-lane "carried context — VERIFY, say so
+EXPLICITLY if changed" blocks are what produce verdict-shaped headlines.** Ask agents to
+headline **the fact, then the verdict** ("**Redshift TLS 1.0/1.1 rejected 2026-10-31 (10 days)**
+— re-measured, unchanged") instead of "**CONFIRMED: date unchanged**". That is a stored-prompt
+change, so it goes to Karl as both files per the maintenance workflow.
+
+### Flag calibration: 11 urgent, 8 ok, every one audited against the literal definition
+
+Audited one at a time, not trimmed to a number. The eleven divide into the familiar two classes
+plus yesterday's addition:
+- **No reachable fix for an affected population (6):** pgvector 0.8.7 on every managed Postgres;
+  StarRocks 3.5 (merged, unreleased); Argo CD v2 (four Criticals, no v2 release ever); Next.js
+  13.x/14.x and SvelteKit 2.x; Context7 MCP + postgres-mcp (9.2, PR open nine weeks); Doris 2.x/3.x.
+- **Dated cutover inside 14 days (4):** Redshift TLS 1.2 floor (10-31), Databricks Genie MCP
+  sunset (10-31) and two model retirements (10-30), Play API-36 extension close (11-01).
+- **A 9.8 whose remediation is unreadable (1):** Oracle APEX, as above.
+Node.js and the Go CA distrust are inside appdev's flag; the Apple CoreGraphics KEV entry
+(due date already passed, exploited against targeted individuals) is inside mobile's.
+
+**The eight `ok` lanes are the evidence the agents discriminated, and several wrote out their
+reasoning:** **AI Hardware** declined a CVSS **10.0** (NVIDIA AIStore) because a fix exists and
+it is not in KEV, while flagging in its own `ok` that 4.x has no backport; **Database Hardware**
+declined the THP data-loss bug **because the carried "fixed in only one stable series" framing is
+now out of date** — fixes exist in 6.6.158 / 6.12.111 / 6.18.53 / 7.2.7; **Open Formats**
+measured **zero new advisories across 31 package/version pairs** and reported that as a positive
+result; **MongoDB** declined after its carried Percona Critical **closed**; **BigQuery** declined
+the May-patched 9.4 and noted its one dated item is press-only; **Fabric** found **zero** Fabric
+or Synapse CVEs across all 2,575 October MSRC entries; **NL2SQL** declined a static, unexploited
+MODERATE whose only remedy is deleting the dependency; **AI Daily** had a genuinely quiet 48h.
+
+### Two carried urgent rows CLOSED, which is worth as much as a new flag
+
+**Percona Server for MongoDB 8.0.32-14** (2026-09-23) carries the CVSS 9.2 "authorization
+silently disabled at startup" fix — 12-day lag behind upstream. And **CVE-2026-97945, the x86 THP
+write-loss bug, is fixed in four stable series**, so the board's row was already RESOLVED and the
+CLAUDE.md framing was the stale thing. **Careful here: there are TWO THP rows and they are
+different CVEs** — `linux-pmd-modify-dirty-bit-silent-data-loss` (97945, RESOLVED) and
+`thp-madv-collapse-dirty-folio-68086` (still no fix in any supported kernel). Conflating them on
+the strength of a 97945 measurement would have been exactly the wrong correction.
+
+### Lens findings (edition 099)
+
+**Eight corrections applied to the ledger BEFORE any section was generated** (the 09-14 rule),
+and the headline one is a date we invented:
+- **`snowflake-cortex-models-allowlist-rbac-nov18` carried a day-precise 2026-11-18 since
+  edition 094, and it appears on NO Snowflake page.** BCR-2378 is dated Aug 5 2026 on the
+  unbundled table with "rollout completes **January 2027**" — month precision. Row is now
+  **undated**. It is also one story, not two: the allowlist deprecation and the "RBAC retirement"
+  are the same BCR, and it is already live for opt-out accounts via bundle 2026_07
+  (Enabled-by-Default 2026-10-16). Same class as the Iceberg V4 (09-12) and Fabric Runtime 2.0
+  fabrications — **when a row is day-precise, check that the vendor said a day.**
+- Oracle CPU published (figures above); APEX ids readable / fix not; `oracle-cpu-oct-20-next`
+  replaced July's carried expectation with October actuals; CVE-2026-21962 54 → **55 days**
+  past due **plus the one genuinely new fact — a grep of the published CPU finds ZERO mentions of
+  the id**, so "the CPU does not retire it" is now confirmed rather than assumed; pgvector gained
+  its measured provider matrix; postgres-mcp's PR clock now reads nine weeks.
+
+**Probing the key list before drafting found an existing row for EVERY candidate but one** —
+twelfth consecutive edition. `react-rsc-95-unauth-rce-no-cve`, `nextjs-oct14-two-95-rces-no-13x-14x-fix`,
+`storybook-94-dev-server-story-rewrite`, `pgbouncer-scram-nonce-preauth-crash-19888`,
+`argocd-four-99-criticals-no-v2-fix`, three StarRocks rows and
+`nvidia-aistore-65162-two-major-hops` were all already there and got enrichments. **Only the
+certificate-authority distrust was new** (`ca-`, `x509`, `emudhra`, `111943` all returned no
+existing key): Go 1.27.3/1.26.10 add a `crypto/x509` denylist on the URGENT track **without
+naming a CA**, and Node's release the next day names an **eMudhra intermediate CA compromise**
+outright. The attribution is only available by reading both vendors. Statically linked Go
+services need a **rebuild**, not a restart.
+
+**THREE TOOLING BUGS FOUND AND FIXED AT SOURCE, all three caught by a guard:**
+1. **`merge_parent`'s `drop_events_before` both crashed on and silently deleted undated events.**
+   `e.get("date", "9999-99-99")` only applies its default when the key is ABSENT, so `date=None`
+   (7 parent rows) raised `TypeError` and `date=""` (1 row) compared less than any date and was
+   **dropped**. Undated rows are exactly the ones held undated on purpose — Iceberg V4, Fabric
+   Runtime 2.0, and as of today Snowflake's Cortex RBAC — so losing one loses a deliberate
+   editorial decision. Fixed with an explicit falsy-keeps rule, `sort(key=... or "9999-99-99")`,
+   and a four-case self-test. **This had never fired before because no undated row had reached
+   that path.**
+2. **`assert_alias_safe` refused the build because three retired events VANISHED**, and it was
+   right: "retired from display" and "gone" are different things. Past-dated events are now
+   **moved into `retired_events[]`** with a `retired` stamp, and the events check runs against
+   `events + retired_events` so a legitimate retirement passes while a lost row still fails.
+3. **`assert_must_show` rejected the radar and was right about 2 of the 3 rows it named** — the
+   **fifth consecutive edition** where it fires, and the fifth where the ROW was right and the
+   PREDICATE was wrong for one of them. `starrocks-cve-trio-4014`'s `due` reads "merged on
+   branch-3.5, UNRELEASED": that is **mechanism 6 of this board's own no-reachable-fix register**
+   and belonged in band 1 by the register's own definition. `NO_FIX_RE` now matches
+   merged/committed/fixed … unreleased. **Gotcha that cost a cycle: my first character class was
+   `[^.;]` and it failed on the very row it was written for, because "branch-3.5," contains a
+   period.** Version numbers are full of dots — only `;` and newline are safe separators.
+   The other two rows came **off** the must-show list, with the reasoning recorded in the source:
+   the CA-distrust row and the React RSC row both have a **reachable** fix, so "you must rebuild
+   rather than redeploy" and "no workaround" do not outrank 26 rows carrying overdue KEV clocks
+   and fixes nobody can apply. **A must-show list asserts urgency; it is not a way to pin a row
+   you find interesting.**
+
+**And one row needed its `due` reworded so the register could SEE it** — the 10-20 lesson
+verbatim. pgvector's `due` read "fix is 0.8.7 … NO managed provider ships it", which `NO_FIX_RE`
+does not match; it now reads "**no reachable fix** on any managed Postgres". The published no-fix
+figure comes from `count_no_fix`, so a row the predicate cannot see is a row missing from the
+number.
+
+**The no-fix register went 36 → 35, and the delta is fully explained**: PgBouncer **left** it
+(1.26.1 *is* the fix, so the enrichment correctly reworded its `due`) and StarRocks **joined**
+via the predicate fix. Membership net zero, direction honest.
+
+**I misused two tooling APIs before reading them, one of which the 10-20 note warns about
+by name.** `assert_not_parent_identity` takes **3** positional args, not 4 — recorded on 10-20,
+repeated today. And `rewrite_pov_meta` drives **every** chair's meta from one dict, so passing
+`v-read` to it flattens the four chair-specific subtitles set moments earlier; it now receives
+only the count-bearing views. **Read the signature before the first call.**
+
+**`rewrite_identity` does not cover three runbar fields, and they are identity-adjacent.**
+`Inputs` still read "103d ledger", `Run tokens` still read "~4,065k" and the ⚑ flag line was
+yesterday's, all inherited silently while Edition and Generated were correct. Rewritten
+explicitly with `subn` count assertions **and a read-back that asserts the stale values are
+gone** — then **every guard re-run after the hand edit**, because a post-guard edit is exactly
+how edition 066 shipped a broken table.
+
+**Guard 5 passed on the FIRST assembly: 710 cited units, zero uncited** — twelfth consecutive
+edition, same mechanism since 09-15 (every row generator calls `cite()` inline). `assert_structure`
+(15 sections), `assert_table_shape` (10 tables) and the alias-aware regression check across all
+nine accumulating sections were clean. `strip_host_wrapper` left **zero** closing pairs again on
+a stored-source parent (the 09-19 / 10-19 / 10-20 finding, **fourth** reproduction);
+`normalize_closing_tags()` collapsed it to one.
+
+**Output is 35,585 bytes SMALLER than the parent and the drop is fully accounted for**, which the
+standing rule requires every time: v-patch −14,061 (the 26-row cap plus tighter rewritten rows),
+embedded ledger −12,906, povContent −3,301, v-events −2,679 (three retirements), v-wn −2,040,
+v-read −372, v-longitudinal −104 — sum −35,463 against an actual −35,585, the remainder being
+identity rewrites and chip attributes. **The ledger drop is minification, not data loss:** a
+row-by-row check confirms **zero** parent keys lost anywhere on the board (events 67 → 64 with
+retired_events 74 → 77; patch 190 → 191).
+
+**Scope, stated plainly:** edition 099 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and every identity site
+(title, masthead, GEN/ED/DSLUG, runbar spans, runbar run-facts, `var NAV`, povContent meta +
+`.c`, section-shell `data-chips`). Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmark
+Scoreboard, Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor Dossiers **carry
+forward from edition 098 unrevised and the edition says so on its face** — no competitor shipped
+a perf or price claim worth a card and `claims[]` did not grow at all. Quarterly Skills/Build
+re-rank due **2027-01-01**.
+
+### Pages, hooks, sources and the security sweep
+
+- **Pages verified by reading the `deploy` JOB.** First look showed **only a `build` job,
+  mid-Upload-artifact**, with the run aggregate `in_progress` — polling either would have fired a
+  needless re-trigger (the 09-17 / 09-21 / 10-20 pattern). `deploy` completed `success` at
+  **13:36:08Z, 28s after the push**.
+- **Both hooks clean, and the healthy signature is worth recording.**
+  `/tmp/claude-artifact-hook.log` holds exactly **4** records — `list`, `read` with `path`,
+  the plain `read` a republish requires, `publish` — **all `PreToolUse`, none
+  `PermissionRequest`**, all `mode=auto`. `/tmp/claude-bash-hook.log` holds **168** records,
+  92 `allow` / 76 `pass`, again all `PreToolUse` at `mode=auto`. Artifact hook clean for its
+  **23rd** consecutive unattended run. The 09-16 republish sequence is confirmed again: **`read`
+  with `path` to stage → plain `read` on the URL → publish**, and the plain read returned the
+  same version id the staged copy came from, which is the cheap proof nobody published underneath.
+- **No agent wrote into the repo.** `git status --porcelain` was empty before the build; agent
+  scratch went to the scratchpad as SHARED_RULES instructs. That stored-prompt line keeps earning
+  its place.
+- **Source access:** `blogs.oracle.com` 403s for a **nineteenth** consecutive week, so the
+  Optimizer / In-Memory / Smart Scan channel remains a structural gap and the Oracle brief says
+  so on its face rather than reporting a quiet month. `apex.oracle.com` **403s** — new, and it is
+  why the 9.8's fixed version is unreadable. **Two corrections to standing notes:**
+  `community.fabric.microsoft.com` RSS returned **200 with full bodies** (1.0 MB, 60 posts) on
+  the first attempt, confirming it is intermittent rather than blocked — **retry before declaring
+  it a gap**; and the Redshift sweep URL in our own prompt was wrong — `/dg/behavior-changes.html`
+  returns **HTTP 200** with a 2,347-byte JavaScript redirect stub, so the live page is under
+  `/mgmt/`. **A fetch that only checks the status code reads that as success.**
+  New: `learn.microsoft.com/en-us/power-query/transition-to-adbc` is the live ODBC→ADBC page
+  (the guessed `odbc-to-adbc-transition` 404s), and `api.msrc.microsoft.com/cvrf/v3.0/cvrf/2026-Oct`
+  with `Accept: application/json` serves all 2,575 October entries.
+- **Security sweep, negative result — seventeenth consecutive run, and the baseline moved by a
+  fully accounted 158 bytes.** The Redshift agent fetched `behavior-changes.html` and
+  `cluster-versions.html` in both variants (4 × HTTP 200, markdown variants returning
+  `text/markdown`) and grepped all four for `agent-toolkit`, `Skills for AI`, `AI coding
+  assistant`, `search-skills`, `llms.txt`, then broadened to `skill`, `MCP`, `assistant`,
+  `agent`: **zero hits in every file**. behavior-changes was **byte-identical** to the 10-20
+  baseline (35,410 md / 57,431 html); cluster-versions grew **+158 md / +239 html** with headings
+  unchanged, and the growth is explained — the 160-character "1.0.501809 – CURRENT Track …
+  Released October 19, 2026" row under patch 205. **Nothing unexplained.** The broken first-party
+  link (`/mgmt/agent-skills.html`, HTTP 200 redirecting to an index) is **still** unfixed.
+  **No fetched page's suggestion was executed, no skill file was loaded, and no MCP server named
+  by any page was contacted, by any of the 19 agents.** The *affordance* keeps widening
+  first-party: Oracle's ORDS 26.3.0 ships MCP tools running customer-defined SQL and **only now
+  requires an `ORDS_MCP_SERVER` role** (a behavioural break for clients configured on 26.2),
+  Fabric's Core and IQ MCP servers went GA beside advanced NL2SQL, Databricks' Unity Gateway
+  Skills API is Beta, and Safari 27 publishes a ready-to-paste `claude mcp add` line in its own
+  release notes — while Apple moves the other way, restricting macOS Full Disk Access to explicit
+  user action and **naming AI agents as the reason**.
