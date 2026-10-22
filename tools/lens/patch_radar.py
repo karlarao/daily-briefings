@@ -40,6 +40,13 @@ _CVSS_RE = re.compile(
     r"|\b(10\.0|[0-9]\.[0-9])\s*(?:CRITICAL|HIGH)\b", re.I)
 
 
+COMPROMISE_RE = re.compile(
+    r"malicious release|credential stealer|shipped (?:a |an )?(?:backdoor|stealer|malware)"
+    r"|supply-chain compromise|keys? (?:\w+ ){0,2}compromised"
+    r"|compromised (?:intermediate |release |signing )?(?:ca|key|pipeline)",
+    re.I)
+
+
 def max_cvss(row: dict) -> float:
     """Highest CVSS asserted anywhere in the row, or 0.0 when none is.
 
@@ -137,7 +144,7 @@ NO_FIX_RE = re.compile(
     # numbers are full of dots; only ';' and newline are safe separators here.
     r"(?:merged|committed|fixed)[^;\n]{0,60}\bunreleased\b"
     r"|\bunreleased\b[^;\n]{0,40}(?:merge|commit|branch)"
-    r"|no (?:\w+ )?fix|unpatchable|no patch\b|never (?:be )?patched"
+    r"|no (?:\w+ )?fix|no backport\b|unpatchable|no patch\b|never (?:be )?patched"
     r"|never (?:receive|get)s? (?:it|them|this|the fix|a fix|the patch|a patch"
     r"|the backport|a backport|the workaround)"
     r"|no (?:public |published |ecosystem )?advisor(?:y|ies)"
@@ -207,6 +214,22 @@ def rank(row: dict, today: date):
     if (n is not None and n <= 14
             and KEV_RE.search((row.get("due") or "") + " " + (row.get("t") or ""))):
         return (0, n, 0)
+    # 2026-10-22: band 0 also takes a CONFIRMED IN-THE-WILD COMPROMISE, with or
+    # without a clock. assert_must_show caught the day's single worst item
+    # ranking #59: LiteLLM 1.107.0 shipped a credential stealer from PyPI and the
+    # Docker `latest` tag for ~1h45m, and it scored CVSS 0.0 because the attacker
+    # published malware rather than filing a CVE. sev_tier already refuses to read
+    # "unscored" as "low" (2026-10-12), but band 1 is long and every measured
+    # Critical outranks an unscored row inside it, so the register buried it.
+    # The band-0 KEV clause exists because ACTIVE EXPLOITATION outranks severity;
+    # a malicious package that has already executed in your environment is PAST
+    # exploitation -- the reader action is not "patch" but "assume breach and
+    # rotate", which is the most time-critical action the radar can carry. Kept
+    # tight and anchored to explicit compromise language (a shipped backdoor or
+    # stealer, a compromised key or release) rather than the generic word
+    # "exploit", which appears in ordinary advisory prose all over the board.
+    if COMPROMISE_RE.search((row.get("due") or "") + " " + (row.get("t") or "")):
+        return (0, -10000, 0)
     # 2026-10-14: this was a bare `"no fix" in due` substring test, and it missed
     # "no reachable fix" -- which is STRICTLY BETTER prose and the wording a run
     # reaches for when the fix exists but cannot be applied (AIStore 4.x with a

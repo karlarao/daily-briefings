@@ -27,23 +27,19 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    "Node.js Oct 21 security releases SHIPPED",
-    "October 2026 CPU has published",
-    "Oracle APEX: 2 patches, both remotely exploitable without authentication",
-    "Nothing shipped.",
-    "pgvector CVE-2026-103484 (GHSA-pw7q-9788-x566): IVFFlat index-build buffer overflow",
-    "Nobody is on 0.8.7",
-    "React Server Components unauthenticated RCE",
-    "Argo CD CVE-2026-113709 (GHSA-fw5c-w8rc-j7fx), CVSS 9.9: still NO v2 fix",
-    "CHANGED: a further Go release landed after 1.27.2",
-    "TLS 1.0/1.1 rejected from 2026-10-31",
-    "Snowsight account-specific host (BCR-2413)",
-    "StarRocks (OSS) — 3.5 LTS fixes merged but UNRELEASED",
-    "Play target API level: new apps and updates must target API 36",
-    "CLOSED: Percona 8.0.32-14",
-    "PgBouncer 1.26.1 (2026-10-14): SCRAM auth bypass fix",
-    "Advisory set: 25 published",
-    "CORTEX_MODELS_ALLOWLIST retirement is BCR-2378",
+    "LiteLLM 1.107.0",
+    "eMudhra / emSign intermediate CA keys declared compromised",
+    "sentence-transformers CVE-2026-68770",
+    "CVE-2026-115324",
+    "dl.k8s.io/release/stable-1.3X.txt still serves",
+    "CVE-2026-86950",
+    "Lakekeeper 0.13.7 and 0.14.1",
+    "pymongo 3.13.0",
+    "Doris 2.0–2.1.x, 3.0.x and 3.1.x still have no backport",
+    "Iceberg spec PR #17783",
+    "DRAM contract prices are up roughly 3x",
+    "TabFM token pricing starts 2026-10-30",
+    "europe-west2 zonal power loss",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -51,11 +47,7 @@ PICKS = [
 # because the two phrasings share little vocabulary. A hand-read list beats a
 # loosened threshold here -- same reasoning as the lens fold_map.
 EXCLUDE_ONGOING = [
-    "Next.js 13.x/14.x: no patched version listed",
-    "Rust 1.99.0 (2026-10-02) and 1.99.1",
-    "Azure KMS for master encryption keys",
-    "October 2026: Storage cache read-hit and write-hit metrics",
-    "INFORMATION_SCHEMA.FAILOVER_HISTORY, Preview",
+    "No CVE in this lane is in CISA KEV",
 ]
 
 
@@ -67,16 +59,21 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    "2026-10-31 — The Beta Genie MCP endpoint",
-    "2026-10-30 — DeepSeek V4 Pro (0813) and Thinking Machines Inkling retire",
-    "CVE-2026-86950 is a CoreGraphics out-of-bounds write",
-    "LiteLLM Proxy GHSA-7hp6-4w63-5g45",
-    "Next.js Image Optimization API RCE with SVG",
-    "Storybook dev server code injection",
-    "NVIDIA AIStore, October bulletin",
-    "2026-10-30 (9 days): TabFM token billing begins",
-    "2026-11-12 (22 days): PostgreSQL 14 final release",
-    "Argo CD CVE-2026-55797",
+    "CVE-2026-21962 is 56 days past its CISA KEV due date",
+    "Oracle APEX CVE-2026-101521, CVSS 9.8, unauthenticated over HTTPS",
+    "Next.js >=10.0.0 <=15.5.27",
+    "React Server Components unauthenticated RCE",
+    "Node.js v26.12.1, v24.22.1 'Krypton' and v22.23.4 'Jod'",
+    "Argo CD CVE-2026-113709",
+    "Kubernetes 1.34 reaches end of life",
+    "pgvector CVE-2026-103484",
+    "PgBouncer CVE-2026-107350",
+    "BCR-2413 Snowsight account-specific sign-in host",
+    "TLS 1.0/1.1 connections rejected",
+    "Genie Beta MCP endpoint",
+    "Google Play target API 36 extension window closes",
+    "Gemini deep-research-pro-preview-12-2025 shuts down",
+    "Istio GHSA-w44g-8m76-8gc5",
 ]
 
 
@@ -169,7 +166,7 @@ def main():
            if is_news(r) and not dup_of_picked(r) and not excluded(r)]
     ong.sort(key=lambda r: (rank.get(r.get("_sev"), 2), -int(r.get("days") or 0)))
     rest = [r for r in ong if r not in pinned]
-    ongoing = (pinned + rest)[:12]
+    ongoing = (pinned + rest)[:15]
 
     out = {
         "prev_date": raw["prev_date"],
