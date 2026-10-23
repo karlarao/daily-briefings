@@ -10057,3 +10057,211 @@ the session reply instead.**
   instructions persist), BigQuery's MCP server is enabled in any project with the API on with
   an IAM deny policy as the only documented control and an **unauthenticated `tools/list`**,
   and Fabric's FNTK lets a coding agent read, write and execute notebook cells.
+
+## Run findings 2026-10-23 (edition 101)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:22 EDT, all briefs in by ~09:43, published 13:52 UTC, lens v66 after.
+`artifact-allow.sh` clean (list, a `read` with `path`, the plain `read` a republish needs, and
+the publish — zero prompts); `bash-allow.sh` clean with no Bash prompt anywhere.
+**~3,830k research tokens, a record** (prior high ~3,740k on 10-22).
+
+**STAGE TOOLING FROM THE NEWEST `claude/great-clarke-*` BRANCH, NOT `main` — the 10-20 note is
+confirmed and the gap is wider than it was.** `git diff --name-status origin/main
+origin/claude/great-clarke-2a27px -- tools/` printed 22 paths: main has **no**
+`countdowns.py`, `lens_extra.py`, `patch_radar.py`, `probe_board.py`, `events_table.py`,
+`longitudinal.py`, `derive_lists.py`, `handback_poll.py` or `SHARED_RULES.md` at all, plus
+stale `ledger.py`, `curate.py`, `lens_guard.py` and `ledger_surgery.py`. Had this run staged
+from main it would have had no patch radar and no countdown refresh. The cheap pre-launch check
+in that note is the right one and it took one command. Today's branch is based on `2a27px`, so
+one merge still brings main fully current.
+
+**The designated branch did not exist on the remote.** `git branch -r` listed
+`origin/claude/great-clarke-1i1eom` from a stale tracking ref while `git ls-remote --heads`
+returned nothing — it had been deleted. `git fetch origin <branch>` fails with "couldn't find
+remote ref", which is the honest signal; the `git branch -r` listing is not. Recreated it from
+`origin/claude/great-clarke-2a27px` rather than from `main`, for the reason above.
+
+**The extractor's token counts now match the harness notifications exactly, so the 09-14
+undercount is gone.** Cross-checked all 19 `briefs/<id>.tokens` against the figures in the
+completion notifications: **zero mismatches**. `apply_harness_tokens.py` was a no-op this run
+and did not need to be run. Worth re-checking rather than assuming, but the 3.8%-low finding
+from 09-14 no longer reproduces.
+
+**Match rate 29.0% — the best in recent memory — and the headline-shape rule is why.** 852
+items, 247 matched, 0 double-counted, dictionary 43,935. Against a recent band of 20–22% that
+is a real improvement, and the 09-09 length diagnostic was NOT needed: titles ran a median 191
+chars, longer than the 144 that triggered the 09-18 investigation, and the rate went *up*
+anyway. **That is the second time the length diagnostic has exonerated the matcher** — run it
+before touching thresholds, and be willing to conclude nothing is wrong.
+
+**`curate.py` now has an `EXCLUDE_CHANGED` list, because three of seven `changed` rows were
+pure classifier artifacts.** The `sev` heuristic is title-only, and the 19 agents reword every
+carried headline each run, so a row can read "urgent → normal" while the underlying fact sat
+perfectly still. Today that was pymongo 3.13.0, the Snowflake client floors and the Redshift
+JDBC serialization change — all unchanged facts, all re-derived into a different band. The
+spec's "do not invent movement" rule says drop them, so the exclusion is now a list in the
+tool rather than a hand-edit of the output, same substring convention as `EXCLUDE_ONGOING`.
+**Expect this every run; it is structural, not a one-off.**
+
+**`NO_FIX_RE` had a vocabulary gap that sank two must-show rows, and `assert_must_show` caught
+it — seventh consecutive edition.** The pgvector row and the new Hudi row both fell to band 3
+because neither ever says "no fix": one says *"zero of seven managed providers ship 0.8.7"* and
+the other *"carried by NO release"*. Both patterns added (same class as the 10-22 "no backport"
+fix), and the cap stayed at 30 — the standing instruction to fix the ranking rather than raise
+the cap held. **The useful part: my own negative test case caught a false positive before it
+shipped** — `no release\b` also matches "no release *notes* were published", so the pattern
+carries a lookahead. When widening a regex in this file, add the negative case in the same
+edit; the self-test is 23 cases now and it is what makes the widening safe.
+
+**A deliberate, stated widening of what the patch register admits: a correctness defect with no
+reachable fix.** The Hudi row is not a CVE — Hudi 1.2.0/1.2.1 silently return wrong rows for
+nullable VARIANT columns on MoR reads under Spark 4.1, the fix is merged to the branch with no
+release carrying it, and `spark.sql.variant.pushVariantIntoScan` is **on by default**. The
+urgent rule's clause is "a fix exists but is not reachable for an affected population", and a
+query quietly returning the wrong answer is at least as actionable as a patched CVE. The
+Open Formats agent flagged it on that reading and said so rather than smuggling it; the row
+carries the reasoning on its face. **Precedent: read the no-reachable-fix clause as covering
+silent-wrong-answer defects, and always state that you are doing so.**
+
+**Flag calibration: 16 urgent — a new series high against a previous ceiling of 14 — audited
+one at a time and all sixteen kept.** Four CISA KEV clocks already expired (Oracle at 57 days
+with `forensicTriage: Yes` and the id absent from the October CPU; Apple at 10 days with no fix
+for the iOS 18.7 train; LiteLLM at 37; Atlassian at 5, and that one is CI/CD — Bitbucket and
+Bamboo). Nine lanes carrying a fix their population cannot reach. A cutover wall of 25 dated
+rows inside fourteen days, 9 inside seven. **16 flags over ~14 distinct stories** — LiteLLM is
+shared by AI Daily and AI App Dev, and the eMudhra CA compromise reaches App Dev, DevOps and
+Oracle as three different consequences of one April-2025 key ceremony. The most debatable of
+the sixteen is BigQuery, flagged on a *billing* cutover (TabFM, 10-30) rather than a breakage
+— it passes "a hard deadline requiring action of the reader" because no quota can cap it and
+the only backstop is a Cloud Billing budget, but it is the one a stricter reading would drop.
+**The three `ok` lanes are the discrimination evidence and all three wrote out their
+reasoning**: AI Hardware pulled the KEV catalog, found zero of 33 additions touching GPU or AI
+infrastructure, and declined to flag a **CVSS 10.0** AIStore RCE because its fix is genuinely
+reachable; Database Hardware reported a month with no CVE at all rather than padding, and
+explained the quarterly vendor cadence that makes November the next drop; NL2SQL reported no
+dated item in the lane.
+
+**Guard 5 passed on the FIRST assembly: 728 cited units, zero uncited** — fourth consecutive
+edition. Mechanism unchanged since 09-15: every row generator calls `cite()` inline as it
+emits, never retrofitted. `assert_table_shape` passed first try across 10 tables, and
+`normalize_closing_tags` did its job (parent carried 2 pairs, output carries 1).
+
+**Pages verified by reading the `deploy` job's `completed_at`, per the 09-14 rule plus its
+10-21 extension.** `build` succeeded 13:52:19Z, `deploy` was created immediately after and
+completed `success` at **13:52:32Z — 30 seconds after the push**. No re-trigger, no wasted
+build. The 09-17 corollary held too: at the first look `deploy` existed but read `waiting`,
+which is not a stall.
+
+### Lens findings (edition 101)
+
+**Six corrections, and four of them moved claims this board was carrying confidently — the
+heaviest correction pass in a dozen editions.** Applied to the ledger before any section was
+generated (the 09-14 build-order rule).
+- **Fabric Runtime 2.0 IS now the default**, closing three editions of "promised late
+  September, no flip, no day". The vendor *still* published no day, so the row stays undated
+  rather than being backfilled with one. Second error in the same row: the board carried
+  Runtime 2.0 as **Spark 4.0**; it is **Spark 4.1 with Delta Lake 4.2**. A stale version field
+  on a row whose *date* was under argument for three editions — worth checking the whole row
+  when you correct any part of it, which is the 09-16 prose-vs-identity lesson again.
+- **The Iceberg equality-delete ban is merged spec text** (PR #17783, 2026-09-29), not the open
+  PR the board carried. And V4 still has no date **by the design of the process**: the spec says
+  it "has not been formally adopted" and the release manager wrote that the baseline AMT vote
+  "is *not* a vote for adoption". This board's deliberate undating was right, and now there is
+  procedural evidence for it rather than just an absence.
+- **Doris CVE-2026-72524's population was overstated** — NVD's `defaultStatus: unaffected` set
+  is 3.1.x, 4.0.0–4.0.7 and 4.1.0–4.1.3 only, so 2.0–2.1.x and 3.0.x are *not* affected. What
+  replaced the overstatement is harsher for those who are: 3.1.4 is now in "Archived Releases",
+  which receive nothing, "security patches included".
+- **Percona Server for MongoDB is NOT the stranded population** — it crossed the CVE-2026-82067
+  fix in September (7.0.43-23 / 8.0.32-14). **MongoDB 8.2 is**: `SERVER-131229` names 8.2.13 as
+  a fix version and that release was never published. Gotcha worth keeping: Percona's notes
+  never name the CVE, so grepping them for the id finds nothing — compare version numbers.
+- **The Next.js/sharp framing overstated it.** npm picks the max satisfying version across a
+  `||`, so a *fresh* install of 15.5.28 does resolve sharp to 0.35.5. The real exposure is
+  narrower and worse: a lockfile **already** pinned to 0.34.x satisfies the declared range, is
+  not moved by the Next.js bump or by `npm update`, and 0.34 has had no release since
+  2025-11-06. The Frontend agent volunteered this correction against its own prior finding.
+- **A row came back from the dead, which is a failure mode this board had not seen.** The
+  Snowsight account-host row had been *retired* as a passed 2026-10-16 date. BCR-2413 now reads
+  "early February 2027 (exact date to be determined)" — it did not fire, it relocated, for the
+  **third** time. Un-retired and undated. **Lesson: retiring a row on the strength of its date
+  having passed assumes the vendor let it pass. Before retiring a dated row, confirm the event
+  actually happened rather than that the calendar moved past it.**
+
+**`reuse_key`'s advisory had its most productive run yet: five of eight drafted rows were
+already on the board.** Snowflake's 10-26 agent-dashboard default, the Play target-API-36
+cliff, the Fabric Foundry 11-06 retirement, the Kubernetes 1.34 EOL and the Gemini
+deep-research shutdown all existed; they were enriched in place instead of getting fresh slugs.
+The three new events and five new patch rows are what survived that pass. One judgement call
+recorded: Play **Billing Library 7** was kept as a row distinct from the target-API-36 row
+despite sharing 2026-11-01, on the 09-13 precedent that two deadlines sharing a date are not
+one deadline.
+
+**Output is +39,277 bytes against the parent**, accounted for by 8 new rows, 12 enrichments,
+six correction paragraphs, four refreshed chair bodies and the un-retired row. A growth needs
+less explaining than a shrink but the rule still applies.
+
+**Scope, on the edition's face:** 101 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity
+sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 100 unrevised** —
+no competitor shipped a perf or price claim worth a card and `claims[]` did not grow, so the
+depth went into the correction pass. **The quarterly Skills/Build re-rank is due 2027-01-01.**
+
+### Source access 2026-10-23
+
+- **`blogs.oracle.com` 403s HTML *and* RSS for a NINTH consecutive week** — measured today
+  across `/database/rss`, `/optimizer/rss`, `/exadata/rss`, `/feed` and the site's JSON API. It
+  cost the Oracle `## Performance` channel outright again; the brief says so on its face.
+  `mikedietrichde.com` is still 403 on `/`, `/feed/` and `/2026/10/`.
+- **New and worth adding to the topic specs: `developer.apple.com/documentation/*` returns
+  title-only to WebFetch (JS shell), but the underlying JSON works** —
+  `https://developer.apple.com/tutorials/data/documentation/<path>.json` with a browser UA
+  returns full text plus a `references` map of API symbol names. That is how TN3187, the Xcode
+  27.1 notes and the iPhone Duo overview were read.
+- **`phoronix.com` is only navigable via RSS plus known article slugs** — a correction to the
+  standing note: the feed and individual `/news/` pages serve fine to curl with a browser UA,
+  but `/search/` and `/reviews/` return a Cloudflare challenge.
+- **`chromestatus.com`'s API is the working route for Chrome milestones** —
+  `/api/v0/channels?start=N&end=M` and `/api/v0/features?milestone=N` (strip the `)]}'`
+  prefix before parsing); `developer.chrome.com/release-notes/155` and `/blog/new-in-chrome-155`
+  both 404.
+- **`investors.micron.com` 404s; SEC EDGAR is the better primary route for earnings numbers.**
+  `storage.googleapis.com/flutter_infra_release/releases/releases_macos.json` is the
+  authoritative uncapped route to Flutter channel state. `api.webstatus.dev` remains the route
+  for Baseline. `android-developers.googleblog.com` feeds now redirect-loop for curl; the
+  HTML index at `developer.android.com/blog` is the working route.
+- **A WebFetch failure mode worth naming, because it answers plausibly while truncating.** The
+  BigQuery agent fetched a 361,202-character release-notes page, got 100,000 characters, and
+  received a confident date range ("September 1 through October 22") that **silently omitted
+  every entry from Oct 14, 15, 16, 21 and 22** — including two GA functions and an opt-in
+  behaviour change. Recovered by curling and grepping. **Count the dates before trusting a
+  summary of a long page.**
+
+**Security sweep, negative result — twelfth consecutive run, and the byte-identical baseline
+finally MOVED.** The Redshift agent fetched `behavior-changes.html` both ways: markdown
+**35,561 bytes / 25 headings** against the baseline of 34,132 / 24 held byte-for-byte from
+09-12 through 10-20, and HTML **57,431 / 28** against 55,977 / 27. `cluster-versions.html`
+likewise grew (md 135,967 / 94; html 224,729 / 96). **The growth is fully accounted for by real
+content churn** — the new patch-208 user-lockout and patch-206 SUPER sections — and **20 greps
+across both variants of both files for `agent-toolkit`, `Skills for AI`, `AI coding assistant`,
+`search-skills` and `llms.txt` returned zero matches.** The agent-only *mechanism* persists; the
+2026-09-01 injected block is still gone. **The carried 09-20 question is also resolved**:
+`agent-toolkit` lives on `system-table-s3-tables.html`, appearing **exactly once in each
+variant** with 21 headings in each — symmetric, human-visible, ordinary first-party
+documentation, the opposite of the 09-01 pattern. No fetched page's suggestion was executed and
+no skill file was loaded by any agent on any lane.
+
+**Affordance sightings keep widening, and two are worth recording as data.** BigQuery's Data
+Transfer MCP server went **GA with five mutating tools** (create/update/delete transfer configs,
+delete runs, start manual runs) — with one genuinely good guardrail, that Secret Manager
+parameters "must be set with Secret Manager. Plaintext is strictly disallowed", so credentials
+cannot transit model context — and one real hazard, that nearly every tool description ends "If
+the default location isn't set, then the job runs in the US multi-region", so an agent that
+omits an optional argument causes a **data-residency failure through a missing parameter rather
+than a wrong one**. Separately, the same GA'd reference embeds, inside the `create_transfer_config`
+**tool description a model reads**, a remediation workflow telling it to send the user to an
+OAuth consent URL and feed the returned `version_info` back into the call — first-party and
+plausibly benign, but a credential-handoff procedure living in model-facing text is exactly the
+shape to watch. Treated as data; not followed, not fetched.

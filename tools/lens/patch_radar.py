@@ -148,7 +148,16 @@ NO_FIX_RE = re.compile(
     r"|never (?:receive|get)s? (?:it|them|this|the fix|a fix|the patch|a patch"
     r"|the backport|a backport|the workaround)"
     r"|no (?:public |published |ecosystem )?advisor(?:y|ies)"
-    r"|advisor(?:y|ies) (?:not|never) published",
+    r"|advisor(?:y|ies) (?:not|never) published"
+    # Added 2026-10-23, same class as "no backport" (10-22): two phrasings that
+    # describe an unreachable fix without ever saying "no fix", and both sank a
+    # must-show row to band 3 until assert_must_show caught it.
+    #  - "carried by NO release" / "no release carries it": the fix is merged to
+    #    a branch and no tag has been cut from it (Hudi 1.2.x, StarRocks 3.5).
+    #  - "zero of seven managed providers ship 0.8.7" / "nobody ships it": the
+    #    fix is GA upstream and no managed service offers it (pgvector 0.8.7).
+    r"|no release(?! notes| note\b)\b|nobody ships"
+    r"|\bzero of \w+\b[^;\n]{0,48}\b(?:ship|offer|carr|provide|expose)",
     re.I)
 
 
@@ -157,12 +166,16 @@ def _selftest_no_fix() -> str:
            "no patch available", "will never be patched",
            "are all EOL and will never receive it",
            "6.15-6.17 will never get the backport",
-           "no public advisory", "advisory not published"]
+           "no public advisory", "advisory not published",
+           "fix merged to 1.2.x, carried by NO release",
+           "zero of seven managed providers ship 0.8.7", "nobody ships it"]
     neg = ["fixed 16.4.1 / 15.5.28", "fixed 6.3.0 / 6.3.1 / 6.3.4",
            "2026-09-30 advisory drop", "advisory published 2026-10-07",
            "the vendor will never publish numbers",
            "never reproduced on unmodified upstream",
-           "2026-10-20", "RESOLVED 2026-10-03 - fixed on every affected series"]
+           "2026-10-20", "RESOLVED 2026-10-03 - fixed on every affected series",
+           "no release notes were published for 4.4.1",
+           "two of seven providers ship 0.8.7"]
     ok = sum(1 for x in pos if NO_FIX_RE.search(x)) + sum(1 for x in neg if not NO_FIX_RE.search(x))
     bad = [x for x in pos if not NO_FIX_RE.search(x)] + [x for x in neg if NO_FIX_RE.search(x)]
     return "%d/%d%s" % (ok, len(pos) + len(neg), ("  FAILED: " + repr(bad)) if bad else "")
