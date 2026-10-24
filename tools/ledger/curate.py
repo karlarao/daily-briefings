@@ -27,22 +27,21 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    "litellm 1.107.0 shipped a credential stealer plus an hourly remote-code loader",
-    "Kubernetes 1.34 reaches end of life 2026-10-27 (4 days out) and v1.34.13 has still not shipped",
-    "pgvector 0.8.7 (fix for CVE-2026-103484) is offered by zero of seven managed Postgres services",
-    "Chrome removes emSign ECC Root CA - G3 from the Chrome Root Store for all devices on Tuesday morning",
-    "Argo CD's four CVSS 9.9 repo-server criticals have no patch for 2.x, ever",
-    "React Server Components unauthenticated RCE, CVSS 4.0 9.5, fixed in 19.0.9",
-    "Apache Hudi 1.2.0 and 1.2.1, Spark 4.1, VARIANT columns, MoR snapshot reads: wrong results",
-    "StarRocks branch-3.5 now pins Ranger 2.9.0, HttpClient5 5.6.4 and BouncyCastle 1.86",
-    "Apache Doris 3.1.x is now formally archived",
-    "CVE-2026-21589 (Atlassian unauthenticated arbitrary file access) is in CISA KEV",
-    "CPython 3.9 and 3.10 still bundle pip releases whose vendored certificate bundle",
-    "2026-10-26 (3 days out) — agent dashboard_data_access begins rolling out defaulting to TRUE",
-    "Percona Server for MongoDB has the CVE-2026-82067 fix on both live branches",
-    "DDR4 16Gb (2Gx8) 3200 spot session average $82.87 vs DDR5",
-    "DuckDB 2.0.0 LTS \"Cinnamon Teal\" shipped 2026-10-21",
-    "mongosync 1.22 supports neither MongoDB 8.3 nor 9.0",
+    'litellm shipped four releases today',
+    'breaking ~30,800 unexpired certificates',
+    "Every CPython branch's ensurepip ships a pip",
+    'No fixed Java build number is publicly identifiable',
+    'Kubernetes patch release is 11 days overdue',
+    'Hudi VARIANT data corruption',
+    'three SSR advisories inside the window',
+    'Next.js 14.x and earlier have no patched release',
+    'Doris 3.1.4 is the only 3.1 release',
+    'postgres-mcp restricted-mode bypass',
+    'dashboard data access becomes enabled-by-default',
+    'Fabric data agent as a Foundry "custom tool" is unsupported',
+    'TabFM token pricing starts 10/30/2026',
+    'is still in CISA KEV and is now 38 days past',
+    'Micron FY2026',
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -57,19 +56,24 @@ PICKS = [
 # 2026-10-23, when 3 of 7 `changed` rows were of this shape. Substring match,
 # same convention as EXCLUDE_ONGOING; resolve fragments with derive_lists.py.
 EXCLUDE_CHANGED = [
-    'pymongo 3.13.0 (the last 3.x',
-    'Client minimum-version floors rose on 2026-09-30',
-    "JDBC 2.3.0's DataSource serialization moved",
+    'YugabyteDB v2024.2 LTS end of maintenance',
+    'parquet-java 1.18.1 (2026-09-04) and parquet-format 2.14.0',
+    'October 2026 CPU: 1,295 patches, still Rev 1',
+    'No Snowflake CVE is in CISA KEV',
+    'The Redshift JDBC DataSource serialization format changed',
+    '"StarRocks 3.5 LTS" is still undocumented',
+    'Docker Engine 29.9.2 (2026-10-20) rejects certificate chains',
+    'Google Play target API 36 extension expires',
+    'Google Play Billing Library 7 extension expires',
+    'CVE-2026-91403 (eMudhra / JSSE, CVSS 9.1) — a second Java patch cycle',
 ]
 
 EXCLUDE_ONGOING = [
-    "2026-10-31 (8 days): TLS 1.0/1.1 rejected, minimum TLS 1.2 enforced",
-    "2026-10-31 (8 days): Beta Genie MCP endpoint /api/2.0/mcp/genie sunsets.",
-    "2026-10-30 (7 days) — TabFM billing moves to tokens",
-    "2026-10-13 KEV due date, now 10 days past — Apple CVE-2026-86950",
-    "CVE-2026-21962 (Oracle HTTP Server / WebLogic Server Proxy Plug-in) is 57 days past",
-    "Oracle APEX 24.1.x and 24.2.x have no publicly named fixed build",
-    "2026-10-27 (4 days) — Kubernetes 1.34 end of life, almost certainly without v1.34.13",
+    '2026-10-31 (7 days) — Beta Genie MCP endpoint /api/2.0/mcp/genie is sunset.',
+    'TabFM on BigQuery moves to token billing',
+    '2026-11-06 (13 days) — Fabric data agent custom-tool integration',
+    'CVE-2026-21962 still unpatched by omission',
+    'Apache Doris CVE-2026-72524 affects',
 ]
 
 
@@ -81,18 +85,16 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    "TLS 1.0/1.1 connections rejected from 2026-10-31 (8 days out), provisioned clusters AND serverless workgroups",
-    "The Beta Genie MCP endpoint https://<workspace-hostname>/api/2.0/mcp/genie is sunset on 2026-10-31",
-    "TabFM token billing starts 10/30/2026 (7 days out) at $0.05/mtok input",
-    "Apple CVE-2026-86950 (CoreGraphics out-of-bounds write, CWE-787) is 10 days past its CISA KEV due date",
-    "2026-11-01 (9 days) — Google Play Billing Library 7 extension deadline",
-    "2026-11-06 — the Microsoft Foundry \"Microsoft Fabric\" custom tool for Fabric data agents stops being supported",
-    "2026-10-31 (8 days) — RDS for PostgreSQL end of standard support for eight minor versions",
-    "CVE-2026-82067 — \"authorization may remain in a default disabled state during server startup\"",
-    "CVE-2026-21962 still unpatched by omission — 57 days past KEV due",
-    "Oracle APEX CVE-2026-101521, CVSS 9.8, unauthenticated over HTTPS, affects 24.1.0",
-    "next@15.5.28 still declares optionalDependencies.sharp",
-    "mongo-go-driver v1 has no fix for CVE-2026-107325",
+    'is in CISA KEV with a due date of 2026-10-18',
+    'is 11 days past its CISA KEV due date',
+    'the advisory exists only at the repo level',
+    'offered by 0 of 7 managed Postgres services',
+    'built-in PgBouncer is 1.25.2',
+    'MongoDB 8.2 gets nothing',
+    'is listed affected with patched version',
+    'TLS 1.0/1.1 connections rejected from 2026-10-31',
+    'is sunset on October 31, 2026',
+    'KEV due date 2026-08-27, now 58 days past',
 ]
 
 

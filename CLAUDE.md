@@ -10265,3 +10265,234 @@ than a wrong one**. Separately, the same GA'd reference embeds, inside the `crea
 OAuth consent URL and feed the returned `version_info` back into the call — first-party and
 plausibly benign, but a credential-handoff procedure living in model-facing text is exactly the
 shape to watch. Treated as data; not followed, not fetched.
+
+## Run findings 2026-10-24 (edition 102)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:13 EDT, 18 briefs in by ~09:35, frontend at ~09:40, published 13:44 UTC,
+lens v67 after. **~3,876k research tokens, a record** (prior high ~3,830k on 10-23). Hook logs
+show the healthy signature the 10-20 note describes: `artifact-allow.sh` 4 records (list, a
+`read` with `path`, the plain `read` a republish needs, the publish), `bash-allow.sh` 540
+records (258 allow / 282 pass) — **all `PreToolUse` at `mode=auto`, zero `PermissionRequest`
+events anywhere.** A `PermissionRequest` at all is the tell that `PreToolUse` did not clear it.
+
+**STAGE TOOLING FROM THE NEWEST `claude/great-clarke-*` BRANCH — fourth consecutive run to
+confirm it, and the cheap pre-launch check again took one command.** `git diff --name-status
+origin/main origin/claude/great-clarke-1i1eom -- tools/` printed 26 paths: main has **no**
+`countdowns.py`, `lens_extra.py`, `patch_radar.py`, `probe_board.py`, `events_table.py`,
+`longitudinal.py`, `derive_lists.py`, `handback_poll.py` or `SHARED_RULES.md` at all, plus stale
+`ledger.py`, `curate.py`, `lens_guard.py` and `ledger_surgery.py`. Staging from main would have
+left this run with no patch radar and no countdown refresh.
+
+**The designated branch did not exist on the remote again** — `git ls-remote --heads` returned
+nothing for it while `git branch -r` listed stale siblings. Recreated from
+`origin/claude/great-clarke-1i1eom`, not from `main`, for the reason above.
+
+**Token counts matched the harness notifications exactly for all 19 agents, second consecutive
+run.** `apply_harness_tokens.py` was a no-op and did not need to run. The 09-14 3.8%-undercount
+finding still does not reproduce — worth re-checking rather than assuming, and worth not
+re-fixing.
+
+**A truncated handback does NOT truncate the extracted brief.** Mobile (51KB) and Oracle (59KB)
+both exceeded the message limit and arrived as `<persisted-output>` previews, which looks alarming
+mid-run. `extract_briefs.py` reads the `SubagentHandback` payload out of the transcript rather
+than the message, so both came through at full length. The 09-21 size-distribution check is still
+the right habit — today's spread was 25k–59k with no stubs — but a persisted-output preview is not
+a stub.
+
+**Match rate 26% (905 items, 72 exact + 159 fuzzy, 0 double-counted), dictionary 43,935 → 44,604.**
+Squarely in the recent band, so the 09-09 length diagnostic was not needed. Tally guard bumped 236,
+guarded 0. The 11 weakest accepted merges were eyeballed and all were genuine same-story
+rewordings.
+
+**`EXCLUDE_CHANGED` is now unambiguously structural: TEN of eleven `changed` rows were classifier
+artifacts.** The 10-23 note predicted this would recur and called it structural at 3 of 7; today it
+is 10 of 11. Every one read "urgent → normal" or "high → normal" on a fact that had not moved —
+YugabyteDB's EOM date, parquet-java "still the newest release", the October CPU "still Rev 1",
+"no Snowflake CVE is in KEV", the Redshift JDBC serialization note (whose own agent said
+"unchanged since, so no movement today"), "StarRocks 3.5 LTS still undocumented", Docker 29.9.2,
+and both Play extension dates. **One real movement survived the pass** (Oracle's out-of-band
+CVE-2026-91403 alert, which genuinely went high → urgent). The title-only `sev` heuristic plus 19
+stateless agents rewording every carried headline produces this every run; storing per-item
+severity in the public ledger is still the durable fix.
+
+**Two card rows showed one story twice, and the fix is editorial.** Oracle CVE-2026-21962 and
+Apache Doris each produced two keys from two different bullets in the same brief — the 09-18 shape.
+Dropped the weaker of each pair. **Also worth keeping: check which BUCKET a pick lands in before
+writing it into `PICKS`.** Of 23 fragments I probed, 8 were in `new`, 13 in `ongoing` and 1 in
+`changed`; `PICKS` only applies to `new`, so three intended picks had to become pins instead. One
+command answered it and the alternative is a silent miss.
+
+**THE PATCH RADAR CAP MOVED 30 → 35, deliberately, and the reasoning belongs on the record because
+it is the first time the standing instruction did not apply.** `assert_must_show` fired for the
+eighth consecutive edition with four missing rows. The instruction is "fix the ranking, do not
+raise the cap", and it is right whenever a row falls because its band is wrong. **That was not
+today:** band 0 (CISA KEV) alone holds **21 rows**, the must-show set was 20, and only 6 of those
+rank into band 0 naturally — so `band0 ∪ must-show` is **exactly 35** and no reordering fits it
+inside 30. 35 is that measured union, not a round number, and the section says so on its face.
+**Rule for next time: before raising the cap, compute `|band0 ∪ must_show|` and raise it to exactly
+that, or not at all.**
+
+**Underneath the cap problem were two genuine defects, and the second one is a new class.**
+(1) A `NO_FIX_RE` vocabulary gap: the mongo-go-driver row says *"no v1 backport"* and the pattern
+matched `no backport` but not a qualifier between the words — widened to `no (?:\w+ )?backport\b`
+with "no backporting policy" kept as a negative in the same edit, per the 10-23 rule. (2) **The
+PgBouncer row sank because its `due` field described the CVEs and never named WHO IS STRANDED.**
+That is a content defect the ranking correctly surfaced, not a ranking bug: a row that cannot say
+who is stranded cannot be ranked as stranded. Today's OLTP lane supplied the fact (Azure ships
+1.25.2, no customer override, no bump since July 2026) and the row now ranks on its own.
+
+**`select()` now force-includes must-show, then fills by rank.** For eight editions the assertion
+has been a tripwire with no mechanism behind it — it could only ever be satisfied by making a row
+rank higher, which works until band 0 outgrows the cap. Pinned rows are now guaranteed and the
+remainder fills by rank; the assertion stays as the check that the guarantee held.
+
+**Flag calibration: 17 urgent of 19 — a new series high against a prior ceiling of 16 — audited one
+at a time and all 17 kept.** Four CISA KEV clocks already expired (Oracle 58 days with
+`forensicTriage: Yes` and the fix available since the *January* CPU; Apple 11 days with no fix for
+the iOS 18.7.x train on devices that cannot reach iOS 26; LiteLLM 38; Atlassian 6, and that one is
+Bitbucket and Bamboo — SCM and CI). Eleven lanes carrying a fix their population cannot reach. A
+cutover wall of 23 dated rows inside fourteen days. **But the flag count overstates the breadth and
+the summary says so: 17 flags cover ~20 distinct stories, and two root causes account for seven of
+them** — the eMudhra CA compromise reaches App Dev, DevOps, Oracle, Mobile and AI Daily as five
+different remediations of one key disclosure, and litellm is shared by AI Daily and AI App Dev.
+**Counting lanes is not counting problems**, and that distinction is worth stating whenever the
+count runs this hot.
+
+**Only two lanes returned `ok`, which is thin — and both earned it in writing.** AI Hardware gave
+seven numbered reasons, pulled the KEV catalog itself (35 additions, zero touching GPU or AI
+infrastructure), declined a **CVSS 10.0** AIStore RCE on dates because the fix shipped four weeks
+before the bulletin, and took Isaac Lab seriously as an unreachable-fix candidate — its advisory
+named a *beta* as the only fix — before reasoning it down to "expensive, not unreachable" once
+3.0.0 went GA. Database Hardware reported a month with **no CVE at all** rather than padding, and
+**read two EPYC bulletins' revision histories** to establish that a 2026-09-24 "last updated" stamp
+was editorial ("Removed mitigation bits and TCB values") rather than new exposure — a false flag
+avoided by checking. It also found the actionable side effect nobody would look for: **AMD removed
+the SEV-SNP attestation TCB reference values**, so anyone pinning a minimum TCB in an attestation
+policy has lost their public source.
+
+**Four lanes corrected a row this board shipped confidently yesterday, which is the highest
+correction-by-the-agents count yet.** The pattern worth noting: in every case the agent read the
+primary artifact rather than the summary.
+- **Hudi was wrong in three ways.** It is **Spark 4.0.2** and the issue states **4.1+ is NOT
+  affected** (the board had the affected set inverted); MoR reads **fail loudly** with
+  `[MALFORMED_VARIANT]` rather than silently returning wrong rows; and the durable corruption is
+  Copy-on-Write with the **Spark** record merger persisting `metadata`/`value` bytes swapped into
+  the base file, while the **default Avro merger is correct**. That last point is the actionable one
+  and the old framing hid it — there is a mitigation available today.
+- **Argo CD: two advisories this window, not four**, and only one is 9.9 (CVE-2026-77459 plus
+  CVE-2026-55797). The stranded population is wider than carried: **2.x *and* 3.0–3.2**.
+- **gosnowflake v1's "patched versions: None" is ACCURATE, not a data-quality bug.** Snowflake's CNA
+  encodes v1 and `/v2` as separate packages; the fix exists only on `/v2` and v1's last release
+  (2026-04-08) predates the advisories by five months. Remediation is an **import-path migration**,
+  not a version bump — and Go's `/vN` convention guarantees this shape recurs, because a v1 line
+  that stops receiving releases is indistinguishable in advisory data from an abandoned project.
+- **certifi's "partial revert" was deliberate and correct.** The App Dev lane diffed all four
+  bundles byte-for-byte: 10.18 over-removed all four emSign roots, **10.19 restored the three
+  unaffected ones and kept `emSign ECC Root CA - G3` out** (the security fix), and 10.23's further
+  removals are an unrelated Mozilla dual-purpose-root transition. **Floor is ≥2026.10.19.**
+
+**The day's spine was one CA key disclosure, and the mechanism is worth understanding because it
+recurs.** Eight eMudhra intermediates were compromised, and the industry answered with a Go
+`crypto/x509` **SPKI denylist** rather than a trust-store removal. That is strictly stronger — it
+also catches **Sectigo's cross-signed copies**, because they share the originals' SPKIs, which a
+root removal structurally cannot — but it converts a certificate problem into a **rebuild** problem,
+so your slowest-moving binary defines your exposure. Eight projects rebuilt within four days;
+**Kubernetes merged the bump into all four release branches and shipped nothing**, because its
+October patch is **11 days overdue on every supported branch simultaneously** (a release-process
+event, not four coincidences), three days before 1.34's EOL, with the next window falling *after*
+it. Istio also notes there is **no opt-out that restores trust**, so a legitimate internal PKI
+cross-signed through an affected intermediate has no escape hatch either.
+
+**New unreachable-fix population worth carrying: `python -m venv`.** Every CPython from 3.9 to 3.12
+ships an `ensurepip` pip whose vendored certifi trusts the compromised root, and **Python 3.9 has
+no reachable fix at all** — pip 26.2.2 is the only fixed pip and requires ≥3.10, while 3.9's ceiling
+(pip 26.0) vendors certifi 2026.01.04. Two things make an OS trust-store update useless here: pip
+23.0.1 (3.9/3.10) **vendors no truststore**, and pip 26.2.2 **unions certifi into** the truststore
+context. No dependency scanner reports a PEM file inside a wheel.
+
+**Scanner blindness through six independent mechanisms in one day, and in every case the fix
+existed — only the notification was missing.** A CVSS 9.5 React Server Components RCE whose advisory
+is **repo-only and still 404s in the GitHub Advisory Database ten days on** while the identical
+typed-array bug's Next.js wrapper is fully indexed; five Vitess GHSAs returning 404 from OSV;
+Mongoose patching prototype pollution across four lines with **no advisory at all**; AWS DocumentDB
+shipping "authentication handshake hardening" with **no CVE id**; Doris's NVD record with an **empty
+CPE set**; and shaded JDBC dependencies with no ids. A no-Criticals CI gate passed through all of
+it. **Counterweight worth recording: the Snowflake driver blindness has CLOSED** —
+GHSA-qqj6-54q6-cxv6 now resolves across PyPI, npm, Maven and both Go module paths, so the standing
+"`package: null`, GIT ranges only, no GHSA" note is stale and a September lockfile scan should be
+re-run.
+
+**A method error worth not repeating: an OSV query filtered by `published` over-reports.** Eight
+LiteLLM CVEs looked in-window and were not — the date belonged to PYSEC **mirror** records minted
+later for advisories published in June. Check each one rather than trusting the filter.
+
+### Lens findings (edition 102)
+
+**Guard 5 passed on the FIRST assembly: 726 cited units, zero uncited** — sixth consecutive
+edition. Mechanism unchanged since 09-15: every row generator calls `cite()` inline as it emits.
+`assert_table_shape` passed first try across 10 tables, and `normalize_closing_tags` did its job
+(parent carried 2 `</body></html>` pairs, output carries 1).
+
+**All seven identity sites verified in the output, not just asserted** — title, GEN/ED/DSLUG,
+runbar, `var NAV`, povContent `meta` + `.c`, and the section-shell `data-chips`. All four chairs
+refreshed to "edition 102 · 2026-10-24".
+
+**Building the edition-N builder by splitting edition-N−1 into head / body / mechanical tail is
+worth keeping as a habit.** The mechanical half (splice, nav, `rewrite_pov_meta`, runbar rebuild,
+the guard battery) was inherited verbatim rather than retyped, so only the content blocks and the
+identity constants were authored. One gotcha: the stale-string assertion list must name **the
+parent's** values, not today's, or it asserts nothing.
+
+**Output is +8,823 bytes against the parent**, accounted for by four new patch rows, four
+correction paragraphs, five extra radar rows (the 30 → 35 cap) and refreshed prose on all four
+chairs, against two retired events.
+
+**Scope, on the edition's face:** 102 refreshes Today's Read on all four chairs, Since yesterday,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity sites. Claim
+Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals, Build
+Radar, Skills Radar and Vendor Dossiers **carry forward from 101 unrevised** — no competitor
+shipped a perf or price claim worth a card and `claims[]` did not grow, so the depth went into the
+correction pass and the security movement. **The quarterly Skills/Build re-rank is due 2027-01-01.**
+
+**Pages verified by reading the `deploy` job's `completed_at`.** At the first look the run had only
+a `build` job mid-upload — the 09-17 rule held and no re-trigger fired. `deploy` completed `success`
+at **13:44:01Z, 36 seconds after the push**.
+
+### Source access 2026-10-24
+
+- **`blogs.oracle.com` 403s HTML *and* RSS for a TENTH consecutive week**, so the Oracle
+  Performance channel remains a structural gap and the brief says so on its face.
+  `mikedietrichde.com` still captcha-blocked.
+- **Hudi's JIRA is effectively dead** — `project=HUDI` returns 9,766 issues but the newest was
+  created **2025-09-10**; the project moved to GitHub Issues. JIRA is the wrong route for that lane.
+- **`repo1.maven.org` returned 429 on a burst of metadata fetches again**, so `downloads.apache.org`
+  carried every ASF version claim — the other authoritative half of the standing rule.
+- **Gerrit CL pages render as an empty JS shell**; `go.googlesource.com/go/+/refs/tags/<tag>/<path>?format=TEXT`
+  (base64) is the reliable route for Go source.
+- **`api.osv.dev/v1/query` is POST-only** (GET and WebFetch get 405), and `/v1/vulns/CVE-…` 404s —
+  query by GHSA id.
+- New: `chromestatus.com/api/v0/channels` labels `stable` one milestone ahead of its own
+  `stable_date`; trust the dated range query. `api.webstatus.dev` times out on broad queries but
+  serves narrow date-bounded ones in seconds. SEC EDGAR remains the route for Micron earnings
+  (`investors.micron.com` 404s). `developer.apple.com/tutorials/data/documentation/<path>.json` is
+  the working route for Apple docs; `webkit.org/feed/` beats the Safari release-notes page.
+- **CORRECTION to a standing note: there IS a working Databricks blog feed** —
+  `www.databricks.com/blog/rss.xml` 404s as recorded, but **`www.databricks.com/feed` returns
+  HTTP 200** with full RSS covering the window. That feed is how the declarative-pipelines
+  benchmark was found, which the release notes do not mention.
+
+**Security sweep, negative result — fourteenth consecutive run, and the control page is GONE.** The
+Redshift agent fetched `behavior-changes.html` and `cluster-versions.html` in both variants; **all
+eight byte and heading figures are identical to the post-10-20 baseline** (md 35,561/25 and
+135,967/94; html 57,431/28 and 224,729/96), and 20 greps across all four files for `agent-toolkit`,
+`Skills for AI`, `AI coding assistant`, `search-skills` and `llms.txt` returned **zero matches**.
+**Structural change to the series: `dg/system-table-s3-tables.html` now 302s to the guide index**
+and `agent-toolkit` appears nowhere in either guide's TOC — so the symmetric, human-visible control
+the 10-23 run finally resolved **can no longer be re-confirmed**, and "zero hits" is now the
+expected result everywhere rather than evidence about a specific page. One genuine agent-directed
+sighting, recorded and **not followed**: the CockroachDB advisory page embeds a line telling
+automated readers to fetch `/llms.txt` to "discover all available pages before exploring further".
+The OLTP agent recorded it and did not fetch it. `llms.txt` affordance sightings also on
+Snowflake, MongoDB, Next.js and modelcontextprotocol.io docs. **No fetched page's suggestion was
+executed and no skill file was loaded by any agent on any lane.**

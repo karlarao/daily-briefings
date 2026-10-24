@@ -144,7 +144,7 @@ NO_FIX_RE = re.compile(
     # numbers are full of dots; only ';' and newline are safe separators here.
     r"(?:merged|committed|fixed)[^;\n]{0,60}\bunreleased\b"
     r"|\bunreleased\b[^;\n]{0,40}(?:merge|commit|branch)"
-    r"|no (?:\w+ )?fix|no backport\b|unpatchable|no patch\b|never (?:be )?patched"
+    r"|no (?:\w+ )?fix|no (?:\w+ )?backport\b|unpatchable|no patch\b|never (?:be )?patched"
     r"|never (?:receive|get)s? (?:it|them|this|the fix|a fix|the patch|a patch"
     r"|the backport|a backport|the workaround)"
     r"|no (?:public |published |ecosystem )?advisor(?:y|ies)"
@@ -332,7 +332,11 @@ def mark_touched(rows: list, new_keys: set, *markers: str) -> None:
 
 
 def select(rows: list, today: date, cap: int, must_show: list) -> list:
-    shown = sorted(rows, key=lambda r: rank(r, today))[:cap]
+    ranked = sorted(rows, key=lambda r: rank(r, today))
+    pinned = [r for r in ranked if r["k"] in set(must_show)]
+    rest = [r for r in ranked if r["k"] not in set(must_show)]
+    shown = pinned + rest[: max(0, cap - len(pinned))]
+    shown.sort(key=lambda r: rank(r, today))
     assert_must_show(shown, must_show)
     for r in rows:
         r.pop("_touched", None)
