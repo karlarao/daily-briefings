@@ -27,21 +27,21 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    'litellm shipped four releases today',
-    'breaking ~30,800 unexpired certificates',
-    "Every CPython branch's ensurepip ships a pip",
-    'No fixed Java build number is publicly identifiable',
-    'Kubernetes patch release is 11 days overdue',
-    'Hudi VARIANT data corruption',
-    'three SSR advisories inside the window',
-    'Next.js 14.x and earlier have no patched release',
-    'Doris 3.1.4 is the only 3.1 release',
-    'postgres-mcp restricted-mode bypass',
-    'dashboard data access becomes enabled-by-default',
-    'Fabric data agent as a Foundry "custom tool" is unsupported',
-    'TabFM token pricing starts 10/30/2026',
-    'is still in CISA KEV and is now 38 days past',
-    'Micron FY2026',
+    "old cosign private key was exposed in the exfiltration",
+    "quarantined on PyPI as of 2026-10-25",
+    "advisory dated 2026-10-24, affects JDK 8, 11, 17, 21, 25 and 27",
+    "still hands you a compromised-root pip on CPython 3.9",
+    "48 SERVER tickets carry fixVersion",
+    "Ray CVE-2025-62593 is in CISA KEV",
+    "October patch round is 12 days past target",
+    "Doris 3.1 is archived",
+    "Two eMudhra Security Alerts in four days",
+    "17 GHSA advisories in October 2026",
+    "turned OCSP revocation checking off by default",
+    "unsupported from 2026-11-06",
+    "dashboard_data_access on CoWork agents and profiles defaults to TRUE",
+    "eight eMudhra intermediate CA private keys are P-384 keys",
+    "Iceberg V4 baseline spec (AMT) merged 2026-10-14",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -56,24 +56,27 @@ PICKS = [
 # 2026-10-23, when 3 of 7 `changed` rows were of this shape. Substring match,
 # same convention as EXCLUDE_ONGOING; resolve fragments with derive_lists.py.
 EXCLUDE_CHANGED = [
-    'YugabyteDB v2024.2 LTS end of maintenance',
-    'parquet-java 1.18.1 (2026-09-04) and parquet-format 2.14.0',
-    'October 2026 CPU: 1,295 patches, still Rev 1',
-    'No Snowflake CVE is in CISA KEV',
-    'The Redshift JDBC DataSource serialization format changed',
-    '"StarRocks 3.5 LTS" is still undocumented',
-    'Docker Engine 29.9.2 (2026-10-20) rejects certificate chains',
-    'Google Play target API 36 extension expires',
-    'Google Play Billing Library 7 extension expires',
-    'CVE-2026-91403 (eMudhra / JSSE, CVSS 9.1) — a second Java patch cycle',
+    "YugabyteDB v2024.2 LTS end of maintenance is 2026-12-09",
+    "imposes a per-operation memory cap",
+    "Server-side JavaScript is un-deprecated in 9.0",
+    "worst October CVE is CVE-2026-75803",
+    "Oracle Trusted Answer Search 26.1 makes its CPU debut",
+    "Iceberg tables accessed from Oracle now support",
+    "Databricks JDBC driver 3.4.4 (2026-10-22) is still the latest",
+    "JDBC 2.3.0 validates Java class names",
+    "all carry Customer Action Required: No",
+    "JDK: 25 LTS is at 25.0.5",
+    "No Kubernetes API removals are scheduled for 1.35",
+    "were disclosed as compromised on 2026-1",
+    "There is no CVSS score for CVE-2026-111943 in NVD at all",
+    "Docker Engine 28.x gets no eMudhra fix",
+    "Play target API 36 extension expires 2026-11-01",
+    "Play Billing Library 7 extension also expires 2026-11-01",
+    "AGP 9.4.0 is current stable",
+    "Play Billing Library 7 extension expires; floor becomes BL8+",
 ]
 
 EXCLUDE_ONGOING = [
-    '2026-10-31 (7 days) — Beta Genie MCP endpoint /api/2.0/mcp/genie is sunset.',
-    'TabFM on BigQuery moves to token billing',
-    '2026-11-06 (13 days) — Fabric data agent custom-tool integration',
-    'CVE-2026-21962 still unpatched by omission',
-    'Apache Doris CVE-2026-72524 affects',
 ]
 
 
@@ -85,16 +88,13 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    'is in CISA KEV with a due date of 2026-10-18',
-    'is 11 days past its CISA KEV due date',
-    'the advisory exists only at the repo level',
-    'offered by 0 of 7 managed Postgres services',
-    'built-in PgBouncer is 1.25.2',
-    'MongoDB 8.2 gets nothing',
-    'is listed affected with patched version',
-    'TLS 1.0/1.1 connections rejected from 2026-10-31',
-    'is sunset on October 31, 2026',
-    'KEV due date 2026-08-27, now 58 days past',
+    "built-in PgBouncer is 1.25.2",
+    "offered by 0 of 7 managed Postgres services",
+    "still 404 in the GitHub Advisory Database",
+    "genie is sunset",
+    "minimum TLS 1.2 enforced on both Amazon Redshift provisioned",
+    "CVE-2026-21962 still unpatched",
+    "from the Chrome Root Store on Tuesday morning",
 ]
 
 

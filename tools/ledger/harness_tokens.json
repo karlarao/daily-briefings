@@ -1,0 +1,21 @@
+{
+ "bigquery": 150478,
+ "redshift": 180180,
+ "fabric": 231170,
+ "mobile": 174430,
+ "nl2sql": 183805,
+ "aidaily": 182410,
+ "databricks": 171746,
+ "snowflake": 225945,
+ "mongodb": 202114,
+ "devops": 219206,
+ "frontend": 192400,
+ "aiappdev": 217520,
+ "dbhw": 226787,
+ "formats": 216483,
+ "oltp": 250674,
+ "oracle": 246866,
+ "challengers": 215896,
+ "appdev": 219809,
+ "aihw": 242374
+}
