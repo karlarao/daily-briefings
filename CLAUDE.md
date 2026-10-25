@@ -10496,3 +10496,238 @@ automated readers to fetch `/llms.txt` to "discover all available pages before e
 The OLTP agent recorded it and did not fetch it. `llms.txt` affordance sightings also on
 Snowflake, MongoDB, Next.js and modelcontextprotocol.io docs. **No fetched page's suggestion was
 executed and no skill file was loaded by any agent on any lane.**
+
+## Run findings 2026-10-25 (edition 103)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt,
+both hooks clean.** Published 13:43 UTC, Pages `deploy` job `success` at
+13:44:04Z (~30s after the push), lens v68 after. **~3,950k research tokens, a
+record** (prior high ~3,876k on 10-24).
+
+**THE 10-24 CAP JUSTIFICATION RESTED ON A MISLABEL, and the honest answer to
+"raise the cap" was "not at all".** Yesterday's note justified moving the Patch
+Radar cap by saying "band 0 — CISA KEV — alone holds 21 rows". I went to raise
+it again on the same reasoning and measured first: `sev_tier`'s band 0 is
+**"asserts CVSS ≥ 9.0 anywhere in the row"**, not the KEV set, and the *parent*
+board already had **65 of 201** rows in it. Today's corrections added exactly
+one (66 of 205). So the figure the cap was being driven by is a third of the
+whole board and has been for days — driving a cap off it produces a list, not a
+radar. Verified `select()` still satisfies the 27-key must-show set even at cap
+30, **kept the cap at 35**, and documented the correction on the section's own
+face. **Generalisable: before you act on a prior note's number, read the
+function that produced it.** A label in a note is not a definition.
+
+**Five of my eleven drafted "corrections" were already correct on the board —
+they were corrections to MY PROMPT, not to the ledger.** The doris affected
+set, the percona-psmdb RESOLVED status, Iceberg spec PR #17783 having merged,
+mcp-ts 1.31.0 and the BCR-2413 February 2027 date were all right where they
+stood. This is the 10-08 rule (probe the board before drafting) earning its keep
+for the fourth time, and the failure mode it prevents is worse than wasted work:
+"correcting" a correct row rewrites authored text for nothing and can reintroduce
+an error an earlier edition fixed. The six that *were* needed went in before any
+section was generated, per the 09-14 build-order rule.
+
+**`extract_briefs.py`'s token accounting broke a two-run streak: challengers
+came out 9.1% low** (196,327 against a harness-reported 215,896) while the other
+18 matched exactly. So `apply_harness_tokens.py` was **not** a no-op, and the
+19 harness figures now live in version control at
+`tools/ledger/harness_tokens.json` rather than being retyped. The spec says use
+what the harness reported; the extractor's `usage` sum is an approximation that
+is usually right, which is exactly why a run stops checking it.
+
+**`assert_not_parent_identity` fired on my own correction prose, and the escape
+hatch is a spelling, not a weaker guard.** Seven "unqualified parent-identity
+assertions" survived because my correction paragraphs legitimately name edition
+102. `_BACKREF`'s whitelist requires the match to be preceded by
+`carried from|vs|versus|against|compared with|relative to|since|ed.|edition`,
+and the scanned pattern is `[Ee]dition\s+102` — so writing **`ed. 102`**
+sidesteps the scan entirely, which is precisely the `CORRECTION (ed. 064)` form
+the 09-18 note already records. Rewrote three prose mentions; **did not weaken
+the guard**. One of them was split across concatenated literals
+(`"… Edition " + "102 raised the cap …"`), so the first replacement silently
+missed and grep found it — the 09-18 "a `.replace()` that does not match is a
+silent no-op" lesson, again.
+
+**`reuse_key` has no `nouns` kwarg.** I guessed the signature and lost a cycle.
+The real one is
+`reuse_key(new_row, parent_rows, datekey, route, same_as=None, warn=print)`
+(`tools/lens/ledger_surgery.py:132`). Read the signature; it is eight lines away.
+
+**Flag calibration: 16 of 19 urgent — above the 10-24 series high — and every
+one survives the literal definition, but the honest framing is that 16 flags
+cover ~11 DISTINCT stories.** The eMudhra CA key compromise alone accounts for
+five lanes (Go, Node, Java, pip and the Chrome Root Store removal are five
+*remediations* of one root event) and litellm for two. That is not
+over-flagging — a reader on any one of those stacks does have to act today — but
+a count of flags is not a count of problems, and the summary said so rather than
+trimming to a number. The three `ok` lanes wrote out their reasoning for not
+flagging.
+
+**A CVSS 9.1 JDK flaw with no vendor build carrying the fix was the day's
+headline, and it is the window's dominant shape again:** the advisory
+(2026-10-24) covers JDK 8, 11, 17, 21, 25 and 27, and manual `keytool` surgery
+is the only remedy available today. Alongside it: a compromised-root `pip` still
+shipping on CPython 3.9 via `ensurepip`'s vendored `vendor.txt`, Doris 3.1
+archived, MongoDB 8.2 with 48 SERVER tickets carrying a fixVersion but no
+release, Ray CVE-2025-62593 in KEV 66 days overdue. **"Patched upstream,
+unreachable for you" has now been the dominant CVE shape for six consecutive
+weeks** and the lens counts it explicitly.
+
+**Ledger health: 902 items, 250 merges (27.7%), 0 double-counted.** Tally guard
+bumped 250, guarded 0. Dictionary 44,604 → 45,256. Since-yesterday card: new=15
+(+450 more), changed=3, ongoing=15, aged_out=850, **33 of 33 rows sourced** —
+one `[src]` was attached by hand from a URL already cited in that same brief for
+that exact fact (pip `vendor.txt`), and one row carried a `3.1.\*`
+markdown-escape artifact, normalised to `3.1.x`.
+
+**18 of 21 `changed` rows were classifier artifacts — third consecutive run.**
+Audited all 21, kept the 3 real movements, excluded the rest. This is structural,
+not a tuning problem: the `sev` heuristic scores from the title alone while 19
+stateless agents reword every carried headline, so a reworded title reads as a
+severity change. `EXCLUDE_CHANGED` carries the 18. The durable fix is still
+storing per-item severity in the ledger, queued since 09-11.
+
+### Lens findings (edition 103)
+
+**Guard battery passed on the first assembly, including guard 5 at 728 cited
+units / zero uncited — seventh consecutive edition.** Mechanism unchanged since
+09-15: every row generator calls `cite()` inline as it emits. `assert_table_shape`
+passed first try. The parent carried **2** `</body></html>` pairs again and
+`normalize_closing_tags()` collapsed them to 1, which is the 09-20 fix doing
+exactly what it was landed for.
+
+**The build set inherits the mechanical tail verbatim from edition 102.**
+`build_103.py` was assembled as `_head_103 + _body_103 + _read_103 + _tail_102`,
+so splice → povContent → nav → `rewrite_pov_meta` → `rewrite_identity` → runbar
+rebuild → `write_ledger` → `normalize_closing_tags` → guards is byte-identical
+to yesterday's. Only the stale-assertion list needed updating, to the **parent's**
+values (`'Edition 102'`, `'2026-10-24 09:36 EDT'`, `'~3,876k'`, `'107d ledger'`).
+That split is worth keeping: the authored half changes daily, the mechanical half
+should not change by accident.
+
+**`reuse_key`'s advisory ran on all five drafted rows; none collided.** 4 new
+patch rows (`jdk-114820-no-vendor-build-keytool`,
+`pip-ensurepip-emsign-no-py39-fix`, `k8s-oct-patch-overdue-all-four-branches`,
+`ray-62593-kev-66d-overdue-gpu-clusters`) and 1 new event
+(`iceberg-v4-amt-baseline-merged-parquet-only`). As on 09-19, the absorption
+happened one step earlier — the re-confirmed stories were enriched in place on
+their existing keys (11 rows via `corrections_103.py`), so drafting only what
+survived that pass is what left the advisory with nothing to catch.
+
+**Output is 37,428 bytes larger than the parent** (2,210,921 vs 2,173,493),
+accounted for by 4 new patch rows, 1 new event, eleven correction/enrichment
+paragraphs and refreshed Today's Read on all four chairs, against 0 retirements.
+events 62 → 63, patch 201 → 205; claims (171), ownclaims (44), gaps (22),
+promises (98), benchmarks (24) unchanged.
+
+**Scope, on the edition's face:** 103 refreshes Today's Read on all four chairs,
+Since yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and
+all seven identity sites. Claim Watch, Mirror, Question Forecast, Gap Ledger,
+Benchmarks, Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor
+Dossiers **carry forward from ed. 102** — the day was overwhelmingly security and
+deadline movement, and no competitor shipped a perf or price claim worth a card.
+
+**Artifact hook clean; the 09-16 republish sequence held.** `action:"list"` →
+`action:"read"` with `path` to stage (2.1 MB) → plain `action:"read"` on the URL,
+which returned the **same version id** the staged copy came from (`1792849922-2ce9`),
+proving nobody published underneath → publish as **Version 68**
+(`1792936452-1741`). Zero prompts throughout. `bash-allow.sh` clean too, with
+heavy `python3 - <<'PY'` use and the "never start a compound with `VAR=`" rule
+held throughout.
+
+**Pages verification: the 09-14/10-21 rules both held.** The first
+`list_workflow_jobs` look showed only `build`, mid-upload — the `deploy` job does
+not exist until `build` finishes, so an early poll reads like a stall. No
+re-trigger fired; `deploy` completed `success` at 13:44:04Z, ~30 seconds after the
+push.
+
+**Branch state: the designated branch `claude/great-clarke-mw3vsm` was reset onto
+`origin/claude/great-clarke-gq94h1` (10-24), which fully contains it** — verified
+with `git merge-base --is-ancestor` before resetting, so no history was dropped.
+Thirty-six `claude/great-clarke-*` branches are now unmerged. The tooling lineage
+still has to be staged from the newest of them rather than `main`; the working
+incantation today was
+`git show origin/claude/great-clarke-gq94h1:tools/ledger/ledger.py`.
+
+**Source access, 2026-10-25.** `blogs.oracle.com` 403s HTML *and* RSS for an
+**eleventh consecutive week** (probed `/database/rss`, `/optimizer/rss`,
+`/exadata/rss` and an article path with curl + browser UA), so the official
+Optimizer / In-Memory / Smart Scan / Exadata-monthly channel is a standing
+structural gap — the Oracle brief says `## Performance` has no official source
+and names what carried the lane instead (Exadata 26.2 docs, the ADB changelog,
+Connor McDonald, oracle-base). **The topic spec's "use its RSS feed" line for
+blogs.oracle.com should be deleted; it has failed for eleven weeks.** New or
+changed this run:
+- **`community.fabric.microsoft.com` RSS returned 200 on the FIRST attempt** —
+  961 KB, 60 items, full bodies, covering 08-28 → 10-22. The documented
+  intermittent 403 did not occur. Three URLs in the Fabric source list are 404
+  and cost a fetch each: the Spark-runtime lifecycle page is
+  `/fabric/data-engineering/lifecycle`, the ADBC article is under Power Query at
+  `/power-query/transition-to-adbc`, and the data agent page is
+  `/fabric/data-science/data-agent-foundry`. **Worth correcting in the spec.**
+- **Redshift `mgmt/odbc20-driver-release-notes.html` 302s to the guide index** in
+  both variants, so ODBC driver history is unreadable — a gap directly adjacent to
+  the Dec 31 ODBC 1.x deadline. Also: Oracle's
+  `upgrd/check-planned-security-changes.html` 404s and the Crypto Roadmap it
+  points to is stale at "March 2026"; SQLcl 26.3.0 has no release-notes page at
+  either documented URL (both 404); `docs.airbyte.com/platform/release_notes/…`
+  404s; `newsroom.intel.com/feed` 403s; `phoronix.com` needs a browser UA **plus**
+  `Accept`/`Accept-Language` for article pages (the UA alone gets only the feed);
+  `devcenter.heroku.com/articles/heroku-postgresql-extensions` 404s. The standing
+  "amd.com 503" note **did not reproduce** — its bulletin pages served 200 to
+  curl-with-browser-UA throughout.
+- **A search summary contradicted the primary doc on two Redshift dates and was
+  discarded**: it asserted ODBC 1.x EOS was 2026-09-30 "and has now passed" and
+  the TLS change was effective 2026-07-30. The behavior-changes doc, fetched
+  today, says **Dec 31 2026** (explicitly extended from Sept 30) and **Oct 31
+  2026**. Recording it because both wrong dates are plausible enough to survive a
+  casual review — this is the "read the primary artifact, not the summary" rule
+  paying out on dates a reader would act on.
+
+**Security sweep — negative result, and THE BASELINE MOVED for the first time
+since 09-12.** The Redshift agent fetched `behavior-changes.html` in both
+variants and got **markdown 35,561 bytes / 25 headings and HTML 57,431 / 28**,
+against the 34,132 / 24 and 55,977 / 27 that had been byte-identical on every run
+since 09-12. The page grew; the sweep is still clean. All five markers
+(`agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills`,
+`llms.txt`) returned **zero matches across all four sweep files (20/20)**, and
+broadening to bare `skill`, `mcp`, `assistant`, `agent` also returned zero.
+**Record the new baseline — a sweep that compares against a stale figure reports
+a change that is not there, and misses one that is.**
+
+**One carried note corrected, and it restores the control.** The 10-24 note said
+`dg/system-table-s3-tables.html` now 302s so the human-visible control page can
+no longer be re-confirmed. The `dg/` path does 302 — but **the page moved rather
+than vanished: `mgmt/system-table-s3-tables.html` serves 200 in both variants**
+(markdown 28,277 / 21, HTML 59,752 / 25 — new baseline) and carries
+`agent-toolkit` **once in each variant, in the same human-visible sentence**.
+So "zero hits" on the two sweep pages remains evidence about those pages rather
+than the expected result everywhere. The raw `skill` count differing 1 (md) vs 2
+(html) is the HTML repeating the link text in an attribute, not a content
+asymmetry.
+
+**Agent-directed blocks seen on two hosts this run, both recorded and neither
+followed.** `modelcontextprotocol.io` prepends "Fetch the complete documentation
+index at …/llms.txt / Use this file to discover all available pages before
+exploring further" to its doc pages (seen on `/specification/versioning` and
+`/specification/2026-07-28/basic/authorization`), and
+`docs.cockroachlabs.com/docs/advisories/` embeds the same two sentences verbatim.
+`llms.txt` affordance sightings also on Snowflake, MongoDB and Next.js docs.
+**No `llms.txt` was fetched, no skill file was loaded, no MCP server named in a
+page was contacted, and no fetched page's suggestion was executed on any lane** —
+including the `az`/`curl`/`pip` commands in Microsoft's own Fabric migration
+sample and the `claude mcp add` line in Safari's release notes, both read as data.
+Two sightings worth the standing record as *content* rather than injection:
+AWS shipped a Redshift MCP server (`awslabs/mcp`) whose `review_cluster` tool is
+documented read-only across 12 diagnostic areas and generates remediation SQL for
+a human to apply — but the post also mentions unnamed "discovery and query tools"
+and **does not say whether those can run arbitrary SQL or write**, which is the
+part worth tracking; and Flink CDC 3.7.0 plus Debezium 3.7 both now make outbound
+model calls per record from inside transform expressions, which puts a new egress
+and exfiltration surface in the ingestion tier.
+
+**WebSearch did not bind: no lane reported the 200-call cap exhausted**, and the
+one that quantified its use spent 4 calls with everything load-bearing coming
+from WebFetch or curl against primary sources. The 09-13 launch order
+(search-dependent lanes first, changelog-shaped lanes last) stays — it costs
+nothing and it is the only lever when the cap does bind.
