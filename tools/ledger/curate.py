@@ -27,21 +27,21 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    "old cosign private key was exposed in the exfiltration",
-    "quarantined on PyPI as of 2026-10-25",
-    "advisory dated 2026-10-24, affects JDK 8, 11, 17, 21, 25 and 27",
-    "still hands you a compromised-root pip on CPython 3.9",
-    "48 SERVER tickets carry fixVersion",
-    "Ray CVE-2025-62593 is in CISA KEV",
-    "October patch round is 12 days past target",
-    "Doris 3.1 is archived",
-    "Two eMudhra Security Alerts in four days",
-    "17 GHSA advisories in October 2026",
-    "turned OCSP revocation checking off by default",
-    "unsupported from 2026-11-06",
-    "dashboard_data_access on CoWork agents and profiles defaults to TRUE",
-    "eight eMudhra intermediate CA private keys are P-384 keys",
-    "Iceberg V4 baseline spec (AMT) merged 2026-10-14",
+    "cosign image-signing public key was rotated",
+    "emSign ECC Root CA - G3 from the Chrome Root Store, for all devices",
+    "1.34 reaches upstream end of life",
+    "CVE-2026-91403 (also 9.1, also security-libs",
+    "ensurepip still pins",
+    "fixVersion 8.2.13",
+    "Doris 3.1 is archived and 3.1.x therefore",
+    "postgres-mcp-pro 0.4.2 is a third-party fork",
+    "R535 LTSB reached end of life",
+    "CVE-2026-86950 \u2014 CoreGraphics",
+    "MySQL Server 8.0 is absent from all 80 Server rows",
+    "MDEV-33966 is marked Critical/Fixed with",
+    "authorization_enable_query_profile_access_check after upgrading StarRocks",
+    "57.3.2, 58.4.1",
+    "Apache Struts CVE-2016-3081 entered CISA KEV",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -56,27 +56,18 @@ PICKS = [
 # 2026-10-23, when 3 of 7 `changed` rows were of this shape. Substring match,
 # same convention as EXCLUDE_ONGOING; resolve fragments with derive_lists.py.
 EXCLUDE_CHANGED = [
-    "YugabyteDB v2024.2 LTS end of maintenance is 2026-12-09",
-    "imposes a per-operation memory cap",
-    "Server-side JavaScript is un-deprecated in 9.0",
-    "worst October CVE is CVE-2026-75803",
-    "Oracle Trusted Answer Search 26.1 makes its CPU debut",
-    "Iceberg tables accessed from Oracle now support",
-    "Databricks JDBC driver 3.4.4 (2026-10-22) is still the latest",
-    "JDBC 2.3.0 validates Java class names",
-    "all carry Customer Action Required: No",
-    "JDK: 25 LTS is at 25.0.5",
-    "No Kubernetes API removals are scheduled for 1.35",
-    "were disclosed as compromised on 2026-1",
-    "There is no CVSS score for CVE-2026-111943 in NVD at all",
-    "Docker Engine 28.x gets no eMudhra fix",
-    "Play target API 36 extension expires 2026-11-01",
-    "Play Billing Library 7 extension also expires 2026-11-01",
-    "AGP 9.4.0 is current stable",
-    "Play Billing Library 7 extension expires; floor becomes BL8+",
+    "JDBC MIN_TLS_VERSION/MAX_TLS_VERSION deprecated in 4.4.0",
+    "MLflow POST /api/3.0/mlflow/traces accepts a traversal sequence",
+    "MLflow SSRF with attacker-controlled headers via scorer kwargs",
+    "Delta Lake 4.4.1 shipped 2026-10-05 and its theme is making catalog-managed",
+    "BigQuery Graph core graph processing becomes Enterprise",
+    "Flexible column names are on by default for Iceberg tables",
+    ".NET 8 (LTS) and .NET 9 (STS) both end support",
+    "2026-11-06 (11 days out) \u2014 containerd 2.2 end of life.",
 ]
 
 EXCLUDE_ONGOING = [
+    "2026-10-30 (4 days) \u2014 Atlas Push-Based Log Export",
 ]
 
 
@@ -88,13 +79,19 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    "built-in PgBouncer is 1.25.2",
-    "offered by 0 of 7 managed Postgres services",
-    "still 404 in the GitHub Advisory Database",
-    "genie is sunset",
-    "minimum TLS 1.2 enforced on both Amazon Redshift provisioned",
+    "Oracle has now shipped",
+    "Bundle 2026_07 became Enabled by Default",
+    "2026-10-31 (5 days): TLS 1.0/1.1 connections rejected.",
+    "mcp/genie is sunset 2026-10-31",
+    "Fabric data agent custom-tool integration",
+    "PgBouncer is 1.25.2",
+    "React RSC unauthenticated RCE",
+    "Ray CVE-2025-62593 is 67 days",
     "CVE-2026-21962 still unpatched",
-    "from the Chrome Root Store on Tuesday morning",
+    "October patch round is still uncut",
+    "target API 36 extension expires",
+    "Atlas Push-Based Log Export stops accepting new configurations on 2026-10-30 and reaches end of life",
+    "Vitess v23.0 end of life",
 ]
 
 

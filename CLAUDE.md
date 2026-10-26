@@ -10731,3 +10731,264 @@ one that quantified its use spent 4 calls with everything load-bearing coming
 from WebFetch or curl against primary sources. The 09-13 launch order
 (search-dependent lanes first, changelog-shaped lanes last) stays — it costs
 nothing and it is the only lever when the cap does bind.
+
+## Run findings 2026-10-26 (edition 104)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:30 EDT, first brief in ~09:40, last (Oracle) ~09:50, published 13:58 UTC,
+Pages `deploy` job `success` at 13:59:27Z (~41s after the push), lens v69 after. **~3,900k
+research tokens** — second-highest, just under the 10-25 high of ~3,950k.
+
+**Token counts matched the harness notifications EXACTLY for all 19 agents, so
+`apply_harness_tokens.py` was a no-op (`net +0`).** The 09-14 3.8%-undercount finding and the
+10-25 challengers-9.1%-low finding both failed to reproduce. Worth re-checking each run rather
+than assuming in either direction — it has now gone no-op, broken, and no-op again.
+
+**SEVEN of my fourteen drafted corrections were against MY OWN PROMPT, not the ledger — the
+highest proportion yet, and the 10-25 note predicted it exactly.** Probed with `probe_board.py`
+before writing anything, and the board already had: Aurora's 28-CVE gap marked **RESOLVED** with
+the 2026-09-29 close date and a measured 47-day lag; StarRocks' query-profile fix recorded as
+**disabled by default**; Doris 3.1's archive; the React RSC row already reading "fixed 19.0.9 /
+19.1.10 / 19.2.9 / 19.3.1 · no workaround" rather than no-fix; MongoDB 8.2's EOL; the eMudhra
+CVSS spread (corrected on 10-25 to Red Hat 6.8 / NVD none); and the unsourceable "8.1". **The
+failure this prevents is worse than wasted work** — rewriting a correct row can reintroduce an
+error an earlier edition fixed. Budget the probe; it is three minutes and it has paid out seven
+runs running.
+
+**TWO LANES CONVERGED INDEPENDENTLY ON THE SAME BOARD DEFECT, which is the strongest kind of
+correction signal.** Mobile found that `GHSA-frr6-h895-5pxp` — the identifier ed. 103 used for
+the eMudhra event — **resolves nowhere**: 404 from `github.com/advisories` via WebFetch, 403 to
+curl, and the authoritative `github/advisory-database` mirror 404s for that id in BOTH
+`github-reviewed/` and `unreviewed/` across 2026/08–12, with the path shape validated against a
+known-good advisory. BigQuery independently found the carried "Oracle preliminary 8.1 High" on
+CVE-2026-111943 has **no traceable source**: CNA `metrics: null`, NVD metrics object empty, Red
+Hat 6.8/Important, Google "Medium" with no score, and `oracle.com/security-alerts/cve-2026-111943.html`
+returning **404**. Mobile also established the event now DOES carry ids (`GO-2026-6809`,
+`CVE-2026-111943`, RUSTSEC-2026-0381/0382/0383) with still **no CVSS anywhere**, and that
+`/v1/vulns/CVE-2026-111943` 404s while only the alias resolves. **Re-key a row to the event when
+its identifier cannot be resolved.**
+
+**A GENUINELY NEW CVE SHAPE, and it appeared twice in one week in unrelated projects — "fix
+merged, no tag".** DevOps measured `.go-version` on Kubernetes `release-1.34` through `-1.37` all
+reading **1.26.10** while the newest shipped tags carry **1.26.5** (v1.34.12) and **1.26.8**;
+OLTP measured MariaDB MDEV-33966 marked Critical/**Fixed** against fixVersions 11.8.10 / 12.3.4 /
+13.1.2, **none of which exists**, for a reproduced 3.5× throughput regression — with 11.4 and
+10.11 LTS in the affects list and neither in fixVersions. **This is strictly harder to detect
+than an EOL branch**: an EOL branch shows up as an unsupported version, while here git looks
+patched, every artifact is not, and an SBOM-and-CVE pipeline reports the identical posture
+before and after the fix was written. The detection that works — compare the shipped artifact's
+embedded toolchain against branch HEAD — is one almost nobody runs. Two instances in one week
+makes it a category, not a coincidence.
+
+**The seventh consecutive week of "patched upstream, unreachable for you" added TWO new
+mechanisms rather than more instances.** (1) **Patched for paying customers only**: Oracle shipped
+JDK 17.0.21.0.3 / 21.0.13.0.3 through the Patch Availability Document while `openjdk/jdk21u` and
+`openjdk/jdk25u` still carry all four cert files in-tree — and the proof is a **direct in-tree
+probe**, 200 on the update repos against 404 on mainline with a control cert still 200, because
+the **release notes actively contradict the advisories** (Microsoft claims those exact `…0.2`
+builds fix all three advisories while the same page reads "Coming soon"). (2) **Patched,
+reachable, and still off**: StarRocks' fix ships behind an FE config disabled by default, so a
+scanner sees a patched version while the exposure is unchanged. A third, **inverted**, variant
+from Open Formats: arrow-rs patched 57.3.2/58.4.1/59.3.2 on the same day and left **60.0.0 — the
+current major — with no patch at all**, so the remedy is to pin backwards and "upgrade to the
+newest major" is actively wrong.
+
+**`CAP=max(30,union)` would have rendered 92 of 209 patch rows, and the 10-25 correction caught
+it.** `sev_tier`'s band 0 is "asserts CVSS ≥ 9.0 anywhere in the row", which measured **67 of
+209** today, so `|band0 ∪ must_show|` came out **86**. Pinned the cap at **35** and trimmed the
+must-show list 32 → 24; `select()`'s force-include satisfied `assert_must_show` at that cap.
+**The 10-25 rule generalises: before acting on a prior note's number, read the function that
+produced it.** A label in a note is not a definition.
+
+**The stale-assertion guard caught MY OWN replace collision, which is exactly what it is for.**
+Building `tail_104` from `tail_103` I ran `'~3,950k' → '~3,900k'` before `'~3,876k' → '~3,950k'`;
+the first matched nothing (the runbar has `>~3,950k<`, not a quoted literal) so the runbar kept
+yesterday's figure while the stale list came to assert that same string absent — a guaranteed
+failure. **A chained `.replace()` whose patterns overlap is the 09-18 "silent no-op" lesson with
+an extra step**: assert the match, or order the replacements so they cannot alias.
+
+**Ledger health: 844 items, 74 exact + 143 fuzzy = 217 merges (25.7%), 0 double-counted.** Tally
+guard bumped 217, guarded 0. Dictionary 45,256 → 45,883. Match rate squarely in the recent band,
+so the 09-09 length-asymmetry diagnostic was not needed. The 15 weakest accepted merges were
+eyeballed and all were genuine same-story rewordings — notably Aurora's "the 28-CVE gap is
+closed" folding onto yesterday's "lag measured at 47 days" at r=0.35 via the **anchor route**,
+which is the corroboration path working as designed on a pair plain similarity would have missed.
+
+**Since-yesterday card: new=15 (+444 more), changed=4, ongoing=15, aged_out=1266, 34 of 34 rows
+sourced** (one `[src]` attached by hand from a URL already cited in that same brief for that
+exact fact). All 15 picks and all 13 pins landed; `curate.py`'s fatal "pin not found" did not
+fire.
+
+**The 10-18 double-count shape recurred and the fix is editorial, not mechanical.** Redshift's
+TLS deadline and the JDK story each appeared BOTH as a `new` key (the long re-measured wording)
+and as an `ongoing` match (the short carried wording) — two bullets in one brief producing two
+keys. Putting a 17-day-old carried deadline under "🆕 New" is simply false, so both were pinned
+as `ongoing` with their day counts and the `new` picks dropped. **Check every pick against the
+ongoing list before finalising.**
+
+**`changed` was 8 of 12 classifier artifacts — fourth consecutive run.** Audited all twelve; the
+four kept are all corrections to the board's **own prior reading** (Fabric's CVE-2026-63509
+sitting in the AUGUST CVRF not September, the CVE-2026-96889 three-way severity split, the
+unresolvable eMudhra GHSA, containerd 2.2's EOL crossing into the window) rather than movement in
+the world — which is itself the week's pattern. Structural, not a tuning problem: the `sev`
+heuristic scores from the title alone while 19 stateless agents reword every carried headline.
+Storing per-item severity in the ledger is still the queued fix, open since 09-11.
+
+**Flag calibration: 16 of 19 urgent, one below the 17 series high, tied with two prior days —
+and all sixteen survive the literal definition, but sixteen flags cover ~11 DISTINCT stories.**
+The eMudhra compromise alone reaches App Dev, DevOps, Mobile, Frontend and Oracle as five
+separate remediations of one disclosure, and litellm is shared by AI Daily and AI App Dev. Four
+KEV clocks past due: Oracle CVE-2026-21962 at **60 days** with `forensicTriage: Yes` (the lane
+grepped both the October CPU and its verbose risk matrices and found the id **zero times** — the
+fix has existed since the **January** CPU), **Ray at 67** with a fix released **339 days ago**,
+Apple's exploited CoreGraphics bug at 13 with nothing for the iOS 18.7.x train, and Struts
+CVE-2016-3081 at 15 on a 2016 CVE newly exploited. **The three `ok` lanes each declined in
+writing** — Database Hardware reported a month with no CVE at all for a second consecutive run,
+BigQuery held on its standing server-side-fix ground and corrected the board on the way, and Open
+Formats declined the arrow-rs use-after-free with the reasoning spelled out (no CVE/GHSA/RUSTSEC,
+OOM-handling trigger, fix one minor back on a maintained line — so "a fix exists but is not
+reachable" does not hold). That asymmetry is the evidence the agents discriminated.
+
+### Lens findings (edition 104)
+
+**Guard battery passed on the FIRST assembly, including guard 5 at 727 cited units / zero uncited
+— eighth consecutive edition.** Mechanism unchanged since 09-15: every row generator calls
+`cite()` inline as it emits. `assert_table_shape` passed across 10 tables, `assert_structure` 15
+sections, `assert_identity_consistent` across all seven sites, `assert_not_parent_identity` clean
+(the `ed. 103` / `carried from ed. 103` spellings sidestep `_BACKREF` exactly as the 10-25 note
+records), and `assert_alias_safe` across 8 accumulating sections with 0 event keys lost. **The
+parent again carried 2 `</body></html>` pairs and `normalize_closing_tags()` collapsed them to 1**
+— the 09-20 fix doing what it was landed for, for the third run running.
+
+**The build set again inherits the mechanical tail verbatim**, assembled as
+`head_104 + body_104 + read_104 + tail_103` with only the constants, the stale-assertion list and
+the runbar flag line changed. That split is worth keeping: the authored half changes daily, the
+mechanical half should not change by accident — and today it is what made the replace-collision
+above a caught failure rather than a shipped one.
+
+**`reuse_key`'s advisory returned nothing for all four drafted patch rows, and the reason is
+instructive rather than a miss.** The absorption happened one step earlier: the seven rows today's
+briefs re-confirmed were **enriched in place on their existing keys** via `corrections_104.py`, so
+only genuinely-new stories reached the drafting stage. Drafting after the correction pass rather
+than before is what leaves the advisory with nothing to catch — the right order, and worth doing
+deliberately.
+
+**Output is 20,485 bytes larger than the parent** (2,220,225 vs 2,199,740), accounted for by 4
+new patch rows, seven correction/enrichment paragraphs and refreshed Today's Read on all four
+chairs, against 0 retirements. events 63 (unchanged, nothing fell past), patch 205 → 209; claims
+(171), ownclaims (44), gaps (22), promises (98), benchmarks (24) unchanged.
+
+**Scope, on the edition's face:** 104 refreshes Today's Read on all four chairs, Since yesterday,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity sites. Claim
+Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals, Build
+Radar, Skills Radar and Vendor Dossiers **carry forward from ed. 103** — no competitor shipped a
+perf or price claim worth a card and `claims[]` did not grow, so the depth went into the
+correction pass and the deadline wall. **The quarterly Skills/Build re-rank is due 2027-01-01.**
+
+**Artifact hook clean for the Nth consecutive unattended run, and the 09-16 republish sequence
+held.** `action:"list"` → `action:"read"` with `path` to stage (2.1 MB) → plain `action:"read"` on
+the URL, which returned the **same version id** the staged copy came from (`1792936452-1741`),
+proving nobody published underneath → publish as **Version 69** (`1793023602-b22d`). Zero prompts
+throughout. `bash-allow.sh` clean too, with heavy `python3 - <<'PY'` use and the "never start a
+compound with `VAR=`" rule held throughout.
+
+**Pages verification: the 09-14 and 10-21 rules both held and no re-trigger fired.** The first
+`list_workflow_runs` look showed the run `queued`; the first job look showed `build` complete and
+`deploy` `in_progress` — the `deploy` job does not exist until `build` finishes, so an early poll
+reads like a stall. Read `completed_at` rather than `status`: `deploy` completed **success at
+13:59:27Z**, ~41 seconds after the push.
+
+**Source access, 2026-10-26.** `blogs.oracle.com` 403s HTML *and* RSS for a **twelfth consecutive
+week** (probed `/database/rss`, `/optimizer/rss`, `/exadata/rss`, `/feed` and the site root with
+curl + browser UA), so the official Optimizer / In-Memory / Smart Scan / Exadata-monthly channel
+is a standing structural gap and the Oracle brief says `## Performance` has no official source
+rather than reporting a quiet month; oracle-base, Connor McDonald, the Exadata System Software
+docs and dbi-services carried the lane. `mikedietrichde.com` is still an `sgcaptcha` shim. New or
+changed this run:
+- **`adoptium/temurin21-binaries/releases.atom` returns a feed whose newest entry is 2023-06-08**
+  — a stale/wrong feed, not a quiet project. Use `api.adoptium.net/v3/info/release_names`.
+  **`github.com/<org>/<repo>/releases.atom` is 403 to curl** but fine via WebFetch.
+- **`endoflife.date/kafka` MISSES Kafka 4.4.0** (reports 4.3.2 as newest) — cross-check
+  `downloads.apache.org`. **Prisma's npm `latest` dist-tag is `8.0.0-rc.27`** while GitHub badges
+  7.10.1 "Latest", so `npm install prisma` hands you a release candidate.
+- **`ops.java/emudhra`, cited as authoritative inside Oracle's own Security Alert, returns "This
+  site is experiencing technical difficulty"** — use `openjdk.org/emudhra`.
+  `bugs.openjdk.org/browse/JDK-8395690` returns 502.
+- Two NVIDIA doc slugs in older notes are **wrong**: `drivers/lifecycle.html` and
+  `drivers/supported-drivers.html` both 404; the live ones are `driver-lifecycle.html` and
+  `supported-drivers-and-cuda-toolkit-versions.html`. `amd.com/en/newsroom/press-releases.rss`
+  and `/en/blogs.rss` both 404 → use `ir.amd.com/rss/news-releases.xml`. **The Azure updates RSS
+  endpoint returns 403**, so Azure GPU/accelerator SKU changes are uncovered rather than quiet.
+- **`dramexchange.com` price tables are LOGIN-GATED** and `investors.micron.com/rss/news-releases.xml`
+  is 403 — the 4Q26 DRAM contract figure (10–15% vs ~20% QoQ, both attributed to TrendForce)
+  therefore stays unresolved. `intel.com/security-center` needs WebFetch, not curl.
+  **The standing "amd.com 503" note did NOT reproduce for a second run — retire it.**
+- `sigops.org/.../sosp/2026/program.html` 404s; the live paths are `/accepted.html` and
+  `/schedule.html`. `docs.estuary.dev/changelog/` 404s (**Estuary unverified**).
+  `docs.airbyte.com/release_notes/` renders only section headers — Airbyte 2.4's date is known,
+  its contents are not. **Teradata release notes unreachable for a FOURTH consecutive run**
+  (uncovered, not quiet); Yellowbrick docs 403; **Firebolt is readable but four months stale**
+  (newest 4.32, "end of June 2026").
+- **`lists.apache.org/api/mbox.lua?...&date=2026-10` returned the full 5.4 MB month (277
+  messages) and was the ONLY route that found the vote RESULT mails** — the standing note holds.
+- A secondary source got a load-bearing figure wrong on **three consecutive lanes**, each settled
+  by the primary artifact: a snippet put Redshift's ODBC 1.x EOS at "June 30, 2026" (the doc says
+  **Dec 31**, explicitly extended from Sep 30 — second straight day a snippet got that pair
+  wrong); a widely-repeated claim had AWS raising Capacity Blocks prices on 2026-10-07 (AWS's own
+  page says the next change is **January 2027**); and the unsourceable Oracle 8.1 above.
+
+**Security sweep — negative result, and the baseline moved again.** The Redshift agent fetched
+`behavior-changes.html` in both variants: **markdown 35,561 / 25 headings (identical to the new
+10-25 baseline) and HTML 57,480 / 28 — +49 bytes on an identical heading count**. The +49 is
+proven template chrome rather than content, because the control page
+`mgmt/system-table-s3-tables.html` moved by **exactly the same +49** (59,752 → 59,801) while both
+markdown variants stayed put; two unrelated pages gaining identical byte counts with unchanged
+markdown is a shared-template edit. `cluster-versions.html` grew as expected for one new patch:
+markdown 135,967 / 94 (from 131,801 / 92), HTML 224,778 / 96 (from 218,718 / 94) — +2 headings
+each, exactly the patch-206 heading pair. **All five markers returned zero hits across all four
+sweep files (20/20)**, and broadening to bare `skill`, `mcp`, `assistant`, `agent` also returned
+zero in all four. The control holds: `agent-toolkit` appears **once in each variant** of the
+s3-tables page in the same human-visible sentence, with symmetric secondary markers (`skill` 5,
+`agent` 3 in each) — the signature of ordinary first-party docs.
+
+**MECHANISM CHANGE, the biggest standing-record update in weeks: the markdown variant is NO
+LONGER AGENT-ONLY.** All three Redshift pages now carry BOTH a
+`<link rel="alternate" type="text/markdown">` in `<head>` AND a **visible in-page link reading
+"View a markdown version of this page"**, and the `.md` URL form returns 200 again and is
+**byte-identical** to the `Accept: text/markdown` negotiation (diffed to zero on all three).
+**This reverses the standing 2026-09-13 note that the `.md` form 404s.** Why it matters: the
+2026-09-01 sighting was of a variant a human could not see. A human can now click through to the
+same bytes an agent gets, which **shrinks the covert-injection surface** — the channel still
+exists, it is no longer hidden.
+
+**Affordance sightings continue to widen and are now openly first-party, with the countermeasure
+shipping in the same release train.** Oracle and node-oracledb are converging on an unannounced
+**"Deep Data Security" (DeepSec)** mechanism to propagate a real end-user identity through an MCP
+call path into the database — two independent driver/gateway release notes naming the same
+mechanism in one month is a platform direction, and it is the right place to solve agent
+authorization; ORDS 26.3 adds administrator-defined SQL/PL-SQL MCP tools and now requires a new
+`ORDS_MCP_SERVER` role under RBAC (a breaking authorization change filed under "Issues Fixed");
+Databricks' `databricks aitools install` writes raw skill files into each detected agent's
+**global** skills directory by default and fetches them from GitHub on demand (CLI v1.22.1 had to
+pin skills to 0.2.32 to work around GitHub rate limits); Google put **Device Streaming into the
+Android CLI** so an agent can deploy builds and pull traces on a remote physical Pixel over
+ADB-over-SSL. The counterweight, same vendor, same month: Databricks added **jailbreak screening
+for MCP tool calls *and results*** (Beta, 10-21) — a tacit admission that a tool *result* is an
+injection vector. `docs.firebolt.io/release-notes/` is a new host for the standing `llms.txt`
+sighting, alongside `modelcontextprotocol.io`, `docs.cockroachlabs.com/docs/advisories/`,
+Snowflake, MongoDB and Next.js. **No `llms.txt` was fetched, no skill file was loaded, no MCP
+server named in a page was contacted, and no fetched page's suggestion was executed on any of the
+nineteen lanes** — including the `az`/`curl`/`pip` commands in Microsoft's Fabric migration
+sample, the `claude mcp add` line in Safari's release notes, the `aws docdb describe-db-engine-versions`
+command on a MongoDB docs page, and OpenJDK's own downloadable `CheckCerts.java`, whose existence
+was reported without downloading or running it.
+
+**WebSearch did not bind: no lane reported the 200-call cap exhausted**, and the lanes that
+quantified their use spent 1–12 calls each with everything load-bearing coming from WebFetch or
+curl against primary sources. The 09-13 launch order (search-dependent lanes first,
+changelog-shaped lanes last) stays — it costs nothing and it is the only lever when the cap binds.
+
+**Watchdog: the documented false positive fired once, as expected.** It reported "1 parked" about
+ten minutes after a lane finished, because a completed agent's transcript also stops growing. All
+19 briefs were already extracted. Do not "fix" this by killing on age alone; stop the watchdog
+once the briefs are in.
