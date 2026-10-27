@@ -10992,3 +10992,184 @@ changelog-shaped lanes last) stays — it costs nothing and it is the only lever
 ten minutes after a lane finished, because a completed agent's transcript also stops growing. All
 19 briefs were already extracted. Do not "fix" this by killing on age alone; stop the watchdog
 once the briefs are in.
+
+## Run findings 2026-10-27 (edition 105)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:17 EDT, 18 briefs in by ~13:37, appdev last at ~13:50, published 13:45 UTC,
+Pages `deploy` job `success` at 13:46:27Z (~31s after the push), lens v70 after. **~3,715k research
+tokens** — below the recent 3,876–3,950k band, and the only lane that ran long was appdev at 1,076s
+/ 83 tool calls. Hook logs show the healthy signature the 10-20 note describes: `artifact-allow.sh`
+**4 records** (list, a `read` with `path`, the plain `read` a republish needs, the publish),
+`bash-allow.sh` **474 records** (201 allow / 273 pass) — **all `PreToolUse` at `mode=auto`, zero
+`PermissionRequest` events anywhere.**
+
+**Token counts matched the harness notifications EXACTLY for all 19 agents, so
+`apply_harness_tokens.py` did not need to run — third consecutive no-op.** The 09-14
+3.8%-undercount finding and the 10-25 challengers-9.1%-low finding both failed to reproduce again.
+It has now gone no-op, broken, no-op, no-op — worth re-checking each run rather than assuming in
+either direction, and worth not re-fixing.
+
+**STAGE TOOLING FROM THE NEWEST `claude/great-clarke-*` BRANCH — fifth consecutive run to confirm
+it.** `claude/great-clarke-5yyaxx` (10-26) carried **51** files under `tools/` against main's far
+smaller set; staging from main would again have left the run with no `patch_radar.py`,
+`countdowns.py`, `probe_board.py`, `events_table.py`, `longitudinal.py`, `derive_lists.py` or
+`SHARED_RULES.md`. The cheap pre-launch check is one `for` loop over `git branch -r` printing each
+branch's `tools/` file count and commit date.
+
+**`probe_board.py` paid out for the eighth run running, and more emphatically than ever: 5 of 6
+drafted corrections were ALREADY right on the board.** CVE-2026-111943's attribution was corrected
+10-25 (with Red Hat's verified 6.8), the Java two-alert sequence was enriched 10-25 with *exactly*
+the finding appdev reported today, BCR-2413 was corrected 10-23 to "early February 2027", Percona's
+MongoDB resolution landed at ed. 074, and the Redshift ODBC/TLS split was already made. **The stale
+thing is reliably the prompt, not the ledger.** Budget the probe; it is three minutes.
+
+**`reuse_key`'s advisory had its best run ever: it redirected 7 of 11 drafted rows, two of them
+under IDENTICAL keys.** Of 6 drafted events only `php2shell-kev-due-oct29` was genuinely new —
+`containerd-22-eol-nov6` and `dotnet-8-9-eol-nov10` were drafted with the *same key* already on the
+board, and the Redshift TLS, Genie MCP and Play target-API drafts all collided with existing rows.
+Of 5 drafted patch rows, the JDK and PgBouncer drafts collided by shared CVE id. All seven were
+**enriched in place** instead. A fresh slug for a tracked story is precisely what makes `days` lie,
+and this is the first run where the advisory caught key-for-key collisions rather than near misses.
+
+**The guard battery passed on the FIRST assembly, including guard 5 at 724 cited units / zero
+uncited — ninth consecutive edition.** `assert_table_shape` 10 tables, `assert_structure` 15
+sections, `assert_identity_consistent` across all seven sites, `assert_not_parent_identity` clean,
+`assert_alias_safe` across 8 accumulating sections with 0 event keys lost. **The parent again
+carried 2 `</body></html>` pairs and `normalize_closing_tags()` collapsed them to 1** — the 09-20
+fix doing its job for the fourth run running.
+
+**The 10-26 head/body/tail split is worth keeping and it earned its keep again.** `build_105.py` was
+assembled as `head_105 + body_105 + read_105 + tail_104`, with the mechanical tail inherited
+verbatim and only the constants, the stale-assertion list, the runbar flag line and the output path
+changed. Ordering the runbar token replacement *before* the stale-list replacement is what kept the
+two from aliasing — the 10-26 collision lesson applied prospectively rather than after a failure.
+
+**`curate.py` has an `EXCLUDE_CHANGED` mechanism that must be rewritten every run, and this run
+shows why.** `changed` came back at 15 rows of which **9 were classifier artifacts** — "remain the
+fix", "still the one to read first", "have not moved", "unchanged" — reading as severity moves
+because the stateless agents reworded a carried headline while the fact sat still. Fifth consecutive
+run of this shape. One of the nine was excluded for a *different* reason worth distinguishing: the
+Atlas log-export row was **also a `new` pick**, so leaving it in `changed` would have put one story
+on the card twice. The stale entries from prior runs are harmless but do nothing; resolve today's
+with `derive_lists.py` against `raw['changed']`, not by hand.
+
+**A pick can silently vanish because its story was MATCHED rather than created, and the fix is to
+pick the sharper row instead of loosening anything.** `"The October patch round is uncut on 1.34…"`
+reported `WARN: pick not found` because that wording merged into an existing key and never reached
+`raw['new']`. The measurable version of the same story — `.go-version on release-1.34 … all read
+1.26.10` — *was* in `new`, and is the better card row anyway. **When a pick misses, probe `new` for
+the same story's other wording before assuming the fragment is mistyped.**
+
+**Flag calibration: 16 of 19 urgent — one below the series high of 17 — and the distinct-story count
+went UP rather than down.** Sixteen flags cover **fourteen distinct stories**, against roughly
+eleven yesterday. Only two are shared: `postgres-mcp`'s CVE-2026-85620 reaches NL2SQL and AI App
+Dev, and PHP's CVE-2026-109618 reaches App Dev **and Oracle** — the latter only because Oracle
+Secure Backup bundles PHP, which is a genuine second remediation rather than a duplicate, and is
+the kind of cross-lane connection worth looking for deliberately. Four KEV clocks past due: Ray at
+**68 days** with `forensicTriage: Yes`, Oracle's CVE-2026-21962 at **61** with a fix that has existed
+since the January CPU, Apple's exploited CoreGraphics bug at 14 (which finally got an iOS 18.7.11
+backport on 10-26, resolving a carried no-fix population), and php2shell with **two days left**.
+
+**"Patched upstream, unreachable for you" is in its eighth week and stopped being one shape — six
+distinct mechanisms are live on the board simultaneously.** (1) Fix merged, tagged in nothing
+(Kubernetes `.go-version` 1.26.10 on all four branches against shipped tags at 1.26.5/1.26.8; now a
+**two-project pattern** because containerd's 2.3 LTS has not even merged it). (2) Patched for paying
+customers only (Oracle's `.0.3` JDK train via the Patch Availability Document; JDK-8395690 is
+mainline-only and jdk21u/jdk25u still carry all four cert files). (3) Fix reachable and **off by
+default** (StarRocks' `Config.java`). (4) Fix on the current major's *predecessors* (arrow-rs 57/58/59
+patched, 60.0.0 — what `cargo add` gives you — unpatched). (5) Branch archived permanently (Doris
+3.1). (6) The dependent ecosystem forbids the fixed line (Snowflake's CA distrust only in Python
+5.1.0 / ODBC 4.2.0 while Snowpark, ML, SQLAlchemy and the CLI all require `< 5.0.0`).
+
+**A SEVENTH problem sits beneath all six and is now measured rather than inferred: the advisory a
+scanner reads may never have been published.** React's unauthenticated RSC RCE (CVSS 4.0 9.5) is
+**still absent from the GitHub Advisory Database and OSV thirteen days on**. The mechanism:
+`GHSA-frr6-h895-5pxp` — which ed. 104's Mobile lane read as "resolves nowhere" — **does** resolve, as
+a **repo-scoped** advisory under `dart-lang/sdk/security/advisories/`, while `github.com/advisories/`
+404s it and the `github/advisory-database` mirror 404s in both `github-reviewed/` and `unreviewed/`.
+**A repo advisory never published to the global database exists only under its repo path, and nothing
+warns you.** Both prior readings were right about different paths. The adjacent failure:
+`GHSA-x547-2835-q547` (CVE-2026-115557, CVSS 4.0 9.4) exists only in `unreviewed/` with **zero
+affected-package ranges**, which is why the UI 404s it and no lockfile scan returns it. Grafana
+shipped fixes today for three CVE ids in **no** public database at all, and OpenTofu's compromised-
+intermediate filter has no GHSA.
+
+**The eMudhra remediation splits in two and the industry is tracking one half — the sharpest
+operational finding of the run.** The Go denylist repairs `Certificate.Verify` and does **nothing**
+for shelled-out `git`, `helm`, `kustomize` or `curl`, which read the **image's own CA store**. Argo CD
+proved it by needing a *second* release: 3.3.17/3.4.12/3.5.6 bumped Go, then **v3.3.18** deleted
+`emSign_ECC_Root_CA_-_G3.crt` from three Dockerfiles because release-3.3's base image is an
+unsupported Ubuntu whose `ca-certificates` are not refreshed at build time. Only four projects have
+publicly addressed the image store. Two facts that narrow it: the intermediates were **never
+CT-logged**, so CT-enforcing browsers were structurally safe and the exposed population is precisely
+backend clients and bundled bundles; and only **one** globally-trusted root actually needs removing
+(`emSign ECC Root CA - G3`, the cross-signer) plus Sectigo's `AAA Certificate Services` — certifi
+learned that by dropping four on 10-18 and **restoring the unaffected ones** on 10-19, settling at
+118 certs on 10-23. **"Delete the emSign roots" is unsafe advice**, and `openjdk.org/emudhra`
+instructs removing four, two of which are not implicated.
+
+**Ledger health: 903 items, 76 exact + 171 fuzzy = 247 merges (27.4%), 0 double-counted.** Tally
+guard bumped 247, guarded 0. Dictionary 45,883 → 46,539. Match rate squarely in the recent band, so
+the 09-09 length-asymmetry diagnostic was not needed. The 15 weakest accepted merges were eyeballed
+and all were genuine same-story rewordings. Since-yesterday: new=15 (+477 more), changed=6,
+ongoing=15, aged_out=783, **36 of 36 rows sourced** (one `[src]` attached by hand from a URL already
+cited in that same brief for that exact fact). All 15 picks and all 14 pins landed; `curate.py`'s
+fatal "pin not found" did not fire.
+
+**Event Horizon is carrying the densest seven-day window it ever has: 20 dated rows inside seven
+days and 26 inside fourteen.** 10-29 php2shell KEV · 10-30 MariaDB 12.3.4 + Atlas log export · 10-31
+Redshift TLS 1.2 + Genie MCP sunset + RDS PG minors · 11-01 Play target-API + Databricks partner-AI
+toggle · 11-04 Vitess v23.0 EOL · 11-05 MariaDB 13.1.2 · 11-06 containerd 2.2 + Fabric's Foundry
+tool · 11-10 .NET 8 **and** 9 together · 11-12 PostgreSQL 14. One row retired (Snowflake's CoWork
+dashboard-data default, passed 10-26); events 63, patch 209 → 212.
+
+**Three standing source notes changed, two of them retirements.** **(1) `mikedietrichde.com` is
+READABLE again** — `/feed/` returns 200 with 25 full items and the article HTML serves 200 to curl
+with a browser UA, no `sgcaptcha` shim; it carried the Oracle lane's entire patching and upgrade
+story, so **retire the captcha-blocked note**. **(2) The Azure updates RSS 403 is a user-agent bot
+block, not an outage** — `microsoft.com/releasecommunications/api/v2/azure/rss` returns 200 with 200
+items spanning three months to a browser UA, so Azure is *quiet* on accelerators, not uncovered.
+**(3) `amd.com/en/resources/product-security.html` 503s to WebFetch again** but serves 200 to curl
+with a browser UA — the 10-26 "retire the 503 note" instruction is itself retired. Also: ORDS's live
+changelog route is `oracle.com/tools/ords/ords-changelog.html` (both `ords-relnotes-26.3*` forms
+404), and `ir.amd.com/rss/news-releases.xml` now 301s and needs `-L`.
+
+**`blogs.oracle.com` 403s HTML *and* RSS for a THIRTEENTH consecutive week**, so the official
+Optimizer / In-Memory / Smart Scan / Exadata-monthly channel remains a standing structural gap and
+the Oracle brief says `## Performance` has no official source rather than reporting a quiet month.
+Teradata release notes unreachable for a **fifth** consecutive run — and the new detail is that
+`curl -I` returns **HTTP 200** while WebFetch gets 404, i.e. the 200 is an SPA edge shell with no
+server-rendered content, so the status code is misleading. Yellowbrick: the docs root is now
+reachable but serves navigation chrome only and the release-notes path still 403s.
+
+**Two carried questions closed, which is worth as much as a new finding.** **(1) The 4Q26 DRAM
+contract figure is +10–15% QoQ**, from TrendForce's own 2026-09-30 release; the "~20%" the board
+could not resolve traces to a Korean aggregator and is **not TrendForce's number**. **(2)
+CVE-2026-111943 is a Go `crypto/x509` advisory assigned by `security@golang.org`** — Oracle was never
+its CNA, so the "preliminary 8.1 High" chased for a week was a **misattribution**, not merely an
+untraceable score; Red Hat's verified 6.8/Important is the only traceable figure.
+
+**CelerData has renamed itself PhoenixAI with no announcement anywhere.** `celerdata.com` and
+`docs.celerdata.com` both redirect to `phoenixdata.ai` / `docs.phoenixdata.ai`, the docs site
+identifies as PhoenixAI Cloud / PhoenixAI, Inc. (© 2026), the versioning switched to a year-based
+"26.2 Preview" scheme rather than StarRocks' 4.x, and the **login and free-trial links still point
+at `cloud.celerdata.com`**. Every CelerData doc bookmark now lands on a different company name.
+
+**A genuinely new CVE *shape*: the fix shipped before anyone told you.** AMD's RCCL
+CVE-2026-43598 (CVSS 7.7, RCE in the ROCm collectives proxy path, reachable from a compromised peer
+rank on every Instinct part MI210→MI355X) was mitigated in **ROCm 7.14 on 2026-07-15** and disclosed
+**2026-09-30**, 77 days later; TensorRT-LLM's fix tag v1.3.0rc25 is dated 08-27 and was disclosed
+today. A scanner reading advisory publication dates sees both as new; one reading fix availability
+saw nothing; neither tells you a pinned image was exposed for eleven weeks. For accelerator-stack
+components the useful audit is "what did I pin, and when was the fix tagged".
+
+**Scope, on the edition's face:** 105 refreshes Today's Read on all four chairs, Since yesterday,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity sites. Claim Watch,
+Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals, Build Radar,
+Skills Radar and Vendor Dossiers **carry forward from ed. 104 unrevised** — no competitor shipped a
+perf or price claim worth a card and `claims[]` did not grow, so the depth went into the correction
+pass and the deadline wall. Output is **29,525 bytes larger** than the parent (2,250,114 vs
+2,220,589), accounted for by lensLedger +16,403 (4 corrections, 7 enrichments, 1 new event, 3 new
+patch rows against 1 retirement), v-events +5,635, v-patch +5,470, v-wn +653, v-read +428,
+v-longitudinal +147 and povContent +1,080. **The quarterly Skills/Build re-rank is due 2027-01-01.**
