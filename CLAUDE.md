@@ -11173,3 +11173,201 @@ pass and the deadline wall. Output is **29,525 bytes larger** than the parent (2
 2,220,589), accounted for by lensLedger +16,403 (4 corrections, 7 enrichments, 1 new event, 3 new
 patch rows against 1 retirement), v-events +5,635, v-patch +5,470, v-wn +653, v-read +428,
 v-longitudinal +147 and povContent +1,080. **The quarterly Skills/Build re-rank is due 2027-01-01.**
+
+## Run findings 2026-10-28 (edition 106)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:41 EDT (13:41 UTC), briefs in between ~13:51 and ~14:00, published 14:07 UTC,
+Pages `deploy` job `success` at **14:08:10Z** (~37s after the push), lens v71 after. **~4,010k
+research tokens — a new record** (prior high ~3,950k), with agents averaging 49–86 tool calls.
+Hook logs show the 10-20 healthy signature exactly: `artifact-allow.sh` **4 records** (list, a
+`read` with `path`, the plain `read` a republish needs, the publish), `bash-allow.sh` **570
+records** (265 allow / 305 pass) — **all `PreToolUse` at `mode=auto`, zero `PermissionRequest`
+events in either log.**
+
+**Token counts matched the harness notifications EXACTLY for all 19 agents — fourth consecutive
+no-op for `apply_harness_tokens.py`.** Extractor total and harness total were both 4,010,720 with
+zero per-agent mismatches. It has now gone no-op, broken, no-op, no-op, no-op. Keep checking each
+run rather than assuming in either direction, and keep not re-fixing it.
+
+**STAGE TOOLING FROM THE NEWEST `claude/great-clarke-*` BRANCH — sixth consecutive run to confirm
+it.** `claude/great-clarke-sm97jb` (10-27) carried **54** files under `tools/` against main's far
+smaller set. The cheap pre-launch check is one `for` loop over `git branch -r` printing each
+branch's `tools/` file count and commit date; it cost one command and saved the whole lens
+toolchain.
+
+**`probe_board.py` paid out for the NINTH run running, and this was its widest margin yet: 5 of 9
+drafted corrections were ALREADY right on the board, and `reuse_key`'s advisory redirected 6 of 8
+drafted event rows under keys that match the story exactly.** Already correct: the Redshift ODBC
+1.x extension to 2026-12-31 (carried with AWS's verbatim quote), the Fabric Runtime 2.0 default
+flip (corrected 10-23), the Iceberg V4 equality-delete ban as merged spec text (corrected 10-23),
+the Genie MCP `ai-gateway` scope change (re-measured 10-17), and the Databricks Supervisor API row
+(already in `retired_events`). Redirected rather than re-slugged: `dotnet-8-9-eol-nov10`,
+`fabric-foundry-custom-tool-retire-nov6`, `atlas-push-based-log-export-create-cutoff-oct30`,
+`bq-tabfm-token-pricing-oct30`, `databricks-model-retire-oct30`, `containerd-22-eol-nov6`.
+**The stale thing is reliably the prompt, not the ledger — and today four of my own carried prompt
+lines were the wrong ones.** Budget both passes; together they are five minutes.
+
+**On Vitess the BOARD IS MORE ACCURATE THAN THE BRIEF, which is a first and worth a rule.** The
+lane read v23.0.8's release notes as **fourteen** High advisories; the board's 10-25 count is
+**seventeen**, spanning two waves plus CVE-2026-104252. A release-note count is not an advisory
+count, and when the two disagree the higher, id-by-id figure stands. Recorded on the row rather
+than silently lowered.
+
+**Only three corrections were genuinely needed, and one of them is an inversion of an inversion.**
+(1) `arrow-rs-60-newest-major-is-the-unpatched-one` is now **exactly backwards**: `arrow` 60.1.0
+(tagged 10-23, published to crates.io at 08:49 UTC *this morning*) carries the only "Security
+fixes" entry — redacting Parquet encryption keys from `Debug` output (PR #11614) — while
+57.3.2/58.4.1/59.3.2 shipped 10-26, **three days after the 60.1.0 tag**, and do not contain it. So
+`cargo add arrow` is now the SAFE path and "pin back one minor" is the unsafe one. **The trap for
+whoever reads this next: these are TWO DIFFERENT BUGS.** The use-after-free the row was opened for
+*is* fixed on the older lines; the key leak is newer and only on 60.1.0. A row that tracks "the
+unpatched major" has to name which vulnerability it means. (2) `celerdata-phoenixdata-rebrand-
+undisclosed` had a **false premise carried for seven weeks** — the rebrand WAS announced, DBTA,
+2026-05-27. What is genuinely absent is a *product-surface* notice. (3) `cve-2026-21962` →
+62 days, with the enrichment that converts the row from inference to evidence (below).
+
+**CVE-2026-21962's "unpatched by omission" reading is now EVIDENCED rather than inferred, and the
+evidence is the shape to reuse.** Grepping the October CPU and its verbose risk matrix returned the
+id zero times — as five prior editions recorded — but today's Oracle lane went further and found
+the same CPU patching the **same OHS/WebLogic Proxy Plug-in component three separate times**
+(CVE-2026-87346, -83379, -87300, all 8.7 unauthenticated with scope change). "Absent from the
+advisory" is weak; "absent while the vendor shipped three fixes to that exact component in the same
+quarter" is not. **When a row asserts an omission, look for what the vendor DID ship next to it.**
+
+**The day's one genuinely-new patch row was the day's biggest story, and the board had no row for
+it at all.** `CVE-2026-111497` (Brotli decoder OOB write, CISA KEV 10-27, due 2026-11-10) appeared
+on the board only inside a **retired** Node-release event, with nothing carrying its KEV clock —
+so the `111497` probe returned two rows and neither was a patch row. **A probe that returns hits
+is not the same as a probe that returns the right KIND of hit; check the section, not just the
+count.** Four things make it the window's defining item: four vendors scored it four ways (Google
+CNA and GitHub 9.2 Critical, Node "High", Microsoft 8.1 High) and **only CISA's listing creates an
+obligation**; its canonical OSV record carries `package: null` with raw git ranges, so a Node, Go,
+Rust, .NET or Maven lockfile scan returns **clean for a KEV entry**; `process.versions.brotli`
+reports 1.2.0 on patched *and* vulnerable Node builds, so the obvious verification is useless; and
+**every live Envoy branch still pins a pre-fix 2026-09-30 snapshot**, including the v1.40.2 shipped
+on 10-27 — so Istio data planes have no reachable fix while Node, Bun and .NET all do.
+
+**Flag calibration: 16 of 19 urgent — equal to 10-27 and one below the series high — covering
+~14 distinct stories.** Five deadlines fall before Sunday (PHP KEV 10-29; BigQuery TabFM token
+billing and Atlas log-export create-cutoff 10-30; Redshift TLS 1.2, the RDS PostgreSQL
+force-upgrade and the Databricks Genie MCP sunset 10-31; Play target-API 11-01). Four KEV clocks
+are past due: Ray at **69 days** with `forensicTriage: Yes`, Oracle's CVE-2026-21962 at **62**,
+MLflow's CVE-2026-64849 at **56**, and Apple's CoreGraphics bug at 15. The three `ok` lanes earned
+it and wrote out their reasoning: **Open Formats** declined on a reachable-fix argument it stated
+in full (the Parquet KMS fix has been GA 54 days; Arrow 26.0.0 is 19 days old with a one-line
+workaround), **Database Hardware** reported **no CVE in the lane at all** rather than padding, and
+**BigQuery** held a 2-day pricing cutover at `ok` on the literal rule that a billing change
+requires no action of the reader. That asymmetry is the evidence the agents discriminated.
+
+**A new KEV entry reached three lanes independently and each scoped it differently, which is the
+behaviour to keep.** App Dev owned the Brotli CVE as a runtime story, DevOps owned it as the Envoy
+/ Istio unreachable-fix story, and **BigQuery scoped it OUT with a measurement** — BQ's supported
+Parquet load codecs are GZip, LZO_1C, LZO_1X, LZ4_RAW, Snappy and ZSTD, so Brotli is not among
+them and BQ servers never decode an attacker's Brotli stream. A lane proving a KEV entry does *not*
+reach it is worth as much as a lane flagging one.
+
+**Ledger health: 918 items, 75 exact + 181 fuzzy = 256 merges (27.9%), 0 double-counted.** Tally
+guard bumped 256, guarded 0, created 662. Dictionary 46,539 → 47,201. Match rate squarely in the
+recent band (27.4% yesterday), so the 09-09 length-asymmetry diagnostic was not needed. The 15
+weakest accepted merges were eyeballed and all were genuine same-story rewordings.
+Since-yesterday: new=14 (+489 more), changed=2, ongoing=15, aged_out=558, **31 of 31 rows sourced**
+(one `[src]` attached by hand from a URL already cited in that same brief for that exact fact).
+
+**`curate.py`'s `EXCLUDE_CHANGED` is matched by PLAIN SUBSTRING, not dash-normalised — and that
+cost a cycle.** I wrote an exclude fragment with an ASCII hyphen against a title carrying an em
+dash, and the row survived into the card. `derive_lists.py` normalises dashes when it *probes*;
+`curate.py` does not when it *excludes*. **Copy exclude fragments from the probe output, or choose
+a fragment with no dash in it.** 22 of 24 raw `changed` rows were classifier artifacts this run —
+sixth consecutive run of that shape — and the Brotli row was excluded for a *different* reason
+worth distinguishing: it was also a `new` pick, so leaving it in `changed` would have put one
+story on the card twice.
+
+**A pick missed and the 10-27 rule resolved it in one command.** `"LiteLLM CVE-2026-114612"` came
+back `WARN: pick not found` — because it is an `ongoing` row at day 6, not a `new` one. Before
+assuming a typo I checked which list each of 24 fragments lived in, which also caught five more
+picks that belonged in `PIN_ONGOING`. **Write the which-list check once per run; it is ten lines
+and it prevents both the missing pick and the double-listing.**
+
+**Guard 5 passed on the FIRST assembly at 724 cited units, zero uncited — tenth consecutive
+edition** — and the whole battery passed first try: `assert_table_shape` 10 tables,
+`assert_structure` 15 sections, `assert_identity_consistent` across all seven sites,
+`assert_not_parent_identity` clean, `assert_alias_safe` across 8 accumulating sections with 0 event
+keys lost. 842 primary links mined. **The parent again carried 2 `</body></html>` pairs and
+`normalize_closing_tags()` collapsed them to 1** — the 09-20 fix doing its job for the fifth run
+running.
+
+**The 10-26 head/body/tail split held for a third edition and is now the cheapest part of the
+build.** `build_106.py` was assembled as `head_105[:202] + body_106 + tail_105[390:]`, inheriting
+every mechanical generator and the entire guard tail verbatim and rewriting only the v-wn body and
+the four v-read chairs. One sharp edge to record: my own post-substitution assertion
+`'"105"' not in out` **failed on the correct output**, because the new
+`PARENT_ED = "105"` legitimately contains that string. An assertion that cannot distinguish the
+value you just set from the value you removed is a false alarm — assert on `ED = "105"` and
+`out_105`, not on the bare number. A second, real one it did catch: `out_105` survived inside a
+`print()` format string that the file-path replacement did not cover.
+
+**Pages deploy verified by reading the `deploy` JOB, per the 09-14 and 10-21 rules.** At the first
+look the run had only a `build` job in `Checkout` — the 09-17 rule held and no re-trigger fired.
+`deploy` completed `success` with `completed_at: 2026-10-28T14:08:10Z`.
+
+**Event Horizon: 24 dated rows inside fourteen days and 19 inside seven**, against 26/20
+yesterday. Two events retired (`k8s-134-eol`, passed; `emsign-root-removal-chrome-oct27`). Final
+sizes: events 63, patch 213, claims 171, ownclaims 44, promises 98, gaps 22, benchmarks 24,
+retired_events 85. No-fix register 37. Patch radar capped at 35 with all 24 must-show rows present.
+
+**Three standing source notes changed.** **(1) `ratatoskr.run`, which the standing note calls the
+working LKML route, is NOW BEHIND A CLOUDFLARE JS CHALLENGE** — a regression; `lore.kernel.org` is
+behind an Anubis bot-check, so LKML cover-letter benchmark figures were unobtainable and the
+io_uring DMA-BUF speedup is reported with no number rather than a number that could not be
+verified. **(2) `export.arxiv.org` worked fine today with NO 429s, contradicting the standing note
+— but plain HTTP 301s and returns nothing, so use HTTPS with `-L`.** **(3) `docs.cloud.google.com/
+bigquery/quotas` is TRUNCATED by WebFetch at 100k of 291k characters and the AI-token-quota table
+sits past the cut**, so a WebFetch-only read reports "no AI token quotas" and is wrong; and
+`cloud.google.com/bigquery/pricing` renders as a **64-character JS shell** to WebFetch. Both need
+curl with a browser UA. Also: `blogs.oracle.com` 403s HTML *and* RSS for a **fifteenth** consecutive
+week, so `## Performance` has no official Oracle source and the brief says so on its face;
+`mikedietrichde.com` is readable and carried four of the Oracle lane's items; **Mohamed Houri's
+blog is reachable but DORMANT SINCE 2023-02-05** — the standing note lists him among sources that
+"work", and reachable is not active; `www.pachot.net` connection-reset through the proxy; Teradata
+unreachable for a **sixth** consecutive run with the failure mode now confirmed (a body containing
+only the string "Teradata Documentation" — a client-rendered shell, so its HTTP 200 is misleading).
+
+**`clickhouse.com`'s docs changelog LAGS ITS OWN REPO BY A FULL MINOR RELEASE** — there is no 26.10
+release blog post at all and the docs changelog tops out at 26.9, so use `raw` `CHANGELOG.md`.
+Filed alongside the window's other metadata-reliability findings, which is now a theme worth a
+standing section: MongoDB's Jira asserts four releases downloadable from nowhere and `current.json`
+dates every branch 19–26 days off its own release notes while flagging four EOL branches
+`production_release: true`; `vitess.io` advertised a vulnerable build for fifteen days; TiDB's docs
+call 7.5.8 "stable" against a tag feed at v26.3.22. **Automation reads the JSON and only the humans
+get correct dates.**
+
+**Security sweep, negative result — and the Redshift baseline MOVED for the second run running,
+with a clean explanation both times.** The Redshift agent fetched `behavior-changes.html` in both
+variants (**markdown 35,561 bytes / 25 headings vs HTML 57,480 / 28** — up from 34,132/24 and
+55,977/27, which had been byte-stable from 09-12 to 10-26) plus `cluster-versions.html` both ways
+(**136,126 / 94 and 224,972 / 96**), and grepped all four for `agent-toolkit`, `Skills for AI`,
+`AI coding assistant`, `search-skills` and `llms.txt`: **zero matches in every file.** The growth is
+fully accounted for by real first-party content — the SUPER large-strings (patch 206) and
+user-lockout (patch 208) entries, the ODBC 1.x date extension, and the new patch 205/206 sections.
+**A size change on a page that had been byte-stable is worth explaining every time, and this one
+explains cleanly.** Two agent-directed sightings recorded as data and NOT followed:
+`docs.cockroachlabs.com` prepends an `llms.txt` "Documentation Index" block to **both** its HTML
+and its `.md` variant, on the advisories index and on each individual advisory page; and
+`modelcontextprotocol.io` does the same. Also new: `docs.startree.ai`, `docs.singlestore.com`,
+`docs.firebolt.io`, `developer.apple.com` (`/documentation/<path>.md`) and `mongodb.com/docs` all
+serve `.md` doc variants — the markdown-variant *mechanism* is now visible on five more
+first-party sites. **No fetched page's suggestion was executed, no skill file was loaded, no
+`llms.txt` was fetched and no MCP server was contacted by any agent.** One data-quality oddity
+worth a line: the Azure Linux 3 OVAL feed contains a definition for **`CVE-2026-99999`** — a
+placeholder id — so anything consuming that feed programmatically mints a finding for it.
+
+**Scope, on the edition's face:** 106 refreshes Today's Read on all four chairs, Since yesterday,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity sites. Claim
+Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals, Build
+Radar, Skills Radar and Vendor Dossiers **carry forward from ed. 105 unrevised** — no competitor
+shipped a perf or price claim worth a card and `claims[]` did not grow, so the depth went into the
+correction pass and the deadline wall. Output is **20,655 bytes larger** than the parent (2,271,133
+vs 2,250,478), accounted for by 5 corrections, 2 enrichments, 2 new events and 1 new patch row
+against 2 retirements, plus refreshed prose on four chairs. **The quarterly Skills/Build re-rank is
+due 2027-01-01.**
