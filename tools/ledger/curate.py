@@ -27,42 +27,73 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    # 2026-09-17 hand curation. Order: KEV entries whose due date has ALREADY
-    # PASSED, then imminent KEV, then "no fix exists for somebody", then dated
-    # cutovers, then the one structural non-security item. One row per distinct
-    # story -- the two Chrome V8 zero-days are carried in `ongoing` instead,
-    # where they have day counts, so their short "Heads up" restatements here
-    # are deliberately NOT picked.
-    "CVE-2026-21962 is still in CISA KEV and PAST DUE",
-    "LiteLLM CVE-2026-59822 — CISA KEV, added 2 Sep, due 16 Sep (PASSED), actively exploited",
-    "CVE-2026-48710 (Starlette) added to CISA KEV 2 Sep, due date 16 Sep — already passed",
-    "2026-09-14 — GitLab CVE-2026-85706 KEV due date has PASSED",
-    "CVE-2026-82067 — authorization can silently fail to start",
-    "MongoDB 8.2 is EOL (31 July 2026) and has already missed two CVE batches",
-    "Apache Doris 2.0.x, 2.1.x, 3.0.x and 3.1.x have no patched release",
-    "StarRocks — three CVEs against \"through 4.0.13\", and the project has published zero security advisories",
-    "Angular 19 is EOL and the advisories say so explicitly",
-    # JFrog is carried in `ongoing` instead: the DevOps row is longer, carries a
-    # source link, and has a day count, so pinning it there and dropping the
-    # short App Dev restatement keeps one story on one row (09-15 rule).
-    "Trust Center went secure-by-default (Sep 8)",
-    "LiteLLM CVE-2026-37004 — CVSS 9.8, SSTI → RCE",
-    "Google Play: register every app package name by 2026-09-30 or face global removal",
-    "Azure Databricks Standard tier EOL — 1 October 2026, auto-upgrade to Premium",
-    "CVE-2026-73334 — Apache parquet-java, KMS token can be sent to an attacker-chosen host",
-    "64GB DDR5 server DRAM hit $1,500 contract / $3,100 spot on 15 Sep",
+    # 2026-10-28. Ordered by severity/impact. The lead is the window's new KEV clock.
+    # Stories that ALSO appear in `ongoing` with a day count are deliberately NOT
+    # picked here and are pinned below instead (the 10-18/10-26/10-27 double-listing
+    # shape: two bullets in one brief produce a new key AND a match, and putting a
+    # carried deadline under "New" is simply false). That is why the PHP KEV pair,
+    # the Redshift TLS cutover, the Genie MCP sunset, the Play target-API extension,
+    # Vitess v23.0 EOL, the RDS force-upgrade and CVE-2026-21962 are pins, not picks.
+    "Brotli decoder out-of-bounds write, brotli 1.0.3 through 1.2.0",
+    "Envoy pins brotli at commit",
+    "leak LITELLM_MASTER_KEY to an unauthenticated attacker",
+    "Doris CVE-2026-31377, CVSS 3.1 7.5 HIGH",
+    "kernel-6.19+ startup guard reads",
+    "CVE-2026-85620 still has no fixed release",
+    "Next.js Image Optimization SVG RCE affects",
+    "Fabric data agent as a custom tool in Microsoft Foundry stops being supported",
+    "The October patch round cut TODAY",
+    "raised the minimum SGA_TARGET from 724 MB",
+    "Oracle Text indexes transported by TTS",
+    "in-memory point-lookup workloads",
+    "still carry released: true",
+    "Three High-severity fastlane advisories landed",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
 # already carried in PICKS above, and the fuzzy dup check does not catch it
 # because the two phrasings share little vocabulary. A hand-read list beats a
 # loosened threshold here -- same reasoning as the lens fold_map.
+# Rows whose only "movement" is the title-only `sev` heuristic re-deriving a
+# different band on a REWORDED headline, while the underlying fact did not move.
+# The 19 research agents restate carried items in fresh words every run, so a
+# "urgent -> normal" note on an unchanged fact is a classifier artifact, not
+# news -- and the spec's "do not invent movement" rule says to drop it. Added
+# 2026-10-23, when 3 of 7 `changed` rows were of this shape. Substring match,
+# same convention as EXCLUDE_ONGOING; resolve fragments with derive_lists.py.
+EXCLUDE_CHANGED = [
+    # 2026-10-28. 22 of 24 raw `changed` rows are classifier artifacts: the sev
+    # heuristic scores from the title alone, so a reworded carried headline reads as
+    # a severity move while the fact sat still. Sixth consecutive run of this shape.
+    # The Brotli row is excluded for a DIFFERENT reason worth distinguishing: it is
+    # also a `new` pick, so leaving it here would put one story on the card twice.
+    "Brotli decoder out-of-bounds write, added to CISA KEV",
+    "Measured scanner blindness: the canonical OSV record",
+    "CVE-2026-107349's precondition is NOT what yesterday's board said",
+    "YugabyteDB v2024.2 LTS reaches end of maintenance",
+    "Why I am not flagging the September/October server CVE batches",
+    "Atlas Auto Upgrade EOL is still",
+    "Oracle Essbase 21.8.3.0.0 took 38 new patches",
+    "JDBC MIN_TLS_VERSION/MAX_TLS_VERSION deprecated",
+    "Apache Hive catalog endpoint in the Lakehouse runtime catalog went GA",
+    "All three first-party drivers changed the default sslmode",
+    "JDBC 2.3.0 switches DataSource serialization",
+    "ODBC 2.3.0 fixes a stack buffer overflow",
+    "CVE-2026-69843, Microsoft Fabric elevation of privilege",
+    "DuckDB 2.0.0 LTS \"Cinnamon Teal\" shipped",
+    "DuckDB 1.4 support ends 2026-11-17",
+    ".NET 8.0 (LTS) and .NET 9.0 (STS) both reach end of support",
+    "PHP 8.2 security support ends",
+    "Pydantic AI Agent.to_web() CSRF",
+    "CVE-2026-12770 (LiteLLM admin key handler) now carries FOUR scores",
+    "Nuxt 3 has been end-of-life since 2026-08-05",
+    "Flux v2.10.0 (26 Oct) raises the minimum",
+    "Before any upgrade to GKE 1.37",
+]
+
 EXCLUDE_ONGOING = [
-    # 2026-09-17: each restates a row picked or pinned elsewhere. Per the 09-15
-    # lesson the SHORT duplicate is excluded and the LONG survivor kept --
-    # never both on one card.
-    "30 Sep 2026 — Supervisor API (Beta) end of life, no replacement in place",
-    "GitLab CVE-2026-85706 — CVSS 10.0 unauthenticated arbitrary file read",
+    # 2026-10-28: nothing excluded. Every row a reader needs is either picked or
+    # pinned, and excluding a pinned row is what broke the card on 10-15.
 ]
 
 
@@ -74,18 +105,23 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    # 2026-09-17: carried deadlines and unpatched-for-someone rows that outrank
-    # most of today's new rows and would otherwise sort below them. Snowflake is
-    # 3 days out and its dashboards are unrecoverable; the two Chrome V8 KEV
-    # dates are 1 and 6 days out. Pins bypass the COMMENTARY heading filter
-    # because dated cutovers are almost always written under "## Heads up".
-    "2026-09-20 (3 days) — reader accounts are upgraded to Workspaces",
-    "CVE-2026-85046 — V8 type confusion, exploited in the wild, CISA KEV due 2026-09-18",
-    "CVE-2026-87491 — V8 out-of-bounds write, exploited in the wild, CISA KEV due 2026-09-23",
-    "2026-09-30 — TLS 1.2 minimum enforced. TLS 1.0/1.1 connections are REJECTED",
-    "Percona Server for MongoDB users have no fix available for the September CVEs",
-    "Supervisor API (Beta) end of life — 30 September 2026",
-    "JFrog Artifactory: two flaws chained in the wild to mint admin tokens",
+    # 2026-10-28. Carried deadlines and overdue KEV clocks that the title-only sev
+    # heuristic ranks below hundreds of `normal` rows and which would otherwise fall
+    # off the card entirely (the 09-14 shape). Pin the SURVIVING/longer wording and
+    # never exclude a row you also pin (the 10-15 rule). A missing pin is fatal.
+    "PHP CVE-2026-109618 and CVE-2026-109619 are due",
+    "Oracle Secure Backup 19.1.0.0.0",
+    "CVE-2026-21962 (CVSS 10.0",
+    "Ray CVE-2025-62593 is still in CISA KEV",
+    "RDS for PostgreSQL minors 17.6",
+    "minimum TLS of 1.2",
+    "mcp/genie is sunset",
+    "target-API extension expires",
+    "Push-Based Log Export stops accepting",
+    "TabFM moves to token pricing",
+    "Vitess v23.0 reaches end of life",
+    "zod < 4.6.6",
+    "LiteLLM CVE-2026-114612",
 ]
 
 
@@ -145,7 +181,9 @@ def main():
     new_more = len(folded)
 
     # ---- changed: keep all real movement ----
-    changed = sorted(raw["changed"], key=lambda r: rank.get(r.get("_sev"), 2))
+    changed = [r for r in raw["changed"]
+               if not any(x in r["title"] for x in EXCLUDE_CHANGED)]
+    changed = sorted(changed, key=lambda r: rank.get(r.get("_sev"), 2))
 
     # ---- ongoing: the ones that still matter ----
     # A story must not appear in two lists -- the Heads-up restatement of an
@@ -178,7 +216,7 @@ def main():
            if is_news(r) and not dup_of_picked(r) and not excluded(r)]
     ong.sort(key=lambda r: (rank.get(r.get("_sev"), 2), -int(r.get("days") or 0)))
     rest = [r for r in ong if r not in pinned]
-    ongoing = (pinned + rest)[:12]
+    ongoing = (pinned + rest)[:15]
 
     out = {
         "prev_date": raw["prev_date"],
