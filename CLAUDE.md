@@ -11620,3 +11620,255 @@ published a first-party Redshift MCP server whose post names one read-only tool 
 unlisted "query tools"; and **DuckDB 2.0 ships an "agent mode" in its CLI that detects a coding agent
 and changes its own output**. Counterweight: both official MCP SDKs shipped bearer-token
 audience-confusion CVEs this month (CVE-2026-116684 Python, CVE-2026-111771 TypeScript).
+
+## Run findings 2026-10-30 (edition 108)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 09:17 EDT (13:17 UTC), briefs in between ~13:25 and ~13:47, published
+13:49 UTC, Pages `deploy` job `success` at **13:50:56Z** (~81s after the push), lens v73
+after. **~4,126k research tokens — a new record** (prior high ~4,064k on 10-29), agents
+averaging 27–95 tool calls. Hook logs show the 10-20 healthy signature exactly:
+`artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain `read` a republish
+needs, the publish), `bash-allow.sh` **572 records** (236 allow / 336 pass) — **all
+`PreToolUse` at `mode=auto`, zero `PermissionRequest` events in either log.**
+
+**Token counts matched the harness notifications EXACTLY for all 19 agents — sixth
+consecutive no-op for `apply_harness_tokens.py`.** Extractor and harness totals were both
+4,125,705 with zero per-agent mismatches. Keep checking each run rather than assuming in
+either direction, and keep not re-fixing it.
+
+**I SENT AN EARLY NOTIFICATION MID-RUN, AND THAT WAS THE RIGHT CALL — the first time this
+routine has done it.** The AI Daily lane returned at ~09:33 with a backdoored
+**Claude Code VS Code/Cursor extension `2.1.313`** — an SSH backdoor that survives
+uninstalling, on the very tool Karl runs all day. Rather than hold it for the step-6
+notification ~75 minutes later, I verified the load-bearing registry facts myself first
+(`2.1.313` = **404 on npm** while 2.1.312/2.1.314 resolve; dist-tags `latest` 2.1.314,
+`stable` 2.1.308; Open VSX lists 2.1.314 published **2026-10-30T01:07:38Z with 2.1.313
+absent entirely**) and pushed with the IoC check plus the fingerprint
+`SHA256:0Z6R+DF64Do2nwQic8a7kkfDLNNk4IiK+2U2Rci4htk`. **The rule to carry: when a lane
+surfaces something that may already be live on Karl's own machine, independently verify the
+cheapest decisive fact and notify immediately; do not let the end-of-run notification be
+the first he hears of it.** This container was clean of the IoCs (checked, and said so, while
+noting it is ephemeral and not his laptop). Attribution is NOT established — publisher-account
+compromise versus a build-pipeline breach are very different and the public evidence settles
+neither; the notification said so.
+
+**FIVE of my own prompt lines were wrong and the agents corrected every one — a new high,
+and the 10-29 lesson needs strengthening.** (1) I told Snowflake the board had the Genie MCP
+OAuth scope wrong; the board had it right since 10-17 and the **date** was the stale part.
+(2) I told Databricks the partner-AI removal was dated 2026-11-01; **no such date is
+published anywhere** and the Settings-API clause I quoted appears in no source. (3) I told
+BigQuery `run_bq_command` had "IAM as the only control"; IAM deny/allow policies now filter
+MCP tool calls on `tool.isReadOnly`, and the tool is not in the BigQuery MCP server at all —
+it is in the gcloud CLI server. (4) I told Oracle there were two CVSS 9.8 APEX issues; there
+is **one** (the second is 6.1 DOMPurify XSS). (5) I carried "Valkey 8.8" as a version —
+it is the **CVSS score misread as a version number**; there is no Valkey 8.8. **The 10-29
+rule said "budget the probe pass before writing carried prompt lines." That is necessary but
+insufficient: three of these five were not board rows at all, they were facts I asserted from
+memory of a prior edition's prose. Probe the board AND re-read the source for any number,
+date or product name a prompt line asserts.**
+
+**`reuse_key`'s advisory had its WIDEST margin yet: it caught four would-be duplicates, and
+THREE were catches a date-keyed probe could never have made.** Date-keyed, it caught my
+drafted `kernel-46300-kev-due-oct31` against the existing `linux-kernel-46300-kev-due-oct31`.
+Identifier-keyed via `probe_identifiers`, it caught the Next.js two-RCE story (already
+`nextjs-oct14-two-95-rces-no-13x-14x-fix`, which already carried "fixed 15.5.28 / 16.4.1"),
+the OpenJDK 114820 no-build story (already `jdk-114820-no-vendor-build-keytool`) and the
+Brotli scanner story. All four were **enriched in place rather than given fresh slugs**. This
+is the 09-17 Doris lesson paying out at scale: **probe identifiers as well as dates, because
+a story tracked since an earlier date is invisible to a date-keyed probe.** It also correctly
+declined to fold PgBouncer CVE-2026-107350 into the existing `pgbouncer-scram-nonce-preauth-crash`
+row — same component, same fixed version (1.26.1), genuinely different bug.
+
+**The day's four lead stories are all "no reachable fix", and one of them reaches FIRMWARE,
+which no package manager can ever fix.** `CVE-2026-97631` is an unauthenticated **pre-boot**
+RCE in the EDK II PXE driver (CVSS 4.0 9.5): the ICMP-error handlers copy into a fixed
+504-byte field unbounded and advance the destination by a *cumulative* rather than
+per-fragment length, it needs only a unicast ICMP error from any network distance, and **it
+executes before Secure Boot or measured boot verifies anything, so the attestation chain
+never sees it.** The fix is in `master` only (merged 10-15); `edk2-stable202608` predates it,
+Debian lists every suite vulnerable with nothing fixed, **OVMF is affected so every UEFI VM
+that PXE-boots is in scope**, and Supermicro's own October BIOS advisory names the CVE with
+no fixed versions. edk2's cadence puts the first possible tag at mid-November, OEM BIOS after
+that. The only vendor-independent remedy is to remove network boot from the boot order.
+Alongside it: **ClickHouse CVE-2026-116366** (unauth RCE 9.5, disclosed today, patched on no
+branch at or below 26.7 **even though 26.7 got stable builds on 10-21/22, so it still looks
+maintained from the tag list**), **PgBouncer CVE-2026-107350** (one `auth_file` password
+becomes any SCRAM user including backend superusers, 1.17.0–1.26.0, **zero CPE rows and no
+OSV record**, so `SHOW VERSION;` is the only test), and **GitLab CVE-2026-97229** (CVSS 10.0
+KEV, `automatable: yes`, due 11-01, self-managed only).
+
+**THE SCANNER IS NOW WRONG IN BOTH DIRECTIONS ON ONE CVE, which is a different failure from
+the blindness this board has tracked for six weeks — and it is the strongest cross-topic
+convergence the synthesis has carried.** On CVE-2026-111497 (Brotli, KEV, due 11-10):
+*under*-reporting — the KEV record carries `package: null`, **all 4,712 entries in the Go
+vulnerability database contain none of it** so `govulncheck` is clean on a KEV item, and npm
+has no advisory at all because the vulnerable component is the Node *runtime*;
+*over*-reporting — **NVD has attached unbounded `clickhouse`, `duckdb` and `apache:arrow`
+CPEs** so every version of all three matches forever while neither database vendor has
+published a word, and **a FIXED Node still reports brotli 1.2.0** because the fix was
+cherry-picked without a version bump. **A KEV-blocking gate pointed at Envoy 1.40.x reports a
+Critical the vendor considers remediated and cannot tell that from real exposure.** Six
+scorings now exist (NVD 9.8 @3.1, MSRC 8.1 @AC:H, Google and GitHub 9.2 @4.0, Node "High",
+CISA titling it CWE-252), and MSRC's temporal vector still read `E:U` on a CVRF revised
+*today*. Twelve lanes contributed a mechanism; PyPI mapping *did* arrive since yesterday.
+
+**"Upgrading alone changes nothing" is a NEW and worse shape than "no fix for you", and it
+arrived in three places at once.** Both MCP SDKs shipped the bearer-token audience-confusion
+fix **off by default** behind two coordinated code changes — and doing only half **401s every
+request**, so the safe-looking partial migration is a self-inflicted outage; .NET's
+CVE-2026-114148 release note says "downloading an updated archive does not by itself correct
+ownership in an existing installation"; and MSRC said on 10-19 that CVE-2026-70197 "has not
+been addressed" while **its own remediation table still lists the superseded builds as
+fixed**. The version bump satisfies the scanner while the vulnerability stays live — the
+inverse of the usual blindness. Treat "we patched it" as unverified for any CVE whose
+remediation includes a configuration flag.
+
+**`curate.py`'s which-list check earned its keep twice in one run, and both catches would
+have mis-filed a carried story as new.** First pass: six of my fifteen picks were in
+`ongoing`, not `new` — PgBouncer at day 5, the MongoDB Go driver at day 8, Arrow at day 2,
+Oracle Secure Backup at day 3, OpenJDK at day 3, DDR4 at day 2. Putting any of those under
+"🆕 New" is simply false. Second pass: six dated cutovers I had drafted as *pins* were in
+`new` because the extractor reworded their titles enough to miss the dictionary. **Rebalanced
+rather than forced: dated cutovers to picks, carried CVEs to pins.** All 15 picks and all 8
+pins then landed first try with no `WARN` and no fatal pin error.
+
+**The card-level dup pass the 10-29 note asked for is now implemented, and it caught what the
+per-list checks structurally cannot.** `EXCLUDE_ONGOING` only filters `ongoing`, so a story
+duplicated across `changed` and `ongoing` is invisible to it. Counting distinct CVE ids and
+story nouns across **all three lists** found CVE-2026-111497 appearing **4×** — two of them
+sev-classifier artifacts in `changed` ("urgent → high" on facts that did not move) that
+duplicated the richer `ongoing` row. Dropped both; `changed` 7 → 5. **Add this count to every
+run: per-list checks cannot see across lists.** Final card: new=15 (+502 more), changed=5,
+ongoing=15, aged_out=664, **35 of 35 rows sourced** (three links attached by reuse from each
+row's own brief).
+
+**Ledger health: 924 items, 69 exact + 179 fuzzy = 248 merges (26.8%), 0 double-counted.**
+Tally guard bumped 248, guarded 0, created 676. Dictionary 47,908 → 48,584. Match rate
+squarely in the recent band (27.8% on 10-29), so the 09-09 length-asymmetry diagnostic was
+not needed. The 15 weakest accepted merges were eyeballed and all were genuine same-story
+rewordings.
+
+**Flag calibration: 16 of 19 urgent — a five-run plateau, against a series high of 17 — and
+the three `ok` lanes each wrote out their reasoning.** **BigQuery** held a billing cutover
+landing *today* at `ok` on the literal rule that a billing change requires no action of the
+reader, and extended its Brotli scope-out from four documents to ten **plus a transport
+measurement** (the API answers `content-encoding: gzip` even when a request offers `br`,
+which closes the client-library decompression path that actually mattered). **AI Hardware**
+declined on the grounds that **zero NVIDIA entries exist in the entire CISA KEV catalog** and
+all 114 September driver CVEs are local with fixes on every supported branch — and it
+independently declined the NVIDIA PSIRT publishing move that edition 068 flagged, the second
+lane to reach that conclusion unprompted. **NL2SQL** had no CVE at all. Three lanes proving a
+KEV entry does *not* reach them, while twelve traced one that does, is the evidence the flags
+are calibrated rather than blanket-set.
+
+### Lens findings (edition 108)
+
+**Eight corrections applied to the ledger BEFORE any section was generated, and two of them
+move a date AWAY from precision.** `genie-mcp-beta-endpoint-sunset-oct31` 10-31 → **11-30**
+(vendor-stated: "The previous date was October 31"; a carried urgent retires for 30 days);
+`databricks-partner-ai-settings-api-nov1` → **UNDATED** with the Settings-API clause
+withdrawn; `duckdb-20-ga-late-oct` → **DELIVERED 2026-10-21**; `python-310-full-eol-oct31` →
+**2026-10-01** (29 days past, and the 10-25 eMudhra/`tarfile` fixes went to 3.11–3.15 but
+*not* 3.10); `deepseek-search-fetch-api-billing-nov1` → **2026-10-31 16:00 UTC** (right day in
+Beijing, ~27 hours not two days for a UTC reader); `gha-pull-request-target-off-nov2` →
+**2026-12-02** by a GitHub editor's note dated 10-21, **so 11-02 is a SINGLE cutover, not the
+double one this board carried**; `openai-cursor-cutoff-nov12` marked **DISPUTED** (Cursor's
+own docs list the full OpenAI line with no removal notice, and **GPT-5.6 Sol carries
+promotional pricing through 2026-11-21, nine days past the alleged cutoff**);
+`cve-2026-21962` re-measured at **64 days** past due. **A timezone is not a rounding error on
+a deadline** is the new one worth keeping.
+
+**Guard 5 passed on the FIRST assembly at 735 cited units, zero uncited — twelfth consecutive
+edition** — and the whole battery passed first try: `assert_structure` 15 sections,
+`assert_table_shape` 10 tables, `assert_identity_consistent` across all seven sites,
+`assert_not_parent_identity` clean, alias safety across 8 accumulating sections with 0 parent
+keys lost. 781 primary links mined from 19 briefs. **The parent again carried 2
+`</body></html>` pairs and `normalize_closing_tags()` collapsed them to 1** — the 09-20 fix
+doing its job for the seventh run running.
+
+**One self-inflicted crash worth recording because the fix generalises: `C(None, TODAY)` blew
+up in `find_url`.** The builder's `C()` helper passes its title to `L.find_url`, which calls
+`.lower()` on it — so the archive-fallback idiom `C(None, TODAY)`, which the 09-17 note
+*recommends* for claims about this edition's own board, raises `AttributeError`. Fixed at
+three call sites and **`C()` is now None-safe in the builder**, so the next edition inherits
+it. If a future builder is written fresh, make `C()` None-safe on the first pass.
+
+**The 10-29 false-alarm lesson held and saved a wasted cycle.** An audit of surviving
+`edition 107` strings returned **10 hits** — every one a `v-wn` chip reading "vs edition
+107", which is the *correct* label for edition 108's since-yesterday diff. Exactly the shape
+the 10-29 note flagged. **Assert on the thing you set and on a negative with no legitimate
+use, never on a raw count of a string that correct content also contains.**
+
+**Patch radar capped at 35 of 219 with all 12 must-show rows present; no-fix register 37.**
+Events 67 → 72 (five new, three retired as their dates passed). **Event Horizon: 29 dated
+rows inside fourteen days and 23 inside seven, with 4 landing TODAY** — against 31/23
+yesterday. Six new patch rows, five enriched in place.
+
+**Output is 39,579 bytes LARGER than the parent and the growth is fully accounted** (the
+09-09 rule, which applies to growth too): ledger +20,619 (5 new events, 6 new patch rows,
+8 corrections, 5 enrichments), povContent +9,871 (4 refreshed chairs), v-longitudinal +3,478,
+v-events +3,341, v-read +1,100, v-patch +981, v-wn +477, with a −288 residual being the
+runbar rebuild, nav, chips and the collapsed tag pair.
+
+**Scope, on the edition's face:** 108 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity
+sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from ed. 107 unrevised
+and the chips say so on their face** — no competitor shipped a perf or price claim worth a
+card and `claims[]` did not grow, so the depth went into the eight-correction pass, the four
+lead no-fix stories and the deadline wall. **The quarterly Skills/Build re-rank is due
+2027-01-01.**
+
+**Source access, changes worth carrying:** `blogs.oracle.com` 403s HTML *and* RSS for an
+**eighteenth** consecutive week (re-tested across `/database/`, `/database/rss`,
+`/optimizer/rss`, `/exadata/rss`, `/feed` and the JSON API), and the consequence is now
+concrete: **no October 2026 Exadata System Software release could be verified at all** —
+Exadata storage software is a coverage hole, not a quiet month. New this run: **Phoronix is
+now behind a Cloudflare JS challenge to BOTH WebFetch AND curl-with-browser-UA** (a
+regression from the standing note; its RSS still serves, so titles are readable but article
+bodies are not), and **`web.archive.org` CONTENT is blocked by this VM's egress policy** while
+`archive.org/wayback/available` answers 200 — so a wayback byte-diff is unavailable to this
+run regardless of snapshot freshness. `docs.firebolt.io` is readable but **four months stale**
+(tops out at 4.32, June 2026), which makes Firebolt a coverage gap rather than a quiet month
+and corrects the 09-20 "readable again" note; `docs.dremio.com`'s newest dated entry is
+26.0.1 (June 2025) with newer notes behind an authenticated portal. **Teradata is partly
+solved: AWS Marketplace product listings are vendor-authored and carry dated VantageCloud
+version and EoL information.** `clickhouse.com/docs/whats-new/changelog` is ~1.7MB and
+truncates before the newest release (reports 26.9 as latest, misleading) — use
+`raw.githubusercontent.com/ClickHouse/ClickHouse/master/CHANGELOG.md`.
+`cloud.google.com/bigquery/pricing` returns only the page TITLE to WebFetch.
+`repo1.maven.org` 429'd again on bursts.
+
+**Security sweep, negative result — eleventh consecutive run, and the Redshift baseline is
+byte-stable on one file and +96 on the other.** The Redshift agent fetched
+`behavior-changes.html` in both variants (**markdown 35,561 bytes / 25 headings vs HTML
+57,480 / 28 — identical on every figure to 10-29**) plus `cluster-versions.html` both ways
+(markdown 136,899 / 94 vs HTML 225,877 / 96, **+96 bytes in BOTH variants, headings
+unchanged**), and grepped all four for `agent-toolkit`, `Skills for AI`, `AI coding
+assistant`, `search-skills` and `llms.txt`: **zero matches in every file, 20/20**. **The
+agent stated honestly that it could NOT byte-diff** — `web.archive.org` content is blocked by
+this VM's egress policy — and attributed the +96 structurally: identical deltas in both
+variants point to ~96 characters of plain prose edited into existing markup, since a new list
+item or build paragraph costs materially more in HTML than in markdown. That is an inference
+from the size signature, explicitly not a diff. Agent-directed sightings recorded as data and
+not followed: `docs.cockroachlabs.com/docs/advisories/` prepends "Fetch the complete
+documentation index at … /llms.txt" and "Use this file to discover all available pages before
+exploring further"; `modelcontextprotocol.io` does the same on its spec pages;
+`clickhouse.com/docs/resources/changelogs/oss/2026` now carries the same affordance, new for a
+database vendor; `docs.snowflake.com` and `mongodb.com/docs` advertise `llms.txt` indexes.
+**No fetched page's suggestion was executed, no skill file was loaded, no `llms.txt` was
+fetched and no MCP server was contacted by any agent.** The affordance surface has now
+graduated from sightings to ordinary CVEs: MCP's `outputSchema` became a client-side SSRF and
+local-file-read primitive on every tool call with **no setting to disable it**
+(CVE-2026-116686), both MCP SDKs leaked `X-API-Key` and OAuth `client_secret` across origins
+with the request body included on 307/308, Next.js's dev-server MCP endpoint took its own
+info-disclosure CVE, `@storybook/addon-mcp` appears in a Storybook advisory's affected list,
+and pydantic-ai's `include_content=False` **did not redact** exception events — so historical
+traces are the incident, not the code. **And the month's lead story is a backdoored
+first-party AI coding extension.** Counterweight worth recording: two advisories this window
+were **filed by AI agents** (one opens "This issue was posted by Codex Desktop using
+gpt-6.1-sol on behalf of David"; Node's Brotli KEV entry was reported by OpenAI Codex
+Security) — agent-discovered vulnerabilities in agent frameworks is a feedback loop whose
+effect on advisory volume is worth tracking, with vLLM's ~35 and undici's 21 in thirty days
+being either much better coverage or much noisier triage.
