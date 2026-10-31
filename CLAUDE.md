@@ -12084,3 +12084,16 @@ validation **off by default** with advisories that say "upgrading alone changes 
 those words, LiteLLM escalates any `internal_user` to `proxy_admin` with RCE **in the default
 configuration**, and n8n's Databricks node reads your secrets with **no patched release in
 existence**.
+
+### main's CLAUDE.md was 40 editions stale — and that is probably why this run started blind
+
+**`origin/main:CLAUDE.md` was 2,312 lines ending at the 2026-09-21 findings, against
+gh-pages' 12,086 lines.** Six weeks and roughly forty editions of session memory existed on
+only one branch, despite the standing rule in the maintenance workflow that the two copies
+stay identical. The consequence is not hypothetical: **this session was served a CLAUDE.md
+whose newest entry was 2026-09-21**, so the run opened by reading the latest findings out of
+the file on disk rather than trusting the context, which is how the gap was noticed at all.
+Fixed by copying the gh-pages copy onto main-track in this commit; both branches now carry the
+same 51 run-findings sections. **The rule to restate: appending findings to gh-pages is half
+the job. A session may start on either branch, so the memory has to land on both, and the cheap
+check is `git show origin/main:CLAUDE.md | wc -l` against the working copy before you start.**
