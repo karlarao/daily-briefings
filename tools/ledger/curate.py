@@ -27,21 +27,21 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    "TLS 1.2 minimum — begins 2026-10-31, i.e. today",
-    "2026-11-01 (tomorrow): Google Play target-API-36 extension expires",
-    "containerd 1.7 is End of Life as of 2026-09-30 and 2.2 goes EOL on 2026-11-06",
-    "Nov 5, 2026 (5 days) — \"DeepSeek V4 Flash (0731) will be retired",
-    "2026-11-10 — .NET 8 (LTS) and .NET 9 (STS) both reach end of support",
-    "2026-11-12 (12 days) — PostgreSQL 14 reaches end of life",
-    "Azure's built-in PgBouncer is 1.25.2 and you cannot upgrade it",
-    "Node.js driver 7.8.0 (30 Oct) discloses cross-user data exposure via timeoutMS",
-    "Percona Server for MySQL 8.4 users have no release carrying the October CPU",
-    "CVE-2026-119557 — n8n's Databricks node has an unpatched path traversal",
-    "CVE-2026-73322: lookup() bypasses broker access control",
-    "Supermicro BMC: nine CVEs disclosed 26 Oct, credited to runZero",
-    "Python 3.9 and 3.10 still bundle a pip that trusts the compromised eMudhra root",
-    "E-Business Suite took 194 patches this CPU including CVE-2026-101809 at CVSS 10.0",
-    "MongoDB 8.2 has no reachable fix for any of this",
+    "CVE-2026-21962 (CVSS 10.0, OHS / WebLogic Proxy Plug-in) is 67 days past",
+    "Iceberg equality deletes: deleted rows can be returned, and there is no reachable fix",
+    "Node.js driver v7.8.0 (30 Oct) fixes two security defects with no CVE ids",
+    "React: unauthenticated RCE in React Server Components",
+    "Two CVSS 10.0 RCEs from the same upstream regex engine",
+    "PostgreSQL 14's final community minor, then EOL",
+    "DBR 18.2 end of support. No support, no backported security fixes",
+    "DeepSeek V4 Flash (0731) retired.",
+    "In force since 2026-11-01, no fix date: Fabric Spark",
+    "Legacy Notebooks: creation was disabled 2026-09-01",
+    "dashboard_data_access defaults to TRUE for every agent and profile",
+    "EXPIRED 2026-11-01 — the Play target-API-level extension window is closed",
+    "TLS 1.2 minimum: effective date was 2026-10-31 and has passed",
+    "stale tzdata is giving wrong local times in four Canadian zones",
+    "Google is revoking eight compromised eMudhra subordinate CAs",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -75,11 +75,7 @@ EXCLUDE_CHANGED = [
 ]
 
 EXCLUDE_ONGOING = [
-    "2026-11-01 — CISA KEV due date for GitLab CVE-2026-97229",
-    "2026-10-31 (today) — CISA KEV due date for Linux kernel CVE-2026-46300",
-    "2026-11-10 — CISA KEV due date for CVE-2026-111497 (Brotli)",
-    "CVE-2026-97631 — pre-boot RCE in the EDK II PXE driver, CVSS 4.0 9.5 Critical",
-    "CISA KEV past due, Oracle estate: CVE-2026-21962",
+
 ]
 
 
@@ -91,16 +87,11 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    "CVE-2026-46300 — Linux kernel skb_try_coalesce() loses the shared-frag marker",
-    "CVE-2026-97229 — GitLab CE/EE, CVSS 10.0, unauthenticated RCE from a CI/CD regex",
-    "CVE-2026-111497 — Brotli decoder out-of-bounds write is in CISA KEV, due 2026-11-10",
-    "No reachable fix today for CVE-2026-97631 if you run Debian-packaged edk2/OVMF",
-    "CVE-2026-116366: unauthenticated remote code execution, CVSS 4.0 = 9.5 Critical",
-    "PgBouncer 1.26.1 (2026-10-14) fixes CVE-2026-107350, an 8.8 authentication bypass",
-    "No new Oracle KEV entries in October (catalog 2026.10.30), but CVE-2026-21962 is 65 days past",
-    "Nov 5, 2026 (5 days) — Databricks Runtime 18.2 end of support",
-    "2026-11-06 — Foundry agents using a Fabric data agent as a custom tool stop being supported",
-    "CVE-2026-109618 / CVE-2026-109619 (\"PHP2Shell\"), unauthenticated RCE in PHP",
+    "CVE-2026-111497 — Brotli decoder OOB write, CVSS 9.8, in CISA KEV, due 2026-11-10",
+    "CVE-2026-97229 — GitLab CI/CD regex compiler, CVSS 10.0, unauthenticated RCE",
+    "CVE-2026-116366: unauthenticated RCE on ClickHouse Server",
+    "CVE-2026-96889 / GHSA-2464-fhr4-w9xw — unauthenticated RCE in the Next.js Image",
+    "Foundry agents using a Fabric data agent as a",
 ]
 
 
@@ -205,11 +196,34 @@ def main():
     # dup_of_picked (same topic, content-word Jaccard >= 0.45) and applied in
     # priority order, so a pin always wins over the restatement that follows it
     # and an explicit EXCLUDE_ONGOING is no longer needed for this case.
+    # Two measures, because one is not enough (measured 2026-11-02). Symmetric
+    # Jaccard misses the commonest real duplicate on this card: the SAME story
+    # written once as a terse "## Heads up" line and once as a full paragraph.
+    # The paragraph's extra content words sit in the union and drag the score
+    # under any sane threshold -- two Fabric Foundry rows for the 2026-11-06
+    # cutover scored below 0.45 and both shipped. That is the 2026-09-09
+    # length-asymmetry finding in a new place: a symmetric measure is the wrong
+    # tool when the two sides differ in length. So also test the OVERLAP
+    # COEFFICIENT (intersection over the SMALLER side), which asks the right
+    # question -- "is the short row essentially contained in the long one?".
+    # Guards against over-merging: same topic only, the shorter row must carry
+    # at least 5 content words, and priority order is preserved so a pin always
+    # survives and the restatement is what gets dropped.
+    def dup_of_kept(r, w, keep_words):
+        for t, kw in keep_words:
+            if t != r["topic"] or not w or not kw:
+                continue
+            inter = len(w & kw)
+            if inter / len(w | kw) >= 0.45:
+                return True
+            if min(len(w), len(kw)) >= 5 and inter / min(len(w), len(kw)) >= 0.60:
+                return True
+        return False
+
     ongoing, keep_words = [], []
     for r in pinned + rest:
         w = set(L.content_words(r["title"]))
-        if any(t == r["topic"] and w and kw and len(w & kw) / len(w | kw) >= 0.45
-               for t, kw in keep_words):
+        if dup_of_kept(r, w, keep_words):
             continue
         ongoing.append(r)
         keep_words.append((r["topic"], w))

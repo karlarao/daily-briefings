@@ -68,7 +68,17 @@ def rebuild_runbar(html: str, *, edition: str, gen: str, model: str,
     out = html[:m.start()] + bar + html[m.end():]
     back = re.search(r'<div class="runbar">.*?</div>', out, re.S).group(0)
     assert edition in back and gen in back, "runbar rewrite did not take"
-    assert parent_edition not in back, "parent edition %s still in runbar" % parent_edition
+    # Check the parent EDITION only where an edition value can appear -- the
+    # labelled spans -- not anywhere in the runbar string. 2026-11-02: a bare
+    # `parent_edition not in back` failed a CORRECT runbar because the flag line
+    # named GitLab CVE-2026-110264, which contains "110". A guard that fails on
+    # correct content is the thing that trains people to bypass guards
+    # (2026-09-16), and an edition number is 2-4 digits, so bare substring
+    # matching against free prose is guaranteed to collide eventually.
+    vals = re.findall(r'<span class="val">([^<]*)</span>', back)
+    for bad, what in ((parent_edition, "edition"), (parent_dslug, "date")):
+        hit = [v for v in vals if v.strip() == bad]
+        assert not hit, "parent %s %s still in a runbar value span" % (what, bad)
     assert parent_dslug not in back, "parent date %s still in runbar" % parent_dslug
     return out
 
@@ -86,7 +96,12 @@ def assert_no_stale_identity(html: str, parent_edition: str, parent_dslug: str,
     t = re.search(r"<title>(.*?)</title>", html, re.S)
     sites.append(("title", t.group(1) if t else ""))
     rb = re.search(r'<div class="runbar">.*?</div>', html, re.S)
-    sites.append(("runbar", rb.group(0) if rb else ""))
+    # The runbar's own FLAG line is free prose naming CVEs, and a 2-4 digit
+    # edition number collides with it (2026-11-02: "GitLab CVE-2026-110264"
+    # contains "110"). Police the labelled VALUE spans, which is where an
+    # identity assertion can actually live, not the whole div.
+    sites.append(("runbar", " | ".join(
+        re.findall(r'<span class="val">([^<]*)</span>', rb.group(0))) if rb else ""))
     nv = re.search(r"var NAV\s*=.*?;", html, re.S)
     sites.append(("NAV", nv.group(0) if nv else ""))
     pm = re.search(r'id="povContent">(.*?)</script>', html, re.S)
