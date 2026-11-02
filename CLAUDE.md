@@ -12302,3 +12302,229 @@ forward from 109 unrevised and the edition says so** — the day's research was
 overwhelmingly security and dated-cutover movement, `claims[]` did not grow at all,
 and the depth went into measuring which fold criterion is safe. **The quarterly
 Skills/Build re-rank across all four chairs is due 2027-01-01.**
+
+## Run findings 2026-11-02 (edition 111)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both
+hooks clean.** Launched 09:33 EST, briefs in between ~09:39 and ~10:12, dashboard
+published 13:57 UTC, Pages `deploy` job `success` at **13:57:42Z** — 36s after the
+push — lens v76 after. **~3,745k research tokens** (below the 10-30 record of
+~4,126k). Hook logs show the healthy signature exactly: `artifact-allow.sh` **4
+records** (list, a `read` with `path`, the plain `read` a republish needs, the
+publish), `bash-allow.sh` **370 records** — **all `PreToolUse` at `mode=auto`, zero
+`PermissionRequest` events in either log.**
+
+**`apply_harness_tokens.py` was a no-op for all 19 — and that only held because
+OLTP was re-extracted after its handback.** The extractor found OLTP's brief from a
+text block *before* the agent handed back (`handbacks.py` showed `hands=0` while
+`briefs/oltp.md` already existed), so the first extraction captured a draft with a
+225,340-token count against the harness's 242,389. Re-running with `--force` after
+the handback fixed both. The draft turned out to differ by only 59 characters, so
+nothing of substance was at risk this time — but **the extractor will happily
+return a pre-handback draft, and the tell is `hands=0` next to an existing brief
+file.** Check handback state, not just file existence, before trusting an extract.
+
+**The 11-01 `curate.py` ongoing-dedupe fix shipped incomplete, and the gap was the
+2026-09-09 length-asymmetry finding in a new place.** Yesterday's note named
+"dedupe `ongoing` against itself" as the next change; I implemented it with
+symmetric content-word Jaccard ≥0.45 and **two Fabric Foundry rows for the same
+2026-11-06 cutover still both reached the card** (d=4 and d=2). Symmetric Jaccard
+is the wrong tool when the two sides differ in length: the long paragraph's extra
+content words sit in the union and drag the score under any sane threshold. Added
+the **overlap coefficient** (intersection over the *smaller* side, ≥0.60, same
+topic, shorter row ≥5 content words) alongside it. The duplicate went, the freed
+slot took a genuine row, and a scan of all 37 card rows found zero same-topic
+containment duplicates. The lesson generalises past this card: **a symmetric
+similarity measure cannot detect "the short row is contained in the long one",
+which is the commonest real duplicate shape in these lists.**
+
+**TWO guards failed on CORRECT content in the lens build, both for the same reason,
+and both are now narrowed.** `rebuild_runbar` and `assert_no_stale_identity` each
+checked `parent_edition not in <the whole runbar>`. The runbar's flag line is free
+prose naming CVEs, and today's named **GitLab CVE-2026-110264** — which contains
+"110", the parent edition. An edition number is 2–4 digits, so bare substring
+matching against prose was guaranteed to collide eventually. Both now police the
+labelled `<span class="val">` values, which is where an identity assertion can
+actually live. Positive controls (as STRINGS, per the 10-05 lesson) confirm a
+genuinely stale runbar value still raises. This is the 09-16 rule twice in one
+build: **a guard that fails on correct content trains you to bypass guards.**
+
+**The unknown-viewid guard I folded into `lens_extra.rewrite_pov_meta` this morning
+earned its place within the hour.** I passed the full 15-entry NAVMETA to it;
+`povContent["meta"]` holds only the 8 chair-flipped views. Without the guard, seven
+dead keys would have been written while the function still reported "changed" —
+exactly the failure it was added to prevent. Worth noting the provenance: that
+check existed only in `lens_identity.py` (written 11-01 against `main`, which has
+no `lens_extra.py`), so the tree held two implementations of the same function and
+which one a run got depended on which module it imported. Consolidated today.
+
+**main was NOT the source of truth for tooling, and "newest branch" by date is the
+wrong rule.** The 10-20 note says stage from the newest `claude/*` branch. By date
+that is yesterday's branch — which holds **19 tool files, with `ledger.py`,
+`ledger_surgery.py` and `lens_guard.py` byte-identical to main's stale copies**,
+because that run staged from main. The actual superset was `great-clarke-5l04l4`
+(10-31) at 32 files. **Pick the branch with the superset: check file count and
+sizes, not the commit date.** Landed the real set on main-track this run.
+
+**`tools/lens/build_lens_030.py` was still on `main`, 22 days after the 10-11
+privacy note said it had been deleted.** That deletion landed on an unmerged
+branch. The file carries a chair lede, Claim Watch counter/ask prose and the Mirror
+section's self-criticism — internal competitive framing in a public repo, which is
+exactly what the rule exists to prevent. Deleted on this run's branch. gh-pages
+never had it. Deleting does not purge history; only Karl can decide about that.
+
+**Flag calibration: 13 urgent, 12 distinct stories, and the series is the right
+comparison.** Audited one at a time; all 13 survive the literal definition. Two
+KEV clocks already past due (Oracle CVE-2026-21962 at **67 days** with the fix
+shipped since January 2026; GitLab CVE-2026-97229, due 11-01, Metasploit module
+referenced), one KEV due in 8 days with exploit traffic observed (Brotli
+CVE-2026-111497 — **shared by App Dev and Mobile**, hence 13 flags over 12
+stories), three dated cutovers inside 10 days (Databricks and Fabric on 11-05/06,
+PostgreSQL 14 on 11-12), three requirements already in force (Play target-API
+extension expired 11-01, Redshift TLS 1.2, Fabric's unfixable tzdb), three
+"no reachable fix for somebody" (ClickHouse ≤26.7 and Pinot ≤1.5.1 unauth RCE,
+Next.js 13/14, MongoDB's Node driver), and one *undated* November cutover
+(Snowflake Legacy Notebook execution). **The number to judge 13 against is not the
+0–3 guideline but the 14-day mean of 14.6** — today is *below* it, and the
+Longitudinal section now says so in prose generated from the series rather than
+typed. Six lanes held `ok` while carrying real CVEs and wrote out their reasoning:
+AI App Dev (checked KEV directly, found nothing from the AI/LLM stack in all 1,766
+entries, and verified every in-window advisory has a fixed version), AI Hardware
+(four NVIDIA CVEs, all local-vector with reachable fixes), BigQuery, Database
+Hardware, AI Daily, NL2SQL. BigQuery also correctly declined the 11-17 TabFM
+pricing switch — **a billing change requires nothing of the reader on the date**,
+the same rule that kept iOS 27 GA unflagged on 09-11.
+
+**Ledger health: 947 items, 229 matched, 0 double-counted.** Match rate 24.2%,
+above the recent 19–22% band, so the 09-09 length-asymmetry diagnostic was not
+needed. Dictionary 50,094 → 50,812. All 15 picks and all 5 pins landed, so
+`curate.py`'s fatal "pin not found" did not fire. `new_more` 527 of 789 — the known
+residue. Card is **33 of 37 rows sourced**.
+
+**Two cross-topic trends were each confirmed by four or more independent lanes, and
+both are about tooling rather than vulnerabilities:**
+1. **Severity is outrunning the identifier plumbing.** Three CVSS 9.5 Criticals
+   shipped with **no CVE id at all**; React's RSC RCE **returns 404 from OSV 19
+   days after publication**, so OSV-backed scanners report clean while
+   GitHub-native tooling sees it; MongoDB's cross-tenant exposure exists only as
+   release-note prose; StarRocks, Doris and SingleStore shipped real
+   information-disclosure fixes as "bug fixes". A gate keyed on CVE severity misses
+   the worst item in the window in four separate lanes.
+2. **"Upgrade" stopped meaning "remediated", in five distinct mechanisms.** Both
+   official MCP SDKs ship the new audience check **off by default** and say
+   upgrading alone changes nothing; Next.js 13/14's only fix is a transitive
+   `sharp` lockfile override; Flutter's CA fix needs a rebuild *and* a store
+   rollout; Pinot's fix demands Java 25 and drops three integrations; Fabric's bad
+   tzdb is inside a service image.
+
+**One root cause produced silent wrong answers in two unrelated products, which is
+the day's best single finding.** Four Canadian provinces moved to permanent
+standard time on 2026-11-01. Every current PostgreSQL release bundles **tzdata
+2026c**, predating the NWT (2026d) and Manitoba (2026e) changes; Fabric Spark ships
+an outdated Java tzdb in **both** runtimes and additionally fires Scheduler jobs an
+hour late. Neither fails loudly and neither is fixable by the reader. New patch row
+`tzdata-2026c-stale-wrong-local-times-no-fix`. **OLTP and Fabric found this
+independently** — the value of 19 stateless lanes is precisely that they can
+converge on a cause none of them was looking for.
+
+**The eMudhra CA compromise reached SEVEN lanes, and the delivery mechanism is the
+story.** Because most non-browser software cannot filter intermediate CAs, Go
+shipped a hard-coded `crypto/x509` denylist — re-releasing Docker, Cilium,
+Crossplane, Prometheus, Argo CD, Karpenter, GitLab and BuildKit, several with no
+other change. Python, Node, Deno, uv, NVIDIA Dynamo and Oracle's JDK each did their
+own. Datastream needs a new source CA uploaded; **Oracle added the database server
+to its alert on a Rev 2**, so anyone who read Rev 1 concluded the DB was
+unaffected. Your language runtime and your container images are now trust-store
+distribution channels with their own release cadences.
+
+### Lens findings (edition 111)
+
+**The parent's NAV and `data-chips` disagreed with each other AND with the ledger on
+four sections** — events (25 vs 20), patch (35 of 227 · 39 no-fix vs 26 of 229 · 47
+no-fix), benchmarks (24 vs 23), longitudinal (114d vs 115d) — plus "carried from
+092" in NAV against "carried from 084" in chips. Same class as 09-19 and 09-20.
+This edition drives **both** from one `NAVMETA` dict derived from
+`len(ledger[section])` and the radar's own `count_no_fix`, so the two cannot
+disagree.
+
+**Retired events now go to `retired_events` rather than being dropped.** My first
+pass removed 19 past-dated rows outright, which would have made parent keys
+unresolvable and tripped guard 2's intent. They are appended with a `retired_on`
+stamp (85 → 104 rows) and an explicit check confirms no parent event key vanished.
+
+**Three genuinely new rows, and the probe is why there were only three.** Probing
+the board for 27 of today's stories before drafting found all but four already
+tracked. New: `gitlab-110264-second-10-0-same-regex-engine` (the **second** CVSS
+10.0, 19-year affected range, and an instance patched to 19.4.2 for the KEV entry is
+still exploitable — both are really Onigmo bugs, and `Regexp.timeout` is explicitly
+*not* a mitigation), `tzdata-2026c-stale-wrong-local-times-no-fix`, and
+`snowflake-legacy-notebook-exec-disabled-nov`.
+
+**Two corrections, and the Fabric one was deliberately NOT a date change.** The
+21962 day count went 66 → 67 with the framing confirmed independently by today's
+Oracle lane. For `fabric-runtime-13-lts-ends-mar2027`, today's lane reads the same
+lifecycle page as carrying **no retirement date and no LTS footnote at all**,
+contradicting the board's 10-06 reading — the *fourth* reading of that page in
+seven editions. Recorded as a stated disagreement rather than flipped again, on the
+11-01 NIST precedent: **a date that flip-flops is worse than one carrying a stated
+uncertainty.**
+
+**Guard 5 passed on the first assembly: 755 cited units, zero uncited**, and
+`assert_table_shape` passed across 12 tables. Mechanism unchanged since 09-15 —
+every row generator calls `cite()` inline as it emits, and claims about this
+edition's own board take the dated archive fallback because a vendor URL would be a
+wrong link.
+
+**Output is 26,062 bytes smaller than the stripped parent, fully accounted for:**
+povContent −19,045 (tighter chair Reads), v-events −3,030 (19 retirements),
+v-longitudinal −3,217, v-wn −3,670, v-read −1,347, v-patch −762, against ledger
++4,981. A size drop against an inheritance parent is always worth explaining.
+
+**Scope, on the edition's face:** 111 refreshes Today's Read on all four chairs,
+Since yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all
+seven identity sites. Claim Watch, Mirror, Question Forecast, Gap Ledger,
+Benchmarks, Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor
+Dossiers **carry forward from 110 unrevised and the edition says so** — `claims[]`
+did not grow at all, because no competitor shipped a perf or price claim worth a
+card today. **The quarterly Skills/Build re-rank across all four chairs is due
+2027-01-01.**
+
+**Pages: the 09-14 rule plus the 09-21 extension paid off again.** The run-level
+aggregate read `in_progress` while the `deploy` job had already completed `success`
+at 13:57:42Z. Polling the run level would have fired a needless empty-commit
+re-trigger. Read the `deploy` job, and read its `completed_at`.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **tenth**
+consecutive week, so the Oracle Performance channel is a standing structural gap
+and the brief says so on its face. New this run: `www.oracle.com/tools/sqlcl/sqlcl-relnotes.html`
+now **404s** (it previously served), so SQLcl has no working public changelog;
+`docs.pingcap.com` returns an empty JS shell on every release-notes path, so **TiDB
+is a coverage gap, not a quiet month**; `docs.percona.com/percona-server/8.4/release-notes.html`
+404s, so **Percona Server for MySQL is uncovered**; `support.fabric.microsoft.com/known-issues/rss`
+works but **requires `-L`** and is the only route to Fabric's known issues since
+they moved off Learn. `community.fabric.microsoft.com` RSS worked first try.
+
+**Security sweep, negative result — twelfth consecutive run, byte-exact.** The
+Redshift agent fetched `behavior-changes.html` in both variants (**markdown 35,561
+/ 25 headings vs HTML 57,480 / 28 tags — identical to the 10-31 baseline**) plus
+`cluster-versions.html` both ways (136,899 / 94 vs 225,877 / 96, also identical) and
+grepped all four for `agent-toolkit`, `Skills for AI`, `AI coding assistant`,
+`search-skills`, `llms.txt`, then broadened to `skill`, `assistant`, `agent`, `MCP`:
+**zero hits in every file.** It also swept `system-table-s3-tables.html`, where the
+agent-toolkit skills repo appears **once in each variant with identical surrounding
+prose** — ordinary first-party documentation a human sees too, the opposite of the
+09-01 pattern. **No fetched page's suggestion was executed and no skill file was
+loaded by any of the 19 agents.** The affordance keeps widening: Fabric's FNTK gives
+terminal coding agents cell-level execute against a live notebook on your capacity,
+Govern Skills reach Fabric *admin* APIs, Snowflake began defaulting Cortex Agents to
+the underlying tables of any dashboard, BigQuery's `run_bq_command` has **no
+read-only mode** while being the documented route to reservation and permission
+management, and Oracle ships MCP servers whose `sql_run` executes within the
+caller's privileges. In nearly every case the stated protection is a confirmation
+prompt and the suggested control is an opt-in IAM *deny* policy nobody gets by
+default. Counterweight worth recording: the AI App Dev lane found **ten advisories
+across the two official MCP SDKs in one month**, clustering into four repeated
+failure modes — audience confusion, credentials sent to a server-chosen
+authorization server, headers re-sent across cross-origin redirects, and unbounded
+bodies/sessions. Both SDKs got all four. That is a trust-boundary audit of the MCP
+auth model, not a run of unrelated bugs.
