@@ -166,6 +166,23 @@ def assert_alias_safe(new_rows: list, parent_rows: list, label: str) -> None:
     """09-10 replacement for assert_no_regression: a fold legitimately shrinks a
     section, so assert no parent key was LOST — it must still be present as a
     key or inside some survivor's aliases[]."""
+    # 2026-10-14: TYPE CHECK FIRST. The containment check below treats "a row"
+    # as "anything in the list", so a bare key STRING appended where a row dict
+    # belonged satisfies it and the row's title/date/url are silently gone
+    # (edition 090 shipped two such strings in retired_events; found 10-13 by
+    # eye, not by a guard). A guard that iterates rows must assert each one is a
+    # dict before trusting any field of it.
+    for name, rows in (("new", new_rows), ("parent", parent_rows)):
+        bad = [(i, x) for i, x in enumerate(rows) if not isinstance(x, dict)]
+        if bad:
+            raise SystemExit(
+                f"{label}: {len(bad)} non-dict {name} row(s) "
+                f"at {[i for i, _ in bad][:5]} -> {[x for _, x in bad][:3]!r}")
+        nok = [i for i, x in enumerate(rows) if not x.get("k")]
+        if nok:
+            raise SystemExit(
+                f"{label}: {len(nok)} {name} row(s) with no key at {nok[:5]}")
+
     have = set()
     for r in new_rows:
         have.add(r["k"])
