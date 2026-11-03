@@ -12528,3 +12528,135 @@ failure modes — audience confusion, credentials sent to a server-chosen
 authorization server, headers re-sent across cross-origin redirects, and unbounded
 bodies/sessions. Both SDKs got all four. That is a trust-boundary audit of the MCP
 auth model, not a run of unrelated bugs.
+
+## Run findings 2026-11-03 (edition 112)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both
+hooks clean.** Launched 08:15 EST, briefs in between ~08:22 and ~08:33, dashboard
+published 13:41 UTC, Pages `deploy` job `success` at **13:41:51Z** — 33s after the
+push — lens v77 after. **~3,610k research tokens.** Hook logs show the healthy
+signature exactly: `artifact-allow.sh` **4 records** (list, a `read` with `path`, the
+plain `read` a republish needs, the publish), `bash-allow.sh` **342 records** — all
+`PreToolUse` at `mode=auto`, **zero `PermissionRequest` events in either log**.
+
+**The probe-before-drafting rule had its best run yet: 3 of 4 drafted corrections were
+already right on the board, and the fourth was a duplicate.** I drafted corrections for
+CVE-2026-21962's framing (already corrected 11-01, already says OHS/WebLogic not RDBMS),
+the Iceberg v4 equality-delete ban (already corrected 10-23 with the merged PR #17783),
+and Pinot's CVE class (the board already frames it as an authorization bypass, not the
+"unauth RCE" a *CLAUDE.md note* had wrong). **In every case the stale thing was prose in
+this file, not the board** — the 10-08/10-09 finding, now four-for-four. Then
+`reuse_key`'s advisory caught a drafted `variantShredding` event row against the existing
+`databricks-variant-shredding-default-nov18`, which already carried both the date and the
+DBR 15.4 breaking half. Re-asserted on the existing key instead. **Only two rows were
+genuinely new all day** (psqlodbc's 11 server-triggered CVEs, Kafka 4.4.0's two no-CVE
+data-loss bugs).
+
+**Flag calibration: 13 urgent, 12 distinct stories, and the series is the comparison.**
+Audited one at a time; all 13 survive the literal definition. Four KEV clocks already
+past due (GitLab CVE-2026-97229 due 11-01 with a Metasploit module referenced; the
+PHP2Shell pair reaching **Oracle Secure Backup** at CVSS 9.8, due 10-29 with
+`forensicTriage: Yes`; Oracle CVE-2026-21962 at 68 days), one KEV due in 7 days (Brotli
+CVE-2026-111497 — **shared by App Dev and Mobile**, hence 13 flags over 12 stories), five
+"no reachable fix for somebody" (ClickHouse 26.1–26.7, Pinot ≤1.5.1, Azure's pinned
+PgBouncer 1.25.2, MongoDB's Node SRV with no 6.x backport, Next.js 13/14), and three
+dated cutovers inside 10 days. **Today's 13 is BELOW the 14-day mean of 14.6**, and the
+Longitudinal prose says so in text generated from the series. Six lanes held `ok` while
+carrying real CVEs and wrote out their reasoning: AI Hardware (declined an AIStore CVSS
+10.0 after checking all 1,766 KEV records and finding no accelerator entry at all),
+BigQuery (declined the 11-17 TabFM switch — **a billing-model change requires nothing of
+the reader on the date**, the same rule that kept iOS 27 GA unflagged on 09-11), Database
+Hardware, AI Daily, Open Formats, NL2SQL.
+
+**Snowflake is the weakest of the 13 and is recorded as such.** Its flag is Legacy
+Notebook execution stopping "November 2026" with **no day published**. The lane argued
+the absence of a date is itself the reason — the window is open now, the cutoff can land
+on or before the 14-day bar, and the migration is not a same-day task. That is a
+defensible reading of a requirement whose date the vendor withheld, and it is the
+opposite shape from the BigQuery call above. Worth watching whether "undated but
+imminent" becomes a routine flag justification; it should stay rare.
+
+**Ledger health: 879 items, 56 exact + 177 fuzzy = 233 matched, 0 double-counted.**
+Match rate **26.5%**, above the recent 19–24% band, so the 09-09 length-asymmetry
+diagnostic was not needed. Dictionary 50,812 → 51,458. All 15 picks and all 7 pins
+landed; `curate.py`'s fatal "pin not found" did not fire. `new_more` 491 of 724.
+
+**A cross-topic duplicate reached the card and the fix removed an unsourced row at the
+same time.** Brotli appeared twice — a thin App Dev "Heads up" restatement with no link,
+and the fuller Mobile row carrying CVSS, KEV status and a source. Dropping the App Dev
+pin took the card from 35/36 sourced to **36/36** and freed a slot that a genuine row
+filled. **Prefer the row that carries the citation when the same story surfaces in two
+lanes** — the sourced one is almost always the substantive one.
+
+**Three of the 15 rows I first drafted as PICKS were actually in `ongoing`**, not `new`
+(GitLab 97229, GitLab 110264, DBR 18.2 EOS) — they are carried stories with day counts,
+so they belong in `PIN_ONGOING` where they render with "day N". `derive_lists.py write`
+reported them as misses, which is the right failure: it searches `new` for picks. **When
+a pick "misses" but the probe found the row, check which list it is in before editing
+the fragment.**
+
+### Lens findings (edition 112)
+
+**Guard 5 passed on the first assembly: 728 cited units, zero uncited**, and
+`assert_table_shape` passed across 10 tables. Mechanism unchanged since 09-15 — every row
+generator calls `cite()` inline as it emits, and claims about this edition's own board
+take the dated archive fallback because a vendor URL would be a wrong link.
+
+**`lens_extra.rewrite_pov_meta` and `lens_identity.rewrite_pov_meta` BOTH still exist.**
+The 11-02 note says they were consolidated; the tree still holds two implementations of
+the same function, so which one a build gets still depends on which module it imports.
+This build used `lens_extra`'s (the one with the unknown-viewid guard) deliberately. The
+consolidation did not land — or landed on a branch that was not the one staged today.
+
+**Staging from the newest branch by date would have been wrong again, and the 11-02 rule
+held.** Yesterday's branch (`great-clarke-k0zp5k`, 27 tool files) is the right superset;
+a 10-27 branch carries 54 files but the extra 29 are per-edition one-offs
+(`build_099.py`, `corrections_104.py`, …). **Pick by reusable-file superset, not by count
+and not by date.**
+
+**Output is 11,479 bytes smaller than the stripped parent, fully accounted for:**
+povContent −13,115 (tighter chair Reads and Since-yesterday across four chairs), v-events
+−2,130 (two retirements plus a tighter lede), v-wn −1,818, v-read −870, against v-patch
++1,986 (two new rows, twelve re-assertions) and the ledger +4,427 (corrections, new rows,
+retired_events). The residual is the closing-tag normalisation and identity-string length.
+A size drop against an inheritance parent is always worth explaining.
+
+**Two events retired to `retired_events` with a stamp** (57 live rows), and an explicit
+check confirmed no parent event key vanished — `assert_alias_safe` passed on events and
+patch both.
+
+**Scope, on the edition's face:** 112 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven
+identity sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise
+Tracker, Perf Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from
+111 and the edition says so** — `claims[]` did not grow at all, because no competitor
+shipped a perf or price claim worth a card today. **The quarterly Skills/Build re-rank
+across all four chairs is due 2027-01-01.**
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **twentieth** consecutive
+week — the Oracle Optimizer / In-Memory / Smart Scan / Exadata-monthly channel remains a
+standing structural gap and the brief says so on its face rather than reporting a quiet
+month. New and useful this run: **`raw.githubusercontent.com/pingcap/docs/master/releases/release-timeline.md`
+serves TiDB's release timeline as raw markdown** — this **supersedes the 11-02 "TiDB is a
+coverage gap" note**, which was true only of `docs.pingcap.com`'s JS shell. Also new:
+`ops.java/emudhra` — the page Oracle's own eMudhra alerts tell readers to consult — returns
+**HTTP 403 "Unexpected outage"** to WebFetch and to curl with a browser UA;
+`connor-mcdonald.com/feed/` 429s on repeated attempts, so Connor McDonald was uncovered
+this run; `oracle.com/security-alerts/cpuoct2026.html` 403s WebFetch but serves curl with
+a browser UA. `community.fabric.microsoft.com` RSS worked first try.
+
+**Security sweep, negative result — thirteenth consecutive run, and the baseline moved for
+a benign reason.** The Redshift agent fetched `behavior-changes.html` in both variants and
+grepped for `agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills`,
+`llms.txt`, then broadened to `skill`, `assistant`, `agent`, `MCP`: **zero hits in every
+file, both variants.** `cluster-versions.html` is **byte-identical** to the 10-31/11-02
+baseline (136,899 / 94 vs 225,877 / 96). `behavior-changes.html` **grew** — markdown
+35,561 → 41,482 and HTML 57,480 → 66,176 — and the growth is fully accounted for by four
+new first-party sections (MV enhancements for patch 206, cross-region snapshot auto-copy,
+`SUPER` large strings, the patch-208 user lockout) plus one item moving from Upcoming to
+Recent, every added heading present in **both** variants. **A moved baseline is not a
+finding until you account for it; this one is ordinary documentation.** One path
+correction worth keeping: `redshift/latest/dg/system-table-s3-tables.html` does not exist
+— the live page is under `/mgmt/`, where `agent-toolkit` appears once in each variant as
+ordinary first-party prose. **No fetched page's suggestion was executed and no skill file
+was loaded by any of the 19 agents.**
