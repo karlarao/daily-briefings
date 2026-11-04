@@ -12660,3 +12660,227 @@ correction worth keeping: `redshift/latest/dg/system-table-s3-tables.html` does 
 — the live page is under `/mgmt/`, where `agent-toolkit` appears once in each variant as
 ordinary first-party prose. **No fetched page's suggestion was executed and no skill file
 was loaded by any of the 19 agents.**
+
+## Run findings 2026-11-04 (edition 113)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both
+hooks clean.** Launched 08:11 EST, briefs in between ~08:20 and ~08:33, dashboard
+published 13:36 UTC, Pages `deploy` job `success` at **13:37:18Z** — 53s after the push —
+lens v78 after. **~3,940k research tokens.** Hook logs show the healthy signature
+exactly: `artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain `read`
+a republish needs, the publish), `bash-allow.sh` **320 records** (172 allow / 148 pass)
+— all `PreToolUse` at `mode=auto`, **zero `PermissionRequest` events in either log**.
+
+**`tools/handback_poll.py` had its polling loop at MODULE level, so importing it hung
+the run.** I imported it to reuse `hands()` — the only non-trivial helper in the file —
+and the `while True:` at module scope ran on import instead, costing one backgrounded
+command and a `TaskStop`. **A module whose import has side effects is not a library.**
+Fixed on this run's branch: the loop is behind `if __name__ == "__main__"`, there is a
+`status()` function and a `--once` flag for the one-shot view a run actually wants
+mid-flight, and `WANT` no longer swallows `--once` as its count argument. The one-shot
+output is also the right place to eyeball the 10-21 stub-brief tell (handback count next
+to transcript size).
+
+**The extractor undercounted exactly 2 of 19 agents — and they were the two slowest,
+which is the first time this has had an attributable cause.** 17 agents matched the
+harness notification **exactly**; `appdev` came in 7.3% low (206,049 vs 222,202) and
+`snowflake` 8.7% low (182,761 vs 200,130). Those two were also the last two to notify
+(991s and 917s against a 465–880s field). The 09-14 note described the gap as −3.5% to
++11% noise and the 11-02 note found a single draft-vs-final case; today's shape says
+something narrower: **`extract_briefs.py` reads `usage` from the last assistant record,
+so an agent that keeps working after its handback leaves a later record whose total the
+read does not capture.** Keep `apply_harness_tokens.py` — and note it is a no-op for the
+agents that stop at their handback, which is most of them. **Do not conclude it is a
+no-op from a partial harness list**: I nearly did, having compared against 17 figures
+before `snowflake` and `appdev` notified.
+
+**The `rewrite_pov_meta` consolidation DID land, and reading the file was not how I
+established it.** The 11-02 note said it was consolidated; the 11-03 note said "the tree
+still holds two implementations, so which one a build gets depends on which module it
+imports." On yesterday's branch `lens_identity.rewrite_pov_meta` is a thin wrapper that
+delegates to `lens_extra`'s, and I proved it by **execution**: `normalize_closing_tags`
+is the same object (`is` identity), and feeding the wrapper an unknown viewid reaches
+`lens_extra`'s guard and raises. So the 11-03 note is wrong about its own branch. Same
+class as the 11-03 finding that four drafted corrections were already right on the board:
+**the stale thing was the prose in this file, not the code** — now five-for-five. The
+cheap habit that settles it is running the function, not grepping for it.
+
+**Three lanes used two different names for one CVE, and the branded one reached the
+ledger.** App Dev titled CVE-2026-111497 **"Node2Shell"**; Frontend and Mobile called it
+what it is, an out-of-bounds write in the **Brotli** decoder. App Dev's own "Filtered
+out" section records that NVD's reference list for the CVE includes third-party
+branded-vulnerability promotion sites (`broccoli2shell.com`, `patchtheplanet.org/brotli`)
+and that it declined to fetch them — so the nickname arrived without the source being
+read. It would have put one CVE on the Since-yesterday card **twice under two different
+names**, which is a duplicate shape no content-word or overlap-coefficient dedupe can
+catch, because the two rows barely share vocabulary. **Prefer the CVE's actual subject
+over any nickname, and when lanes disagree on a name, that disagreement is itself the
+tell.** Excluded the branded row by hand and kept Mobile's.
+
+**Three editorial fixes to the card, and two were classes rather than one-offs:**
+- **The cross-lane Brotli duplicate above** — six rows across three lanes, one pinned.
+- **An agent self-commentary row reached `ongoing`**: Oracle's "The only
+  optimizer-adjacent primary fact I can source this window is a CVE." That is the agent
+  narrating its own coverage gap, which is valuable in the brief and is not news.
+  `COMMENTARY` filters by heading; this one sat under a news heading.
+- **The Fabric 11-06 cutover appeared in both `new` and `changed`**, and the `changed`
+  row's note read **`high → normal`** — the title-only sev heuristic moving the *wrong
+  way* on a deadline two days out, which is worse than no note. Excluded via
+  `EXCLUDE_CHANGED`. Worth remembering that `EXCLUDE_CHANGED` exists; the 09-18
+  one-story-twice finding was about `new` vs `ongoing` and this is the `new` vs `changed`
+  twin.
+
+**Flag calibration: 12 urgent, ~10 distinct stories, and 12 is BELOW the 14-day mean of
+14.7 — it ties the 8-day floor.** Last eight runs: 16, 16, 16, 12, 14, 13, 13, **12**.
+Audited one at a time; all twelve survive the literal definition. Four KEV clocks past
+due or inside six days (PHP2Shell 6d past due reaching **Oracle Secure Backup at CVSS
+9.8**, GitLab CVE-2026-97229 past due with a Metasploit module in-tree, Oracle
+CVE-2026-21962 at **69 days**, Brotli due 11-10), seven dated cutovers inside 14 days
+(DBR 18.2 EOS and DeepSeek V4 Flash both **tomorrow**, Fabric Foundry 11-06, GitHub
+brownout 11-09, .NET 8+9 EOL 11-10, PostgreSQL 14 EOL 11-12, DuckDB 1.4 and
+`variantShredding` 11-17/18), two requirements already in force (Play target API 36 since
+11-01, Redshift TLS 1.2 since 10-31), and six "no reachable fix for somebody". **Brotli
+is shared by App Dev, Frontend and Mobile and React RSC by two lanes**, hence 12 flags
+over ~10 stories. Seven lanes held `ok` while carrying real CVEs and wrote out their
+reasoning — AI Daily (declined an LM Studio 8.7 because a fix exists), AI App Dev
+(declined a **LiteLLM CVSS 10.0** because fixes shipped on all four maintained lines and
+it is licence-gated), AI Hardware (checked all 1,767 KEV records and found **no
+accelerator entry at all**, fourth consecutive window), BigQuery (declined the 11-17 TabFM
+switch — **a billing-model change requires nothing of the reader on the date**, the rule
+that kept iOS 27 GA unflagged on 09-11), Database Hardware, Open Formats, NL2SQL.
+**Snowflake is again the weakest of the twelve** and recorded as such: its flag is an
+undated November cutover. Two consecutive runs of "undated but imminent" as a flag
+justification; it should stay rare.
+
+**Ledger health: 947 items, 50 exact + 166 fuzzy = 216 matched, 0 double-counted.** Match
+rate **22.8%**, inside the recent band, so the 09-09 length-asymmetry diagnostic was not
+needed. Dictionary 51,458 → 52,189. All 15 picks and all 9 pins landed, so `curate.py`'s
+fatal "pin not found" did not fire. `new_more` 552 of 804. Card is **33 of 33 rows
+sourced** after the three exclusions, and a scripted audit for CVE ids and dated cutovers
+appearing on more than one row came back with only legitimate pairs (the GitLab KEV entry
+plus its Metasploit module; two unrelated stories sharing 11-17).
+
+**The day's best cross-lane convergence was a silent wrong-answer bug that six lanes each
+measured in their own engine.** Four Canadian provinces stopped observing DST on
+2026-11-01. Still wrong: PostgreSQL (every current release on 2026c; the jump to 2026f is
+committed on all branches and ships 11-12), **MongoDB (2026e shipped nowhere, and
+SERVER-132098 is queued for 9.0.7 and 8.3.16 but is absent from the 8.0.37 list, so 8.0
+has no queued fix)**, Redshift (2026c per patch 205), Fabric Spark (**2025c in Runtime 2.0
+and 2024a in Runtime 1.3**, both known issues still Active with no committed fix date, and
+the bad database inside a service image). Fixed: ClickHouse 26.10 (cctz 2026e) and DBR 19
+(tzdata 2026.5, shipped 11-02). The sharpest single finding is **Fabric Runtime 2.0
+carrying three different zone-database vintages in one image** — system 2025c,
+`python-tzdata` 2026.3, a third in the JVM — so a `zoneinfo` conversion and a Spark
+conversion in the same notebook cell can disagree about the same instant and neither
+throws. Turned the ledger row from an assertion into a scoreboard.
+
+**WebSearch did not bind for any lane.** Reported usage ran 1–14 calls per agent against
+the ~200 session cap, and several lanes said explicitly that primary-source WebFetch was
+the better route anyway. The launch order (search-dependent lanes first, changelog-shaped
+lanes last) stays — it costs nothing and it is the only lever if the cap returns.
+
+### Lens findings (edition 113)
+
+**`events_table.render` takes DICTS keyed by row key and returns a TUPLE, unlike anything
+else in the toolkit.** Everything else is single-return (`splice_sections`, `refresh_nav`,
+`rewrite_identity`, `write_ledger` all return html; only `assert_page_link_coverage`
+returns a count), so I passed callables and unpacked one value. Cost one cycle. Worth a
+line here because the 09-19 note already recorded the single-return convention and this is
+the exception to it.
+
+**The probe did the real work: 15 of ~18 stories drawn from the briefs were already on the
+board, and 3 of 4 drafted corrections were already right.** Only three rows were genuinely
+new — the MongoDB Node driver cross-request disclosure, the Redshift JDBC RCE, and the
+PostgreSQL `pg_trgm` GiST row loss. The dropped corrections are the instructive part:
+`fabric-runtime-13-lts-ends-mar2027` (today's Fabric lane independently reconciled the
+same four readings the board settled on 10-06 — EOS 2026-09-30 *is* real and passed, *and*
+the footnote puts 1.3 into LTS through March 2027, both halves true), `snowsight-account-host-oct16`
+(already moved to Feb 2027), and both eMudhra rows. **Also worth recording: `reuse_key`'s
+date-keyed advisory returned nothing for all three new rows, because their `due` fields are
+fix-state prose rather than dates.** That is the 09-17 limit showing again — a date-keyed
+advisory cannot surface a story tracked under a different date — which is precisely why the
+explicit noun probe runs first. The advisory is the second line of defence, not the first.
+
+**All three new rows share one property, which is what makes them a group rather than three
+items: the CVE exists and the scanner cannot see it.** CVE-2026-119179 (MongoDB Node,
+CVSS 8.3, published 11-03) — `api.osv.dev` returns "Vulnerability not found" for the GHSA,
+and the fix makes `timeoutMS` a silent **no-op**, so patching deletes every operation
+deadline the reader had. CVE-2026-119084 (Redshift JDBC, CVSS 9.2, published 11-03) — OSV
+holds only the four old advisories and **404s on the GHSA the AWS bulletin itself cites**,
+and the fix couples to a `verify-ca` → `verify-full` default flip plus a DataSource
+serialization change. `pg_trgm` — **no CVE at all**, and the fix explicitly does not repair
+existing indexes, so it needs a booked `REINDEX CONCURRENTLY` window after 11-12.
+
+**Guard 5 passed on the first assembly: 754 cited units, zero uncited**, and
+`assert_table_shape` passed across 12 tables. Mechanism unchanged since 09-15 — every row
+generator calls `cite()` inline as it emits, and claims about this edition's own board take
+the dated archive fallback because a vendor URL would be a wrong link. House style held
+too: every block embedding `cite()` output is built by concatenation with explicit `str()`,
+never `%`-formatted, because ledger prose carries literal `%` signs.
+
+**Output is 21,552 bytes LARGER than the stripped parent**, accounted for by 3 new patch
+rows, 4 substantially enriched corrections, and refreshed Event Horizon / Patch Radar /
+Longitudinal / Since-yesterday / four chair Reads, against one event retirement. A growth
+needs less explaining than a shrink, but it is still worth stating.
+
+**One event retired to `retired_events` with a stamp** (57 → 56 live, 107 retired), and an
+explicit check confirmed **all 57 parent event keys still resolve** as live rows, retired
+rows or aliases. `assert_alias_safe` passed on patch.
+
+**Scope, on the edition's face:** 113 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity
+sites (title, masthead, GEN, runbar spans, `var NAV`, povContent `meta` + `.c`, and the
+section-shell `data-chips`). Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks,
+Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward
+from 112 and the edition says so** — `claims[]` did not grow, because no competitor shipped
+a perf or price claim worth a card today. **The quarterly Skills/Build re-rank across all
+four chairs is due 2027-01-01.**
+
+**Identity verification worth knowing for the next build: this parent carries only `GEN` as
+a JS constant** — there is no `var ED` or `var DSLUG` to rewrite, and `rewrite_identity`'s
+match-exactly-once assertions pass because it finds what it expects. All 15 remaining
+"edition 112" strings in the output were classified by hand and every one is a legitimate
+diff or carry-forward label ("vs edition 112", "carried from 112", "Edition 113 against
+edition 112"), not a stale value.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **twenty-first** consecutive
+week — re-confirmed today on `/exadata/software-2026-oct` and `/exadata/rss` — so the
+Oracle Optimizer / In-Memory / Smart Scan / Exadata-monthly channel remains a standing
+structural gap and the brief says so on its face. `connor-mcdonald.com/feed/` **429'd** this
+run, so Connor McDonald was uncovered. New and useful: `api.osv.dev/v1/query` **POST** is the
+cheapest first stop for affected/fixed ranges and is uncapped — worth adding to SHARED_RULES;
+`raw.githubusercontent.com/dotnet/core/main/release-notes/releases-index.json` and
+`raw.githubusercontent.com/nodejs/Release/main/schedule.json` are authoritative, cheap EOL
+sources. New failures: `apex.oracle.com/en/learn/release-notes/` **403s**, which matters
+because APEX carries a CVSS 9.8 this month and its patch level is therefore unconfirmable
+from this VM; `pythoninsider.blogspot.com` is **dead as a source** (newest post 2026-03-03,
+blog relocated) — use `python.org/downloads/release/python-<ver>/`;
+`redshift/latest/dg/behavior-changes.html` and `.../dg/cluster-versions.html` now **302 to
+the `/dg/` landing shell** rather than to the moved page, so a monitor pinned to the `/dg/`
+paths and following redirects will diff a 2.3 KB navigation shell against itself forever and
+report "no changes" — **switch the sweep to `/mgmt/`**.
+
+**Security sweep, negative result — fourteenth consecutive run, and the baseline moved for
+a benign reason that was accounted for.** The Redshift agent fetched `behavior-changes.html`
+in both variants and `cluster-versions.html` both ways and grepped all four for
+`agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills`, `llms.txt`, then
+broadened to `skill`, `assistant`, `agent`, `MCP`: **zero hits in every file — 36 zero
+counts.** `cluster-versions` grew md +159 / HTML +194 with heading counts unchanged, fully
+accounted for by exactly one added CURRENT-track version row (`1.0.535482`, released
+2026-11-03). `behavior-changes` HTML is **byte-identical** to the 11-03 baseline while its
+markdown reads +168 bytes with the same 29 headings, all present in both variants — stated
+as **unresolved rather than as a finding**, which is the right call. `system-table-s3-tables.html`
+still has the documented benign shape: `agent-toolkit` once in each variant, inside one
+ordinary sentence a human also reads. **No fetched page's suggestion was executed and no
+skill file was loaded by any of the 19 agents.** The affordance keeps widening — Fabric's
+Govern Skills reach admin APIs with explicit *remediate* scope beside a hosted OneLake MCP
+server, Databricks is making MCP services securables while shipping SaaS MCP connectors GA
+with **read and write enabled by default** and flipping Genie connectors on by default for
+compliance-profile workspaces in December, Oracle ships MCP servers in ORDS 26.3 whose
+`sql_run` executes within the caller's privileges, BigQuery's `run_bq_command` still has no
+read-only mode, Snowflake's CLI added `snow ai claude` and `snow ai opencode`, and Android's
+`android device remote` hands an agent a physical phone from a Google device lab. The
+counterweight, from the same window: **ten advisories across the two official MCP SDKs in
+one month**, and of the fixes landed, **only the body/batch limit is on by default** — the
+token-audience check is deferred to Python 3.0, `maxToolInputElements` is the reader's to
+set, and the cross-client response leak needs an application rewrite.
