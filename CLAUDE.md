@@ -13097,3 +13097,22 @@ that explicitly covers version updates and **not security updates**. Counterweig
 the same window: **ten advisories across the two official MCP SDKs in one month**, and
 CVE-2026-111770's patch converts a silent cross-client data leak into failing requests
 until the application is restructured.
+
+## Post-run 2026-11-05 — main's CLAUDE.md is 45 editions stale, and that is why this run started blind
+
+**`main`'s CLAUDE.md stops at "Run findings 2026-09-21 (edition 070)" — 2,312 lines
+against gh-pages' 13,099.** The two copies are supposed to be identical (standing rule
+since 2026-09-04) and have diverged by **10,788 lines**. The concrete cost landed on this
+run: the session-start context carried the **09-21** file, so this run began believing
+`tools/ledger/` might not be on main, that `mikedietrichde.com` was captcha-blocked, that
+the Artifact hook had 13 consecutive clean runs rather than ~60, and knowing nothing of
+the 10-06 Fabric settlement, the 11-03 probe-before-drafting rule or the 11-04
+`handback_poll` import fix. Everything after 09-21 had to be re-read from gh-pages before
+any work could start safely.
+
+**Pushed `claude/great-clarke-wfq3f8` carrying gh-pages' full CLAUDE.md so a merge makes
+`main` current in one step.** Until that merge lands, **a session that starts on `main`
+gets 45 editions of stale memory** — which is the single highest-leverage thing to fix in
+this repo, because every wrong belief above is one a run can act on. The daily routine
+checks out `gh-pages` at step 0 and is therefore safe; an interactive session started from
+`main` is not.
