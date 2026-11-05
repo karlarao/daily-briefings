@@ -12884,3 +12884,216 @@ counterweight, from the same window: **ten advisories across the two official MC
 one month**, and of the fixes landed, **only the body/batch limit is on by default** — the
 token-audience check is deferred to Python 3.0, `maxToolInputElements` is the reader's to
 set, and the cross-client response leak needs an application rewrite.
+
+## Run findings 2026-11-05 (edition 114)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both
+hooks clean.** Launched 13:12 UTC, briefs in between ~13:19 and ~13:29, dashboard
+published 13:42 UTC, Pages `deploy` job `success` at **13:43:02Z** — 33s after the push
+— lens v79 after. **~3,880k research tokens** (second-highest; 11-04's ~3,940k stands).
+`artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain `read` a
+republish needs, the publish); `bash-allow.sh` **458 records** (235 allow / 223 pass).
+
+**Hook-log auditing has a self-referential trap: grep the event FIELD, not the
+substring.** `grep -c PermissionRequest /tmp/claude-bash-hook.log` returned **1** and
+looked like a parked-prompt event. It was my own diagnostic command: the hook logs every
+Bash call including the one auditing the log, and that command's `cmd=` field contains
+the literal string. `awk '{print $2}' | sort | uniq -c` gives the truth — **458/458
+`PreToolUse`, zero `PermissionRequest`, all `mode=auto`**. Any future "a PermissionRequest
+appeared" claim must be made on the event field; the 09-15 diagnostic is otherwise
+self-poisoning.
+
+**The spec's edition-number formula has drifted from the real lineage by 2, and the
+parent is authoritative.** The prompt says "EDITION NUMBER = count of ledger files ≤
+today (edition 001 was 2026-07-11)". Counting all ledger files gives **119**; counting
+from the stated 07-11 epoch gives **116**; the actual lineage is **114** (parent said 113
+dated 11-04). Two causes: ledger files start **2026-07-08**, before edition 001, and
+ledgers are not 1:1 with editions — a rerun skips the lens (09-04) and a same-day
+republish reuses an edition (060, 066). **Use `parent_edition + 1` and treat the
+file-count formula as stale.** It will keep drifting, so do not "fix" it by recounting.
+
+**`assert_must_show` fired, the predicate was wrong in a new way, and the failure
+uncovered a real board defect.** I put `linux-kernel-46300-kev-due-oct31` into the
+patch-radar must-show list; it is an **event** key, and the radar selects from `patch[]`,
+so the assert was correct. Chasing it found the actual problem: **CVE-2026-46300 existed
+on this board only as an event, so when its date passed it was retired on 11-02 and the
+board stopped carrying an actively-exploited kernel bug that is 5 days past due with
+`forensicTriage: Yes`.** The generalisation is the finding: **an expired KEV clock is not
+finished — it converts from a patch deadline into a triage obligation**, and a calendar
+row cannot express that. Added `linux-kernel-46300-kev-overdue-triage` to `patch[]`.
+**Rule: a KEV entry needs a patch row, not only an event row**, or the board forgets it
+on the day it becomes most serious. Worth auditing `retired_events` for other KEV rows
+that vanished the same way.
+
+**`lens_extra.rewrite_pov_meta`'s unknown-viewid guard earned its place.** I passed it
+the full 15-entry NAV map; `povContent["meta"]` holds only the **8 chair-flipped**
+viewids (`v-read`, `v-wn`, `v-claims`, `v-mirror`, `v-questions`, `v-gaps`, `v-skills`,
+`v-build`) because the shared sections are chair-independent and not in it. It named all
+seven unknown ids and refused. That guard exists because the 09-20 version matched
+nothing and passed silently; it is now the reason a wrong call is loud. **`refresh_nav`
+takes all 15; `rewrite_pov_meta` takes the 8.**
+
+**Two lanes read the same vendor site and reached opposite conclusions about a date, and
+the honest handling was to record it rather than pick.** Databricks verified
+`variantShredding`'s **2026-11-18** flip and the DBR 15.4 read/write break from the
+*what's-coming* pages on AWS **and** Azure; Open Formats read the *variant-shredding
+feature doc* and reports **no vendor page names 11-18 at all**, quoting that shredding is
+already automatic from DBR 17.3. Both cite `docs.databricks.com`. The row keeps the
+day-precise date with the conflict on it (the 09-15 precedent), and the deciding argument
+is that **the reader action is identical either way** — inventory 15.4 compute and VARIANT
+columns, move 15.4 → 16.4+ — so the dispute does not change the advice. Both rows went on
+the Since-yesterday card, adjacent, deliberately. Open Formats also supplied the half
+neither vendor page states: `variantShredding` is a **reader** feature, so `delta-rs` /
+`deltalake` Python fails hard rather than degrading.
+
+**Brotli appeared TEN times across FOUR lanes, and the ongoing-vs-ongoing dedupe cannot
+catch it.** `CVE-2026-111497` produced rows in App Dev, Frontend, Mobile and DevOps —
+each a lead row plus a "## Heads up" restatement. `curate.py`'s ongoing dedupe is
+**same-topic only**, so cross-lane duplication needs explicit `EXCLUDE_ONGOING`. Pinned
+the **Frontend** row (it carries both CVSS scorings, the KEV dates and the mechanism) and
+excluded the other seven. Prefer the row that carries the most complete severity framing,
+not merely the first one found.
+
+**Two stories existed in BOTH `new` and `ongoing` with different wording — the 11-03
+shape, twice in one run.** DBR 18.2 EOS and the GitHub Actions brownout each appeared as
+a full `new` paragraph and a terse dated `ongoing` line. Resolved per story rather than by
+rule: DBR 18.2 went to **PICKS** (the `new` row confirms both the AWS and Azure matrices),
+the brownout was **pinned from `ongoing`** (that row carries the exact 16:00–18:00 UTC
+window, which is the actionable detail). `derive_lists.py write` reported both as misses
+in the list I first put them in, which is the right failure.
+
+**`EXCLUDE_CHANGED` fired for the third consecutive run on the same shape.** The
+title-only `sev` heuristic rated Gateway API v1.7.0 **"urgent → normal"** on a release
+that *removes three feature names* — a removal is not a de-escalation, and a wrong note is
+worse than no note. One `changed` row survived, and it is genuine movement: MongoDB
+CVE-2026-119179 **high → urgent**.
+
+**The harness-token overlay moved only +0.35% this run, and the 11-04 note explains
+why.** `apply_harness_tokens.py` patched 19/19 for a net **+13,616** on 3.88M. The 11-04
+finding was that the extractor reads `usage` from the last assistant record, so it
+undercounts an agent that keeps working **after** its handback — that day two slow agents
+came in 7–8% low. Today no agent did, so the extractor tracked the harness almost exactly.
+**Keep the overlay: it is a no-op precisely when nothing went wrong, which is not the same
+as being unnecessary.**
+
+**Ledger health: 966 items, 60 exact + 186 fuzzy = 246 matched, 0 double-counted.** Match
+rate **25.5%**, above the recent 19–24% band, so the 09-09 length-asymmetry diagnostic was
+not needed. Dictionary 52,189 → 52,909. All 12 picks and all 10 pins landed; `curate.py`'s
+fatal "pin not found" did not fire. `new_more` 537 of 781. Card is **28 of 28 rows
+sourced**, and a scripted audit for identifiers on more than one row returned only
+legitimate pairs (three unrelated stories sharing 11-17; the deliberate 11-18 conflict
+pair; one App Dev row that mentions the Brotli CVE while actually being the .NET
+patch-volume story).
+
+**Flag calibration: 12 urgent, 7 ok, 0 slow — below the 14-day mean of 14.6 and tied with
+11-04 at the 9-day floor.** Last eight runs: 16, 16, 12, 14, 13, 13, 12, **12**. The
+day's weight is in **expired** clocks rather than volume: three KEV entries already past
+due (GitLab CVSS 10.0 with a Metasploit module, the PHP2Shell pair reaching Oracle Secure
+Backup at 9.8, the Linux kernel bug chained to root webshells), two of them with
+forensic-triage obligations. Seven lanes held `ok` while carrying real CVEs and wrote out
+their reasoning — **AI Hardware pulled the full 1,768-entry KEV catalog and found zero
+NVIDIA and zero AMD entries**; BigQuery declined the 11-17 TabFM switch for the third
+consecutive run on the rule that a billing change requires nothing of the reader on the
+date; AI Daily declined the vLLM/MLflow/LiteLLM batch as 8–9 days old with shipped fixes.
+
+### Lens findings (edition 114)
+
+**Probe-before-drafting had its best run yet: of roughly twenty stories drawn from the
+briefs, all but TWO were already on the board.** The work went into **10 enrichments and
+corrections** against 1 new event and 1 new patch row. Two probe lessons worth keeping:
+**probe the noun, not the camelCase identifier** — `variantShredding` returned nothing
+because the key spells it `variant-shredding` — and the PgBouncer SCRAM auth bypass was
+not only already tracked but tracked **more richly than today's brief**, which found the
+Azure 1.25.2 pin while the board also carries a larger stranded Debian 12/13 population.
+
+**One correction went the other way for the first time in six runs: the stale thing was
+the BOARD, not this file.** Edition 113 recorded MongoDB 8.0 as having no queued tzdata
+fix; SERVER-132098 is Closed/Fixed with fix versions including **8.0.37** — queued, merely
+unreleased. The 11-03/11-04 streak of "my prose was stale, the board was right" was five
+for five; this breaks it, which is a useful reminder that the habit is *check*, not
+*assume the board wins*.
+
+**tzdata re-measured across six engines, and the scoreboard moved in both directions.**
+**ClickHouse 26.10 is the only engine that closed it** (cctz 2026d then 2026e, naming
+`America/Winnipeg`, `America/Rainy_River`, `Canada/Central`). **DBR 19 is half-fixed** —
+its 11-02 update moved `tzdata` to 2026.5, which *is* the Canadian fix, but on the
+**Python** side only; Spark SQL runs on the JVM tzdb and no JDK change is listed, so
+`zoneinfo` and a Spark conversion in one notebook cell can disagree and neither throws.
+PostgreSQL has 2026e + 2026f committed on all branches, unreleased until 11-12. And the
+affected-zone list **grew**: tzdata 2026f adds **Cuba / `America/Havana`**, which did not
+fall back on 11-01 and stays on −04 until 2027-11-07. Nobody was watching that one.
+
+**Guard 5 passed on the first assembly: 759 cited units, zero uncited** — fourth
+consecutive edition, and `assert_table_shape` passed across 10 tables. Mechanism unchanged
+since 09-15: every row generator calls `cite()` inline as it emits, and claims about this
+edition's own board take the dated archive fallback because a vendor URL would be a wrong
+link. House style held — every block embedding `cite()` output is built by concatenation
+with explicit `str()`, never `%`-formatted.
+
+**Output is 29,010 bytes LARGER than the stripped parent, fully accounted per-part:**
+`lensLedger` +11,538 (ten enrichment paragraphs plus two new rows), v-patch +9,043 (the
+new kernel row and twelve re-assertions), povContent +4,788 (v-read and v-wn refreshed on
+four chairs), v-events +3,050, v-read +610, v-wn +371, runbar +64, against v-longitudinal
+−467. Residual 13 bytes is identity-string length. A growth needs less explaining than a
+shrink, but it is still worth stating.
+
+**`strip_host_wrapper` took the stored copy to ZERO closing pairs, exactly as the 09-19
+note predicts, and `normalize_closing_tags` restored exactly one.** Asserted both at the
+end (`</html>`=1, `</body>`=1) rather than trusting it.
+
+**Identity: all seven sites verified, and the 20 remaining "edition 113" / 19 "2026-11-04"
+strings were classified by hand rather than left to the guard.** Every one is legitimate:
+"vs edition 113" (9), "carried from 113" (29 in NAV), ed.113 correction records (5), the
+retired Vitess row's own 2026-11-04 date, `last_seen` stamps in the ledger JSON, the
+Longitudinal table's 11-04 row, and two real upstream dates that happen to be 11-04 — the
+`pg_trgm` fix commit and the ORDS 26.3.1 release. Zero stale runbar, zero stale title.
+
+**Scope, on the edition's face:** 114 refreshes Today's Read on all four chairs, Since
+yesterday, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity
+sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker,
+Perf Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 113 and
+the edition says so** — `claims[]` did not grow at all, because no competitor shipped a
+perf or price claim worth a card today. **The quarterly Skills/Build re-rank across all
+four chairs is due 2027-01-01.**
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **twenty-second**
+consecutive week, so the Oracle Optimizer / In-Memory / Smart Scan / Exadata channel is a
+standing structural gap and the brief says so on its face rather than reporting a quiet
+month — the Oracle lane has **no `## Performance` section** as a direct result.
+**CORRECTION to the standing note: `mikedietrichde.com` is READABLE AGAIN** — both its RSS
+and its article HTML return 200 to curl with a browser UA (141 KB of real markup), though
+WebFetch still returns empty; it supplied four of today's Oracle items and is currently
+the only working substitute for the dark Oracle blogs. `connor-mcdonald.com/feed/`
+**429'd** on two spaced attempts, so Connor McDonald was uncovered. Jonathan Lewis
+(2026-06-26) and Tanel Poder (2026-04-10) were checked and are genuinely dormant. Also
+dead this run: `ops.java/emudhra` 403 to both routes, `apex.oracle.com` release notes 403
+(so the APEX 9.8's patch level is unconfirmable from this VM), `oracle.com/tools/sqlcl/
+sqlcl-relnotes.html` 404. New and useful: `docs.percona.com/percona-server/8.4/
+release-notes/release-notes-index.html` works (the `release-notes.html` form 404s), so
+**Percona Server for MySQL is coverable after all**; `raw.githubusercontent.com/postgres/
+postgres/<branch>/src/timezone/data/tzdata.zi` reports the bundled tzdata version in its
+first line, which is the cheapest possible check for the recurring timezone question.
+
+**Security sweep, negative result — fifteenth consecutive run, and the baseline moved for
+a benign reason that was accounted for.** The Redshift agent fetched `behavior-changes.html`
+and `cluster-versions.html` in both the markdown and HTML variants under the corrected
+`/mgmt/` paths and grepped all four for `agent-toolkit`, `Skills for AI`, `AI coding
+assistant`, `search-skills`, `llms.txt`, then broadened to `skill`, `assistant`, `agent`,
+`MCP`: **zero hits in every file**. `behavior-changes` markdown grew 34,132 → **41,650**
+(+7,518) and 24 → **29** headings; all five new headings are named, dated, human-visible
+AWS sections — patch-206 MV enhancements, cross-region snapshot auto-copy, SUPER large
+strings, patch-208 user lockout — present in **both** variants. **A moved baseline is not
+a finding until you account for it.** The one known non-zero sighting is unchanged and
+benign: `system-table-s3-tables.html` under `/mgmt/` contains `agent-toolkit` once in each
+variant, i.e. parity, which is the structural opposite of the 2026-09-01 injection. Four
+lanes separately sighted first-party `llms.txt` advertisements on MongoDB, MariaDB and
+Snowflake docs and treated them as data. **No fetched page's suggestion was executed and
+no skill file was loaded by any of the 19 agents.** The affordance keeps widening —
+Databricks taking SaaS MCP GA with **read and write on by default** and flipping Genie
+connectors on by default for *compliance-profile* workspaces in December, Oracle shipping
+ORDS MCP with an ungated `sql_run` in 26.2 and only making it disableable in **26.3.1
+(2026-11-04)**, GitHub shipping Dependabot support for an agent-skills package manager
+that explicitly covers version updates and **not security updates**. Counterweight from
+the same window: **ten advisories across the two official MCP SDKs in one month**, and
+CVE-2026-111770's patch converts a silent cross-client data leak into failing requests
+until the application is restructured.
