@@ -13116,3 +13116,230 @@ gets 45 editions of stale memory** — which is the single highest-leverage thin
 this repo, because every wrong belief above is one a run can act on. The daily routine
 checks out `gh-pages` at step 0 and is therefore safe; an interactive session started from
 `main` is not.
+
+## Run findings 2026-11-06 (edition 115)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 08:13 EST, briefs in between ~08:19 and ~08:33, dashboard published 13:41 UTC,
+Pages verified live at **13:43:35Z** (~2m23s after the push), lens v80 after. **~3,900k research
+tokens**, second-highest ever (11-04's ~3,940k stands). Hook logs show the healthy signature
+exactly: `artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain `read` a
+republish needs, the publish), `bash-allow.sh` **425 records** (186 allow / 239 pass) — all
+`PreToolUse` at `mode=auto`, **zero `PermissionRequest` in either log**, audited on the event
+FIELD via `awk '{print $2}'` per the 11-05 self-poisoning lesson.
+
+**`*.github.io` IS REACHABLE FROM THE RUN VM — the stored prompt's step-5b instruction is now
+wrong, and the better verification is a sha256 comparison.** The spec says "do NOT verify by
+fetching the public URL, because the run VM's egress policy blocks *.github.io
+(host_not_allowed)". Measured today: `curl https://karlarao.github.io/daily-briefings/claude.html`
+returns **HTTP 200**, and the served bytes were **byte-identical to the committed file**
+(sha256 `7ffd166a…`, 752,323 B both sides). That is strictly stronger evidence than any API
+field, and it also let me watch for the cutover with an `until` loop on `size_download` rather
+than polling GitHub. **Use it.** It also settled the API-lag question in the same run: the
+`deploy` job's own `status` still read `in_progress` with no `completed_at` while the live site
+was already serving the new build — the 10-21 finding reproduced, and the reason not to fire the
+3-minute re-trigger. Keep reading the `deploy` job, but treat the public URL as the authority.
+
+**BOARD DEFECT, the most consequential thing fixed this edition: a CVSS 8.1 with NO fixed
+release was rendered as "resolved".** `patch/parquet-cve-2026-73334-no-fix` — the key said
+`no-fix` while its `due` field read literally **"resolved 2026-09-04"**, and the radar renders
+the `due` field, so the board was telling a reader this was done. Versions 1.12–1.18 are all
+affected, **1.18.1 is the newest GA and is itself affected**, 1.18.2 RC2's release rationale
+never mentions the CVE, and NVD projects the fix "presumably in version 1.19" with no date.
+**The cause generalises: 2026-09-04 is when 1.18.1 GA'd and resolved the SEPARATE parquet
+corruption story, and that resolution bled across during the 09-15 six-row fold. A fold that
+merges rows sharing a version number can carry the wrong resolution with it.** Audit other
+folded groups for the same contamination.
+
+**SECOND INSTANCE of the 11-05 defect class, found by probing rather than by luck.** The 11-05
+note recorded that `CVE-2026-46300` existed only as an *event*, so when its date passed it was
+retired and the board stopped carrying an actively-exploited kernel bug. Today the identical
+thing had happened to **GitLab CVE-2026-97229** (CVSS **10.0**, `forensicTriage: Yes`): it lived
+in `retired_events` as `gitlab-97229-kev-due-nov1`, retired when 2026-11-01 passed. Promoted to
+a `patch[]` row with its alias preserved. **The rule earns restating: a KEV entry needs a patch
+row, not only an event row** — and the `retired_events` audit the 11-05 note queued came back
+**clean** (zero KEV-ish retired events lacking a patch twin), so the 11-05 fix had closed the
+only *then-existing* gap; this one was created afterwards by 11-01 passing. The audit is worth
+re-running every run, not once.
+
+**A correction to a claim this board got from US, not from a vendor — and that is the class to
+watch.** Edition 114 recorded that `variantShredding` being a reader feature meant
+`delta-rs`/`deltalake` Python "fails hard rather than degrading". Today's Open Formats lane
+corrected its own prior finding from source: `delta-kernel-rs` **v0.24.0 (2026-05-29)** already
+implemented it ("Tables enabling it are read and written instead of rejected as an unsupported
+feature"), confirmed in v0.28.0 where `VARIANT_SHREDDING_INFO` is `ReaderWriter` /
+`KernelSupport::Supported`. The real defect is narrower and worse-shaped: **delta-rs's own public
+`TableFeatures` enum knows only `variantShredding-preview`** and the unclassified arm is a
+**`panic!`, not an error**, surfacing as `PanicException` through PyO3 — saying "unsupported"
+about a feature the kernel supports. Root cause: **delta-rs pins a FORK of the kernel**
+(`buoyant_kernel` 0.28.1, published 2026-09-21) while upstream is 0.30.1. **Lesson: a "neither
+vendor page states this" finding is exactly the kind that goes stale silently, because nobody
+re-checks the half that came from us rather than from a vendor.** The lane also refused to close
+what it could not verify — nothing proves delta-rs *decodes* the shredded layout correctly.
+
+**The `variantShredding` conflict is THREE-WAY, not two-way, and the second disagreement changes
+the advice.** The 11-05 note framed it as two lanes disagreeing about a *date*. Both lanes today
+read both surfaces and found: (1) date — what's-coming (AWS *and* Azure) says 2026-11-18, the
+feature doc says none; (2) **upgrade target — what's-coming says 16.4+, the feature doc says
+17.3+ is required**, so following the vendor's own remediation to 16.4 may not be enough; (3) the
+feature doc **recommends DBR 18.1, which reached EOS 2026-09-11**. **Resolution: do not pick a
+date, pick the action — 17.3 LTS**, the only target satisfying both claims and the Jan-2027 AI
+Functions floor.
+
+**The tzdata scoreboard was too coarse and is now built on three axes.** "1 fixed, 1 half, 4 not"
+hid the two distinctions that matter: **Canada (2026e) vs Cuba (2026f)**, and **who owns the
+tzdb**. Canada closed on two engines (ClickHouse 26.10; **DuckDB 2.0.0**, new today, whose
+generated header reads 2026e at the tag and **2026f on `main`**); **Cuba closed on none**.
+Vendor-acknowledged now, not just measured by us: Microsoft known issue **2017** for *both*
+Fabric Spark runtimes (no fix date; image carries conda `tzdata` **2025c** beside
+`python-tzdata` 2026.3 — three vintages), and **Cloud SQL told customers the remedy is
+customer-initiated**. **And the genuinely new axis: Doris and StarRocks read the HOST tzdb**
+(`/usr/share/zoneinfo`, `TZDIR`-overridable; StarRocks pins cctz with no bundled dataset), so
+**no engine release will ever fix them — rebuild the container image.** Same class: PostgreSQL
+packages built `--with-system-tzdata`. Honestly unverified and recorded as such: Trino, Pinot,
+Druid and SingleStore take theirs from the JDK.
+
+**TWO NEW STANDING CATEGORIES, each measured independently by four or more lanes.**
+1. **"Reachable fix, invisible tooling"** — distinct from the long-running "no reachable fix for
+   you" register (40 rows). A CVSS 9.5 unauth RCE with **no CVE id at all**; the KEV-listed
+   Brotli CVE whose canonical OSV record has **no package identity**, only GIT ranges; a Redshift
+   GHSA that **404s out of GitHub's global DB** so Dependabot stays silent; two High fastlane
+   advisories returning zero from a RubyGems query; five MongoDB driver CVEs absent from OSV with
+   a companion flaw carrying **no CVE/GHSA/OSV anywhere**; `llama-index-core` flooring `banks`
+   *below* its patched version; **Mongoose 8.x pinning `mongodb ~6.20.0`** so `npm update` can
+   never reach the fix. The lanes converged on the corollary unprompted: a green `osv-scanner` is
+   weak evidence, and the remedy is per-vendor feeds — the opposite of tooling consolidation.
+2. **Severity unreadable by a CVSS gate** — Android's November bulletin rated **216 CVEs with no
+   CVSS at all**, Apple shipped 163 with no scores, Brotli is **9.8 (NVD) / 9.2 (Google) / 8.1
+   (Microsoft)** and **CISA's KEV entry and the CNA describe different bugs**, and a Redshift JDBC
+   RCE is 8.1 High vs 9.2 Critical on opposite attack-complexity readings.
+
+**Flag calibration: 14 urgent, 5 ok, 0 slow — which is AT the 14-day mean of 14.5, not a high.**
+Last eight runs: 16, 12, 14, 13, 13, 12, 12, **14**. Worth stating because the raw count reads
+heavy: the weight is in deadlines **already in force or expired**, not approaching ones — four
+obligations on 2026-11-10 (Brotli KEV, .NET 8 LTS *and* .NET 9 EOS, Go security), Node on 11-11,
+PG14's last release on 11-12, plus **six expired KEV clocks**. Five lanes held `ok` while carrying
+real CVEs and wrote out their reasoning — **AI Hardware pulled the full 1,768-entry KEV catalog
+and found zero NVIDIA and zero AMD entries**, holding `ok` on a CVSS 8.4 because every vector is
+local with a fix; BigQuery declined the 11-17 TabFM switch for a fourth run on the rule that a
+billing change requires nothing of the reader on the date.
+
+**An agent flagged its own judgement call for review, and upholding it was right.** The MongoDB
+lane set `urgent` on a CVE that is patched upstream and **not** in KEV, then said so explicitly
+and offered the downgrade argument. Upheld: the SRV companion flaw has **no 6.x fix and no
+identifier in any database**, and the Mongoose pin makes the CVE fix unreachable by normal
+dependency maintenance — squarely the "no reachable fix for somebody" clause. **An agent that
+surfaces the weakest link in its own reasoning is doing the job; the answer is to adjudicate it,
+not to defer to it.**
+
+### Tooling findings
+
+**`rewrite_pov_meta` refused the build, and it was right — I had made it redundant.** I set
+`P["meta"]` by hand while refreshing `povContent`, so by the time the guard ran there was nothing
+left to change and it raised "changed 0 of 32 entries — a check that matches nothing is not a
+check". **The fix is to let the guard own that rewrite: one implementation, not two.** This is
+the 09-20 guard doing exactly what it was added for.
+
+**`assert_not_parent_identity`: the house convention for a backward reference is `ed. NNN`, and
+do NOT pass `check_date=True`.** My prose said "Edition 114 recorded that…" and the guard
+refused it as an unqualified parent-identity assertion; `_BACKREF` accepts a lead ending in
+`ed.`, `edition`, `vs`, `carried from`, `against`, `since`. Separately I passed `check_date=True`
+thinking it was more rigorous — **it is over-tightening a deliberately scoped guard**, whose own
+docstring explains the date check is off because "a lens REPORTS dates for a living" and the
+genuine date positions are covered by `assert_identity_consistent`. Respect the scoping.
+
+**BUILD ORDER: regenerate the shared sections AFTER the ledger corrections, because the events
+table renders each row's own prose.** I corrected a row's wording, regenerated the chairs and
+assembled — and the guard caught the stale string still present, because `v-events` HTML had been
+generated from the pre-correction ledger. Same shape as the 09-14 rule ("corrections must be
+applied to the ledger, before section generation"), one layer deeper: **after correcting the
+ledger, re-run every generator that embeds row prose, not just the authored sections.**
+
+**`ledger.py --out` is a FILE path, not a directory, and `--dry-run` guards the `keys.json` write
+but NOT the whatsnew write.** A dry run with a directory `--out` crashed *after* printing a
+`stamp:` line, which looks alarming — `keys.json` was untouched (`git status` clean, 52,909
+entries, zero stamped today) because line 590 is `if not a.dry_run:`. **The stamp line is
+computed in memory and reported even in a dry run; verify with git rather than inferring from
+the log.** Also: `assert_must_show(shown, must_show)` takes **row dicts**, not keys.
+
+**`curate.py`: all SEVEN raw `changed` rows were title-only sev artifacts, and today every one
+moved in the WRONG direction — so `changed` ships empty.** Fourth consecutive run on this shape
+and the first where it is unanimous: "high → normal" on a **.NET 8 LTS EOS four days out**,
+"urgent → high" on an **expired KEV with forensic triage**, "urgent → high" on a list of
+*removals*, "normal → urgent" attached to "2.0.0 shipped" when the urgency belongs to 1.4's EOS.
+Per the 11-05 rule a wrong note is worse than no note. The .NET fact survives because **the same
+story also existed in `new` with better wording** (".NET 8 is the LTS, which is the surprising
+half") — the 11-03 shape again, resolved by picking the `new` row and excluding the `changed` one.
+
+**Cross-lane duplication needed THREE exclusions this run, and one slipped past the first pass.**
+`curate.py`'s ongoing dedupe is same-topic only, so Brotli produced rows in App Dev, Frontend and
+DevOps; I excluded two, re-curated, and a **third** devops row survived under different wording
+("Brotli decoder out-of-bounds write"). Also folded a duplicate PgBouncer pair. **Verify by
+grepping the finished card for the identifier, not by trusting the exclude list.** Pinned the
+App Dev row (three scorings + the NativeAOT republish trap + the runtime fix matrix).
+
+**The harness-token overlay earned its keep on exactly one agent, which is the 11-04 finding
+reproduced.** 18 of 19 agents matched the harness **exactly**; only `devops` came in **9.2% low**
+(240,136 vs 264,373) — and devops was the slowest at 18.9 min. The extractor reads `usage` from
+the last assistant record, so it undercounts an agent that keeps working after its handback.
+**Net +24,237 on 3.88M: a no-op for 18 agents and a real correction for the one that needed it.**
+
+**Probe-before-drafting: 5 of 12 drafted rows were already on the board, and the probe found two
+defects I was not looking for.** Already tracked: Snowflake `AUTO_SUSPEND`, the GHA
+`pull_request_target` brownouts, DuckDB 1.4 EOS, the TabFM rows, PgBouncer. The probe
+additionally surfaced the retired-GitLab-KEV row and the duplicate PgBouncer pair. At 115
+editions "already on the board" remains the normal case — and the advisory pays for itself twice
+over by showing you what is *wrong* with what is already there.
+
+**Guard 5 passed on the first full assembly: 787 cited units, zero uncited** — fifth consecutive
+edition. Mechanism unchanged since 09-15: every row generator calls `cite()` inline as it emits,
+and claims about this edition's own board take the dated archive fallback. `assert_table_shape`
+passed across 10 tables. Output is **+54,806 B** over the stripped parent, fully accounted:
+`lensLedger` +20,002, `povContent` +16,936, v-events +10,364, v-read +6,285, v-patch +812,
+v-longitudinal +174, v-wn +186, runbar −106, residual +153. `strip_host_wrapper` took the stored
+copy to **zero** closing pairs exactly as the 09-19 note predicts and `normalize_closing_tags`
+restored exactly one, asserted at the end.
+
+**Scope, on the edition's face:** 115 refreshes Today's Read and Since-yesterday on all four
+chairs, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity sites.
+Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals,
+Build Radar, Skills Radar and Vendor Dossiers **carry forward from 114 and the edition says so**
+— `claims[]` did not grow, because the day's research was overwhelmingly deadlines, expired KEV
+clocks and scanner blindness rather than competitive perf/price claims. **The quarterly
+Skills/Build re-rank across all four chairs is due 2027-01-01.**
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **twenty-third** consecutive
+week, so the Oracle Optimizer / In-Memory / Smart Scan / Exadata channel is a standing structural
+gap — and today it cost a verifiable item: the Oracle lane **could not confirm the October Exadata
+maintenance releases and refused to assert version numbers it could not read**, which is the
+right call and the clearest demonstration yet of what the blackout costs. `mikedietrichde.com`
+remains **readable** (curl with a browser UA) and supplied three first-hand upgrade landmines
+(23.26.3 minimum-SGA/ORA-821, ORA-02380 `ORA_STIG_PROFILE`, `ORACLE_PDB_SID` breaking
+AutoUpgrade). `connor-mcdonald.com/feed/` 429'd again. New and useful:
+**`cloud.google.com/bigquery/pricing` serves fully (4.2 MB) to curl with a browser UA** even
+though WebFetch returns only the page title — that route is how both BigQuery pricing findings
+were read. **Trap worth recording: `github.com/googleapis/python-bigquery` releases.atom and
+CHANGELOG are stale at 3.40.1 (2026-02-12) because the package migrated into the
+`googleapis/google-cloud-python` monorepo** — the live changelog is
+`raw.githubusercontent.com/googleapis/google-cloud-python/main/packages/google-cloud-bigquery/CHANGELOG.md`,
+and PyPI JSON catches the discrepancy cheaply. That is a caveat on the standing
+"releases.atom works via WebFetch" note.
+
+**Security sweep, negative result — sixteenth consecutive run, with full baseline accounting.**
+The Redshift agent fetched `behavior-changes.html` and `cluster-versions.html` in both the
+markdown and HTML variants under `/mgmt/` and grepped all four for `agent-toolkit`,
+`Skills for AI`, `AI coding assistant`, `search-skills`, `llms.txt`, then broadened to `skill`,
+`assistant`, `agent`, `MCP`: **zero hits in every file**. `behavior-changes` markdown is
+**byte-identical to last run** at 41,650 / 29 headings; `cluster-versions` markdown **grew**
+131,801 → **137,058** (92 → 94 headings) and the growth is accounted for by the named, dated
+`patch 205` and `patch 206` sections, **confirmed present in both variants** — a moved baseline
+is not a finding until you account for it. The known benign sighting re-verified at exact parity:
+`system-table-s3-tables.html` carries `agent-toolkit` once in *each* variant, the structural
+opposite of the 2026-09-01 injection. **No fetched page's suggestion was executed and no skill
+file was loaded by any of the 19 agents.** The affordance keeps widening — Databricks taking SaaS
+MCP GA with **read and write on by default** and flipping Genie connectors on by default for
+*compliance-profile* workspaces in December, Oracle's ORDS `sql_run` only becoming disableable in
+**26.3.1 (2026-11-04)**, Fabric replacing a retiring Foundry integration with an MCP endpoint
+whose own migration sample sets `require_approval="never"`. Counterweight worth recording:
+Databricks is also screening MCP tool **results**, not just calls, which is the only control that
+catches a server rewriting its own metadata after being trusted.
