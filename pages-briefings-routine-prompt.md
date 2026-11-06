@@ -241,10 +241,11 @@ Publish by committing the built dashboard onto gh-pages and pushing:
   • Publishing is NOT complete when `git push` succeeds — it is complete only when the
     Pages DEPLOYMENT for that commit succeeds. The GitHub Pages "build and deployment"
     step fails/stalls intermittently and leaves the live site on the PREVIOUS build.
-    VERIFY the deployment from the GitHub side (see RUN PROCEDURE step 5b) — do NOT
-    verify by fetching the *.github.io URL, because the run VM's egress policy blocks
-    *.github.io. If the deploy failed or stalled, re-trigger with an empty commit; a
-    persistent deploy failure IS the news → notify.
+    VERIFY the deployment (see RUN PROCEDURE step 5b). The STRONGEST check is to fetch
+    the public *.github.io URL and compare its bytes to the file you committed — that
+    egress is NOT blocked (measured 2026-11-06: HTTP 200, and the served bytes were
+    byte-identical to the commit). If the deploy failed or stalled, re-trigger with an
+    empty commit; a persistent deploy failure IS the news → notify.
 Public URL (after Pages enabled): https://karlarao.github.io/daily-briefings/claude.html
 If git push fails (auth/network), send one notification saying so — that failure IS the news.
 
@@ -553,9 +554,29 @@ If git push fails (auth/network), send one notification saying so — that failu
 5b. VERIFY THE PAGES DEPLOYMENT (do NOT trust push success alone).
    A push landing on gh-pages does NOT mean the page updated — the GitHub Pages
    "pages build and deployment" step fails/stalls intermittently and leaves the live
-   site serving the PREVIOUS build. You also CANNOT verify by fetching the public
-   URL: the run VM's egress policy blocks *.github.io (host_not_allowed). Verify from
-   the GitHub side:
+   site serving the PREVIOUS build.
+
+   VERIFY THE PUBLIC URL FIRST — it is reachable, and it is the only authority that
+   cannot lag. (Corrected 2026-11-06: this step used to say the run VM's egress policy
+   blocks *.github.io with host_not_allowed. It does not. Measured: `curl` of
+   https://karlarao.github.io/daily-briefings/claude.html returned HTTP 200 and the
+   served bytes were BYTE-IDENTICAL to the committed file, same sha256.) So:
+     - sha256 the file you just committed, then fetch the public URL and compare. Equal
+       bytes == published, full stop. No API field can contradict that.
+     - To wait for the cutover without busy-polling an API, loop on the response size
+       until it matches the committed size, e.g.
+         until [ "$(curl -sS -o /dev/null -w '%{size_download}' <url>)" = "<bytes>" ]; \
+           do sleep 20; done
+       (do NOT start that compound with a VAR= assignment — see SHARED RULES).
+     - EXPECT THE GITHUB API TO LAG BEHIND THE LIVE SITE. Measured twice (2026-10-21 and
+       again 2026-11-06): the `deploy` job still reported status "in_progress" with no
+       `completed_at`, and the run-level `updated_at` was frozen, while the public URL
+       was ALREADY serving the new build. Polling status and firing the 3-minute
+       re-trigger on that evidence costs a needless Pages build — the 2026-09-12
+       mistake. Never re-trigger while the public URL disagrees with the API.
+
+   The GitHub-side check below is still useful as a secondary signal and for diagnosing
+   a genuine failure:
      - Poll the "pages build and deployment" workflow run whose head_sha == DEPLOY_SHA
        (via the GitHub API/MCP: list workflow runs, event=dynamic, branch=gh-pages;
        match head_sha; read status/conclusion), or the Pages deployment/build-status
