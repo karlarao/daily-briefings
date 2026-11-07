@@ -241,10 +241,11 @@ Publish by committing the built dashboard onto gh-pages and pushing:
   • Publishing is NOT complete when `git push` succeeds — it is complete only when the
     Pages DEPLOYMENT for that commit succeeds. The GitHub Pages "build and deployment"
     step fails/stalls intermittently and leaves the live site on the PREVIOUS build.
-    VERIFY the deployment from the GitHub side (see RUN PROCEDURE step 5b) — do NOT
-    verify by fetching the *.github.io URL, because the run VM's egress policy blocks
-    *.github.io. If the deploy failed or stalled, re-trigger with an empty commit; a
-    persistent deploy failure IS the news → notify.
+    VERIFY the deployment (see RUN PROCEDURE step 5b). The STRONGEST check is to fetch
+    the public *.github.io URL and compare its sha256 against the committed file —
+    measured reachable (HTTP 200, byte-identical) on 2026-11-06 and again 2026-11-07,
+    which supersedes the old "egress blocks *.github.io" note. If the deploy failed or
+    stalled, re-trigger with an empty commit; a persistent deploy failure IS the news → notify.
 Public URL (after Pages enabled): https://karlarao.github.io/daily-briefings/claude.html
 If git push fails (auth/network), send one notification saying so — that failure IS the news.
 
@@ -553,9 +554,13 @@ If git push fails (auth/network), send one notification saying so — that failu
 5b. VERIFY THE PAGES DEPLOYMENT (do NOT trust push success alone).
    A push landing on gh-pages does NOT mean the page updated — the GitHub Pages
    "pages build and deployment" step fails/stalls intermittently and leaves the live
-   site serving the PREVIOUS build. You also CANNOT verify by fetching the public
-   URL: the run VM's egress policy blocks *.github.io (host_not_allowed). Verify from
-   the GitHub side:
+   site serving the PREVIOUS build. PREFERRED CHECK — fetch the public URL and compare
+   bytes: `curl -sS https://karlarao.github.io/daily-briefings/claude.html | sha256sum`
+   against `sha256sum claude.html`. Equal hashes prove the new build is live, which is
+   strictly stronger than any API field. (The former "egress blocks *.github.io" claim
+   is WRONG: measured HTTP 200 and byte-identical on 2026-11-06 and 2026-11-07. Poll it
+   with an `until` loop on the hash rather than polling GitHub.) The GitHub-side check
+   below remains a useful cross-check, and is the fallback if the fetch ever fails:
      - Poll the "pages build and deployment" workflow run whose head_sha == DEPLOY_SHA
        (via the GitHub API/MCP: list workflow runs, event=dynamic, branch=gh-pages;
        match head_sha; read status/conclusion), or the Pages deployment/build-status
