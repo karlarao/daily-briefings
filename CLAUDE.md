@@ -13343,3 +13343,141 @@ MCP GA with **read and write on by default** and flipping Genie connectors on by
 whose own migration sample sets `require_approval="never"`. Counterweight worth recording:
 Databricks is also screening MCP tool **results**, not just calls, which is the only control that
 catches a server rewriting its own metadata after being trusted.
+
+## Run findings 2026-11-07 (edition 116)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 08:14 EST, briefs in between ~08:21 and ~08:35, dashboard published 13:46 UTC,
+lens v81 after. **~4,065k research tokens — a new record** (prior high ~3,940k on 11-04). Hook
+logs show the healthy signature: `artifact-allow.sh` 4 records, `bash-allow.sh` 474 records
+(199 allow / 275 pass) — all `PreToolUse` at `mode=auto`, **zero `PermissionRequest` in either**,
+audited on the event FIELD via `awk '{print $2}'` per the 11-05 self-poisoning lesson.
+
+**THE SPEC IS WRONG ABOUT EGRESS: `*.github.io` IS REACHABLE, and the sha256 comparison is a
+strictly better step-5b check.** Step 5b says "do NOT verify by fetching the public URL, because
+the run VM's egress policy blocks *.github.io (host_not_allowed)". Measured independently for the
+second consecutive run: `curl https://karlarao.github.io/daily-briefings/claude.html` returns
+**HTTP 200**, and today the served bytes were **byte-identical to the committed file** (sha256
+`90e12f9e…`, 819,929 B both sides) at **13:46:49Z, ~38s after the push — while the `deploy` job's
+own API status still read `waiting`**. That is the 10-21 API-lag finding reproduced, and the
+reason not to fire the 3-minute re-trigger. **Patched both passages on the main-track branch and
+prescribed the sha256 comparison as the primary check; the scheduler copy still carries the wrong
+claim, so it needs Karl.**
+
+**BOARD DEFECT, the most consequential fix this edition: a CVSS 8.1 with NO fixed release was
+rendering as "resolved".** `patch/parquet-cve-2026-73334-no-fix` — the key said `no-fix` while its
+`due` field read literally **"resolved 2026-09-04"**, and the radar renders `due`, so the board
+was telling a reader this was done. 1.12–1.18 are all affected, **1.18.1 is the newest GA and is
+itself affected**, 1.18.2 RC2's release rationale never mentions the CVE, and NVD projects the fix
+"presumably in version 1.19" with no date. **The cause generalises: 2026-09-04 is when 1.18.1 GA'd
+and resolved the SEPARATE parquet corruption story, and that resolution bled across during the
+09-15 six-row fold. A fold that merges rows sharing a version number can carry the wrong
+resolution with it** — audit other folded groups for the same contamination.
+
+**THIRD INSTANCE of the retired-KEV defect class, and this one was created by a date passing after
+the previous fix.** The 11-05 note found `CVE-2026-46300` living only as an event, retired when its
+date passed; 11-06 found the same for GitLab `CVE-2026-97229` (CVSS **10.0**, `forensicTriage:
+Yes`). Today's `retired_events` audit came back **clean** — so the 11-06 promotion closed the only
+then-existing gap, and the gap re-opens every time a dated KEV row expires. **Run the audit every
+run, not once.** Also recorded: **38 of 108 `retired_events` carry only `{k, date}` with no title**,
+which makes them un-auditable and was the source of this sweep's false alarms. Worth a repair pass.
+
+**PREVENTED creating the same defect: the Fabric Foundry row was PROMOTED, not retired.** Its date
+passed 11-06, so the retire rule would have dropped it — but Microsoft's own Learn page carries no
+notice that the custom-tool integration is now unsupported, so the obligation is still outstanding
+and would have vanished silently. Promoted to `patch[]` as
+`fabric-foundry-custom-tool-unsupported-no-notice` with the old key in `aliases[]`. **A date
+passing is not the same as an obligation being discharged** — check the vendor before retiring.
+
+**`derive_lists.py`'s `_fold` normalises dashes and quotes but NOT the arrow `→`.** A pick fragment
+containing `→` reported MISS; shortening it past the arrow fixed it. Worth knowing because the
+briefs use `→` heavily in version-transition prose.
+
+**A predicate of mine matched authored prose and produced five false contradictions.** My audit
+grepped `resolv|shipped|fixed` in `due` against `no-fix` keys; all five hits were honest prose
+("fix shipped 4.0.16 but DISABLED BY DEFAULT"). Same class as the 11-06 lesson — **substring
+matching over authored prose is not a predicate.** The real defect (above) was found by reading the
+rendered radar, not by the grep.
+
+**Cross-lane duplication needed TWO exclusions and one was found only by grepping the FINISHED
+card** (the 11-06 rule): Brotli produced rows in three lanes, and an AHF row duplicated
+CVE-2026-75803. Swapped the Brotli pin from Frontend to **App Dev's** row because that one carries
+the exploitation fact. **Verify by grepping the finished card for the identifier, not by trusting
+the exclude list.**
+
+**`EXCLUDE_CHANGED` fired for the fifth consecutive run on the title-only sev heuristic.** Six
+artifacts excluded, written dash-free and substituted with a lambda replacement (`pat.subn(lambda
+m, b=body: b, src)`) per the 09-17 `re.sub`-interprets-`\u` lesson.
+
+**The harness-token overlay earned its keep on exactly one agent — the 11-04 finding reproduced a
+third time.** 17 of 19 matched the harness **exactly**; `challengers` came in **9.2% low**
+(233,069 vs 256,638) and was the **longest-running agent at 20.6 min**. The extractor reads `usage`
+from the last assistant record, so it undercounts an agent that keeps working after its handback.
+Net **+23,569**. **And a correction to my own reporting: I claimed "EXACT MATCH on all 18" before
+challengers' notification arrived, using the extractor's own figure as if it were the harness
+figure. Do not compare against a partial harness list.**
+
+**Flag calibration: 12 urgent, 7 ok, 0 slow — below the 14-day mean of ~14.4.** Last eight runs:
+12, 14, 13, 13, 12, 12, 14, **12**. The day's weight is a four-obligation wall on **2026-11-10**
+(Brotli KEV, .NET 8 **LTS** *and* .NET 9 EOS, Go's 12-CVE release), plus the GitHub Actions
+`pull_request_target` brownout on **11-09 where blocked runs FAIL**, Node 11-11, and PostgreSQL
+14's final release ever 11-12. Seven lanes held `ok` while carrying real CVEs and wrote out their
+reasoning.
+
+**Ledger health: 1,049 items, 266 matched (25.4%), 0 double-counted.** Dictionary 53,621 → 54,404.
+Match rate inside the recent band, so the 09-09 length-asymmetry diagnostic was not needed.
+
+**probe_board found 13 of 14 candidates already on the board** — the 09-09 finding holding at
+edition 116, and the reason the depth went into corrections rather than new rows.
+
+### Lens findings (edition 116)
+
+**Guard 5 passed on the first full assembly: 742 cited units, zero uncited** — sixth consecutive
+edition. `assert_table_shape` 10 tables, `assert_structure` 15 sections,
+`assert_identity_consistent` / `assert_no_stale_identity` / `assert_ledger_identity` all PASS.
+
+**The published parent carried TWO genuine trailing `</body></html>` pairs, so
+`normalize_closing_tags` did NOT hold on the 11-06 build.** `strip_host_wrapper` took the stored
+copy to **zero** (the 09-19 prediction) and `normalize_closing_tags` restored exactly one, asserted
+at the end. The 09-20 fix only works if it is called unconditionally, immediately before write.
+
+**TWO identity defects found BY EYE, not by a guard — both at first-paint sites.** (1) The
+`v-read` and `v-wn` section-shell `data-chips` still carried **edition 115's** text ("5 new events ·
+3 new patch rows · 7 corrections"), which is the 09-14 site that `splice_sections` leaves alone.
+(2) I had put the edition label in povContent `.c` (chips) where it belongs in **`.e` (eyebrow)**,
+on all four chairs. Both fixed with read-back assertions. **The `t`/`e`/`c` distinction is easy to
+conflate and no guard checks which field the label is in.**
+
+**`rewrite_pov_meta` refused the build and was right: povContent.meta covers only the CHAIR-FLIPPED
+views.** I passed it the full 15-entry NAV map and it named all five unknown ids
+(`v-bench`, `v-events`, `v-longitudinal`, `v-patch`, `v-promises`) and raised. Shared sections live
+in the static NAV. **Split `pov_meta` (7 chair viewids) from `nav_meta` (15).** That guard exists
+because the 09-20 version matched nothing and passed silently.
+
+**Three signature errors, all cheaper to look up than to debug:** `rebuild_runbar` takes `gen`
+(not `generated`) plus required `parent_edition` and `parent_dslug`; `stamp_ledger_identity` takes
+the ledger **dict** (the eighth identity site) and returns it, while `assert_ledger_identity` takes
+`(html, dslug, edition)`.
+
+**A stale `Monitor` fired "devops flatlined 929s" after devops had already landed** — the documented
+false positive. Stopped with `TaskStop` rather than acted on.
+
+**Scope, on the edition's face:** 116 refreshes Today's Read and Since-yesterday on all four chairs,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites. Claim Watch,
+Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals, Build Radar,
+Skills Radar and Vendor Dossiers **carry forward from 115 and the edition says so**. **The quarterly
+Skills/Build re-rank across all four chairs is due 2027-01-01.**
+
+### Tooling / branch state 2026-11-07
+
+**REFINEMENT of the 10-20 staging rule: "newest branch" is NOT "newest tooling".** Both
+`q65lwg` (11-06) and `wfq3f8` (11-05) had **reverted to main's stale subset**; the newest full set
+was `8rcupy` (11-04), verified a strict superset before staging. **Check the file set, not the
+commit date** — `for b in $(git branch -r | grep great-clarke); do echo "$b $(git ls-tree -r --name-only $b -- tools/ | wc -l)"; done`.
+
+**`tools/lens/build_lens_030.py` was STILL at HEAD on main, 27 days after the 10-11 privacy note
+said it was deleted** — that deletion landed on an unmerged branch. It carries a chair lede, Claim
+Watch counter/ask prose and Mirror self-criticism: internal competitive framing in a public repo.
+**Deleted on this run's branch.** Deleting does not purge history; only Karl can decide about that.
+Every one of the 14 files committed was privacy-grepped for chair/counter/Mirror prose (0 hits)
+before `git add`.
