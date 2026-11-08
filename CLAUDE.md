@@ -13481,3 +13481,263 @@ Watch counter/ask prose and Mirror self-criticism: internal competitive framing 
 **Deleted on this run's branch.** Deleting does not purge history; only Karl can decide about that.
 Every one of the 14 files committed was privacy-grepped for chair/counter/Mirror prose (0 hits)
 before `git add`.
+
+## Run findings 2026-11-08 (edition 117)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 08:09 EST, briefs in between ~08:17 and ~08:27, dashboard published 13:40 UTC
+and verified live at **13:41:05Z (~29s after the push)**, lens v82 after. **~3,950k research
+tokens**, second-highest ever (11-07's ~4,065k stands). Hook logs show the healthy signature:
+`artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain `read` a republish needs,
+the publish), `bash-allow.sh` **468 records** (186 allow / 282 pass) — all `PreToolUse` at
+`mode=auto`, **zero `PermissionRequest` in either**, audited on the event FIELD via
+`awk '{print $2}'` per the 11-05 self-poisoning lesson.
+
+**I PUT A WRONG DATE IN SHARED_RULES AND FOUR LANES INDEPENDENTLY CAUGHT IT — which is the
+system working, and still the most important thing to fix.** I wrote that the 2026-11-10 →
+11-12 wall of obligations "has now PASSED". Today is **2026-11-08**: the Brotli KEV date, the
+.NET 8/9 EOS, the Node release and PostgreSQL 14's final release were all **2 to 4 days
+ahead**. Frontend said so first ("any note saying otherwise is off by two days"), App Dev
+corrected it from primary sources ("only half right") and pinned Go's 13-CVE release to 10-08,
+DevOps recorded the contradiction explicitly "for the record", and OLTP led its flag with
+"four days out, and it has NOT already passed (the carry-forward premise was wrong)". **Nothing
+downstream was damaged, because the lanes verify dates against vendor pages rather than
+trusting the briefing note — which is exactly what SHARED_RULES tells them to do.** The staged
+file was corrected mid-run so a relaunch would be right. **The durable fix is arithmetic, not
+prose: compute the "has it passed" clause from `TODAY` instead of typing it.** A hand-typed
+relative-time claim in the shared rules is the one input all 19 lanes read.
+
+**Two more carried facts were corrected by the lanes rather than by me, and one reopens a
+conflict this board closed.** Mobile read Play's Policy Deadlines table and found **Manage
+Contacts Permission at 2027-08-25, announced 2026-10-29** — not the 2027-01-27 this board has
+carried since ed. 064 and explicitly *closed* at ed. 067 on two agreeing Google surfaces. The
+2027-01-27 rows turn out to be **four different policies** (Location, SMS/call-log,
+foreground-service, and a new subscriptions-discount disclosure), so the board had been reading
+a neighbour's date. **A closed conflict is not a frozen fact: a vendor can reopen it by
+re-announcing.** Oracle separately established that ORDS `sql_run` became disableable in
+26.3.1 at **month precision only** ("Nov 2026"), correcting the 2026-11-04 day this run's own
+prompt carried.
+
+**SECOND CONSECUTIVE EDITION CORRECTING A CLAIM THE BOARD GOT FROM ITSELF — and the 11-06
+lesson predicted exactly this.** Ed. 115 recorded that delta-rs's unclassified table-feature
+arm is a `panic!` surfacing as `PanicException` through PyO3. Today's Open Formats lane read
+`buoyant_kernel` **0.28.1** — the exact fork rev pinned by the *released* `rust-v1.1.4` and
+`python-v1.6.6` — and it already enumerates `VariantShredding`, `VariantShreddingPreview` **and
+an `Unknown(String)` arm**, identical to upstream 0.30.1. There is no panic path left. What
+delta-rs actually does is **fail closed**: `ProtocolChecker` returns
+`TransactionError::UnsupportedTableFeatures`, with an explicit test. The fork-pin half survives
+(released artifacts pin 0.28.1 against upstream 0.30.1) and the open question stays open —
+nothing proves delta-rs *decodes* the shredded layout. **Two self-corrections on one row in
+three editions is the strongest available argument for the 11-06 rule: re-check the half that
+came from us, not just the half that came from a vendor.**
+
+**`assert_must_show` takes KEYS, not row dicts — the 11-06 note is wrong.** That note records
+"`assert_must_show(shown, must_show)` takes **row dicts**, not keys." Both `PR.select` and
+`PR.assert_must_show` take `must_show` as a list of **key strings**; passing dicts raises
+`TypeError: unhashable type: 'dict'` from each in turn. Also worth writing down because the
+names mislead: **`ET.render`'s `lane_of` / `act_of` are MAPPINGS, not callables** — the
+signature reads like a lookup function and the implementation calls `.get()` on them. Three
+signature errors cost a cycle each this run, all cheaper to look up than to debug, which is the
+11-07 lesson for the third time.
+
+**The parent disagreed with its own ledger by exactly one row in THREE sections, all in the
+same direction — one cause, not three accidents.** Published 116 rendered chips reading
+`45 dated` / `26 of 240` / `120 run days` where its own embedded ledger held `44` / `241` /
+`121`; the NAV was right in all three. The cause is that the first-paint chips were computed
+before the final retirement pass. 117 derives **every** figure from one source
+(`len(ledger[...])` and `events_table.facts()`) and the three now agree by construction —
+verified by reading NAV and `data-chips` back off the built file and asserting they match.
+
+**Flag calibration: 12 urgent, 7 ok, 0 slow — the FLOOR of the last eight, not a spike.** Last
+eight: 12, 14, 13, 13, 12, 12, 14, **12**, against a 14-day mean of 13.9. The weight today is
+in *how close* the deadlines are, not how many: **four obligations inside four days**, led by
+the GitHub Actions `pull_request_target` brownout **tomorrow** in which blocked public-repo
+runs *fail* rather than warn. 12 flags, **10 distinct stories** — Brotli is shared by App Dev,
+DevOps and Frontend, the 061-style overlap at its widest yet. Seven lanes held `ok` while
+carrying real CVEs and wrote out their reasoning: AI Hardware declined a **CVSS 10.0** (fixed,
+not hardware, not KEV) and 114 driver CVEs (local, fixed on every current branch); BigQuery
+declined two Criticals patched server-side in May for a fifth run; Redshift declined a
+five-day-old driver RCE because CISA's SSVC records `exploitation: none`; Open Formats declined
+three real CVEs and named the bar it failed each on.
+
+**NINE lanes independently MEASURED that their advisories are invisible to dependency scanning.
+This has stopped being an anecdote and become the board's dominant finding.** Every MongoDB-CNA
+record in OSV carries `package: null` with GIT ranges only, and five ecosystem queries returned
+**zero** 2026 records; **five of five** lakehouse Maven coordinates came back empty, including
+one with a live CVSS 8.1, and parquet-java *shades* Thrift so `libthrift` never appears in a
+tree at all; OSV returned "not found" for five NVIDIA CVEs and **zero vulns** for four GPU-stack
+PyPI packages; a Redshift GHSA **404s out of GitHub's global database** while the repo-scoped
+advisory resolves; three of four containerd advisories and two Docker Swarm CVEs exist in no
+public database; seven Next.js advisories published five days ago are still 404 in OSV; three
+High fastlane advisories have no CVE id at all. **The corollary the lanes reached unprompted: a
+green scanner is weak evidence, and the control is knowing which versions you ship.**
+
+**EIGHT lanes found severity unreadable by a CVSS gate, and two sources now disagree about
+whether a bug is exploited at all.** Brotli is **9.8** at NVD, **9.2** at Google and **8.1** at
+Microsoft — NVD and Microsoft **1.7 points apart on the same CVSS version** — while MSRC records
+`Exploited: No` for an entry CISA lists as known-exploited with a federal due date. Android's
+November bulletin rated **215 CVEs with no CVSS at all** and Apple shipped **163** likewise, so
+**378 CVEs in two flagship mobile bulletins carry zero machine-readable severity**; the one
+Apple CVE CISA calls actively exploited is scored **5.5**. One MongoDB record disagrees with
+itself by 3.4 points, Oracle rates a third-party CVE *above* NVD (the less common direction),
+and the same librsvg bug is `AV:L`/High where the CVE lives and `AV:N`/**9.5** where it is
+actually reachable.
+
+**"No reachable fix" mutated into "no reachable COORDINATE", in five lanes at once.** Databricks'
+`lz4-java` fixes exist only in a fork under a **different groupId** that upstream Spark adopted
+at 4.1 and never backported, so DBR 17.3 LTS matches the advisories with **no `fixed` event in
+its coordinate at all**; Mongoose 8.x pins `mongodb@~6.20.0`, which resolves to exactly one
+published version, so `npm update` can reach neither patched release, and the Go driver's v1
+module path has no `fixed` event either; Oracle's drivers jumped to **calendar versioning**, so
+a `^7.0.0` range strands you on an unmaintained branch while the lockfile looks healthy; Next.js
+13.x/14.x have no in-line patch for a 9.5 RCE and SvelteKit's only fix for two advisories is a
+major; and Apache Parquet 1.18.2 **passed its release vote this morning and then failed to
+publish** on an ASF Infra credential fault (INFRA-28245), so the voted release cannot be
+installed.
+
+**Ledger health: 958 items, 64 exact + 187 fuzzy = 251 matched (26.2%), 0 double-counted.**
+Dictionary 54,404 → 55,111. Match rate slightly above the recent band, so the 09-09
+length-asymmetry diagnostic was not needed. The 15 weakest accepted merges were eyeballed and
+all were genuine same-story rewordings. `curate.py`'s fatal "pin not found" did not fire.
+
+**`EXCLUDE_CHANGED` fired for the sixth consecutive run — but this time THREE of nine raw
+`changed` rows were real movement, and one of them moves DOWN correctly.** Six were
+wrong-direction title-only sev artifacts and were excluded. Kept: the MongoDB CVE escalating
+high→urgent, the Gemini 2.5 reroute rising as its 12-01 date approaches, and — the interesting
+one — **Snowflake's BCR-2433 falling high→normal because the change was WITHDRAWN from the
+bundle**. A downward note is usually the artifact; here it is the finding. The heuristic is not
+wrong about direction, it is wrong about *cause*, and reading the row is still the only way to
+tell.
+
+**Cross-lane duplication needed FIVE exclusions, and the identifier grep found all of them —
+the exclude list found none.** Grepping the *finished* card for CVE/GHSA ids (the 11-06/11-07
+rule) showed **CVE-2026-111497 on three rows across three lanes**, plus two same-topic pairs
+curate under-scored. Root cause of the Brotli triple is worth recording: **my PIN fragment
+matched three lanes' rows**, because all three briefs phrase it "is in CISA KEV with a due date
+of 2026-11-10". A pin must be lane-specific; made it so and excluded the other two. **Verify by
+grepping the finished card for the identifier, never by trusting the exclude list.** Final card:
+16 new (+537 more), 3 changed, 15 ongoing, **34/34 rows sourced** after two links hand-attached
+from URLs already cited in those same briefs for those exact facts.
+
+**The harness-token overlay earned its keep on exactly two agents — the 11-04 finding reproduced
+a fourth time, and the pattern is now unmistakable.** 17 of 19 matched the harness **exactly**;
+`fabric` came in **4.9% low** (281,859 vs 296,281) and `formats` **7.6% low** (218,476 vs
+236,465) — and those were the **two longest-running agents** (946s and 1,090s). The extractor
+reads `usage` from the last assistant record, so it undercounts an agent that keeps working
+after its handback. Net **+32,411 on 3.95M (0.8%)**, concentrated entirely in the two agents
+that needed it.
+
+### Lens findings (edition 117)
+
+**Guard 5 passed on the first full assembly: 777 cited units, zero uncited** — seventh
+consecutive edition. Mechanism unchanged since 09-15: every row generator calls `cite()` inline
+as it emits, and claims about this edition's own board take the dated archive fallback.
+`assert_table_shape` 10 tables, `assert_structure` 15 sections,
+`assert_identity_consistent` / `assert_no_stale_identity` / `assert_not_parent_identity` /
+`assert_ledger_identity` / `assert_alias_safe` all PASS. (`assert_alias_safe` lives in
+`ledger_surgery`, not `lens_guard`.)
+
+**probe_board found 13 of 18 dated candidates and 10 of 11 patch candidates already on the
+board** — and the one that was *not* was the day's worst security item, which is the whole
+argument for the advisory. ClickHouse **CVE-2026-116366** (unauthenticated RCE, CVSS 9.5) looked
+absent on a first search that matched *other* ClickHouse rows; a second probe on the bare
+identifier found it present **twice**, a genuine duplicate pair carrying the same CVSS, the same
+four fixed builds and the same SECURITY.md sting. Folded by hand, loser preserved in `aliases[]`.
+**Probe on the identifier, not the product noun** — a product-noun probe returns the lane's other
+rows and reads as a miss.
+
+**`probe_identifiers` with a `nouns` list over-matches and returned the same three unrelated
+parent rows for both new patch rows.** Neither was a duplicate (a Claude Code *SSH backdoor* row
+and an agent-plugin RCE row are different stories). Generic nouns make the advisory noisy in
+exactly the way substring matching over authored prose does — the 11-07 lesson in a new place.
+
+**The titleless `retired_events` repair the 11-07 note queued is done, and twin-matching was
+measured and REJECTED as the method.** 38 of 110 rows carried only `{k, date}`, which makes them
+un-auditable by any sweep. Matching them to a live `patch[]`/`events[]` twin resolved only **8 of
+38** at ≥0.5 key-token overlap, and **3 of those 8 were spurious** (`python-315-ga` → a Google
+ADK CVE). So the repair is a **de-slugged version of the row's own key**, marked inline as
+reconstructed — derived from the row's own data, no invention, visible provenance. The durable
+fix is upstream: **stop dropping `t` at retirement.**
+
+**The standing retired-KEV audit came back clean, and my predicate was the problem.** Four
+candidates surfaced; all four have live `patch[]` twins, including the 11-05 `CVE-2026-46300`
+promotion. The predicate matched **full CVE identifiers** against retired keys that carry only
+*number fragments* (`chrome-v8-87491-kev-due-sep23`), so it produced four false positives. Fix
+the audit, not the board.
+
+**Scope, on the edition's face:** 117 refreshes Today's Read and Since-yesterday on all four
+chairs, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites.
+Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals,
+Build Radar, Skills Radar and Vendor Dossiers **carry forward from 116 and the edition says so**
+— `claims[]` did not grow, because the day's research was deadlines, scanner blindness and
+self-corrections rather than competitive perf/price claims. Output is **+50,013 bytes** over the
+stripped parent, fully accounted: `lensLedger` +17,442, `povContent` +16,740, v-patch +6,384,
+v-events +5,062, v-wn +3,056, v-read +1,104, v-longitudinal +185, runbar +46, residual −6.
+`strip_host_wrapper` took the parent to **zero** closing pairs (the 09-19 prediction) and
+`normalize_closing_tags` restored exactly one, asserted before write. **The quarterly
+Skills/Build re-rank across all four chairs is due 2027-01-01.**
+
+**Step 5b, third consecutive confirmation that the spec is wrong and sha256 is the better
+check.** `curl https://karlarao.github.io/daily-briefings/claude.html` returns HTTP 200 and the
+served bytes went byte-identical to the committed file (sha256 `763101e0…`, 776,196 B both
+sides) at **13:41:05Z, ~29s after the push — while the `deploy` job's own API status still read
+`in_progress`**. That is the 10-21 API-lag finding reproduced a third time and the reason not to
+fire the 3-minute re-trigger. An `until`-loop on the live sha is the cheapest possible check.
+
+**Step 6 was sent BEFORE step 5c this run, deliberately.** The spec orders the notification
+after the lens, and the standing note allows moving it ahead "so a parked lens never delays the
+alert". The lead item today is a deadline **tomorrow**, so holding an act-now alert behind a
+~40-minute lens build had no upside. The dashboard was live and verified first. Recording it so
+the ordering is a decision rather than a drift.
+
+**Source access:** `blogs.oracle.com` 403s HTML *and* RSS for a **24th** consecutive week —
+tested across `/database/rss`, `/optimizer/rss`, `/exadata/rss` and `/in-memory/rss`, WebFetch
+*and* curl with a browser UA — so the Oracle Optimizer / In-Memory / Smart Scan / Exadata
+channel remains a standing structural gap, and the Oracle lane said so on its face rather than
+reporting a quiet month. `mikedietrichde.com` is readable via curl with a browser UA and carried
+the lane, supplying three first-hand upgrade landmines including one that is **in no Oracle
+document at all** (23.26.3 refusing to start with ORA-00821 because a bug fix raised the minimum
+default buffer cache to ~128 MB per `CPU_COUNT`). `connor-mcdonald.com` 429s. New this run:
+`ops.java/emudhra` — the page both Oracle eMudhra alerts point at for mitigations — 403s to
+WebFetch *and* curl, so the non-patch mitigation path is unreadable; `source.android.com`'s
+bulletin path needs the year segment (`/bulletin/2026/2026-11-01`); the **Pixel** November
+bulletin 404s at both URL forms, so Pixel-specific "limited, targeted exploitation" entries are
+a gap rather than an absence; `developer.chrome.com/release-notes/156` and `/157` both 404 —
+use the chromestatus API (`chromestatus.com/api/v0/features?milestone=NNN`, which prefixes its
+JSON with `)]}'`) and Chromium Dash; `api.webstatus.dev` returns Baseline status **and per-engine
+WPT scores** in one uncapped call and is strictly better than the web.dev digests.
+
+**Security sweep, negative result — seventeenth consecutive run, with the moved baseline
+accounted for structurally rather than assumed.** The Redshift lane fetched `behavior-changes`
+and `cluster-versions` in both the markdown and HTML variants under `/mgmt/` and grepped all
+four for `agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills`, `llms.txt`,
+then broadened to `skill`, `assistant`, `agent`, `MCP`: **zero hits in every file**.
+`cluster-versions` markdown is **byte-identical** to last run at 137,058 / 94 headings;
+`behavior-changes` markdown **grew +1,591 bytes and +1 heading** to 43,241 / 30 — and rather
+than call that a finding the lane accounted for it: the HTML-minus-markdown heading delta is
+**unchanged at exactly 3** (the page's own Topics nav, which markdown does not render), so the
+new heading is an ordinary content section present in **both** variants, with the Patch 208
+user-lockout section the size-matching candidate. The known benign sighting re-verified at exact
+parity (`system-table-s3-tables.html` carries `agent-toolkit` once in *each* variant). **No
+fetched page's suggestion was executed and no skill file was loaded by any of the 19 agents.**
+The affordance keeps widening and is now openly first-party inside *reference* pages: Android's
+behaviour-changes page embeds a copy-paste `android skills add` command mid-document, the ADS
+tooling post publishes `claude plugin install` / `codex plugin add` lines, Oracle's ORDS shipped
+an arbitrary-SQL `sql_run` MCP tool in 26.2 and only became able to **disable** it in 26.3.1
+about four months later, Fabric's own migration sample sets `require_approval="never"` against a
+delegated-identity connection, and Databricks is taking SaaS MCP to GA with **read and write on
+by default**. Counterweight worth recording: BigQuery's `SECURE_CONTEXT` reference is the first
+Google SQL doc to name **AI agents** as a party that must *not* be able to set its parameters.
+
+**One finding that is about this repository rather than the world.** AI Daily's flagged item is
+that Claude Code's "approve and don't ask again" persists whole commands — credentials included
+— into `.claude/settings.local.json`, with 1,122 public repos already holding 1,379
+live-looking secrets and the upstream report auto-closed "not planned". **This repo was checked
+and is clean:** the file was never committed on any branch (`git log --all --full-history`
+empty), it is in `.gitignore`, and none of the 27 committed allow rules in
+`.claude/settings.json` matches a credential-shaped pattern. Also recorded and **not acted on**:
+that lane reports Claude Code 2.1.319 added `permissions.denyInsteadOfPrompting`, which would
+turn an unattended permission prompt into a clean failure instead of the silent
+kill-switch-with-a-delay that took out the 09-12 and 09-15 runs. That is an attractive fit for
+this routine and it is a **permission-settings change recommended by a subagent**, so it goes to
+Karl as a proposal rather than something a run applies on a subagent's word.
