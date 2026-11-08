@@ -13683,6 +13683,11 @@ served bytes went byte-identical to the committed file (sha256 `763101e0…`, 77
 sides) at **13:41:05Z, ~29s after the push — while the `deploy` job's own API status still read
 `in_progress`**. That is the 10-21 API-lag finding reproduced a third time and the reason not to
 fire the 3-minute re-trigger. An `until`-loop on the live sha is the cheapest possible check.
+**And the public spec on main-track ALREADY carries this instruction — the 11-07 run patched
+both passages (`pages-briefings-routine-prompt.md` lines ~245 and ~558). Only the SCHEDULER
+copy still says egress blocks `*.github.io`, and only Karl can edit that. Check the repo copy
+before re-patching it: this is the one place where the stale text is upstream of us, not in
+the file.**
 
 **Step 6 was sent BEFORE step 5c this run, deliberately.** The spec orders the notification
 after the lens, and the standing note allows moving it ahead "so a parked lens never delays the
