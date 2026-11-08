@@ -61,7 +61,15 @@ def facts(rows, today):
 
 
 def render(rows, today, *, horizon=60, lane_of=None, act_of=None):
-    """Return (html, shown_count). Rows beyond `horizon` days are not shown."""
+    """Return (html, shown_count). Rows beyond `horizon` days are not shown.
+
+    `lane_of` and `act_of` are MAPPINGS keyed by row key -- {key: str} -- not
+    callables, despite reading like predicates. render() calls .get() on them
+    directly, so passing a function raises
+    `AttributeError: 'function' object has no attribute 'get'`. Noted because
+    everything else in this toolkit takes a value and returns one; this and
+    `assert_page_link_coverage` are the exceptions worth checking first.
+    """
     t0 = _d(today)
     lane_of = lane_of or {}
     act_of = act_of or {}

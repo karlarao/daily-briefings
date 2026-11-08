@@ -344,6 +344,12 @@ def select(rows: list, today: date, cap: int, must_show: list) -> list:
 
 
 def assert_must_show(shown: list, must_show: list) -> None:
+    """`must_show` is a list of KEY STRINGS, matching select()'s argument.
+
+    Passing row dicts raises `TypeError: unhashable type: 'dict'`. Spelled out
+    because a 2026-11-06 run note claimed this function takes row dicts while
+    select() takes keys; both take keys, and that note is withdrawn.
+    """
     keys = {r["k"] for r in shown}
     missing = [k for k in must_show if k not in keys]
     if missing:
