@@ -13746,3 +13746,249 @@ turn an unattended permission prompt into a clean failure instead of the silent
 kill-switch-with-a-delay that took out the 09-12 and 09-15 runs. That is an attractive fit for
 this routine and it is a **permission-settings change recommended by a subagent**, so it goes to
 Karl as a proposal rather than something a run applies on a subagent's word.
+
+## Run findings 2026-11-09 (edition 118)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks
+clean.** Launched 08:09 EST, briefs in between ~08:17 and ~08:32, dashboard published 13:45 UTC
+and verified live by **sha256 at 13:46:14Z (~41s after the push)**, lens **v83** after.
+**~3,974k research tokens**, second-highest ever (11-07's ~4,065k stands). Hook logs show the
+healthy signature: `artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain
+`read` a republish needs, the publish), `bash-allow.sh` all `PreToolUse` at `mode=auto`, **zero
+`PermissionRequest` in either** — audited on the event FIELD via `awk '{print $2}'` per the
+11-05 self-poisoning lesson.
+
+### THE LEAD: edition 117's "most consequential fix" was itself a regression, and I verified the correction MYSELF
+
+The board's `patch/parquet-cve-2026-73334-no-fix` row read **"NO fixed release exists · 1.12–1.18
+affected · 1.18.1 is the newest GA and is affected"**. That is wrong. **1.18.1 (GA 2026-09-04) IS
+the fix** — it adds the gate `KMS_ENABLE_URL_READ_PROPERTY_NAME = "parquet.encryption.kms.enable.url.read"`,
+default false, enforced in `FileKeyUnwrapper`.
+
+**I did not take the agent's word for it.** Grepping `raw.githubusercontent.com` at each tag,
+`kms.enable.url.read` is **absent at `apache-parquet-1.17.1` (0 hits), absent at 1.18.0 (0), and
+present at 1.18.1 (1)** — and NVD's record is `vulnStatus: Analyzed` with a structured CPE range
+of **1.12.2 → 1.18.0** while only its *prose* predicts a 1.19 fix. The prose is a release too
+late and the CPE is right, which is the inverse of the usual NVD failure.
+
+**The provenance is the finding.** Edition 116 read `due: "resolved 2026-09-04"` — which was
+**correct**, because that is 1.18.1's GA date. The 11-07 run called that a defect, wrote "the
+most consequential fix this edition", and rewrote it to "NO fixed release exists". **Three
+editions, two opposite errors, one row.** The row now records that history on its face and
+states the live problem accurately: the CVE is fixed, and **OSV 404s it** because its
+`packageName` is a Java package name pasted into the Maven groupId slot, so `osv-scanner` and
+Dependabot report clean on a CVSS 8.1. **This is the strongest case yet for the 11-06 rule:
+re-check the half of a row that came from US, not just the half that came from a vendor.**
+Also do not over-correct the other way — **1.18.2 is NOT the fix**: it passed its vote 2026-11-08
+and **has not published** (ASF Infra credential fault INFRA-28245; Maven Central `<release>` is
+still 1.18.1), and its content is four silent-correctness fixes, not the CVE.
+
+### A LOST URGENT FLAG, CAUSED BY MY OWN POLLING LOOP
+
+The Mobile lane's status shipped as `ok` while the agent had emitted `urgent`. Diagnosed by
+comparing the extractor's candidates — `text[3]` was 28,974 chars with **no STATUS line**,
+`HANDBACK[0]` was 29,633 chars **with** it — and then running the extractor's own functions on
+the transcript, which returned `urgent`. **Root cause: my background polling loop ran
+`extract_briefs.py` while Mobile was still mid-flight, captured a pre-handback draft, and
+`already had: mobile` meant the real handback was never revisited.** Fixed with `--force`;
+15 urgent / 4 ok. This is the 11-02 draft-vs-final case with a new trigger, and the trigger is
+mine: **a poller that extracts is a poller that can poison the extract.** Poll with
+`handback_poll.py --once` (which only reads), and never let an extraction run inside the wait
+loop. Side benefit worth recording: after the `--force` re-extract, **all 19 token counts matched
+the harness exactly and `apply_harness_tokens.py` was a net +0** — the overlay is a no-op
+precisely when nothing went wrong, which the 11-08 run's two slow-agent corrections already
+showed is not the same as being unnecessary.
+
+### COMPUTED COUNTDOWNS LANDED, AND THEY IMMEDIATELY CAUGHT A SECOND STALE DERIVED DATE
+
+The 11-08 defect was a hand-typed line in SHARED_RULES.md claiming a 2026-11-10 → 11-12 wall
+"has now PASSED" two days early, which four lanes had to correct. **This run generated that block
+instead**, and the generator caught something proofreading would not have: **the 14-day flag bar
+still read `2026-11-22` (= 11-08 + 14) where it should be `2026-11-23`.** A *derived* date rots
+exactly as silently as a relative-time phrase, and nothing in the prose looks wrong.
+**Landed as `tools/ledger/shared_rules.py`** — `out(date, today)` returns a computed
+TODAY/TOMORROW/N-days phrase that always carries the ISO date, `bar(today, 14)` generates the flag
+edge, `render_block()` sorts soonest-first and marks anything inside one day. 16-case self-test
+including the exact 11-08 regression (an 11-10 obligation must not read as passed on 11-08) and
+the 11-09 one (the bar is today+14, not yesterday+14). SHARED_RULES.md now carries an HTML comment
+pointing at it. **Rule: any date arithmetic in SHARED_RULES.md comes from the generator. Authored
+prose stays authored; numbers are generated.**
+
+### Four tooling signatures and idioms that each cost a cycle — now pinned IN the modules
+
+Pinning these in CLAUDE.md has not stopped them recurring (the 11-07 note says "three signature
+errors cost a cycle each, all cheaper to look up than to debug"; 11-08 had to *correct* one of
+those notes). So they are now **docstring pins in the modules themselves**, where a reader
+necessarily sees them:
+- **`countdowns.refresh_rows` returns ONE value — the report list.** Rows mutate in place.
+  Unpacking two raises `ValueError: too many values to unpack (expected 2)`.
+- **`lens_links.find_url`'s lane filter is `topics` (plural) and takes a SET**, not `topic=`
+  — and `title` must not be None, so the archive-fallback idiom `cite(None, TODAY)` must not be
+  routed through it (`.lower()` on the title); a builder's `C()` helper has to be None-safe.
+- **`"%,d" % n` raises `ValueError: unsupported format character ','`** — the **fifth** occurrence
+  of the %-formatting lesson (09-17, 09-18 ×3, 09-20, today). Use an f-string. House style since
+  09-20 is to build any block mixing `cite()` output with prose by concatenation; a bare thousands
+  separator is the same trap in miniature.
+- **`derive_lists.py` and `curate.py` expect `whatsnew.raw.json` BESIDE THEMSELVES** in
+  `tools/ledger/`, not in the run directory — `FileNotFoundError` otherwise.
+
+### `curate.py`: PICKS selects only from `new`, and nine of mine were carried rows
+
+Nine "pick not found" warnings on the first pass. `PICKS` searches `raw['new']` only; most of my
+fragments were `ongoing` rows with honest day counts, which belong in `PIN_ONGOING`. Rather than
+retype them I **mapped every fragment to its bucket programmatically** and asserted uniqueness,
+which also caught `'CVE-2026-85620' -> 2 hits` (narrowed to "still no fixed release, verified
+today"). Worth keeping the whole helper, because it removes the class rather than the instance:
+
+```python
+def exact(kind, topic, loose, n=72):
+    hits = [r for r in raw[kind] if r.get("topic") == topic and fold(loose) in fold(r.get("title") or "")]
+    assert len(hits) == 1, f"{loose!r} -> {len(hits)} hits in {kind}/{topic}"
+    t = hits[0]["title"]; i = fold(t).index(fold(loose)); return t[i:i+max(n, len(loose))]
+for e in excl:                                    # the 2026-09-15 rule, mechanised
+    assert not any(fold(e) in fold(p) or fold(p) in fold(e) for p in pins)
+```
+
+Every list is now an **exact substring of a real row title**, derived rather than typed — the
+10-19 fix — and the exclude/pin cross-check is an assertion instead of a habit. Confirmed again
+(the 10-04 rule): **curate.py's daily lists are NOT ported to main-track**; its entire delta
+against the staged copy is list contents, so porting moves no logic and lands stale picks.
+
+### A guard that was too strict, then caught something real one line later
+
+My first `povContent` identity assertion banned the parent edition string anywhere in the blob.
+It fired on **correct content** — legitimate archive links to `2026-11-08` and my own backward
+references — which is the 09-16 trap. Scoped it to identity positions only (`t`/`e`/`c` and
+`meta`). **The scoped version then caught a genuine drift the blanket one had masked: the parent's
+carried-section chips read "carried from 116" while the parent WAS 117**, one edition stale, so
+carrying it forward unchanged would have made it two. Fixed by driving `e`/`c` for **all** flipped
+views, not only the two this edition refreshes. The guards then over-flagged correct directional
+references ("carried from 117", "vs edition 117"), so the check allows a directional qualifier
+before the number — and when `assert_not_parent_identity` flagged my narrative "Edition 117 called
+that a defect", **I rewrote the prose to the board's house form "ed. 117" rather than weakening the
+guard**.
+
+**And the sharpest small lesson of the build: a split string literal evades a source-level
+regex.** My scan missed `"...was correct and edition " + "117's rewrite..."` because no single
+literal contains the pattern, yet it rendered contiguously in the output. **Scan the rendered
+output, not the source.** Same family as the 09-18 split-span runbar finding.
+
+### Flag calibration: 15 urgent, 4 ok — above the 14-day mean, and the highest since 10-28
+
+Series over the last nine runs: 14, 13, 13, 12, 12, 14, 12, 12, **15** against a 14-day mean of
+**13.8**. The weight is proximity, not volume: **the GitHub Actions `pull_request_target` brownout
+runs TODAY 16:00–18:00 UTC in FAIL mode** (blocked public-repo runs fail, not warn), and tomorrow
+carries **both** the Brotli CISA KEV federal due date and **.NET 8 (LTS) *and* .NET 9 ending
+support on the same day**. Four lanes held `ok` while carrying real CVEs and wrote out their
+reasoning.
+
+### Ledger health and the Since-yesterday card
+
+**943 items, 227 matched (24.1%), 0 double-counted.** Dictionary 55,111 → **55,827**. Match rate
+inside the recent band, so the 09-09 length-asymmetry diagnostic was not needed. Card: new=11
+(+538 more), changed=4, ongoing=15, aged_out=811. The synthesis carried **64 "seen in"
+references, every one verified against a real display name** rather than typed.
+
+### Lens findings (edition 118)
+
+**Guard 5 passed on the first full assembly: 718 cited units, zero uncited** — eighth consecutive
+edition. Mechanism unchanged since 09-15: every row generator calls `cite()` inline as it emits.
+`assert_structure` 15 sections, `assert_table_shape` 10 tables, and
+`assert_identity_consistent` / `assert_no_stale_identity` / `assert_not_parent_identity` /
+`assert_ledger_identity` all PASS. All eight identity sites read back correct, and **NAV vs
+section chips vs the embedded ledger agree by construction** because every figure comes from one
+source (`len(L[k])` and `events_table.facts()`). Output **2,406,416 B, +13,665 vs the stripped
+parent**; `strip_host_wrapper` took the parent to zero closing pairs (the 09-19 prediction) and
+`normalize_closing_tags` restored exactly one.
+
+**24 stale countdowns were repaired mechanically BEFORE any section was generated** (2 in
+`events[]`, 22 in `patch[]`, each off by exactly the days since written) — and **38 more were
+DECLINED by the module** because no own-date sits adjacent, which is the 10-11 lesson holding:
+those stay for a human read rather than being blanket-rewritten. Final sizes: events 63, patch 243,
+claims 171, ownclaims 44, promises 98, gaps 22, benchmarks 24, retired_events 110. **No-fix
+register 42, from `PR.count_no_fix` (the authoritative `due`-field route) — a naive prose match on
+"no fix|unpatched" returns 66 and would overstate it by half.** The 11-08 rule holds: state the
+board-wide total and today's additions as two numbers from one source, and never let a named list
+imply the total.
+
+### Ten more ledger corrections, applied before section generation
+
+- **Fabric tzdata → DOWNGRADED TO UNVERIFIED.** Today's Fabric lane searched the official
+  known-issues feed and found **no entry mentioning tzdata** and no shipped-2026f statement for
+  either runtime. Marked unverified rather than repeated. The real adjacent fact it *did* source:
+  an unrecognised session timezone like `-08:00` **fails the job** under NEE on Runtime 1.3,
+  resolved in 2.0. **Second self-correction in two editions of a board fact that came from us.**
+- **Play Manage Contacts: KEEP the 2027-08-25 date, DROP the unverified half.** The date was
+  re-confirmed; "announced 2026-10-29" is **not sourceable** — the Policy Deadlines timeline as
+  served has only a `Date` column. And the better explanation of the ed-064→067 confusion is not
+  "we read a neighbour's date": the 2027-01-27 bucket holds five rows and **one of them is also a
+  contacts policy** (broad read access → Contact Picker). **There are two different contacts
+  policies on two different dates**, so "the contacts deadline" is ambiguous in that lane.
+- **Percona Server for MongoDB: REVERSE the standing "unpatched" claim.** PSMDB 8.0.34-15
+  (2026-10-22) is **9 days** behind upstream and explicitly names and fixes CVE-2026-104004,
+  CVE-2026-96297 and CVE-2026-103965. Operational note: **MongoDB Database Tools are no longer in
+  the Percona binary tarball.**
+- **lz4-java / Spark: the fork was adopted at 4.2.0, not 4.1.** Verified from Spark's own
+  dependency manifests (1.8.0 at v4.0.0 *and* v4.1.0; 1.11.0 at v4.2.0; 1.12.1 on master), which
+  matches the DBR tables exactly — so **the Databricks gap is INHERITED FROM UPSTREAM, not
+  introduced by Databricks**, a fairer reading than the carried note.
+- **Iceberg V4: spec PR #17783 is MERGED (2026-09-29, commit 7ba28c3), not open** — correcting
+  ed. 067. Readers must keep applying existing v2/v3 equality deletes, and a v2/v3 → v4 upgrade
+  does **not** require rewriting data or delete files. Still no V4 date, so the row stays
+  deliberately undated for a fifth edition.
+- **ORDS `sql_run`: confirmed and dated at MONTH precision.** 26.3.1 makes it disableable and adds
+  custom roles/scopes; Oracle publishes **"Nov 2026"** only, so any day-precise date is not
+  Oracle's. Confirms the 11-08 reading that corrected a 2026-11-04 day.
+- **The Snowflake "a removed member's date relocates" rule holds SOMETIMES, not always.**
+  BCR-2433 was removed from bundle 2026_08 on 2026-11-04 and its date did **not** relocate to the
+  unbundled table — the detail page no longer resolves and it is absent from Upcoming, so there is
+  currently **no published date** for implicit grant-copying on replace. Meanwhile **BCR-2413
+  slipped from a day-precise October date to "early February 2027, exact date to be determined"
+  with no change-log entry.** The drift runs in both directions, and
+  `SYSTEM$SHOW_ACTIVE_BEHAVIOR_CHANGE_BUNDLES` in your own account is the only trustworthy signal
+  — refining the 09-21 rule rather than repeating it.
+- **The Redshift GHSA 404 is propagation lag, not AWS policy.** GHSA-wmmv-vvg5-993q
+  (CVE-2026-8178, the earlier JDBC unsafe-class-loading RCE) **now resolves** in GitHub's global
+  database at CVSS 4.0 9.2, so the 404 behaviour has *moved* to the newer advisory
+  (GHSA-qrph-v96m-w2mv, 6 days and counting). Re-check next run whether the new one lands.
+- Plus the Parquet row above and the 24 mechanical countdown repairs.
+
+**Scope, on the edition's face:** 118 refreshes Today's Read and Since-yesterday on all four
+chairs, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites.
+Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals,
+Build Radar, Skills Radar and Vendor Dossiers **carry forward from 117 and the edition says so** —
+`claims[]` did not grow, because the day's research was deadlines, scanner blindness and
+self-corrections rather than competitive perf/price claims. **The quarterly Skills/Build re-rank
+across all four chairs is due 2027-01-01.**
+
+### Step 5b: FIFTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` returned **HTTP 200** and the served
+bytes went **byte-identical to the committed file** (738,933 B both sides) at **13:46:14Z, ~41s
+after the push** — while the GitHub API still read `in_progress`. The sha256 comparison is
+strictly stronger than any API field and it is what an `until` loop should poll.
+**The public spec on main-track ALREADY carries this instruction (patched 11-07); only the
+SCHEDULER copy still says egress blocks `*.github.io`, and only Karl can edit that.** Check the
+repo copy before re-patching it — this is the one place where the stale text is upstream of us.
+
+### Tooling / branch state 2026-11-09
+
+**`tools/` on `main` is TEN modules stale** — it has no `countdowns.py`, `events_table.py`,
+`lens_extra.py`, `lens_identity.py`, `longitudinal.py`, `patch_radar.py`, `probe_board.py`,
+`derive_lists.py`, `handback_poll.py` or `SHARED_RULES.md` (17 files against 26 on the working
+lineage), and `main`'s CLAUDE.md is **2,312 lines against 13,748** — still ~46 editions behind
+despite the 11-05 run pushing a fix that was never merged. **Staged from
+`origin/claude/great-clarke-aoxzgu` (11-08, 26 files), verified a strict superset of the reusable
+set first.** The 11-07 refinement held and is worth restating: **"newest branch" is not "newest
+tooling" — check the file SET, not the commit date.** Two older branches show *more* files only
+because they still carry per-edition one-offs, and one of them still carries
+`tools/lens/build_lens_030.py`, the **privacy-breach file** the 11-07 run deleted (it holds chair
+ledes, Claim Watch counter/ask prose and Mirror self-criticism). Every file committed this run was
+privacy-grepped for chair/counter/Mirror prose before `git add`.
+
+**A proposal for Karl, NOT applied by this run:** Claude Code 2.1.319 added
+`permissions.denyInsteadOfPrompting`, which would turn an unattended permission prompt into a
+clean failure rather than the silent kill-switch-with-a-delay that took out the 09-12 and 09-15
+runs. It is an attractive fit for this routine — and it is a **permission-settings change
+recommended by a subagent**, so it goes to Karl as a proposal rather than something a run applies
+on a subagent's word.

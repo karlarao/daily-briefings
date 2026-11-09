@@ -1,8 +1,8 @@
-# SHARED RULES — daily-briefings research agents (run 2026-11-08)
+# SHARED RULES — daily-briefings research agents (run 2026-11-09)
 
-TODAY IS **2026-11-08** (Eastern). Treat 2026-11-08 as "today". Window = the past
-**30 days** (2026-10-09 .. 2026-11-08) unless your topic says otherwise (AI Daily:
-past 24-48 HOURS). Countdowns ("N days out") are relative to 2026-11-08.
+TODAY IS **2026-11-09** (Eastern). Treat 2026-11-09 as "today". Window = the past
+**30 days** (2026-10-10 .. 2026-11-09) unless your topic says otherwise (AI Daily:
+past 24-48 HOURS). Countdowns ("N days out") are relative to 2026-11-09.
 
 ## What you are doing
 You are ONE research lane of 19. Produce ONE markdown brief for a working
@@ -107,27 +107,34 @@ not pretend to. Do not narrate your process in the brief.
   Teradata: AWS Marketplace listings carry dated VantageCloud versions.
 - `export.arxiv.org` API 429s intermittently; `arxiv.org/search/` + `/abs/` serve fine.
 
-## Known from the last two runs (2026-11-06/07) — do not re-derive, but DO re-verify dates
+## Known from the last runs (2026-11-09 and earlier) — do not re-derive, but DO re-verify every date
 
-> **Note to whoever writes this section next run: do NOT type a "has passed" or "is
-> still ahead" clause for a dated item. Derive it by comparing the date with TODAY, or
-> state the bare date and let the lane decide.** On 2026-11-08 this block said a
-> 11-10..11-12 wall "has now PASSED" when today was the 8th, and four lanes
-> independently corrected it. Nothing downstream broke only because the lanes verify
-> dates against vendor pages — which is the behaviour to keep, not a reason to be
-> sloppy here.
-- **A wall of obligations falls on 2026-11-09 through 11-12 — ALL STILL AHEAD of today (2026-11-08), inside the urgent window.**
-  Check what actually happened rather than restating the countdown: the Brotli KEV due
-  date, **.NET 8 (LTS) and .NET 9 end-of-support**, Go's 12-CVE security release, the
-  GitHub Actions `pull_request_target` brownout where blocked runs FAIL, a Node release
-  on 11-11, and **PostgreSQL 14's final release ever on 11-12**. If your lane owns one,
-  confirm from the vendor whether it shipped/enforced — and whether anything is now
-  broken for people who did not act.
-- **Still ahead and inside the urgent window:** BigQuery TabFM pricing **2026-11-17**,
-  Databricks `variantShredding` default **2026-11-18** (two vendor surfaces disagree:
-  what's-coming says upgrade target 16.4+, the feature doc says 17.3+ is required and
-  recommends a DBR that is already EOS — **the safe action is 17.3 LTS**), Snowflake
-  Legacy Notebook execution (November, vendor published NO day).
+> **To whoever writes this section next run: do NOT type a "has passed" / "still ahead"
+> clause. Every countdown below was COMPUTED from TODAY (2026-11-09) by the generator, not
+> typed. On 2026-11-08 a hand-typed version of this block claimed a 11-10..11-12 wall
+> "has now PASSED" when the date was the 8th, and four lanes independently corrected it.
+> The lanes verifying against vendor pages is the behaviour to keep — not a licence to be
+> sloppy here. Keep this block generated.**
+
+<!-- Generate this block, never type it: see tools/ledger/shared_rules.py
+     python3 tools/ledger/shared_rules.py --today <ISO> --obligations obl.json
+     A hand-typed relative-time claim here is read by all 19 lanes; on
+     2026-11-08 one said a 11-10..11-12 wall "has now PASSED" two days early. -->
+**Dated obligations, countdowns computed from 2026-11-09:**
+
+- **⚑ TODAY (2026-11-09)** — GitHub Actions `pull_request_target` brownout — blocked public-repo runs **FAIL**, not warn
+- **⚑ TOMORROW (2026-11-10)** — .NET 8 (LTS) end of support — verify the exact date from Microsoft's own lifecycle page, and whether .NET 9 shares it
+- **⚑ TOMORROW (2026-11-10)** — Brotli CVE CISA KEV federal due date (NVD 9.8 / Google 9.2 / Microsoft 8.1 — and MSRC records `Exploited: No` for an entry CISA lists as known-exploited)
+- 2 days out (2026-11-11) — Node.js release
+- 3 days out (2026-11-12) — PostgreSQL 14 final release ever
+- 8 days out (2026-11-17) — BigQuery TabFM token pricing
+- 9 days out (2026-11-18) — Databricks `variantShredding` becomes default (two vendor surfaces disagree: what's-coming says 16.4+, the feature doc says 17.3+ and recommends a DBR already EOS — **safe action is 17.3 LTS**)
+
+- Snowflake Legacy Notebook execution end: **November 2026, vendor published NO day** —
+  month precision only. Do not invent a day; if you find one, cite the surface.
+- If your lane owns one of the rows above, confirm from the VENDOR whether it actually
+  shipped/enforced, and whether anything is now broken for people who did not act. A date
+  arriving is not the same as a change landing.
 - **tzdata is a live silent-wrong-answer bug with three axes** — which release (Canada
   2026e vs Cuba 2026f), and **who owns the tzdb**. Doris, StarRocks and
   `--with-system-tzdata` PostgreSQL builds read the HOST `/usr/share/zoneinfo`, so **no
@@ -178,7 +185,7 @@ fact, and give **every** headline bullet at least one primary link.
 
 - `urgent` ONLY for a genuine ACT-NOW item: an actively-exploited or unpatched CVE on
   a stack a reader actually runs, OR a hard deadline within ~14 days (i.e. on or
-  before 2026-11-22). A date that requires NOTHING of the reader (a GA, a billing
+  before 2026-11-23). A date that requires NOTHING of the reader (a GA, a billing
   change, a conference) is NOT a deadline. A requirement already in force and
   blocking is past its deadline — that still counts.
 - `slow` = genuinely little or nothing happened in your lane.

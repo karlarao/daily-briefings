@@ -144,7 +144,13 @@ def refresh(text: str, own: str, today: str, *, window: int = 60):
 
 def refresh_rows(rows: list, today: str, *, datefield: str = "date",
                  fields=("t", "due"), window: int = 60):
-    """Apply `refresh` across a ledger section. Returns a printable report."""
+    """Apply `refresh` across a ledger section. Returns a printable report.
+
+    SIGNATURE PIN (2026-11-09): this returns ONE value -- the report list.
+    `rows` are mutated IN PLACE. Unpacking two values raises
+    `ValueError: too many values to unpack (expected 2)`; a run lost a cycle to
+    that. Call it as `report = refresh_rows(rows, TODAY)`, then read `rows`.
+    """
     report = []
     for r in rows:
         for f in fields:
