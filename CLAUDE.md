@@ -14191,3 +14191,32 @@ held: **"newest branch" is not "newest tooling" — check the file SET, not the 
 **No module bugs found this run** — every failure was in my own builder script (the report-key misread,
 the redundant meta loop, the missing shared sections in the nav dict), and in each case a module guard
 or a rendered-output scan caught it. That is the toolkit working as intended.
+
+## PRIVACY: `origin/main` was carrying a lens-content file, found 2026-11-10
+
+While landing tooling this run, the pre-commit privacy grep hit
+**`tools/lens/build_lens_030.py` on `origin/main`** — 749 lines holding real lens content in a
+**public** repo: Mirror `How it gets attacked` / `How to arm it` prose, chair Today's-Read text
+(`Where to spend today…`) and counter-stories.
+
+**The 2026-11-07 run deleted this file and the deletion never reached `main`.** The 11-09 note
+recorded that "one of [the older `claude/*` branches] still carries `tools/lens/build_lens_030.py`,
+the privacy-breach file the 11-07 run deleted" — nobody checked whether **main** had it. It did.
+Same branch-disagreement class as the 09-04 stored-prompt incident and the `tools/ledger/` saga.
+
+Scope, stated precisely rather than alarmingly:
+- **Not** on `gh-pages`, so it was never served by Pages.
+- Contains **no** private artifact URL (grepped for `09c4a354` and `claude.ai/code/artifact`: zero).
+- No customer names, no MOS-internal content. It is competitive-analysis prose derived from public
+  sources — an IP/hygiene exposure, not a secrets leak.
+- But `main` is a branch of a public repository, so the file was publicly readable on GitHub.
+
+**Deleted on `claude/great-clarke-15m18r` (commit `53d6dc9`) for Karl to merge. A deletion does not
+scrub git history** — the blob stays reachable in past commits, and only Karl can decide whether that
+warrants a history rewrite. Flagging rather than acting on it.
+
+**The durable fix is the habit, and it is cheap:** grep the file set you are about to commit for
+chair/Mirror/counter prose and the artifact URL *before* `git add`, every run. The 11-09 note already
+said every committed file was privacy-grepped; that grep is what caught this, except it caught it on a
+file that arrived from `main` rather than from the staged set. **So grep what you are committing, not
+just what you added** — `git diff --cached --name-only` is the right input.
