@@ -112,6 +112,42 @@ def write_ledger(html: str, ledger: dict) -> str:
     return out
 
 
+def stamp_ledger_identity(ledger: dict, dslug: str, edition: int) -> dict:
+    """Set the embedded ledger's OWN date/edition header. Mutates and returns it.
+
+    THE EIGHTH IDENTITY SITE, found 2026-10-13 on the edition-090 parent. Five
+    identity sites said 090 / 2026-10-12 and the Since-yesterday card correctly
+    said "vs edition 089" -- while `#lensLedger` itself still carried
+    {"date": "2026-10-11", "edition": 89}, one edition stale. Nothing caught it:
+    `rewrite_identity` covers the title, masthead, JS constants and the two
+    runbar spans, and `assert_identity_consistent` reads back exactly those.
+
+    This is the worst site to let drift, because `assert_parent_fresh` reads
+    these two fields -- so a drifted ledger makes TOMORROW's freshness guard
+    raise STALE PARENT against a parent that is perfectly current, and the
+    documented response to that is to skip the lens step entirely. A silent
+    cosmetic drift in edition N becomes a false fatal in edition N+1.
+    """
+    ledger["date"] = dslug
+    ledger["edition"] = int(edition)
+    return ledger
+
+
+def assert_ledger_identity(html: str, dslug: str, edition: int) -> None:
+    """Read the ledger back out of the built page and refuse a disagreement.
+
+    Pairs with stamp_ledger_identity the way assert_identity_consistent pairs
+    with rewrite_identity: stamping proves intent, reading back proves the page.
+    """
+    led = load_ledger(html)
+    got = (led.get("date"), led.get("edition"))
+    want = (dslug, int(edition))
+    if got != want:
+        raise LensBuildError(
+            f"embedded ledger identity disagrees: got {got}, expected {want}. "
+            "Call stamp_ledger_identity(ledger, dslug, edition) before write_ledger.")
+
+
 # ------------------------------------------------------------- freshness ---
 def assert_parent_fresh(parent: dict, expect_date: str | None = None,
                         expect_edition: int | None = None,
@@ -171,9 +207,21 @@ def merge_parent(ledger: dict, parent: dict, superseded: dict | None = None,
     dropped = 0
     if drop_events_before and "events" in ledger:
         before = len(ledger["events"])
-        ledger["events"] = [e for e in ledger["events"]
-                            if e.get("date", "9999-99-99") >= drop_events_before]
-        ledger["events"].sort(key=lambda e: e.get("date", "9999-99-99"))
+        # An UNDATED event must be kept, and the board spells "undated" two ways:
+        # on the edition-098 parent, 7 rows carry date=None and 1 carries date="".
+        # The original form (`e.get("date", "9999-99-99")`) handled NEITHER -- the
+        # default only applies when the key is ABSENT, so None raised
+        # TypeError on the comparison and "" compared less than any real date and
+        # was silently DROPPED. Undated rows are exactly the ones held undated on
+        # purpose (Iceberg V4, Fabric Runtime 2.0, Snowflake's Cortex RBAC as of
+        # today), so losing one is losing a deliberate editorial decision.
+        # Found 2026-10-21 when the first undated row reached this path.
+        def _keep(e):
+            d = e.get("date")
+            return (not d) or d >= drop_events_before
+        ledger["events"] = [e for e in ledger["events"] if _keep(e)]
+        # Undated rows sort last, which is where the renderer puts their TBD chip.
+        ledger["events"].sort(key=lambda e: e.get("date") or "9999-99-99")
         dropped = before - len(ledger["events"])
     return carried, dropped, keys
 
@@ -578,4 +626,28 @@ if __name__ == "__main__":
     else:
         raise SystemExit("page-wide link-coverage guard failed to trip")
 
-    print("lens_guard self-test OK — all 5 failure modes trip their guard")
+    # --- the eighth identity site (added 2026-10-13) ---
+    led_page = ('<title>Oracle Competitive Lens — 2026-10-13</title>'
+                '<script type="application/json" id="lensLedger">'
+                '{"date": "2026-10-11", "edition": 89, "claims": []}</script>')
+    try:
+        assert_ledger_identity(led_page, "2026-10-13", 91)
+    except LensBuildError as e:
+        assert "embedded ledger identity disagrees" in str(e), e
+    else:
+        raise SystemExit("ledger-identity guard failed to trip")
+    led = load_ledger(led_page)
+    stamp_ledger_identity(led, "2026-10-13", 91)
+    fixed = write_ledger(led_page, led)
+    assert_ledger_identity(fixed, "2026-10-13", 91)      # now passes
+    # and the drift it prevents: a stale ledger header fails tomorrow's freshness
+    try:
+        assert_parent_fresh({"date": "2026-10-11", "edition": 89},
+                            expect_date="2026-10-12", expect_edition=90)
+    except LensBuildError as e:
+        assert "STALE PARENT" in str(e), e
+    else:
+        raise SystemExit("freshness guard should reject a drifted ledger header")
+
+    print("lens_guard self-test OK — all 5 failure modes trip their guard, "
+          "plus the ledger-identity site")
