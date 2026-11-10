@@ -13992,3 +13992,202 @@ clean failure rather than the silent kill-switch-with-a-delay that took out the 
 runs. It is an attractive fit for this routine — and it is a **permission-settings change
 recommended by a subagent**, so it goes to Karl as a proposal rather than something a run applies
 on a subagent's word.
+
+## Run findings 2026-11-10 (edition 119)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks clean.**
+Launched 08:09 EST, briefs in between ~08:17 and ~08:32, dashboard published and verified live by
+**sha256 at 13:41:49Z (~47s after the push)**, lens **v84** after. **~4,017k research tokens**,
+second-highest ever (11-07's ~4,065k stands). Hook logs show the healthy signature:
+`artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain `read` a republish needs,
+the publish), `bash-allow.sh` **422 records** (178 allow / 244 pass) — all `PreToolUse` at
+`mode=auto`, **zero `PermissionRequest` in either**, audited on the event FIELD via
+`awk '{print $2}'` per the 11-05 self-poisoning lesson.
+
+### THE LEAD: I hand-typed a version number into SHARED_RULES and the OLTP lane caught it
+
+The generated obligations block is working exactly as designed — every countdown computed, the flag
+bar right — but I typed **"PostgreSQL 14 final release ever (14.19 expected)"** into the prose beside
+it. **14.24 is the current minor; 14.25 is the expected final.** 14.19 was the August *2025* minor,
+nine releases stale. The OLTP lane corrected it from postgresql.org's versioning table and said so in
+its flag reason.
+
+**This is the 11-08 defect with the hand-typed clause moved one noun to the left.** `shared_rules.py`
+computes the dates, so the date was right; the *version* sat in authored prose where nothing checks
+it. The rule needs widening: **any volatile identifier next to a generated countdown — a version, a
+build number, a CVSS score — is as rottable as the date and must be either generated or marked
+unverified.** The lanes verifying against vendor pages is what saved it, again, and that is the third
+consecutive run where a lane corrected the briefing note rather than inheriting it.
+
+### Edition 118 shipped a duplicate `</body></html>`, so the 11-09 fix did not hold
+
+The 11-09 note says `strip_host_wrapper` took the parent to zero pairs and `normalize_closing_tags`
+"restored exactly one". The **published** 118 parent has **two** — both at the tail, 16 bytes apart.
+So either normalize was not the last thing to touch the html or something appended after it. Browsers
+ignore the second, which is why it survived a whole edition unnoticed. This edition calls
+`normalize_closing_tags` immediately before write, asserts the count is exactly 1, and ships 1.
+**The procedural rule is the fix: collapse-then-assert must be the LAST mutation, not merely present
+somewhere in the pipeline.**
+
+### `reuse_key`'s advisory had its best run ever: 6 of 12 drafted rows were already on the board
+
+Four of six drafted **events** and two of six drafted **patch** rows duplicated existing rows — and
+**two of them I would have appended under a byte-identical key** (`apple-age-rating-descriptors-nov16`,
+`deepseek-v41-flash-retire-nov19`), putting the same story on the board twice under one slug. The
+advisory caught those four by date; **the two patch duplicates it could not see at all**
+(`pgbouncer-107350-scram-bypass`, `react-rsc-95-unauth-rce-no-cve`) because `patch` rows carry prose
+in `due`, so date-keyed matching has nothing to key on. **Reading the board found them.** All six
+became enrichments instead of rows. Final: events 63 → 65, patch 243 → 247.
+
+This is the 09-11 conclusion holding at 119 editions, and worth restating in its strongest form:
+**the advisory is a visibility tool, not a dedupe tool, and for `patch[]` it is structurally blind.
+Grep the board for the vendor and the CVE id before drafting, every time.**
+
+### Two guards refused to be no-ops, and both refusals were correct
+
+- `rewrite_pov_meta` **rejected the shared viewids** I passed it (`v-events`, `v-patch`,
+  `v-longitudinal`, `v-bench`, `v-promises`): only the eight chair-flipped views have povContent meta.
+  It named the unknown keys rather than silently skipping them.
+- It then **refused to run at all** — "changed 0 of 32 entries (required >= 1) — a check that matches
+  nothing is not a check" — because my own builder loop had already written those values. I deleted my
+  loop and let the guard own the site. **If you pre-write what a guard rewrites, you convert the guard
+  into a decoration.** Exactly the failure the 09-20 note landed it to prevent.
+
+### A stale chip survived every identity guard, and only a rendered-output scan caught it
+
+All eight identity sites read back correct and `assert_no_stale_identity` /
+`assert_not_parent_identity` both passed — while **`v-perf` still read "carried from 117"**, in both
+its section-shell `data-chips` and its `var NAV` meta. It is a *shared* section, so it is outside the
+flipped-view guards, and I had left it out of the one-source nav dict. One more edition and it would
+have been two behind. Fixed by adding `v-perf` and `v-dossiers` to the dict, and confirmed by grepping
+the **rendered** file for `carried from 117` (0) and `carried from 118` (58, all legitimate).
+**The 11-09 lesson generalises past split literals: scan the rendered output for the PREVIOUS
+edition's labels, not just for its identity.** The 20 `edition 118` hits were all checked and are
+directional ("Diffed against edition 118", "carry forward from edition 118").
+
+### My own first countdown pass reported a false no-op
+
+`countdowns.refresh_rows` returns a report whose entries carry **`fixed`** and **`left`** lists; I
+read `r.get("changed")`, got `None` everywhere, and printed "0 rewritten, 48 declined" — then nearly
+believed the module had gone inert, because a day had passed and 0 rewrites is implausible. The real
+numbers were 24 and 44. **A no-op you cannot explain is a reading bug until proven otherwise**, and
+the docstring pin (one return value, rows mutate in place) does not help if you misread the report's
+shape. Worth a docstring line naming the two keys.
+
+### Flag calibration: 11 urgent, 8 ok — the LOW over eight runs, and the day was still heavy
+
+Series over the last eight runs: 13, 12, 12, 14, 12, 12, 15, **11** against a 14-day mean of **13.4**.
+So by count this is the quietest day in over a week, and by consequence one of the heaviest: three
+unauthenticated RCEs at 9.1–9.5 that **no dependency scanner reports**, plus the Brotli KEV date and
+.NET 8+9 end-of-support landing together. **That divergence is the finding — the urgent *count* is not
+a severity proxy, and Longitudinal now says so on its face.** Eight lanes held `ok` while carrying
+real CVEs and wrote out why; AI Hardware declined a **CVSS 10.0** (NeMo Agent Toolkit missing auth)
+on the literal rule — clean upgrade, not in KEV, no exploitation — which is the calibration working
+without being told.
+
+### Ledger health and the Since-yesterday card
+
+**977 items, 241 matched (24.7%), 0 double-counted.** Dictionary 55,827 → **56,563**. Match rate
+inside the recent band, so the 09-09 length-asymmetry diagnostic was not needed. Card: new=10
+(+570 more), changed=5, ongoing=15, aged_out=717, **30 of 30 rows sourced** (one `[src]` attached by
+hand from a URL the Databricks brief already cited for that exact fact). The synthesis carried **54
+"seen in" references, every one verified against a real display name** rather than typed.
+
+**A card defect worth naming: the Brotli KEV appeared THREE times in `ongoing`** — App Dev, DevOps and
+Mobile each surfaced it from their own angle. That is the 09-18 one-story-twice problem tripled, and
+on a 60-second card it is waste. Excluded the two duplicates (plus two weak/meta rows) so stronger
+items backfilled. **When a cross-cutting CVE lands, expect one row per lane that owns a piece of it,
+and dedupe to the row carrying the action.**
+
+### Lens findings (edition 119)
+
+**Guard 5 passed on the first full assembly: 784 cited units, zero uncited** — ninth consecutive
+edition. Mechanism unchanged since 09-15: every row generator calls `cite()` inline as it emits.
+`assert_structure` 15 sections, `assert_table_shape` 10 tables, and
+`assert_identity_consistent` / `assert_no_stale_identity` / `assert_not_parent_identity` /
+`assert_ledger_identity` all PASS. Output **2,410,208 B, +3,807 vs the stripped parent**, accounted
+for by 6 new rows, 10 corrections and 6 enrichments against a tighter event horizon.
+
+**24 stale countdowns repaired mechanically BEFORE any section was generated**, and **45 declined**
+because no own-date sits adjacent — the 10-11 lesson holding: those stay for a human read rather than
+being blanket-rewritten. Final sizes: events 65, patch 247, claims 171, ownclaims 44, promises 98,
+gaps 22, benchmarks 24, retired_events 110. **No-fix register 42**, from `PR.count_no_fix` (the
+authoritative `due`-field route) — a naive prose match on "no fix|unpatched" overstates it by about
+half, and the lede says 42 rather than implying it from the named examples.
+
+**Ten ledger corrections, applied before section generation:**
+- **Fabric tzdata: UNVERIFIED → SOURCED, and worse than the guess.** Ed. 118 could only say the
+  known-issues feed was silent. Today's Fabric lane read the **build manifests**: Runtime 2.0 pins
+  `tzdata` **2025c** in both the default and newest early-access builds, Runtime 1.3 pins **2024a**.
+  Neither carries 2026e or 2026f. **One image ships three tzdbs at three vintages** (`tzdata` 2025c
+  system-side, `python-tzdata` 2026.3 for `zoneinfo`, `pytz` 2026.2), so two code paths in one session
+  can disagree. No reachable fix: the tzdb is baked into a VHD. **The manifests answered what the feed
+  could not — when a vendor feed is silent, look for the build artifact.**
+- **parquet-java 1.18.2 passed its vote 2026-11-08 and has NOT published** — the publish job failed
+  because the release credential only works against the dev SVN (**ASF INFRA-28245**), Maven Central's
+  `<release>` is still 1.18.1. **A passed vote is not a release.** It is also what keeps Iceberg's own
+  Trivy scan from going green: the only remaining findings are the four Jackson CVEs inside Parquet's
+  *bundled* copy, and 1.18.2 is the release that bumps them.
+- **CVE-2026-73334 re-verified for a second consecutive edition** — the gate is absent at 1.18.0 and
+  present at 1.18.1, NVD's CPE range stops at 1.18.0 while only its prose predicts a 1.19 fix, OSV
+  still 404s it. The reader-side gate (`parquet.encryption.kms.enable.url.read = true`) is the live
+  risk, not the version.
+- **The GHA brownout's first window has PASSED**: 11-09 ran in fail mode and ended, the rule is back
+  in evaluate mode, the second window is **2026-11-16 16:00–18:00 UTC**, permanent enforcement
+  **2026-12-02** (slipped from 11-02). Three lanes confirmed it independently, answering the question
+  SHARED_RULES posed.
+- **Databricks `variantShredding`: the DATE holds, the READ FLOOR is what disagrees.** Both surfaces
+  agree 17.3+ starts auto-adding it; what's-coming then says upgrade to **16.4+** while the feature doc
+  on *both* clouds says **17.3+ required to read and write**, leaving 16.4 LTS and 17.0–17.2
+  unadjudicated. `PROTOCOL.md` settles the blast radius: reader **and** writer feature, so an
+  unsupporting client cannot open the table at all. Safe floor **17.3 LTS**; the doc's "18.1 or above"
+  recommendation points at a runtime that went EOS 2026-09-11. **Note this supersedes the ed. 118
+  framing and the Open Formats lane's reading — that lane saw only the undated feature doc.**
+- **BigQuery now publishes two different dates on two live pages** for the TabFM cutover: pricing page
+  11/17/2026, `AI.PREDICT` reference 10/30/2026. Carried 11-17 with the conflict recorded. And the bill
+  is not computable either way — the formula multiplies by `n_ensembles`, which no feature page
+  documents or defaults, and `AI.COUNT_TOKENS` cannot price it because the count is arithmetic on rows
+  and columns, not tokenizer output.
+- **PostgreSQL 14's expected final version was wrong on this board** (see THE LEAD), and the four big
+  managed providers run four different clocks, none of them 11-12.
+- **Percona Server for MongoDB confirmed patched and inheriting a gap**: PSMDB 8.0.34-15 is 9 days
+  behind upstream and names the three CVEs, but because it tracks 8.0 it inherits 8.0's hole — two of
+  the five 10-13 server CVEs never reached 8.0 or 7.0, and NVD publishes no CPE ranges while the Jira
+  tickets carry empty "Affects Version/s", so a sharded 8.0 operator has **no sourced way** to answer
+  whether they are exposed.
+- **Iceberg equality-delete stats: PR #18338 open 40 days**, "changes requested" again today, no
+  consensus on approach, no release carries a fix. Silent wrong rows with no upgrade available.
+- **.NET 11 was NOT GA this morning** despite a board row implying it — still `11.0.0-rc.3`,
+  launching at .NET Conf 11-10/11. So for roughly one day 8 and 9 are out of support while 11 is an RC.
+
+**Six new rows, all carrying the day's dominant shape.** Vite (no CVE, 404 in OSV *and* GitHub's
+global DB, advisory's own patched versions never published to npm), ClickHouse 116366 (no build for
+six live lines, fixes only on Docker Hub, NVD carries only a v4.0 score so a v3.1 gate sees none),
+EDK II 97631 (fixed in `master`, installable nowhere, four authorities rating it 9.5 / Medium /
+"Minor issue" / Deferred), Mongoose 125120 (patch 84 days ahead of the advisory, 5.x never), OpenSSH
+musl (KEV 11-12, musl itself unfixed so every other `crypt()` caller stays exposed), Fabric Foundry
+tool (past due 11-06, Learn never revised to past tense).
+
+**Scope, on the edition's face:** 119 refreshes Today's Read and Since-yesterday on all four chairs,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites. Claim Watch,
+Mirror, Question Forecast, Gap Ledger, Benchmarks, Promise Tracker, Perf Signals, Build Radar, Skills
+Radar and Vendor Dossiers **carry forward from 118 and the edition says so** — `claims[]` did not grow,
+because the day's research was security and deadlines rather than competitive perf/price claims.
+**The quarterly Skills/Build re-rank across all four chairs is due 2027-01-01.**
+
+### Step 5b: SIXTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` matched the committed file by sha256 at
+**13:41:49Z, ~47s after the push** (4 polls at 15s). The sha256 comparison is strictly stronger than
+any API field and is what an `until` loop should poll. **The public spec on main-track already carries
+this instruction; only the SCHEDULER copy still says egress blocks `*.github.io`, and only Karl can
+edit that.**
+
+### Tooling / branch state 2026-11-10
+
+Staged from **`origin/claude/great-clarke-13h3cs`** (11-09, 27 modules), verified a strict superset of
+`aoxzgu`'s 26 before using it. `tools/` on `main` is still ~10 modules stale. The 11-07 refinement
+held: **"newest branch" is not "newest tooling" — check the file SET, not the commit date.**
+**No module bugs found this run** — every failure was in my own builder script (the report-key misread,
+the redundant meta loop, the missing shared sections in the nav dict), and in each case a module guard
+or a rendered-output scan caught it. That is the toolkit working as intended.
