@@ -14220,3 +14220,171 @@ chair/Mirror/counter prose and the artifact URL *before* `git add`, every run. T
 said every committed file was privacy-grepped; that grep is what caught this, except it caught it on a
 file that arrived from `main` rather than from the staged set. **So grep what you are committing, not
 just what you added** — `git diff --cached --name-only` is the right input.
+
+## Run findings 2026-11-11 (edition 120)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks clean.**
+Launched 09:11 EST, briefs in between ~09:17 and ~09:37, dashboard published and verified live by
+**sha256 at 13:44:14Z (~32s after the push)**, lens **v85** after. **~3,955k research tokens** (third-
+highest; 11-07's ~4,065k stands). Hook logs show the healthy signature, audited on the event FIELD via
+`awk '{print $2}'` per the 11-05 self-poisoning lesson: `artifact-allow.sh` **4 records** (list, a `read`
+with `path`, the plain `read` a republish needs, the publish), `bash-allow.sh` **457 records**
+(190 allow / 267 pass) — all `PreToolUse` at `mode=auto`, **zero `PermissionRequest` in either**.
+
+### THE LEAD: a "parked" agent that was not parked, and the 4f rule is what saved the run
+
+Snowflake's transcript went quiet for ~8 minutes with **no `SubagentHandback` anywhere in 202 records**,
+its last record a Bash `tool_result`, while `ListAgents` still showed it `running`. Every instinct said
+relaunch. I ran the 09-15 diagnostic instead: **zero `PermissionRequest` in 457 hook records**, so not a
+park; harness still tracking the task, so not the 08-31 suspension signature. Then I **measured the pulse
+over 45 seconds** — 991,706 → 1,175,134 bytes, mtime advancing — and it handed back minutes later with
+the single largest brief of the run (58,066 chars, `urgent`, two no-opt-out Snowflake deadlines).
+**A relaunch would have thrown away ~230k tokens of completed research to re-derive the same brief.**
+The rule earns its keep: *never kill an agent whose transcript is still advancing* — and the corollary
+this run adds is that **transcript write-buffering can hold a flatline for most of the 10-minute window**,
+so the watchdog's threshold is a floor for *investigating*, never a trigger for killing. Measure growth
+across two timestamps before acting; a single `stat` is a snapshot, not a trend.
+
+### `apply_harness_tokens.py` is now a NO-OP, which retires the 2026-09-14 finding
+
+It reported **"patched 19/19 sections; net +0 tokens"** — the extractor's per-agent figures now match the
+harness notifications **to the token**, across all 19 lanes. The 09-14 measurement (extractor 3.8% low
+overall, −3.5% to +11% per agent) no longer holds, and the cause is the 09-18 `SubagentHandback` fix:
+the usage on the last assistant record is now the agent's full total. Worth keeping the overlay anyway —
+it is cheap and it would catch a regression — but **a guard that changes nothing is worth knowing about**
+(same class as the 11-10 `rewrite_pov_meta` refusal), so the next run should expect +0 and treat a
+non-zero delta as news.
+
+### `assert_alias_safe` is SECTION-SCOPED and cannot see a legitimate retirement
+
+It fired on `events` with "6 parent keys vanished" — naming exactly the six past-dated events this build
+moved into `retired_events`. The guard is right about its own contract (no parent key leaves a section by
+omission) and wrong about the intent, because **retirement is a legitimate cross-section move**. The fix
+is not to skip the guard: run it section-scoped on the 8 sections that do not retire, and for events run
+it **against the union `events + retired_events`, in both directions** — which then passed. Worth a
+docstring line, because the next person to add a retirement rule will hit this in the same minute.
+
+### `%`-formatting collided with content for the FIFTH time, and the house rule held
+
+The Benchmark Scoreboard lede contains "+26.8%" and "0.55%", and `%`-formatting consumed them:
+`ValueError: unsupported format character 't'`. The 09-18 rule — *never `%`-format an HTML block that
+embeds generated prose or citations; concatenate with explicit `str()`* — fixed it in one edit. Five
+occurrences now (09-17, 09-18 ×3, 09-20, here). **Promote it from "known gotcha" to a lint:** any string
+literal in a lens builder that contains both `%` and a `%`-format call is the bug.
+
+### A hand-typed comparative contradicted the series I had just computed — caught by generating it
+
+The Longitudinal lede said today "equals the series high over this window" against a computed run of
+`12, 12, 14, 12, 12, 15, 11, 14`. The window high is **15**; today is **second**-highest. This is the
+09-20 defect verbatim, one edition after it was last recorded. Fixed by **generating the comparative
+clause** (`cmp8`) from the series — tie, high, or Nth-highest with the date that set it — and asserting
+the figures appear in the prose. **The durable form of the 09-20 rule: do not interpolate a number into
+a sentence whose comparative is typed; generate the comparative too.**
+
+### Three lanes corrected the briefing note I gave them, for the fourth consecutive run
+
+- **Frontend: Chrome 158's XSLT removal is 2026-11-17 (stable), not the 11-18 I put in SHARED_RULES** —
+  11-18 is its *late-stable* date, and Chrome's own deprecation doc says the 17th. Board corrected.
+- **Challengers: "no build for six live ClickHouse lines" was wrong in two ways.** Probed against the
+  package repos: all **four supported** lines (26.10, 26.9, 26.8-lts, 26.3-lts) have installable deb/rpm/
+  tgz builds. 26.7 and older are **EOL with no fix ever** — an EOL-branch shape, not a missing-build one.
+- **Open Formats: parquet-java 1.18.2 PUBLISHED at 02:50 UTC today**, resolving INFRA-28245 (the publish
+  job moved to `nexus-staging-maven-plugin`, GH-3894). SHARED_RULES said it had not published, and had
+  asked the lane to re-verify — which is the mechanism working as designed.
+  Gotcha to carry: **the jars' own mtimes read 2026-11-05**, the RC staging build, so anything keying on
+  artifact timestamps mis-dates this release by six days.
+
+### Flag calibration: 14 urgent, 5 ok — equal to the series high, and audited one at a time
+
+All 14 survive the literal definition; **14 flags cover ~11 distinct stories** (Brotli is shared by App
+Dev + DevOps, Go cgo by App Dev + DevOps, DeepSeek by AI Daily + Databricks). The composition is the
+finding: **only three rest on active exploitation** (Chromium's XML UAF, php2shell against Oracle Secure
+Backup, and the Brotli KEV entry whose date has passed). The rest are four "no fix exists for somebody",
+four dated cutovers inside eight days, and three scanner-invisible criticals. **Yesterday was the eight-run
+LOW by count on one of the heaviest days by severity; today is near the high by count on a day whose
+severity is concentrated in undiscoverability.** The urgent count is not a severity proxy in *either*
+direction, and Longitudinal now says so from generated prose. Five lanes held `ok` while carrying real
+CVEs and wrote out why — AI Hardware declined five CVE clusters as local/no-KEV, Fabric declined two MSRC
+driver CVEs *and* declined promoting a passed cutover it could not prove had executed, BigQuery held `ok`
+on a billing change with zero CVEs in lane.
+
+### Ledger health and the Since-yesterday card
+
+**969 items, 51 exact + 166 fuzzy = 217 matched (22.4%), 0 double-counted.** Dictionary 56,563 →
+**57,315**. Match rate inside the recent band, so the 09-09 length-asymmetry diagnostic was not needed.
+The 15 weakest accepted merges were eyeballed and all were genuine same-story rewordings. Card: new=13
+(+574 more), changed=3, ongoing=15, aged_out=789, **31 of 31 rows sourced**. Synthesis carried **74
+"seen in" references, every one verified against a real display name** by script rather than typed.
+
+**Card defect, now a recurring shape: Brotli appeared FIVE times in `ongoing` and ClickHouse FOUR.**
+The 11-10 note recorded Brotli ×3; a cross-cutting CVE produces one row per lane that owns a piece of it,
+and on a 60-second card that is waste. Pinned the row carrying the *action* (DevOps, forensic-triage
+framing) and excluded the restatements — but kept Mobile's "reached iOS 27.2.1 and 26.7.3 but NOT the iOS
+18 line", because that is a distinct fact rather than a restatement. **The dedupe test is "does this row
+carry a fact the survivor does not", not "does it name the same CVE".**
+
+### Lens findings (edition 120)
+
+**Guard 5 passed on the first full assembly: 858 cited units, zero uncited** — tenth consecutive edition.
+`assert_structure` 15 sections, `assert_table_shape` 10 tables, and `assert_identity_consistent` /
+`assert_no_stale_identity` / `assert_not_parent_identity` / `assert_ledger_identity` all PASS.
+`normalize_closing_tags` ran as the **last** mutation per the 11-10 procedural rule and shipped exactly 1
+pair (the published 119 parent had **2** again, so that defect is now two editions old — the fix only
+holds if collapse-then-assert is literally last). Output **2,489,696 B, +67,993 vs the stripped parent**,
+accounted for to within **55 bytes** component by component (povContent +32,322 from four refreshed chair
+bodies, ledger +24,019 from 19 long corrections and 7 new rows, v-wn +7,281, v-events +4,534, v-bench
++1,622, v-read +1,091, v-longitudinal +634, against v-patch −3,565 from the radar cap).
+
+**The advisory's structural blindness on `patch[]` is confirmed again, and `probe_board.py` is what
+actually worked.** `reuse_key` printed **nothing** for the new patch rows — `patch[]` keys on `due`,
+which holds prose, so date-keyed matching has nothing to key on (the 11-10 finding, reconfirmed). Reading
+the board is what caught it: of ~20 drafted rows, **11 were already tracked** — mcp-go GO-2026-6911,
+pgvector 103484, pgbouncer 107350, php2shell, both Snowflake BCRs, DuckDB 1.4 EOL, Apple age-rating,
+EKS 1.31, ingress-nginx, AMD Venice. **And the Vite row already carried the correct `8.2.6` fix**, so a
+correction I had drafted was unnecessary — the 10-08/10-09 rule holding: *check the board before writing
+a correction, not after.* Genuinely new: 7 patch rows, 1 event, 1 audited benchmark, 1 promise delivered.
+
+**19 corrections and enrichments, applied to the ledger BEFORE any section was generated.** Beyond the
+three lane corrections above: **.NET 11 DID go GA** on 11-10 (the 11-10 board reading was true that
+morning and is superseded) with 22 CVEs and the planning fact that .NET 10 LTS and 11 STS **both** end
+2028-11-14; **the React RSC RCE became scannable** as CVE-2026-126187 on 11-10 after 27 days with no id —
+so the fix was installable for 27 days before any tool would say so, and it is **still** invisible inside
+Next.js, which vendors it as a `file:` dependency no lockfile scan or `overrides` pin can reach;
+**Mongoose's patch-before-advisory gap is 91 days, not 84**; **the eMudhra question is answered** — the
+Oracle *Database Server* is on Rev 2 of CVE-2026-114820 while NVD still describes it as Java-SE-only.
+
+**A disagreement recorded rather than resolved, deliberately.** On the Brotli KEV entry, the DevOps lane
+reports CISA's required action naming **BOD 26-04 forensic triage**; the App Dev lane reports the same
+entry carrying **`forensicTriage: No`**. Both cite the live catalog. The row carries both readings and
+advises the stricter one for internet-facing proxies. **Two lanes reading one authority and disagreeing is
+a finding about the authority, not a tie to break by picking a lane.**
+
+**Two duplicate pairs folded** — ClickHouse 116366 and the React RSC RCE each carried the same CVE under
+two keys — losers preserved in `aliases[]`. **Six past-dated events retired, and two did not discharge**:
+the Brotli KEV date converted into a triage obligation, and the Node.js release pre-announced for today
+**had not shipped as of 13:26 UTC** (two lanes independently read the bundled Brotli out of each tag —
+1.2.0 on 26.13.0 and 24.22.2, 1.1.0 on 22.23.4, 1.2.1 only on `main`, which predicts the content).
+
+**Scope, on the edition's face:** 120 refreshes Today's Read and Since-yesterday on all four chairs,
+Event Horizon, Patch-Risk Radar, Longitudinal, the Benchmark Scoreboard (one new audited row), the ledger
+and all eight identity sites. Claim Watch, Mirror, Question Forecast, Gap Ledger, Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 119 and the edition says so**
+— `claims[]` did not grow, because the day's research was security and deadlines rather than competitive
+perf/price claims. **The quarterly Skills/Build re-rank across all four chairs is due 2027-01-01.**
+
+### Step 5b: SEVENTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the committed file
+by sha256 at 13:44:14Z, ~32s after the push** (2 polls at 15s). The sha256 comparison is strictly stronger
+than any API field and is what an `until` loop should poll. **The public spec on main-track already
+carries this instruction; only the SCHEDULER copy still says egress blocks `*.github.io`, and only Karl
+can edit that.**
+
+### Tooling / branch state 2026-11-11
+
+Staged from **`origin/claude/great-clarke-15m18r`** (11-10, 27 modules), verified a strict superset of
+`13h3cs` before using it, and privacy-grepped the whole staged set for chair/Mirror/counter prose and the
+artifact URL — **clean**. `tools/` on `main` is still ~10 modules stale. **No module bugs found this run**:
+the three failures were all mine (the `%`-format literal, the typed comparative, and running a
+section-scoped guard across a cross-section move), and in each case a module guard or a read-back caught
+it. That is the toolkit working as intended.
