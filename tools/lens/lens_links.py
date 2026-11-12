@@ -70,6 +70,13 @@ def find_url(title: str, corpus: list[tuple[str, str, str]],
              topics: set | None = None, min_cover: float = 0.34) -> str | None:
     """Best primary URL for `title`, or None when no bullet plausibly matches.
 
+    SIGNATURE PIN (2026-11-09): the lane filter is `topics` (PLURAL) and takes a
+    SET, not a `topic=` string. `find_url(t, corpus, topic="oltp")` raises
+    `TypeError: unexpected keyword argument 'topic'`; write
+    `topics={"oltp"}`. Also: `title` must not be None -- the archive-fallback
+    idiom `cite(None, TODAY)` must NOT be routed through here (it calls
+    `.lower()` on the title), so a builder's `C()` helper has to be None-safe.
+
     Lens titles are long re-summaries, not quotes of the brief headline, so raw
     sequence similarity misses real matches ("26.7: 313x on GROUP BY" vs
     "26.7 is the meatiest perf release") while generic words ("memory",
