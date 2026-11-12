@@ -14388,3 +14388,185 @@ artifact URL — **clean**. `tools/` on `main` is still ~10 modules stale. **No 
 the three failures were all mine (the `%`-format literal, the typed comparative, and running a
 section-scoped guard across a cross-section move), and in each case a module guard or a read-back caught
 it. That is the toolkit working as intended.
+
+## Run findings 2026-11-12 (edition 121)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks clean.**
+Launched 08:09 EST, briefs in between ~08:16 and ~08:33, dashboard published and verified live by
+**sha256 at 13:43:31Z (~32s after the push)**, lens **v86** after. **~4,099k research tokens — a new
+record** (prior high ~4,065k on 11-07). Hook logs show the healthy signature, audited on the event
+FIELD via `awk '{print $2}'` per the 11-05 self-poisoning lesson: `artifact-allow.sh` **4 records**
+(list, a `read` with `path`, the plain `read` a republish needs, the publish), `bash-allow.sh`
+**468 records** (198 allow / 270 pass) — all `PreToolUse` at `mode=auto`, **zero `PermissionRequest`
+in either**.
+
+### THE LEAD: `assert_alias_safe` "in both directions" is wrong on any edition that adds a row
+
+The 11-11 note says to run the events alias check "against the union `events + retired_events`, in
+both directions". The union half is right and fixes a real blind spot. **The "both directions" half
+is wrong, and it only looked right on 11-11 because nothing was added to `events` that day.**
+`assert_alias_safe(new, parent)` asserts *no parent key left by omission*; run backwards it asserts
+*every new key was already in the parent*, which is false by construction for any genuinely new row.
+Today it failed on `dependabot-alerts-pause-dormant-repos-dec8` — a row I had just added on purpose.
+**The durable form: union, FORWARD only.** Generalisable shape worth naming: a guard that passes
+because the edition happened to be empty in the relevant direction has not been tested, and writing
+down "both directions" cemented an untested half as an instruction.
+
+### I made the exact reading bug `countdowns.refresh_rows`'s own docstring pins
+
+`refresh_rows` returns a list of `{"k","field","fixed","left"}`. I read it as a dict, asked for
+`rep["rewritten"]`, got nothing, and printed **"rewritten=0 declined=0"** across three sections.
+The module's docstring carries a REPORT SHAPE PIN from 2026-11-10 describing this failure almost
+verbatim, including the line that saved it: *"A no-op you cannot explain is a reading bug until
+proven otherwise."* Read correctly it was **22 countdowns rewritten, 41 declined** by the adjacency
+rule for hand reading. **Two lessons: the pin worked — read the docstring of a module that reports
+zero before believing the zero; and a report shape is part of an API, so a module that returns a
+list should not be called with dict syntax that silently yields `None`.**
+
+### Closing tags: asserting on the FILE is what makes the fix hold
+
+The published **120 parent carried TWO `</body></html>` pairs** — the third consecutive edition to do
+so (118, 119, 120) despite each build asserting one. `normalize_closing_tags` is not the bug: fed the
+parent it collapses 2 → 1 and is idempotent. The bug is *where* the assertion reads. A build that
+asserts on the in-memory string and then concatenates again has asserted nothing. **This edition
+runs `normalize_closing_tags` as the last mutation, writes the file, then re-reads the file from disk
+and asserts `(1,1)` on those bytes.** That is the only version of the check that cannot be
+invalidated by a later line of the builder.
+
+### `rewrite_pov_meta` refused the shared view ids, and was right to
+
+Passing all 15 NAV entries raised `unknown povContent meta viewid(s)` naming the seven shared views.
+`povContent.meta` covers only the **8 chair-flipped** views (`v-read`, `v-wn`, `v-claims`,
+`v-mirror`, `v-questions`, `v-gaps`, `v-skills`, `v-build`). A guard that enumerates its own domain
+and rejects anything outside it is the opposite of the 11-09 defect where a check written against a
+plausible shape matched nothing and passed.
+
+### `probe_board` paid for itself twice over: 14 of ~17 candidates were already tracked
+
+Probed before drafting anything. Already on the board and therefore **enriched in place rather than
+given a fresh slug**: LiteLLM, MongoDB CVE-2026-118383, PgBouncer's 107348/107349/107350 trio,
+CocoaPods, k8s 1.38, the Gemini 2.5 reroute, Snowflake's default-email BCR, Opus 4.8 fast mode, Vite,
+the React RSC RCE, MySQL 8.0, and the HPE DL525 TPC-H submission. **Genuinely new: three.** And four
+corrections I had drafted from today's briefs turned out to be **already applied** — Fabric Runtime
+2.0 being the default (corrected 10-23), Fabric Runtime 1.3's LTS window (10-06), the Snowsight
+BCR-2413 relocation to early February 2027 (10-23) and Chrome 158's 11-17 stable date (11-11). The
+10-08 rule holds: *check the board before writing a correction, not after.*
+
+### Structural catch: a KEV obligation promoted from event to patch row before its date passed
+
+The OpenSSH musl entry (CVE-2026-123158) existed on this board **only as an event**, and its KEV date
+was today — so tomorrow it would have retired and the obligation would have left the board silently.
+That is precisely the defect the 11-05 note named when it found the Linux-kernel KEV entry had done
+exactly that. This time it was caught *in advance* rather than reconstructed afterwards.
+**Standing rule earned: before retiring any event that encodes a KEV remediation date, check that a
+`patch[]` row carries the obligation.** A passed KEV date converts into a triage obligation; it does
+not discharge.
+
+### A recorded disagreement closed by measurement rather than by picking a lane
+
+The Brotli row carried `forensicTriage: Yes per DevOps / No per App Dev` since 11-11. Today **three
+lanes independently** pulled the live catalog and found the same thing: the `requiredAction` prose
+naming "CISA's Forensics Triage Requirements" is **byte-identical BOD 26-04 boilerplate on 162
+entries, 59 of which answer No**, and across the 49 entries added since 2026-10-01 it is one shared
+string while the field splits 31 Yes / 18 No. The proof pair is OpenSSH CVE-2026-123158 (`Yes`) and
+Brotli (`No`) carrying identical requiredAction text. **Only the structured field carries the
+obligation.** Both lanes read real text; the board was wrong to log it as a vendor dispute. Worth
+keeping as a template: a "disagreement" between two readers of one authority is often a finding about
+the authority's data model.
+
+### Curation: a fragment must be classified by LIST before it goes into a pick or a pin
+
+`derive_lists probe` searches all raw rows, so it happily resolves a fragment that lives in
+`ongoing` while you are building `PICKS`. Eleven of my twelve lead fragments resolved — and the
+twelfth, **PostgreSQL 14 EOL, the day's single biggest item, was in `changed`, not `new`**, because it
+matched yesterday's "PG 14.25 ships TOMORROW" entry. Had I not checked list membership it would have
+been a silent `WARN: pick not found`. Added a verification step that asserts each fragment occurs
+**exactly once in its intended list** before patching `curate.py`.
+
+**And one row could not be honestly sourced, so I swapped the pin rather than invent a link.** The
+Open Formats DuckDB-1.4-EOL row had no `url`, and that brief cites **no duckdb.org link at all** — so
+there was nothing to reuse. The Challengers lane's equivalent row carries the link *and* the richer
+fact (1.5 is supported to March 2027, avoiding 2.0's irreversible storage change), so the pin moved
+to that row and the unlinkable one was excluded. **Reuse requires that the brief actually cite the
+URL for that fact; when it does not, change the row, not the citation.** Final card: 16 new (+522
+more), 3 changed, 15 ongoing, **34 of 34 rows sourced** (one Apple page attached by reuse).
+
+### Flag calibration: 12 urgent, 7 ok — inside the recent band, and the composition is the story
+
+Audited one at a time against the literal definition. **Only three of the twelve rest on active
+exploitation** (Chromium's XML UAF, php2shell against Oracle Secure Backup, and the Brotli KEV entry
+whose date has passed); four are dated cutovers inside eight days; five are "the fix exists and no
+tool can see it". Seven lanes held `ok` while carrying real CVEs and wrote out why — AI Hardware
+declined an 8.4 local-vector TensorRT-LLM CVE with a published fix, BigQuery declined a 9.4 patched
+server-side with no customer action, Redshift declined its whole P206 breaking-change wave as "serious
+but not a deadline the reader can act against", Database Hardware declined the AMD TSA set as
+local/no-KEV, and AI Daily declined four fixed Claude Code permission bypasses because none carries a
+CVE or KEV entry. That asymmetry is the evidence the agents discriminated rather than blanket-flagged.
+
+### Ledger health and the dashboard
+
+**945 items, 51 exact + 186 fuzzy = 237 matched (25.1%), 0 double-counted.** Dictionary 57,315 →
+**58,023**. Match rate is *above* the recent 22% band, so the 09-09 length-asymmetry diagnostic was
+not needed. `curate.py`'s fatal "pin not found" did not fire. **`apply_harness_tokens.py` reported
+net +0 for the second consecutive run**, which the 11-11 note predicted — treat a non-zero delta as
+news. Synthesis carried **66 "seen in" references, all 19 display names verified by script**, with
+every lane cited at least once.
+
+### Lens findings (edition 121)
+
+**Guard 5 passed on the first full assembly: 803 cited units, zero uncited** — eleventh consecutive
+edition, mechanism unchanged since 09-15 (`cite()` called inline by each row generator).
+`assert_structure` 15 sections, `assert_table_shape` 10 tables, and all four identity guards PASS.
+**All eight identity sites rewritten and verified by reading the written file back**; the 15 remaining
+"edition 120" occurrences are all legitimate backward references.
+
+**11 corrections applied to the ledger before any section was generated** (the 09-14 build-order
+rule), each asserted to match exactly one row. Beyond the Brotli resolution: ClickHouse
+CVE-2026-116366 gained **a fourth axis of unreachability** — none of its four fixed git tags exists
+on GitHub (404, against 200 for the last pre-fix tag) and `releases.atom` stops at that pre-fix tag,
+so source builders and tag-pinned supply chains cannot get the fix *and were never told it shipped*,
+while the deb repo still serves a newer-looking 26.7.38.18 on the EOL line. parquet-java 1.18.2's
+publish time is **02:58:27 UTC** (Maven `lastUpdated`), its jar mtimes read six days earlier from the
+RC staging build, and **the carried claim that it cleared Iceberg's Trivy scan is retired** — PR
+#18483 pruned stale suppressions on 2026-10-13, a month earlier. No Electron line can reach the
+Chrome 157.0.8103.50 floor. Vite's own advisory names `8.2.5`, which **404s on npm**.
+
+**Size: +8,364 characters against the stripped parent, accounted to within 15** — `lensLedger`
++17,355 and `v-patch` +8,067 against **`povContent` −15,582**, which is the part worth explaining: my
+four chair bodies are tighter than edition 120's, so a shrink there is deliberate rather than a lost
+section. Events 60 → 60 (+1 new, −1 discharged), patch 252 → 255, and `claims[]`/`ownclaims[]`/
+`promises[]`/`gaps[]`/`benchmarks[]` **all unchanged at 171/44/98/22/25** — no competitor shipped a
+perf or price claim worth a card, and the edition says so on its face rather than padding a section.
+
+**Event Horizon has no past-due row for the first time in nine editions**, because the one discharged
+event actually shipped: the Node.js security releases landed 2026-11-11 with 16 CVEs and 7 High,
+including two TLS/mTLS authentication bypasses.
+
+**Scope, on the edition's face:** 121 refreshes Today's Read and Since-yesterday on all four chairs,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites. Claim Watch,
+Mirror, Question Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build
+Radar, Skills Radar and Vendor Dossiers **carry forward from 120 unrevised**. The quarterly
+Skills/Build re-rank across all four chairs is due **2027-01-01**.
+
+### Step 5b: EIGHTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the committed
+file by sha256 at 13:43:31Z, ~32s after the push** (3 polls at 15s). The sha256 comparison is
+strictly stronger than any API field. **Only the SCHEDULER copy still says egress blocks
+`*.github.io`, and only Karl can edit that.**
+
+### Tooling / branch state 2026-11-12
+
+Staged from **`origin/claude/great-clarke-uwtcba`** (11-11, 27 modules), verified a strict superset of
+`15m18r` before using it, and privacy-grepped the whole staged set — the only hits are the literal
+page title "Oracle Competitive Lens" inside the lens guards, no artifact URL and no chair prose.
+`tools/` on `main` is still ~10 modules stale. **No module bugs found this run**: all three failures
+were mine (reading a list as a dict, passing shared view ids to a flipped-view guard, and cementing an
+untested guard direction into an instruction), and in each case a module guard or its own docstring
+caught it.
+
+**Privacy item from 11-10 remains open on `main` and is removed on this branch.**
+`tools/lens/build_lens_030.py` is 107 KB of an old lens builder with **56 hits** on competitor and
+counter-story markers sitting on a PUBLIC branch. It carries no artifact URL and it is absent from the
+current tooling lineage, so deleting it loses nothing. Removed here; it needs Karl's merge to leave
+`main`.
