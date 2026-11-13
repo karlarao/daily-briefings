@@ -14570,3 +14570,164 @@ caught it.
 counter-story markers sitting on a PUBLIC branch. It carries no artifact URL and it is absent from the
 current tooling lineage, so deleting it loses nothing. Removed here; it needs Karl's merge to leave
 `main`.
+
+## Run findings 2026-11-13 (edition 122)
+
+**Clean run: all 19 agents completed first try, no suspension, no parked prompt, both hooks clean.**
+Launched 08:14 EST, briefs in between ~08:18 and ~08:30, dashboard published and verified live by
+**sha256 at 13:35:26Z (~35s after the push, 3 polls at 15s)**, lens **v87** after. **~2,725k research
+tokens.** Hook logs show the healthy signature, audited on the event FIELD via `awk '{print $2}'` per
+the 11-05 self-poisoning lesson: `artifact-allow.sh` **4 records** (list, a `read` with `path`, the
+plain `read` a republish needs, the publish), `bash-allow.sh` **146 records** — all `PreToolUse` at
+`mode=auto`, **zero `PermissionRequest` in either**.
+
+### THE LEAD: the board beat the research twice, in opposite directions
+
+Both catches came from running `probe_board.py` BEFORE drafting anything (the 10-08 rule), and both
+would have shipped as damage if I had trusted fresh research over the board.
+
+1. **A lane asserted a false negative about a Critical.** Today's MongoDB lane reported that the
+   carried id **CVE-2026-118383 "returns no record anywhere"** and called it a likely transcription
+   error. I had the correction drafted. The NVD API returns it: published 2026-11-10, source
+   `cna@mongodb.com`, **CVSS 4.0 9.5 / CVSS 3.1 9.0 Critical**, a use-after-free in the replication
+   component reachable by requests that **do not require authentication**. The row stands, now
+   carrying the challenge and the refutation. **Generalisable: an agent's negative is a claim like
+   any other, and "I searched and found nothing" is the cheapest claim to make and the most
+   expensive to accept.** Verify a negative before acting on it, exactly as you would a positive.
+2. **A carried claim of OURS was wrong and got corrected toward the vendor.** The board held
+   ClickHouse CVE-2026-116366 as "fixed but unreachable — none of the four fixed tags exists (404)".
+   Today's Challengers lane said that had resolved; I verified `releases.atom` directly and all four
+   tags are present, pushed 2026-10-25/26. What survives is narrower and still true: 26.7 and older
+   are EOL with no fix ever, and NVD publishes **only a CVSS 4.0 vector** (confirmed from the API:
+   `cvssMetricV40` + `ssvcV203`, no `cvssMetricV31`), so a 3.1-only gate scores a 9.5 at zero.
+   **A board that only ever accumulates severity is a board that drifts away from the vendor.**
+
+### The item count halved and it was an input change, not a defect — measured before concluding
+
+Step 4c extracted **372 items against a recent norm near 945**, which is the shape of a broken
+extractor. It is not: a per-topic count showed **372 of 372 top-level bullets captured, a 1:1 ratio
+with nothing dropped**. The briefs themselves ran about half their usual length (median ~9.8k chars
+against ~20k), because **every one of the 19 research agents fell back from Opus 5 to Opus 4.8** —
+each completion notification said so. Fewer, denser bullets. The independent check that the matcher
+is healthy is the match rate: **20.4%, squarely in the recent 22–25% band**. The 09-09 diagnostic
+earns its keep again precisely by *exonerating* the tooling. **The run label now reads
+`claude-opus-5 (agents on claude-opus-4-8)` rather than asserting one model, because the dashboard's
+model field exists so model changes stay visible across history.**
+
+### I made the `countdowns.refresh_rows` reading bug its own docstring pins — one edition after it was pinned
+
+`refresh_rows` returns entries of `{"k","field","fixed":[...],"left":[...]}`. I counted
+`sum(1 for x in rep if x.get('fixed'))` — truthiness of a **list** — and printed "events: rewritten=0
+declined=6", which reads exactly like the module having gone inert. Read correctly with
+`len(r['fixed'])` / `len(r['left'])` it is **0 auto-fixed and 8 left for hand reading on events, 22
+auto-fixed and 33 left on patch**. The docstring's REPORT SHAPE PIN (2026-11-10) describes this
+failure almost verbatim and the 11-12 run hit the sibling version of it. **Twice in two editions is
+no longer a gotcha, it is an API problem: a report whose fields are lists should not be summarised by
+truthiness, and the pin should say "count the lists" in its first line, not its fifth.** Also worth
+keeping: most "left for hand" entries are **durations and lags** ("9 days behind upstream", "339 days
+ago", "194 days"), which the adjacency rule correctly declines — only one was a genuinely stale
+countdown (php2shell 14 → 15 days past due).
+
+### `assert_alias_safe` on the events union, FORWARD only — the 11-12 correction held
+
+Run section-scoped on the 8 non-retiring sections, and for events against the union
+`events + retired_events` in the **forward direction only**. It passed with 4 events retired and 2
+new patch rows added. The 11-11 "both directions" instruction would have failed on the new rows, as
+the 11-12 note predicted; this is the first edition to exercise the corrected form on a day that both
+retires and adds.
+
+### Flag calibration: 10 urgent, 9 ok — the LOW of the eight-run window on a heavy day
+
+`[14, 12, 12, 15, 11, 14, 12, 10]`, generated from the series rather than typed (the 11-11 rule).
+All ten survive the literal definition: one actively-exploited KEV 15 days past due (php2shell, now
+scoping Oracle Secure Backup), two Critical unauthenticated RCEs that scanners report clean on
+(React/Next CVE-2026-126187, Vite GHSA-p4f5), a live supply-chain compromise (malicious
+`litellm==1.107.0`), a CVSS 9.8 unauth injection with an EOL line that gets no fix (Mongoose), and
+five dated cutovers inside six days. **Ten flags cover ~8 distinct stories** — React RSC is shared by
+App Dev and Frontend, Brotli by DevOps and Open Formats (though those are genuinely *different
+reachable surfaces*: container base images versus PyArrow wheels). **Nine lanes held `ok` while
+carrying real CVEs and wrote out why**, which is the evidence they discriminated: Redshift declined a
+CVSS 9.2 JDBC RCE because a reachable fix exists and it is not in KEV; Challengers declined the
+CVSS 9.5 ClickHouse RCE *because* its fix had become reachable; BigQuery declined a billing change
+with a 4-day date on the rule that a billing change is not a deadline; Fabric verified **zero**
+Fabric/Power BI/Synapse CVEs against the MSRC CVRF JSON rather than inferring. **The urgent count is
+not a severity proxy: today is the window low on a day carrying two Criticals and a credential thief.**
+
+### Ledger + card
+
+**372 items, 14 exact + 62 fuzzy = 76 matched (20.4%), 0 double-counted.** Dictionary 58,023 →
+58,319. Card: new=15 (+169 more), changed=5, ongoing=15, aged_out=780, **35 of 35 rows sourced**
+(two attached by reuse from URLs already cited in their own briefs for that exact fact). Synthesis
+carried **55 "seen in" references, every one verified against a real display name by script, all 19
+lanes cited at least once.**
+
+**The 11-12 list-membership lesson paid off immediately.** Mongoose CVE-2026-125120 — the day's
+highest-severity single item — resolved into **`changed`, not `new`**, because it matched yesterday's
+entry. Had I put it in PICKS it would have been a silent `WARN: pick not found`. Every one of the 28
+fragments was resolved through `derive_lists` and checked for list membership first. `EXCLUDE_CHANGED`
+is still not covered by `derive_lists` and had to be patched by hand with a lambda replacement (the
+09-17 `re.sub` backslash gotcha); **promoting it into `derive_lists write` is the obvious next fix.**
+
+### Lens findings (edition 122)
+
+**Guard 5 passed on the first full assembly: 741 cited units, zero uncited** — twelfth consecutive
+edition. `assert_structure` 15 sections, `assert_table_shape` 10 tables, and all four identity guards
+PASS. All eight identity sites rewritten and verified by reading the written file back.
+
+**The published 121 parent carried TWO `</body></html>` pairs — the fourth consecutive edition.**
+`normalize_closing_tags` is not the bug; *where the assertion reads* is. This edition ran it as the
+last mutation, wrote the file, then **re-read from disk and asserted (1,1) on those bytes**, which is
+the only form the 11-12 note accepts. Note also that `strip_host_wrapper` left **zero** pairs on a
+page staged via `read` with `path` (the 09-19 finding), so the re-append is doing real work.
+
+**Size: 33,107 bytes SMALLER than the stripped parent, accounted to within 134 bytes** —
+`povContent` −18,913 (four tighter chair bodies, deliberate), `v-events` −10,874 (4 retirements),
+`v-patch` −4,483, `v-read`/`v-wn` shells −4,595, against `lensLedger` **+6,013** (2 new rows, 3
+corrections, 4 retirement notes). Events 60 → 56, patch 255 → 257; `claims[]`/`ownclaims[]`/
+`promises[]`/`gaps[]`/`benchmarks[]` **all unchanged at 171/44/98/22/25** — no competitor shipped a
+perf or price claim worth a card, and the edition says so on its face.
+
+**A retirement that is a retraction, not a discharge.** The `openai-cursor-cutoff-nov12` event left
+the board because today's AI Daily lane went looking for a primary source for the 11-12 cutoff and
+found none — only low-quality aggregators that also claimed a SpaceX acquisition of Cursor. Retired
+as **unverified**. A dated row nobody can source is worse than no row, and retiring it silently as
+"discharged" would have recorded a fact that never happened.
+
+**The KEV-before-retirement guard fired as designed.** Before retiring `openssh-musl-123158-kev-nov12`
+I checked that a `patch[]` row carried the obligation — `openssh-musl-123158-kev-triage-obligation`
+does. That is the 11-12 standing rule working prospectively for the second edition running.
+
+**Two genuinely new patch rows out of ~15 probed; everything else was already tracked and enriched in
+place** (Vite — whose row *already* carried the 8.2.6 correction, mcp-go, Brotli, EKS 1.31, age-rating,
+CocoaPods, DeepSeek, variantShredding, DuckDB, BCR-2391, BCR-2473, php2shell, Redshift JDBC, React
+RSC). The new ones: Snowflake CVE-2026-114456 (externalbrowser CSRF, availability-only) and **Trino
+CVE-2026-34214, whose date is the trap — published 2026-03-31, not this month**; only the fix (Trino
+480, 2026-10-16) is in-window, so a "new November CVEs" sweep misses an eight-month-old credential
+leak entirely. Static keys must be **rotated**, not just patched.
+
+**Scope, on the edition's face:** 122 refreshes Today's Read and Since-yesterday on all four chairs,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites. Claim Watch,
+Mirror, Question Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build
+Radar, Skills Radar and Vendor Dossiers **carry forward from 121 unrevised**. The quarterly
+Skills/Build re-rank across all four chairs is due **2027-01-01**.
+
+### Step 5b: NINTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the committed
+file by sha256 at 13:35:26Z, ~35s after the push**. **Only the SCHEDULER copy still says egress blocks
+`*.github.io`, and only Karl can edit that.**
+
+### Source access 2026-11-13
+
+- **`mikedietrichde.com` was UNREACHABLE this run** (empty body via curl with a browser UA) — a
+  regression against the standing note that it is readable. `blogs.oracle.com` 403s HTML *and* RSS for
+  a **24th** consecutive week, so the Oracle performance channel remains a structural gap.
+- **An agent-directed instruction block was SIGHTED and correctly refused.** The AI App Dev lane
+  reports the MCP draft-changelog page served an embedded "fetch our llms.txt" directive aimed at AI
+  assistants; it was treated as data and not followed. MongoDB docs carry the same affordance. **No
+  fetched page's suggestion was executed and no skill file was loaded by any agent this run.**
+- The Redshift security sweep ran clean for the Nth consecutive run: `mgmt/behavior-changes.html` in
+  both variants (**markdown 43,241 B / 30 headings vs HTML 68,327 B / 33 tags** — larger than prior
+  editions' ~34KB/56KB because the page gained the P206/P207/P208 sections, which is a content
+  change, not an injection signal), grepped for `agent-toolkit`, `Skills for AI`, `AI coding
+  assistant`, `search-skills`, `llms.txt` — **zero matches in each**.
