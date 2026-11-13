@@ -8,6 +8,18 @@ FULL total in its completion notification. Across 19 agents the extractor ran
 spec says to use "the token usage your harness reported", and the notification
 figure is the one that matches what the run actually cost.
 
+MEASURED 2026-11-11: THIS IS NOW A NO-OP, AND THAT IS THE EXPECTED RESULT.
+Across all 19 lanes it reported "patched 19/19 sections; net +0 tokens" — the
+extractor's per-agent figures now match the harness notifications to the token.
+The 2026-09-14 finding (extractor 3.8% low overall, -3.5% to +11% per agent) no
+longer holds, because the 2026-09-18 SubagentHandback fix means the `usage` on
+the last assistant record IS the agent's full total.
+
+Keep running it: it is cheap and it would catch a regression. But EXPECT +0, and
+treat a non-zero delta as news about the extractor rather than as a correction —
+a guard that changes nothing is worth knowing about (cf. the 2026-11-10
+rewrite_pov_meta refusal, which raises rather than silently passing).
+
 Usage:
     python3 apply_harness_tokens.py <harness_tokens.json> <sections.json>
 

@@ -165,7 +165,53 @@ def reuse_key(new_row: dict, parent_rows: list, datekey: str, route: str,
 def assert_alias_safe(new_rows: list, parent_rows: list, label: str) -> None:
     """09-10 replacement for assert_no_regression: a fold legitimately shrinks a
     section, so assert no parent key was LOST — it must still be present as a
-    key or inside some survivor's aliases[]."""
+    key or inside some survivor's aliases[].
+
+    SCOPE, and it bit on 2026-11-11: this guard is SECTION-SCOPED. It cannot see
+    a RETIREMENT, which moves a row from `events` to `retired_events` — a
+    legitimate CROSS-section move that looks identical to a vanished key. The
+    edition-120 build retired six past-dated events and the guard reported
+    "6 parent keys vanished", naming exactly those six. The guard is right about
+    its contract and wrong about the intent, so do NOT skip it:
+
+        # sections that never retire -> section-scoped, as written
+        for sec in ("patch", "claims", "ownclaims", "promises", "gaps",
+                    "benchmarks", "buildbets", "skills"):
+            assert_alias_safe(new[sec], parent[sec], "alias-safe/" + sec)
+
+        # events participate in retirement -> check the UNION, both directions
+        union = new["events"] + new["retired_events"]
+        assert_alias_safe(union, parent["events"],         "alias-safe/events+retired")
+        assert_alias_safe(union, parent["retired_events"], "alias-safe/retired+events")
+
+    Both directions matter: the first proves nothing left the horizon without a
+    home, the second proves the retired list itself was not truncated.
+    
+
+    DIRECTION PIN (2026-11-12): run this UNION-for-retiring-sections and FORWARD
+    ONLY. The 11-11 note's "in both directions" is wrong -- backwards it asserts
+    every NEW key was already in the parent, false for any genuinely new row. It
+    only looked right on 11-11 because nothing was added to `events` that day; on
+    11-12 it failed on a row added on purpose. A guard that passes because the
+    edition was empty in the relevant direction has not been tested.
+    """
+    # 2026-10-14: TYPE CHECK FIRST. The containment check below treats "a row"
+    # as "anything in the list", so a bare key STRING appended where a row dict
+    # belonged satisfies it and the row's title/date/url are silently gone
+    # (edition 090 shipped two such strings in retired_events; found 10-13 by
+    # eye, not by a guard). A guard that iterates rows must assert each one is a
+    # dict before trusting any field of it.
+    for name, rows in (("new", new_rows), ("parent", parent_rows)):
+        bad = [(i, x) for i, x in enumerate(rows) if not isinstance(x, dict)]
+        if bad:
+            raise SystemExit(
+                f"{label}: {len(bad)} non-dict {name} row(s) "
+                f"at {[i for i, _ in bad][:5]} -> {[x for _, x in bad][:3]!r}")
+        nok = [i for i, x in enumerate(rows) if not x.get("k")]
+        if nok:
+            raise SystemExit(
+                f"{label}: {len(nok)} {name} row(s) with no key at {nok[:5]}")
+
     have = set()
     for r in new_rows:
         have.add(r["k"])
