@@ -1,0 +1,2704 @@
+{
+"date": "2026-11-13",
+"topics": {
+"oltp": {
+"status": "ok",
+"items": [
+{
+"title": "PostgreSQL 14's final minor is 14.25, and 14 is now end-of-life (2026-11-12) \u2014 no more security or bug fixes, ever.",
+"sev": "high",
+"key": "postgresql-final-minor-1425-endoflife-20261112-security",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PostgreSQL 19 RC 2 shipped 2026-11-12; GA planned 2026-11-19 (6 days out).",
+"sev": "normal",
+"key": "postgresql-shipped-20261015-lands-20261112-planned-20261119",
+"first_seen": "2026-10-28",
+"days_seen": 2
+},
+{
+"title": "tzdata 2026f is now bundled in the Postgres update \u2014 Canada NWT (America/Inuvik) year-round UTC-06, Manitoba (Winnipeg) year-round UTC-05, and Cuba staying on DST this winter is now reflected (it was\u2026",
+"sev": "normal",
+"key": "tzdata-2026f-bundled-postgres-update-canada-nwt",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "MySQL: Oracle's October CPU (2026-10-20) carried ~98 MySQL fixes; 9.7.4 is current.",
+"sev": "normal",
+"key": "mysql-oracle-october-cpu-20261020-carried-mysql",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "MariaDB: 13.0 is now the latest Stable rolling release; 12.3.1 is the RC in the new LTS train. 12.1 (GA at 12.1.2, segmented Aria key cache the headline) appears superseded.",
+"sev": "normal",
+"key": "mariadb-130-latest-stable-rolling-release-1231",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PgBouncer 1.26.1 (2026-10-14) fixes three CVEs incl. a SCRAM auth bypass.",
+"sev": "normal",
+"key": "pgbouncer-1261-20261014-scram-auth-bypass-fix",
+"first_seen": "2026-10-21",
+"days_seen": 2
+},
+{
+"title": "pgvector CVE-2026-103484 \u2014 IVFFlat index-build buffer overflow \u2192 arbitrary code execution; fixed in 0.8.7. Requires an authenticated DB user creating an IVFFlat index; any pgvector < 0.8.7 is\u2026",
+"sev": "high",
+"key": "pgvector-cve2026103484-ivfflat-index-build-writes-out",
+"first_seen": "2026-10-09",
+"days_seen": 5
+},
+{
+"title": "Note on the Postgres update itself: it is a bug-fix release; the only CVE referenced is the prior CVE-2026-6464, whose fix had broken multiple COPY ...",
+"sev": "high",
+"key": "note-postgres-update-itself-bugfix-release-only",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PostgreSQL 14 EOL turns into a paid-support clock on the managed providers.",
+"sev": "high",
+"key": "postgresql-eol-turns-paidsupport-clock-managed-providers",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "AlloyDB had a very busy month (all GA unless noted): new clusters now default to PostgreSQL 18 (11-03); AlloyDB Express preview \u2014 scale-to-zero compute, 12-month free tier (11-04); Direct Iceberg\u2026",
+"sev": "normal",
+"key": "alloydb-busy-month-unless-noted-clusters-default",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Neon Realtime (SQL queries as live subscriptions) entered public beta; project recovery arrived in the Console (11-06).",
+"sev": "normal",
+"key": "neon-realtime-sql-queries-live-subscriptions-entered",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "AlloyDB ScaNN went to a four-level tree (4LT) index, GA on PG17+, scaling to 10 billion vector rows with automatic maintenance, num_leaves raised to 104,857,600, and scann.satisfy_limit=relaxed_order\u2026",
+"sev": "normal",
+"key": "alloydb-scann-went-fourlevel-tree-4lt-index",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "pgvector's only in-scope event is the CVE-2026-103484 fix (0.8.7) above \u2014 no new feature release; current version remains 0.8.7 (2026-10-01).",
+"sev": "high",
+"key": "test-whether-actually-need-ivfflat-pgvector-indexes",
+"first_seen": "2026-10-05",
+"days_seen": 2
+},
+{
+"title": "If you run GIN, pg_trgm GiST, or B-tree-on-bpchar indexes, read the 14.25/18.7 \"Updating\" section and plan the targeted REINDEXes \u2014 these are silent wrong-results/corruption bugs, not crashes, so\u2026",
+"sev": "normal",
+"key": "run-gin-pgtrgm-gist-btreeonbpchar-indexes-read",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Spin up PostgreSQL 19 RC 2 against a copy of prod before the 11-19 GA; specifically retest anything using JSON_ARRAY()/JSON_OBJECT() in generated columns/partition keys (reverted) and watch hash-join\u2026",
+"sev": "normal",
+"key": "spin-postgresql-copy-prod-1119-specifically-retest",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Benchmark AlloyDB ScaNN 4LT vs your current HNSW/IVF setup if you're near the billion-vector range.",
+"sev": "normal",
+"key": "benchmark-alloydb-scann-4lt-current-hnswivf-setup",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PostgreSQL 14: community EOL 2026-11-12 (done).",
+"sev": "high",
+"key": "postgresql-eol-20261112-days-last-minor-branch",
+"first_seen": "2026-09-25",
+"days_seen": 3
+},
+{
+"title": "PostgreSQL 19 GA: 2026-11-19 (planned; a third RC/delay remains possible).",
+"sev": "normal",
+"key": "postgresql-20261119-planned-third-rcdelay-remains-possible",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PgBouncer: upgrade to 1.26.1 (auth bypass if you deployed 1.26.0). pgvector: upgrade to 0.8.7 (IVFFlat RCE).",
+"sev": "normal",
+"key": "pgbouncer-upgrade-1261-auth-bypass-deployed-1260",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "MySQL 8.0 is EOL (2026-04-30) and absent from the October CPU \u2014 unpatched going forward.",
+"sev": "high",
+"key": "mysql-80-eol-20260430-absent-october-cpu",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Cross-lane but it hits styled-RSS/XML DB tooling: Chrome 158 (stable ~11-17/11-18) removes client-side XSLT \u2014 Chrome's own deprecation doc and late-stable date disagree by a day.",
+"sev": "high",
+"key": "crosslane-hits-styledrssxml-tooling-chrome-158-stable",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "MySQL's shift to calendar versioning (8.4 LTS / 9.7 innovation / new 26.x) mirrors the broader move (MariaDB rolling + LTS split, Postgres annual majors) \u2014 version-pinning and support-matrix logic\u2026",
+"sev": "normal",
+"key": "mysql-shift-calendar-versioning-84-lts-97",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Managed Postgres is where the real feature velocity is \u2014 AlloyDB shipped ~15 notable changes in 30 days (vector scale, Iceberg federation, LLM-assisted tuning) while core Postgres shipped a stability\u2026",
+"sev": "normal",
+"key": "managed-postgres-where-real-feature-velocity-alloydb",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "\"Fix exists but your scanner can't see it\" recurs in-lane: Debian's tracker still marks pgvector sid unfixed despite the fix; OSV coverage gaps for Postgres-ecosystem CVEs persist.",
+"sev": "normal",
+"key": "fix-exists-scanner-see-recurs-inlane-debian",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"mongodb": {
+"status": "urgent",
+"items": [
+{
+"title": "Mongoose security batch (5 advisories, 2026-11-02) \u2014 CVE-2026-125120 is CVSS 9.8, unauth. sanitizeFilter (Mongoose's query-selector-injection guard) is not applied to countDocuments(), so a crafted\u2026",
+"sev": "urgent",
+"key": "patchbeforeadvisory-mongoose-norm-accident-days-cve2026125120-days",
+"first_seen": "2026-11-11",
+"days_seen": 3
+},
+{
+"title": "Same batch, four more (all 2026-11-02): connection-level sanitizeFilter not applied (GHSA-gg4r-jv3p-qx3c, High); prototype pollution via hydrate/set/merge overwriting built-ins \u2192 DoS\u2026",
+"sev": "high",
+"key": "batch-four-20261102-connectionlevel-sanitizefilter-applied-ghsagg4rjv3pqx3c",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "MongoDB Server \u2014 three October CVEs, authenticated, patched.",
+"sev": "normal",
+"key": "mongodb-server-three-october-cves-authenticated-patched",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "MongoDB 9.0.7 (2026-11-10) is a 26-CVE security drop.",
+"sev": "normal",
+"key": "mongodb-907-20261110-26cve-security-drop",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PSMDB 8.0.34-15 (2026-10-22) confirms the October server CVEs fixed (CVE-2026-104004 / 96297 / 103965).",
+"sev": "high",
+"key": "current-patch-heads-20261013-904-cve202696297-96299",
+"first_seen": "2026-10-15",
+"days_seen": 8
+},
+{
+"title": "MongoDB 9.0 defaults that bite on upgrade (GA was 2026-09-28; patches are in-window).",
+"sev": "normal",
+"key": "mongodb-90-defaults-bite-upgrade-20260928-patches",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Two open 9.0 upgrade landmines worth pre-flighting.",
+"sev": "normal",
+"key": "two-open-90-upgrade-landmines-worth-preflighting",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PyMongo 4.20.0 (2026-11-12) and 4.19.0 (2026-10-14) carry breaking removals. 4.20.0 removes the beta PREFIXPREVIEW/SUFFIXPREVIEW/SUBSTRINGPREVIEW QE query types (now PREFIX/SUFFIX/SUBSTRING\u2026",
+"sev": "high",
+"key": "pymongo-4200-20261112-4190-20261014-carry-breaking",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Node.js driver 7.8.0 (2026-10-30) and 7.9.0 (2026-11-12). 7.8.0 adds built-in zstd compression when Node provides it, makes timeoutMS a no-op and deprecates it (a CSOT behavior change to catch), and\u2026",
+"sev": "high",
+"key": "nodejs-driver-780-20261030-790-20261112-780",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Atlas Infinite (public preview) + MongoDB 9.0 landed at .local NYC on 2026-09-29 (just outside the 30-day window; the pricing rename settled in early October).",
+"sev": "normal",
+"key": "atlas-infinite-public-preview-mongodb-90-landed",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Kernel landmine (startup-blocking): MongoDB 8.0+/8.2/9.0 refuse to start on Linux kernel 6.19 through 7.0.13 (detected and halted to avoid crashes); 7.0.14+ resolves it.",
+"sev": "normal",
+"key": "kernel-landmine-startupblocking-mongodb-80-8290-refuse",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PyMongo 4.19+ requires Python 3.11 and has removed PyPy; plan interpreter bumps before upgrading the driver.",
+"sev": "normal",
+"key": "pymongo-4190-requires-python-311-pypy-support",
+"first_seen": "2026-10-23",
+"days_seen": 6
+},
+{
+"title": "QE prefixPreview/suffixPreview/substringPreview are removed in MongoDB 9.0 (use the non-preview forms with the string algorithm).",
+"sev": "normal",
+"key": "prefixpreviewsuffixpreviewsubstringpreview-deprecated-removed-90-fledisablesubst",
+"first_seen": "2026-10-15",
+"days_seen": 2
+},
+{
+"title": "Mongoose's whole 5-CVE batch is prototype-pollution / injection-shaped, and the critical one hides behind countDocuments() \u2014 a scanner keyed only to find() filters misses it.",
+"sev": "normal",
+"key": "mongoose-whole-5cve-batch-prototypepollution-injectionshaped-critical",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Scanner blindness on the server CVEs: CVE-2026-104004 scores 7.1 under CVSS 4.0 but only 6.5 under 3.1 \u2014 a 3.1-only gate under-ranks it; name which version your policy reads.",
+"sev": "high",
+"key": "scanner-blindness-server-cves-cve2026104004-scores-71",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "9.0's \"validate BSON by default\" + per-op memory cap shift silent-truncation and OOM-style failures from the network edge into explicit query errors \u2014 expect previously-passing workloads to start\u2026",
+"sev": "normal",
+"key": "90-validate-bson-default-perop-memory-cap",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"formats": {
+"status": "urgent",
+"items": [
+{
+"title": "Brotli OOB-write CVE-2026-111497 is fixed in Apache Arrow 26.0.1 \u2014 upgrade PyArrow now.",
+"sev": "urgent",
+"key": "cve2026111497-brotli-decoder-oob-write-cisa-kev",
+"first_seen": "2026-10-29",
+"days_seen": 7
+},
+{
+"title": "Trino Iceberg REST-catalog credentials leak via query JSON \u2014 CVE-2026-34214 (CVSS 7.7, GHSA-x27p-5f68-m644).",
+"sev": "high",
+"key": "trino-iceberg-restcatalog-credentials-leak-query-json",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "parquet CVE-2026-73334 (CVSS 8.1) remains fixed only in parquet-java 1.18.1 (GA 2026-09-04) \u2014 and scanners still can't see it.",
+"sev": "high",
+"key": "parquet-cve202673334-reprobed-20261015-published-20260909-day",
+"first_seen": "2026-10-15",
+"days_seen": 2
+},
+{
+"title": "parquet-java 1.18.2 is out (Maven Central release=1.18.2, lastUpdated 2026-11-11 02:58:27 UTC) \u2014 it is a correctness + dependency-bump release, NOT the KMS-CVE fix.",
+"sev": "normal",
+"key": "parquetjava-1182-out-maven-central-release-1182",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "No new Apache Iceberg release in the window \u2014 latest is 1.12.0 (2026-09-30). 1.12 carries v4 plumbing (content stats, relative paths) but ships no v4 tables.",
+"sev": "normal",
+"key": "apache-iceberg-release-window-latest-1120-20260930",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Iceberg V4 equality-delete deprecation: still under discussion on the dev list, still NO announced date.",
+"sev": "high",
+"key": "iceberg-equalitydelete-deprecation-still-date",
+"first_seen": "2026-11-07",
+"days_seen": 2
+},
+{
+"title": "No formal Delta Lake release in the window.",
+"sev": "normal",
+"key": "delta-lake-oss-shipped-real-release-window",
+"first_seen": "2026-11-09",
+"days_seen": 2
+},
+{
+"title": "Debezium 3.7.1.Final (2026-11-06) and 3.6.4.Final (2026-11-10) both shipped in-window. 3.7.1 removes the Oracle connector option snapshot.database.errors.max.retries (check configs before upgrading).",
+"sev": "normal",
+"key": "debezium-371final-20261106-364final-20261110-shipped-inwindow",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Databricks variantShredding is scheduled to become default on 2026-11-18 (5 days out) \u2014 the interop risk is real: it's a reader+writer Delta table feature, so an engine/client that doesn't understand\u2026",
+"sev": "normal",
+"key": "databricks-variantshredding-scheduled-become-default-20261118-days",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-18 (5 days): Databricks variantShredding default (see Interop \u2014 date carried, not vendor-confirmed on a Nov surface; read floor 17.3 vs 18.1).",
+"sev": "normal",
+"key": "20261118-days-databricks-variantshredding-default-see-interop",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-17 (4 days): DuckDB 1.4 support ends (1.5 supported to Mar 2027; 2.0 carries an irreversible storage change).",
+"sev": "normal",
+"key": "20261117-days-duckdb-14-support-ends-200",
+"first_seen": "2026-11-11",
+"days_seen": 3
+},
+{
+"title": "CDC on Iceberg: equality deletes are on a deprecation path for V4 with no date \u2014 do not build new pipelines assuming they stay first-class.",
+"sev": "high",
+"key": "cdc-iceberg-equality-deletes-deprecation-path-date",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Pin pyarrow>=26.0.1 in anything that reads third-party Parquet/Arrow, and verify no transitive dep floors you back onto a pre-26.0.1 wheel with the vulnerable bundled Brotli.",
+"sev": "urgent",
+"key": "pin-pyarrow-2601-anything-reads-thirdparty-parquetarrow",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "If you run Trino with an Iceberg REST catalog, upgrade to 480 and rotate any static storage credentials used by the catalog.",
+"sev": "normal",
+"key": "run-trino-iceberg-rest-catalog-upgrade-480",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Test a shredded-VARIANT Delta table against every non-Databricks reader you rely on (Trino, Spark OSS, DuckDB, pyiceberg/delta-rs) before 11-18, since an unsupporting reader will fail to open it\u2026",
+"sev": "normal",
+"key": "test-shreddedvariant-delta-table-every-nondatabricks-reader",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The real parquet-java risk is tooling blindness, not patching.",
+"sev": "normal",
+"key": "real-parquetjava-risk-tooling-blindness-patching",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "\"Patched upstream, unreachable for you\" keeps showing up at the format layer: 1.18.2 bundles Jackson to quiet Iceberg's Kafka-Connect Trivy scan, yet projects that shade Jackson can't patch it\u2026",
+"sev": "normal",
+"key": "patched-upstream-unreachable-keeps-showing-format-layer",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Streaming-to-table is consolidating onto vendor sinks: Debezium Server's new Databricks Zerobus sink (Beta1) is another managed CDC\u2192lakehouse path, arriving the same quarter Iceberg debates retiring\u2026",
+"sev": "normal",
+"key": "streamingtotable-consolidating-onto-vendor-sinks-debezium-server",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"oracle": {
+"status": "urgent",
+"items": [
+{
+"title": "php2shell (CVE-2026-109618 / CVE-2026-109619) now covers Oracle Secure Backup 19.1.0.0.0\u201319.1.0.1.0 \u2014 CVSS 9.8, unauthenticated RCE, actively exploited, in CISA KEV. Oracle added OSB to the advisory\u2026",
+"sev": "urgent",
+"key": "20261029-tomorrow-day-out-cisa-kev-due",
+"first_seen": "2026-10-28",
+"days_seen": 13
+},
+{
+"title": "eMudhra CA distrust (CVE-2026-114820) formally scopes the Oracle Database Server at Rev 2 (2026-10-30) \u2014 CVSS 9.1, RDBMS (Java) component, versions 19.3-19.32, 21.3-21.23, 23.4.0-23.26.3. Rev 2 added\u2026",
+"sev": "high",
+"key": "security-alert-cve202691403-distrusts-emudhra-intermediate-cas",
+"first_seen": "2026-10-23",
+"days_seen": 10
+},
+{
+"title": "October 2026 Critical Patch Update shipped 2026-10-20 \u2014 14 new Database Server patches (126 across all DB products), highest CVSS 8.8, 4 remotely exploitable without auth.",
+"sev": "normal",
+"key": "october-2026-critical-patch-update-shipped-20261020",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Serverless \u2014 October 2026: Select AI agent support for Java (database-defined tools/tasks/agents/teams); SQL Tracing for application workloads via ALTER SESSION/DBMS_USERDIAG to find high-load SQL\u2026",
+"sev": "normal",
+"key": "serverless-october-2026-select-agent-support-java",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Serverless \u2014 November 2026: A2A and MCP servers as built-in tools (enable/disable from the Tool configuration page, copy access URLs); AI-assisted NL queries on Table Hyperlinks; estimated\u2026",
+"sev": "normal",
+"key": "serverless-november-2026-a2a-mcp-servers-builtin",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Dedicated \u2014 Oct/Nov 2026: Select AI Supervisor Agent Teams (Oct); APEX 26.1 auto-provisioned on newly created ACDs (existing ACDs stay on their version unless an SR is filed) (Nov); improved\u2026",
+"sev": "normal",
+"key": "dedicated-octnov-2026-select-supervisor-agent-teams",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The 23ai name is gone: Oracle AI Database 26ai is the current LTS release and moving from 23ai is a patch, not an upgrade (no app re-certification, no DB upgrade).",
+"sev": "normal",
+"key": "23ai-name-gone-oracle-database-26ai-current",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Standing coverage gap, stated plainly, not a quiet month: blogs.oracle.com 403s both HTML and RSS (24+ consecutive weeks), which removes Oracle's entire official Optimizer / In-Memory / Smart Scan /\u2026",
+"sev": "normal",
+"key": "standing-coverage-gap-stated-plainly-quiet-month",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "If you run Oracle Secure Backup, confirm your build against 19.1.0.0.0\u201319.1.0.1.0 and apply the php2shell patch before anything else this week.",
+"sev": "urgent",
+"key": "run-oracle-secure-backup-confirm-build-191000",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Test Iceberg partition pruning on a partitioned external table in ADB Serverless \u2014 it is the one in-window feature that can change a query plan's file scan count.",
+"sev": "normal",
+"key": "test-iceberg-partition-pruning-partitioned-external-table",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Re-scope anything you triaged from NVD for CVE-2026-114820: if you read it as Java-SE-only you may have left RDBMS hosts (19c/21c/23ai) unpatched.",
+"sev": "high",
+"key": "reread-security-alert-cve2026114820-rather-filing-it",
+"first_seen": "2026-11-02",
+"days_seen": 8
+},
+{
+"title": "Oracle monthly CSPU: 2026-11-17 (4 days out).",
+"sev": "normal",
+"key": "oracle-monthly-cspu-20261117-days-out",
+"first_seen": "2026-11-11",
+"days_seen": 2
+},
+{
+"title": "php2shell CISA KEV remediation due 2026-10-29 has passed \u2014 a passed KEV date converts to an overdue remediation (+ forensicTriage=Yes) obligation, not a discharged one, for anyone who ran vulnerable\u2026",
+"sev": "urgent",
+"key": "php2shell-cisa-kev-remediation-due-20261029-passed",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "eMudhra root-CA distrust (CVE-2026-114820) is a trust-store change: after patching, clients/services relying on an eMudhra-issued cert chain will fail validation \u2014 inventory before applying.",
+"sev": "high",
+"key": "emudhra-rootca-distrust-cve2026114820-truststore-change-patching",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Agent/MCP surface is landing inside the database itself \u2014 A2A and MCP servers are now toggleable built-in tools in ADB Serverless, and Select AI agent teams (incl. supervisor routing) span Serverless\u2026",
+"sev": "normal",
+"key": "agentmcp-surface-landing-database-itself-a2a-mcp",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The eMudhra CVE is a textbook \"scanning source disagrees with reality\" case: NVD scopes it to Java SE, Oracle's own advisory scopes the RDBMS. A CVSS/NVD-only gate under-scopes a 9.1 affecting every\u2026",
+"sev": "normal",
+"key": "emudhra-cve-textbook-scanning-source-disagrees-reality",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"snowflake": {
+"status": "urgent",
+"items": [
+{
+"title": "BCR-2391 \u2014 Azure allowlists must carry Snowflake Network Identifiers by 2026-11-18 (unbundled, no opt-out).",
+"sev": "normal",
+"key": "bcr2391-azure-allowlists-carry-snowflake-network-identifiers",
+"first_seen": "2026-11-12",
+"days_seen": 2
+},
+{
+"title": "BCR-2473 \u2014 Interactive-warehouse default AND minimum AUTO_SUSPEND drop 86400s\u21923600s on 2026-11-17 (unbundled, no opt-out).",
+"sev": "normal",
+"key": "20261117-days-bcr2473-interactive-warehouses-default-minimum",
+"first_seen": "2026-10-30",
+"days_seen": 12
+},
+{
+"title": "Legacy Notebook execution end \u2014 November 2026, vendor still publishes NO day.",
+"sev": "normal",
+"key": "legacy-notebook-execution-retirement-november-2026-snowflake",
+"first_seen": "2026-11-08",
+"days_seen": 2
+},
+{
+"title": "Carried items re-verified against the authoritative unbundled table:",
+"sev": "normal",
+"key": "carried-items-reverified-authoritative-unbundled-table",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "BCR-2413 Snowsight account-specific host \u2014 \"Early February 2027 (exact date to be determined).\" Board's early-Feb-2027 placement is correct.",
+"sev": "normal",
+"key": "bcr2413-snowsight-accountspecific-signin-host-early-february",
+"first_seen": "2026-10-28",
+"days_seen": 2
+},
+{
+"title": "Default-email BCR is BCR-2467, dated 2026-01-18\u2192 corrected: the authoritative table says \"January 18, 2027.\" SNOWFLAKE$DEFAULT_EMAIL integration gets USAGE granted to SNOWFLAKE.PUBLIC\u2026",
+"sev": "normal",
+"key": "defaultemail-bcr-bcr2467-dated-20260118-corrected-authoritative",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026_08 bundle \u2014 finalized 2026-10-16, still \"Disabled by default.\" Introduced in the 10.37 release (Oct 8\u201316).",
+"sev": "normal",
+"key": "202608-bundle-finalized-20261016-still-disabled-default",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "No Gen2/adaptive warehouse release news landed in the 30-day window \u2014 the new-features feed carried no warehouse-type changes Oct 14\u2013Nov 13 beyond the BCR-2473 auto-suspend change above.",
+"sev": "normal",
+"key": "gen2adaptive-warehouse-release-news-landed-30day-window",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Cortex AI Gateway \u2014 inference, observability & cost management went GA 2026-11-03, with Gateway regional expansion to Azure/GCP/AWS New Zealand (Oct 16) and Tools for the Gateway in preview (Oct 19).",
+"sev": "normal",
+"key": "cortex-gateway-inference-observability-cost-management-went",
+"first_seen": "2026-11-03",
+"days_seen": 7
+},
+{
+"title": "New frontier models reached GA in AI Functions 2026-11-06: Anthropic Claude 5.5, OpenAI GPT-6, and Google Gemini 4 Argon; GPT-5.6/GPT-6 Luna variants and GPT-6.1 Terra entered preview late Oct.",
+"sev": "normal",
+"key": "frontier-models-reached-functions-20261106-anthropic-claude",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Apache Iceberg v3 table upgrades + expression defaults went GA 2026-10-16, and Time Travel for Iceberg tables entered preview 2026-10-28 \u2014 the two items most likely to change how you design Iceberg\u2026",
+"sev": "normal",
+"key": "iceberg-inplace-upgrade-expression-defaults-went-20261016",
+"first_seen": "2026-10-22",
+"days_seen": 3
+},
+{
+"title": "Horizon Catalog hardening, mostly GA in-window: cross-account read/write without managing secrets (Nov 1), access to externally-managed Iceberg tables via Horizon Catalog (Oct 29), Horizon Iceberg\u2026",
+"sev": "normal",
+"key": "horizon-catalog-hardening-mostly-inwindow-crossaccount-readwrite",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Hybrid tables broadened in-window: support on Google Cloud entered preview (Oct 30), UUID data type went GA (Oct 30), cloning databases containing hybrid tables went GA (Oct 26), and secondary\u2026",
+"sev": "normal",
+"key": "hybrid-tables-reached-preview-google-cloud-oct",
+"first_seen": "2026-11-10",
+"days_seen": 2
+},
+{
+"title": "Task-graph tooling moved on DCM Projects: DEFINE TASK GRAPH for DCM Projects entered preview (Oct 27), and atomic deployments / centralized config / advanced branching for task graphs entered preview\u2026",
+"sev": "normal",
+"key": "taskgraph-tooling-moved-dcm-projects-define-task",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "CVE-2026-114456 (Medium, CVSS 6.5) \u2014 published 2026-11-04, the only in-window Snowflake CVE. Several client drivers using the externalbrowser SSO flow reflected arbitrary Origin headers and accepted\u2026",
+"sev": "high",
+"key": "fixed-versions-cve2026114456-line-one-reachable-fix",
+"first_seen": "2026-11-04",
+"days_seen": 5
+},
+{
+"title": "Context: the heavier September driver CVEs (CVE-2026-86597 log-token exposure, CVE-2026-86600 WORKLOAD_IDENTITY token leak, CVE-2026-85528 JDBC SSRF) are outside the 30-day window but share the same\u2026",
+"sev": "high",
+"key": "cve202686600-cvss-82-high-workloadidentity-attestation-minted",
+"first_seen": "2026-09-30",
+"days_seen": 3
+},
+{
+"title": "Audit any automation that issues CREATE WAREHOUSE/CREATE OR REPLACE for Interactive warehouses before Nov 17 \u2014 if it relies on the implicit 24h AUTO_SUSPEND default, it will silently get a 1h floor.",
+"sev": "normal",
+"key": "audit-automation-issues-create-warehousecreate-replace-interactive",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Inventory your Azure allowlists now (SYSTEM$GET_SNOWFLAKE_EGRESS_IP_RANGES) and stand up NSP for Key Vault \u2014 the Nov 18 deadline has no technical opt-out and the only fallback is a support-ticket\u2026",
+"sev": "high",
+"key": "inventory-azure-allowlists-system-getsnowflakeegressipranges-stand-nsp",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Pin driver versions to the CVE-2026-114456 fixed builds across all your connectors in one pass.",
+"sev": "high",
+"key": "pin-driver-versions-cve2026114456-fixed-builds-connectors",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-17: Interactive-warehouse AUTO_SUSPEND default+minimum \u2192 1h (BCR-2473, no opt-out, existing warehouses untouched).",
+"sev": "normal",
+"key": "20261117-interactivewarehouse-autosuspend-default-minimum-bcr2473-optout",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-18: Azure Network Identifier allowlist deadline (BCR-2391, no opt-out \u2014 act or break connectivity).",
+"sev": "high",
+"key": "20261118-azure-network-identifier-allowlist-deadline-bcr2391",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "November 2026 (no day): Legacy Notebook execution behavior change; migrate to Workspaces.",
+"sev": "normal",
+"key": "november-2026-day-legacy-notebook-execution-behavior",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026_08 bundle disabled-by-default now, Enabled-by-Default date TBD \u2014 contains several SQL-semantic and SPCS-breaking changes; test before it auto-enables.",
+"sev": "high",
+"key": "202608-bundle-disabledbydefault-enabledbydefault-date-tbd-contains",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2027-01-18: default email integration grant (BCR-2467).",
+"sev": "normal",
+"key": "20270118-default-email-integration-grant-bcr2467",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Snowflake is pushing credit discipline into defaults, not just docs \u2014 the interactive auto-suspend floor drop and the Feature Store Online Service new billing line items (Oct 19) both arrived as\u2026",
+"sev": "normal",
+"key": "snowflake-pushing-credit-discipline-defaults-docs-interactive",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Horizon Catalog is consolidating into a cross-account, externally-managed Iceberg control plane \u2014 six Horizon/Iceberg GAs in four weeks (secrets-free cross-account, external-table access, REST\u2026",
+"sev": "normal",
+"key": "horizon-catalog-consolidating-crossaccount-externallymanaged-iceberg-control",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Driver-side SSO/loopback flaws are a recurring shape \u2014 CVE-2026-114456 (externalbrowser callback) echoes the Sept WORKLOAD_IDENTITY and JDBC-SSRF bugs.",
+"sev": "high",
+"key": "driverside-ssoloopback-flaws-recurring-shape-cve2026114456-externalbrowser",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"databricks": {
+"status": "urgent",
+"items": [
+{
+"title": "variantShredding auto-enabled by default starting 2026-11-18. Databricks will automatically add the variantShredding table feature to any new table with a VARIANT column created on DBR 17.3+.",
+"sev": "urgent",
+"key": "20261118-variant-shredding-autoadded-tables-containing-variant",
+"first_seen": "2026-09-27",
+"days_seen": 11
+},
+{
+"title": "Delta Lake OSS 4.4.1 (2026-10-05) is the latest named release.",
+"sev": "normal",
+"key": "delta-lake-441-shipped-oct-mostly-catalogmanagedtable",
+"first_seen": "2026-10-24",
+"days_seen": 5
+},
+{
+"title": "Automatic change data feed is rolling out to all supported regions \"by end of October 2026\" \u2014 requires DBR 19+ with row tracking.",
+"sev": "normal",
+"key": "automatic-change-data-feed-rolling-out-supported",
+"first_seen": "2026-11-05",
+"days_seen": 3
+},
+{
+"title": "DeepSeek V4.1 Flash retires 2026-11-19 on Databricks FMAPI \u2014 the name-collision trap.",
+"sev": "normal",
+"key": "deepseek-v41-flash-retires-20261119-databricks-fmapi",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Gemini 3.6 Flash also retires 2026-11-19, but calls auto-redirect to Gemini 3.8 Flash at identical pricing \u2014 no reader action, unlike DeepSeek.",
+"sev": "normal",
+"key": "gemini-36-flash-retires-20261119-calls-autoredirect",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Default change (2026-11-09): new jobs compute now defaults to Auto access mode, not Dedicated.",
+"sev": "normal",
+"key": "jobs-compute-defaults-auto-access-mode-today",
+"first_seen": "2026-11-09",
+"days_seen": 2
+},
+{
+"title": "No new DBR shipped in the window. Latest is DBR 19 (2026-07-23, not yet LTS); current LTS line is 18 LTS (2026-06-10), 17.3 LTS (2025-10-22), 16.4 LTS, 15.4 LTS (EOS 2027-08-19), 14.3 LTS (EOS\u2026",
+"sev": "urgent",
+"key": "dbr-shipped-window-latest-dbr-20260723-yet",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Standalone pipelines on serverless general compute \u2192 GA (2026-11-11) \u2014 define pipelines with spark.sql() and Python decorators without a dedicated DLT pipeline.",
+"sev": "normal",
+"key": "standalone-pipelines-serverless-general-compute-20261111-define",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Zerobus Ingest into default storage \u2192 GA (2026-11-02).",
+"sev": "normal",
+"key": "zerobus-ingest-default-storage-20261102",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "UNDROP VOLUME (recover a dropped UC volume within 7 days) \u2014 requires DBR 19+ (2026-11-07).",
+"sev": "normal",
+"key": "undrop-volume-recover-dropped-volume-days-requires",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "UC secret limits raised to 1,000/schema and 10,000/metastore (was 100/1,000); BROWSE on a catalog now covers secrets (2026-11-02).",
+"sev": "normal",
+"key": "secret-limits-raised-000schema-000metastore-1001-000",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Big Genie wave this window: Genie Search GA and Genie Ontology GA (2026-11-09), Genie apps for Teams and Slack GA (Nov 9), Genie ZeroOps \u2192 Beta (Nov 12) (monitors jobs/pipelines/tables for failures\u2026",
+"sev": "normal",
+"key": "big-genie-wave-window-genie-search-genie",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-18 \u2014 variantShredding auto-default (see Delta above).",
+"sev": "normal",
+"key": "20261118-variantshredding-autodefault-see-delta-above",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-19 \u2014 DeepSeek V4.1 Flash FMAPI retirement (see Foundation models).",
+"sev": "normal",
+"key": "20261119-deepseek-v41-flash-fmapi-retirement-see",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Carried, already PAST \u2014 re-verified: Agent Bricks Supervisor API (Beta) reached end of life 2026-09-30 (~44 days ago); Databricks says migrate to custom agents on Databricks Apps.",
+"sev": "high",
+"key": "carried-already-past-reverified-agent-bricks-supervisor",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-12-02 \u2014 CREATE OR REPLACE VIEW becomes in-place (preserves grants/tags/comments); dropping a column carrying governed tags then fails with CANNOT_DROP_TAGGED_COLUMN unless tags are removed first.",
+"sev": "normal",
+"key": "20261202-create-replace-view-becomes-inplace-preserves",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2027-01-15 \u2014 breaking: SQL calls to AI Functions that need DBR 15.4 LTS+ stop working on DBR below 17.3 LTS (ai_forecast, ai_top_drivers, ai_detect_anomalies, ai_predict_class/value, vector_search\u2026",
+"sev": "urgent",
+"key": "20270115-breaking-sql-calls-functions-need-dbr",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The DeepSeek chain is a live example of \"migration target retired before you finished migrating.\" Two models were pointed at V4.1 Flash (1017) across Oct 30 / Nov 5, and that model retires Nov 19\u2026",
+"sev": "normal",
+"key": "deepseek-chain-live-example-migration-target-retired",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Doc-surface disagreement on the variantShredding read floor (17.3 vs 16.4) is the kind of gap that turns a \"default feature\" into a silent cross-cluster outage for shops running mixed DBR versions.",
+"sev": "urgent",
+"key": "docsurface-disagreement-variantshredding-read-floor-173-164",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Everything new is gated on DBR 19 (UNDROP VOLUME, Lakebase merge-strategy upserts, auto CDF, Maven JDBC) while DBR 19 is still not LTS \u2014 the feature/stability tension is widening for teams pinned to\u2026",
+"sev": "normal",
+"key": "everything-gated-dbr-undrop-volume-lakebase-mergestrategy",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"bigquery": {
+"status": "ok",
+"items": [
+{
+"title": "TabFM token-based pricing \u2014 the two vendor surfaces still disagree on the date.",
+"sev": "normal",
+"key": "tabfm-tokenbased-pricing-two-vendor-surfaces-still",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The bill is still not computable from the published formula.",
+"sev": "normal",
+"key": "bill-still-computable-published-formula",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Compute cost attribution went to Preview (2026-11-09).",
+"sev": "normal",
+"key": "compute-cost-attribution-went-preview-20261109",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "BigQuery Graph / GQL queries now run under on-demand pricing (2026-11-06).",
+"sev": "normal",
+"key": "bigquery-graph-gql-queries-run-ondemand-pricing",
+"first_seen": "2026-11-07",
+"days_seen": 2
+},
+{
+"title": "Project caps (scheduling policies) went GA 2026-11-11 \u2014 Enterprise / Enterprise Plus only.",
+"sev": "normal",
+"key": "project-caps-scheduling-policies-went-20261111-enterprise",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "principal-based reservation assignment went GA 2026-11-11 (Enterprise / Enterprise Plus).",
+"sev": "normal",
+"key": "principalbased-reservation-assignment-went-20261111-enterprise-enterprise",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Lakehouse federated catalogs went GA 2026-11-02 for Databricks Unity Catalog, AWS Glue, Snowflake Horizon, and Workday Data Lake \u2014 query those external catalogs' tables without copying metadata.",
+"sev": "normal",
+"key": "lakehouse-federated-catalogs-went-20261102-databricks-unity",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Change history (APPENDS TVF) and continuous queries for Iceberg managed tables went GA 2026-11-02 \u2014 CDC-style incremental reads on BigQuery-managed Iceberg tables.",
+"sev": "normal",
+"key": "change-history-continuous-queries-iceberg-managed-tables",
+"first_seen": "2026-11-10",
+"days_seen": 2
+},
+{
+"title": "Lakehouse cross-cloud caching went GA 2026-11-02, off by default \u2014 caches remote files to cut cross-cloud egress on repeated reads.",
+"sev": "normal",
+"key": "lakehouse-crosscloud-caching-went-20261102-off-default",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Apache Hive catalog endpoint + Dataproc Metastore\u2192Lakehouse migration went GA 2026-10-14 \u2014 shared metadata across Spark/Hive/BigQuery, with a one-time backfill and dry-run.",
+"sev": "normal",
+"key": "hive-catalog-endpoint-plus-onetime-dataproc-metastore",
+"first_seen": "2026-10-16",
+"days_seen": 5
+},
+{
+"title": "gemini-4-carbon is GA in generative-AI functions as of 2026-11-10. New model id available to ML.GENERATE_TEXT/AI. functions \u2014 verify the exact id before coding against it.",
+"sev": "normal",
+"key": "gemini4carbon-generativeai-functions-20261110-model-available-mlgeneratetextai",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Document-AI SQL functions landed through the month: AI.PARSE_DOCUMENT (layout\u2192structured JSON, GA 2026-11-02), AI.CHUNK_DOCUMENT (TVF for RAG chunking, GA 2026-10-21), AI.TRANSLATE (NMT + TLLM, GA\u2026",
+"sev": "normal",
+"key": "documentai-sql-functions-landed-month-aiparsedocument-layout",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Apache Arrow is now a first-class result path.",
+"sev": "normal",
+"key": "apache-arrow-firstclass-result-path",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Cross-region table copy went GA 2026-10-15; reusable column aliases (opt-in) GA 2026-10-15; JSON_FLATTEN GA 2026-11-11; ZSTD_COMPRESS/ZSTD_DECOMPRESS_ functions Preview 2026-11-09.",
+"sev": "normal",
+"key": "crossregion-table-copy-went-20261015-reusable-column",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "google-cloud-bigquery 3.47.0 (2026-10-29) and 3.46.2 (2026-10-15) \u2014 note the GitHub releases.atom for googleapis/python-bigquery is frozen at 3.40.1 (monorepo migration); the live source is the .",
+"sev": "normal",
+"key": "googlecloudbigquery-3470-20261029-3462-20261015-note-github",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "bigframes 2.53.0 (2026-11-11), 2.52.0 (2026-11-04) per .",
+"sev": "normal",
+"key": "bigframes-2530-20261111-2520-20261104",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Model your own AI.PREDICT workload against the published token formula and measure the actual billed tokens \u2014 because n_ensembles is undocumented, the gap between your estimate and the bill is the\u2026",
+"sev": "normal",
+"key": "model-aipredict-workload-published-token-formula-measure",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Pilot project caps + principal routing on a shared Enterprise reservation to replace folder-level assignment hacks.",
+"sev": "normal",
+"key": "pilot-project-caps-principal-routing-shared-enterprise",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "TabFM token pricing: 11/17/2026 (pricing page) vs 10/30/2026 (AI.PREDICT reference) \u2014 a cost change for AI.PREDICT/AI.EVALUATE users, date contradicted across surfaces, cost not predictable from the\u2026",
+"sev": "normal",
+"key": "tabfm-token-pricing-11172026-pricing-page-10302026",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Compute cost attribution (Preview) changes which project is billed for reservation slots if you opt in \u2014 review before enabling org-wide.",
+"sev": "normal",
+"key": "compute-cost-attribution-preview-changes-project-billed",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "BigQuery is consolidating the open-lakehouse layer in one month: federated catalogs across all four major competitors' catalogs (Unity, Glue, Horizon, Workday) + managed-Iceberg CDC + cross-cloud\u2026",
+"sev": "normal",
+"key": "bigquery-consolidating-openlakehouse-layer-one-month-federated",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The AI surface is moving from \"call a model\" to SQL-native document pipelines (PARSE_DOCUMENT/CHUNK_DOCUMENT/AI.AGG output_schema) \u2014 RAG preprocessing is becoming a warehouse primitive, and TabFM\u2026",
+"sev": "normal",
+"key": "surface-moving-call-model-sqlnative-document-pipelines",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"redshift": {
+"status": "ok",
+"items": [
+{
+"title": "Patch 207 reached CURRENT track (released Nov 6 and Nov 10, 2026) \u2014 adds Iceberg time-travel via FOR TIMESTAMP AS OF (usable in joins), a result_cache_query_uuid column in SYS_QUERY_HISTORY, an\u2026",
+"sev": "normal",
+"key": "patch-207-reached-current-track-released-nov",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Patch 206 (CURRENT track; versions released Oct 13 \u2192 Oct 27 \u2192 Nov 3, 2026) \u2014 the headline wave: multi-statement transactions on Apache Iceberg tables, user-configurable MV auto-refresh interval\u2026",
+"sev": "normal",
+"key": "patch-206-current-track-versions-released-oct",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "SUPER now stores individual strings up to 16,000,000 bytes (Patch 206; announced Nov 6, 2026) \u2014 opt-in only: create a parameter group, set enable_large_strings_opt_in = Yes, attach it, and reboot\u2026",
+"sev": "normal",
+"key": "coming-patch-206-yet-released-super-strings",
+"first_seen": "2026-09-20",
+"days_seen": 3
+},
+{
+"title": "Iceberg materialized views GA (announced Oct 5, 2026; AQMV support delivered in Patch 206) \u2014 CREATE MATERIALIZED VIEW \u2026 USING ICEBERG writes precomputed joins/aggregations as Iceberg tables in S3 /\u2026",
+"sev": "normal",
+"key": "iceberg-materialized-views-announced-oct-2026-aqmv",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Patch 207 adds Iceberg time-travel (FOR TIMESTAMP AS OF, constant expressions, joinable) \u2014 point-in-time reads of historical Iceberg snapshots.",
+"sev": "normal",
+"key": "patch-207-adds-iceberg-timetravel-timestamp-constant",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "CVE-2026-119084 \u2014 Amazon Redshift JDBC driver < 2.3.0, RCE. Unsafe reflection in connection-URL / AWS-credentials-profile handling lets anyone who can influence the JDBC URL or credentials profile\u2026",
+"sev": "high",
+"key": "cve2026119084-rce-unsafe-class-loading-redshift-jdbc",
+"first_seen": "2026-11-04",
+"days_seen": 8
+},
+{
+"title": "Why I did NOT flag it urgent: a reachable fix exists (2.3.0), it is not in KEV and has no observed exploitation, and it requires attacker control of the connection string/profile.",
+"sev": "high",
+"key": "why-flag-urgent-reachable-fix-exists-230",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "TLS 1.2 minimum is now ENFORCED (effective Oct 31, 2026 \u2014 13 days ago).",
+"sev": "normal",
+"key": "tls-12-minimum-enforced-effective-oct-2026",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "BREAKING \u2014 Iceberg DDL can no longer run inside a transaction block (Patch 206).",
+"sev": "normal",
+"key": "iceberg-ddl-longer-run-transaction-block-patch",
+"first_seen": "2026-11-07",
+"days_seen": 4
+},
+{
+"title": "BREAKING \u2014 Iceberg DELETE on Lake Formation tables now requires the DELETE LF permission (Patch 202).",
+"sev": "normal",
+"key": "redshift-iceberg-lf-delete-permission",
+"first_seen": "2026-08-13",
+"days_seen": 24
+},
+{
+"title": "Cross-region snapshot copy now copies the most recent EXISTING snapshot immediately when enabled (after Oct 30, 2026).",
+"sev": "normal",
+"key": "crossregion-snapshot-copy-copies-recent-existing-snapshot",
+"first_seen": "2026-11-06",
+"days_seen": 3
+},
+{
+"title": "Upcoming \u2014 automatic user lockout after failed logins (Patch 208).",
+"sev": "normal",
+"key": "patch-208-date-announced-versiongated-dategated-automatic",
+"first_seen": "2026-10-17",
+"days_seen": 4
+},
+{
+"title": "ODBC 1.x driver EOL Dec 31, 2026 (48 days out, extended from Sept 30).",
+"sev": "high",
+"key": "odbc-1x-driver-eol-dec-2026-days",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Scalar Python UDF EOL after June 30, 2026 \u2014 enforcement already began in Patch 203 (creation deprecated since P198; migrate to Lambda UDFs).",
+"sev": "high",
+"key": "scalar-python-udf-eol-june-2026-enforcement",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "If you run Iceberg DML/DDL from scripted transactions or LF-managed tables, test against Patch 206 now \u2014 the two breaking changes (transactional DDL ban, DELETE-permission tightening) are silent\u2026",
+"sev": "high",
+"key": "run-iceberg-dmlddl-scripted-transactions-lfmanaged-tables",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Grep your fleet's SYS_CONNECTION_LOG for the Redshift JDBC driver version and confirm you're on 2.3.0+, not 2.2.x.",
+"sev": "normal",
+"key": "grep-fleet-sysconnectionlog-redshift-jdbc-driver-version",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Redshift is leaning hard into Iceberg as a first-class target, not just a read source \u2014 MVs materialized as Iceberg tables, multi-statement transactions, time-travel, AQMV rewrite.",
+"sev": "normal",
+"key": "redshift-leaning-hard-iceberg-firstclass-target-read",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Observability plumbing keeps expanding (external_user_id across STL/STV/SYS, result_cache_query_uuid, session_id in STL_UNLOAD_LOG) \u2014 identity and cache attribution are becoming queryable, which\u2026",
+"sev": "normal",
+"key": "observability-plumbing-keeps-expanding-externaluserid-stlstvsys-resultcachequery",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"fabric": {
+"status": "ok",
+"items": [
+{
+"title": "\"Unified SQL Pools\" removes the built-in vs. custom pool distinction \u2014 and changes CU economics for new workspaces.",
+"sev": "normal",
+"key": "unified-sql-pools-removes-builtin-vs-custom",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Warehouse CI/CD matured into a full lifecycle (Preview).",
+"sev": "normal",
+"key": "warehouse-cicd-matured-full-lifecycle-preview",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Regex scalar functions land in Warehouse T-SQL (Preview, 11/05).",
+"sev": "normal",
+"key": "regex-scalar-functions-land-warehouse-tsql-preview",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "More Warehouse T-SQL surface in Preview: new analytical functions, broader T-SQL language enhancements, and scalar UDFs usable in more contexts (all 10/20\u201311/04).",
+"sev": "normal",
+"key": "warehouse-tsql-surface-preview-analytical-functions-broader",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Capacity Metrics \u2192 Warehouse Monitor \"find expensive queries\" is now GA (11/04). \"Monitor in warehouse\" jumps from a CU% timepoint straight into Query history with the window pre-applied; sort by CPU\u2026",
+"sev": "normal",
+"key": "capacity-metrics-warehouse-monitor-find-expensive-queries",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Correctness known issue (11/12): Warehouse Time Travel returns wrong results when an INSERT\u2026SELECT reads the same table it writes.",
+"sev": "normal",
+"key": "correctness-known-issue-1112-warehouse-time-travel",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "OneLake table APIs now support Iceberg REST Catalog writes (GA), not just reads.",
+"sev": "normal",
+"key": "onelake-iceberg-rest-catalog-endpoint-accepts-writes",
+"first_seen": "2026-11-05",
+"days_seen": 5
+},
+{
+"title": "OneLake as native storage for Azure Databricks Unity Catalog is GA on the Fabric side (11/13, preview on the Databricks side).",
+"sev": "normal",
+"key": "onelake-native-storage-azure-databricks-unity-catalog",
+"first_seen": "2026-11-06",
+"days_seen": 7
+},
+{
+"title": "Versioned lakeFS data reachable via OneLake shortcuts (10/29).",
+"sev": "normal",
+"key": "versioned-lakefs-data-reachable-onelake-shortcuts-1029",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Mirrored Azure Databricks catalogs now mirror materialized views and streaming tables, not just tables (11/03).",
+"sev": "normal",
+"key": "mirrored-azure-databricks-catalogs-include-materialized-views",
+"first_seen": "2026-11-12",
+"days_seen": 2
+},
+{
+"title": "Eventhouse support for OneLake security is GA (11/04) \u2014 external tables over Lakehouse data now auto-enforce object/column/row-level OneLake security in KQL; creating an external table grants no\u2026",
+"sev": "normal",
+"key": "eventhouse-support-onelake-security-1104-external-tables",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Eventstream additions (Preview): workspace-level private connectivity for custom endpoints (10/29), schema-aware multi-event-type streams (10/22), and reference-data joins against OneLake Delta\u2026",
+"sev": "normal",
+"key": "eventstream-additions-preview-workspacelevel-private-connectivity-custom",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Runtime 2.0 (Spark 4.1, Mariner 3.0, Java 21, Scala 2.13.16, Python 3.13, Delta 4.2) is GA and the default for new workspaces; Runtime 1.3 (Spark 3.5.5) is now EOSA. Native Execution Engine covers\u2026",
+"sev": "normal",
+"key": "runtime-20-spark-41-mariner-30-java",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "tzdata remains a live silent-wrong-answer bug with no reachable fix in Fabric Spark \u2014 per build manifests Runtime 2.0 pins system tzdata 2025c, Runtime 1.3 pins 2024a; neither carries 2026e (Canada)\u2026",
+"sev": "normal",
+"key": "tzdata-remains-live-silentwronganswer-bug-reachable-fix",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Rust-native Spark compatibility for OneLake via Sail/LakeSail (10/29) \u2014 worth a look if you want non-JVM Spark against OneLake.",
+"sev": "normal",
+"key": "rustnative-spark-compatibility-onelake-saillakesail-1029-worth",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Project Osmos \u2014 a native \"data engineering agent\" for Fabric (10/29).",
+"sev": "normal",
+"key": "project-osmos-native-data-engineering-agent-fabric",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Advanced NL2SQL and advanced DAX generation in Fabric data agents is GA (defer deep NL2SQL coverage to that lane).",
+"sev": "normal",
+"key": "advanced-nl2sql-advanced-dax-generation-fabric-data",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "FNTK (Preview) connects external coding agents to Fabric notebooks.",
+"sev": "normal",
+"key": "fntk-preview-connects-external-coding-agents-fabric",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "No Fabric, Power BI, or Synapse CVE in the November MSRC release \u2014 verified against the CVRF JSON (api.msrc.microsoft.com/cvrf/v3.0/cvrf/2026-Nov, 1,476 vulns, zero Fabric/PowerBI/Synapse hits).",
+"sev": "normal",
+"key": "fabric-power-synapse-cve-november-msrc-release",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Try IRC writes to OneLake from PyIceberg/DuckDB and confirm credential vending + optimistic-concurrency conflict behavior against a concurrent writer.",
+"sev": "normal",
+"key": "try-irc-writes-onelake-pyicebergduckdb-confirm-credential",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Spin up a new workspace after the Jan 2027 unified-pool default to measure the 100%-compute CU delta vs. an existing 50/50 workspace before it bites your bill.",
+"sev": "normal",
+"key": "spin-workspace-jan-2027-unifiedpool-default-measure",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Benchmark NEE on Runtime 2.0 (Spark 4.1) vs 1.3 (Spark 3.5) on your own Delta workload and watch the Spark Advisor for JVM fallback alerts.",
+"sev": "normal",
+"key": "benchmark-nee-runtime-20-spark-41-13",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PASSED 2026-11-06 (7 days ago): the Fabric data-agent custom tool connection in Microsoft Foundry is retired \u2014 migrate Foundry agents to the Fabric IQ (OneLake Catalog) tool (MCP-based, multi-agent).",
+"sev": "normal",
+"key": "past-due-20261106-days-ago-fabric-data",
+"first_seen": "2026-11-10",
+"days_seen": 3
+},
+{
+"title": "mid-Dec 2026 / Jan 2027: SQL Pools unification \u2014 stop relying on customSQLPoolsEnabled by mid-Dec; new-workspace compute/CU default changes in Jan (above).",
+"sev": "normal",
+"key": "middec-2026-jan-2027-sql-pools-unification",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Runtime 1.3 is EOSA (End of Support Announced; LTS window runs to March 2027 per prior editions) \u2014 plan the Spark 3.5\u21924.1 / Java 11\u219221 / Scala 2.12\u21922.13 / Python 3.11\u21923.13 jump; JARs most likely to\u2026",
+"sev": "normal",
+"key": "runtime-13-eosa-end-support-announced-lts",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Microsoft is making OneLake a writable, multi-engine Iceberg catalog (IRC writes + ADB native storage + Snowflake/ClickHouse writing into it) \u2014 the interop story is shifting from \"read my data\u2026",
+"sev": "normal",
+"key": "microsoft-making-onelake-writable-multiengine-iceberg-catalog",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Agentic data engineering is now first-party (Project Osmos orchestrator, data-engineering agent, FNTK, Skills for Fabric).",
+"sev": "normal",
+"key": "agentic-data-engineering-firstparty-project-osmos-orchestrator",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The CU-economics drift continues quietly: the unified-pool 50\u2192100% compute default and configurable cache cooldown mean the same query can cost materially more on a new workspace than an old one with\u2026",
+"sev": "normal",
+"key": "cueconomics-drift-continues-quietly-unifiedpool-100-compute",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"challengers": {
+"status": "ok",
+"items": [
+{
+"title": "CVE-2026-116366 (CVSS 9.5, Critical) \u2014 carried \"unreachable fix\" claim is now RESOLVED. NVD lists the fix in 26.3.62.3-lts, 26.8.36.3-lts, 26.9.27.3-stable and 26.10.3.7-stable, and all four git tags\u2026",
+"sev": "high",
+"key": "clickhouse-security-support-only-2610-269-268lts",
+"first_seen": "2026-11-01",
+"days_seen": 7
+},
+{
+"title": "ClickHouse 26.10 (2026-10-22) \u2014 CBO and scan-pushdown heavy.",
+"sev": "normal",
+"key": "clickhouse-2610-20261022-cbo-scanpushdown-heavy",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "26.10 breaking changes worth a pre-upgrade read.",
+"sev": "high",
+"key": "2610-breaking-changes-worth-preupgrade-read",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Cloud listed affected for CVE-2026-116366 despite a \"default unaffected\" product status \u2014 NVD shows per-Cloud-build fix thresholds (e.g. 26.10 before 26.10.2.84, 26.8 before 26.8.1.597); entries are\u2026",
+"sev": "high",
+"key": "clickhouse-patch-v261037stable-v269273stable-v268363lts-v263623lts-cve2026116366",
+"first_seen": "2026-10-30",
+"days_seen": 5
+},
+{
+"title": "StarRocks 4.1.7 (2026-10-26). Perf: searched CASE WHEN evaluates each branch only on rows that reach it, convert_tz caches DST offsets, zero-copy UNNEST for nullable arrays, faster large-PK index\u2026",
+"sev": "normal",
+"key": "starrocks-417-trims-real-cpu-out-hot",
+"first_seen": "2026-10-30",
+"days_seen": 2
+},
+{
+"title": "Doris 4.1.5 current stable (2026-10-15); 4.2.0 in RC (rc03 2026-11-05). 4.2 is still release-candidate \u2014 don't deploy to prod; watch the mailing-list [VOTE] thread for GA.",
+"sev": "normal",
+"key": "doris-415-current-stable-20261015-420-rc03",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Trino 484 (2026-10-16). Iceberg: sorted_by for optimize (incl. nested fields), gc_enabled to protect files from deletion, register_table accepts metadata_location. Delta: Databricks 18 LTS support\u2026",
+"sev": "normal",
+"key": "trino-484-20261016-iceberg-sortedby-optimize-incl",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "MotherDuck shipped DuckLake table-level security (Oct 23) \u2014 row-/column-level security and column masking via secure views on MotherDuck-hosted DuckLake, plus GRANT RUN ON FLIGHT; tracks DuckDB 1.5.6\u2026",
+"sev": "normal",
+"key": "motherduck-shipped-ducklake-tablelevel-security-oct-rowcolumnlevel",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "DuckDB 1.4 LTS reaches end-of-life 2026-11-17 (4 days out) \u2014 vendor states a specific day on the release calendar. 1.5 is supported to March 2027; DuckDB 2.0.0 LTS \"Cinnamon Teal\" (2026-10-21) is\u2026",
+"sev": "high",
+"key": "duckdb-14-lts-reaches-endoflife-20261117-days",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "ClickHouse 26.7 and older are EOL with no fix for CVSS 9.5 CVE-2026-116366 \u2014 upgrade to a supported line (26.8-lts+).",
+"sev": "high",
+"key": "clickhouse-cve2026116366-unauthenticated-rce-clickhouse-server-cvss",
+"first_seen": "2026-10-30",
+"days_seen": 11
+},
+{
+"title": "ClickHouse 26.10 enable_analyzer / seccomp defaults bite mixed-cluster and sandboxed deployments \u2014 stage before rollout.",
+"sev": "normal",
+"key": "clickhouse-2610-enableanalyzer-seccomp-defaults-bite-mixedcluster",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Re-run ClickBench / your own GROUP BY-LIMIT and join workloads on ClickHouse 26.10 \u2014 top-K dynamic filtering, scan-time string-filter pushdown and stats-free join-order selection move p50 without a\u2026",
+"sev": "normal",
+"key": "rerun-clickbench-group-bylimit-join-workloads-clickhouse",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Test a DuckDB 1.4 \u2192 1.5 vs \u2192 2.0 path on a throwaway copy before 1.4 EOL \u2014 confirm downstream/older DuckDB readers can open a version-69 file, since 2.0 is one-way.",
+"sev": "high",
+"key": "test-duckdb-14-15-20-path-throwaway",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "This month's challenger CVE story is a tooling story, not a patch story.",
+"sev": "normal",
+"key": "month-challenger-cve-story-tooling-story-patch",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Two real-time/serving challengers were quiet in-window: Apache Druid (newest 35.0.1, Dec 2025) and Apache Pinot (1.5.x, Apr 2026) shipped nothing in the past 30 days \u2014 genuinely slow for the\u2026",
+"sev": "normal",
+"key": "two-realtimeserving-challengers-quiet-inwindow-apache-druid",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "CBO convergence across engines: ClickHouse 26.10, StarRocks 4.1.7 and Trino 484 all shipped join-reordering / outer-join-conversion work in the same window \u2014 challengers are competing hardest on the\u2026",
+"sev": "normal",
+"key": "cbo-convergence-engines-clickhouse-2610-starrocks-417",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"dbhw": {
+"status": "ok",
+"items": [
+{
+"title": "AMD EPYC \"Venice\" (6th Gen EPYC 9006, SP7) is now GA (announced 2026-11-10); OEMs are shipping servers.",
+"sev": "normal",
+"key": "amd-epyc-venice-6th-gen-epyc-9006",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "HPE ProLiant Gen13 \u2014 the first four HPE Venice servers \u2014 announced 2026-10-07, available November.",
+"sev": "normal",
+"key": "hpe-proliant-gen13-first-four-hpe-venice",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Intel \"Clearwater Forest\" (Xeon 6+, 288 E-cores, 18A) is in full production but I found no in-window GA/launch; treat as imminent, not shipped. 12 DDR5-8000 channels, 96 PCIe 5.0 lanes (64 CXL 2.0)\u2026",
+"sev": "normal",
+"key": "intel-clearwater-forest-xeon-288-ecores-18a",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "New audited TPC-H@3000GB on EPYC Venice \u2014 HPE ProLiant DL525 Gen13, submitted 2026-11-06: 3,187,043 QphH at $245.66/kQphH (USD), system availability 2027-02-01. This is a single-socket Venice result\u2026",
+"sev": "normal",
+"key": "audited-tpch-3000gb-epyc-venice-hpe-proliant",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The memory supercycle is still accelerating, and it is now the dominant line item in a DB-server BOM. TrendForce's Q4 2026 forecast: conventional DRAM contract +10\u201315% QoQ, HBM +15\u201320%, NAND +15\u201320%\u2026",
+"sev": "normal",
+"key": "memory-supercycle-still-accelerating-dominant-line-item",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Allocation, not just price, is the constraint.",
+"sev": "normal",
+"key": "allocation-price-constraint",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Concrete BOM shock for DB sizing: a reseller price table shows a 32 GB DDR5 RDIMM moving from ~$395 (Nov 2025) to ~$2,165 (2026-10-26) \u2014 ~5x YoY (reseller list, not a negotiated contract, so treat as\u2026",
+"sev": "normal",
+"key": "concrete-bom-shock-sizing-reseller-price-table",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "DDR4 is now the trap, not the bargain. DDR4 is hitting EOL and in places prices inverted above DDR5 per-bit, so the old \"reuse DDR4 to save money\" instinct can backfire; check per-GB on the exact\u2026",
+"sev": "high",
+"key": "ddr4-trap-bargain-ddr4-hitting-eol-places",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Enterprise SSD is the fastest-rising storage line (+23\u201328% QoQ in Q4), and NAND wafer tightness pushed some November contract prices up sharply.",
+"sev": "normal",
+"key": "enterprise-ssd-fastestrising-storage-line-qoq-nand",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PCIe 6.0 enterprise SSDs are real but mostly mid-2026 GA, not fresh this window: Micron 9650 (first PCIe 6.0 SSD, ~27 GB/s seq), Samsung PM1763, and Kioxia's CM10 (up to ~92% faster seq vs PCIe 5.0).",
+"sev": "normal",
+"key": "pcie-60-enterprise-ssds-real-mostly-mid2026",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "CXL as the memory-crisis pressure valve. At OCP 2026 (mid-October) Samsung + AMD demoed CXL memory pooling (Dynamic Capacity Device) claiming up to 3.3x goodput / 38% lower TTFT vs static allocation\u2026",
+"sev": "normal",
+"key": "cxl-memorycrisis-pressure-valve-ocp-2026-midoctober",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The channel count, not GHz, is the Gen-6 story.",
+"sev": "normal",
+"key": "channel-count-ghz-gen6-story",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Expect a second price step in Q1 2027; LTAs now carry prepayment/floor terms, so procurement decisions made now lock in next year.",
+"sev": "normal",
+"key": "expect-second-price-step-2027-ltas-carry",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PCIe 6.0 SSD adoption is enterprise/AI-first; don't plan client/edge DB nodes around it near-term.",
+"sev": "normal",
+"key": "pcie-60-ssd-adoption-enterpriseaifirst-don-plan",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"appdev": {
+"status": "urgent",
+"items": [
+{
+"title": "Go 1.27.4 and 1.26.11 (2026-11-10) \u2014 12 CVEs, and 10 of them are cgo build/link-time code execution.",
+"sev": "normal",
+"key": "1274-12611-shipped-20261110-cves-arbitrary-code",
+"first_seen": "2026-11-11",
+"days_seen": 2
+},
+{
+"title": "Node.js 26.13.1 / 24.22.3 / 22.23.5 (2026-11-11) \u2014 16 CVEs, 7 High, three distinct TLS auth-bypass shapes.",
+"sev": "normal",
+"key": "nodejs-26131-24223-22235-20261111-cves-high",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": ".NET 11.0.0 GA + November servicing (2026-11-10) \u2014 25 CVEs across .NET 8/9/10/11. The devblog table lists 25 CVE ids (CVE-2026-114146/-109475/\u2026/-118741; severities not rated on the page \u2014 check MSRC\u2026",
+"sev": "high",
+"key": "net-1100-shipped-cves-worst-cve2026114146-aspnet",
+"first_seen": "2026-11-11",
+"days_seen": 2
+},
+{
+"title": "Python shipped an expedited eMudhra-distrust security release on 2026-10-25 across every live branch (3.15.2, 3.14.10, 3.13.18, 3.12.16, 3.11.18).",
+"sev": "normal",
+"key": "python-shipped-expedited-emudhradistrust-security-release-20261025",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "React RSC RCE \u2014 CVE-2026-126187, CVSS 9.5 Critical, unauth RCE via CWE-502 deserialization.",
+"sev": "urgent",
+"key": "react-rsc-rce-cve2026126187-cvss-95-nextjs",
+"first_seen": "2026-11-12",
+"days_seen": 2
+},
+{
+"title": "mcp-go SSRF + credential disclosure \u2014 GO-2026-6911, NO fixed release (\"all versions, no known fixed\").",
+"sev": "normal",
+"key": "mcpgo-ssrf-credential-disclosure-go20266911-fixed-release",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Brotli decoder OOB write CVE-2026-111497 is in CISA KEV; remediation due date 2026-11-10 is 3 days past.",
+"sev": "high",
+"key": "brotli-decoder-outofbounds-write-cve2026111497-cisa-kev",
+"first_seen": "2026-10-29",
+"days_seen": 10
+},
+{
+"title": "eMudhra CA distrust is now a cross-runtime story.",
+"sev": "normal",
+"key": "emudhra-distrust-crossruntime-story",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Rust 1.100.0 (2026-11-12) stabilizes the Allocator trait + _in constructors (Vec::new_in, Box::new_in), the never type ! can now be named (Result<T, !>; Infallible is now an alias for !), and Cargo\u2026",
+"sev": "normal",
+"key": "rust-11000-20261112-stabilizes-allocator-trait-constructors",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Python 3.15.x is current (3.15.0 GA 2026-10-09, 3.15.2 the security patch).",
+"sev": "normal",
+"key": "python-315x-current-3150-20261009-3152-security",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Audit your CI: go build/go test on untrusted PRs is now a documented RCE surface (Go cgo CVEs).",
+"sev": "normal",
+"key": "audit-buildgo-test-untrusted-prs-documented-rce",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Test the Node TLS auth-bypass trio against any mTLS/per-host-CA setup (addContext, https.Agent with ca:[]) before upgrading, so you know what the fix changes.",
+"sev": "normal",
+"key": "test-node-tls-authbypass-trio-mtlsperhostca-setup",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Try Rust 1.100 Cargo dependency cooldowns (global-min-publish-age) as a cheap defense against a compromised-crate flash-publish.",
+"sev": "normal",
+"key": "try-rust-1100-cargo-dependency-cooldowns-globalminpublishage",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": ".NET 8 and .NET 9 reach end of support 2026-11-10 (both EOL same day as .NET 11 GA); .NET 10 (LTS) and .NET 11 (STS) both end 2028-11-14 \u2014 the LTS buys no extra calendar over the STS after it.",
+"sev": "high",
+"key": "net-net-reach-end-support-20261110-eol",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Node.js 24.x is now Maintenance LTS (since 2026-10-20); 26.x \"Lithium\" is the Active LTS (since 2026-10-28).",
+"sev": "normal",
+"key": "nodejs-24x-maintenance-lts-20261020-26x-lithium",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "GitHub Actions: pull_request_target becomes blocked by default 2026-12-02 (brownout window 2 is 2026-11-16 16:00\u201318:00 UTC; it's back in evaluate mode between windows).",
+"sev": "normal",
+"key": "github-actions-pullrequesttarget-becomes-blocked-default-20261202",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Go/Node/Python security tags are floors, not ceilings \u2014 a reader pinned to an older minor is still exposed to every CVE above.",
+"sev": "normal",
+"key": "gonodepython-security-tags-floors-ceilings-reader-pinned",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "\"Reachable fix, invisible tooling\" is the dominant CVE shape this window, measured twice: the React RSC RCE (vendored file: dep in Next.js that overrides can't reach) and parquet/OSV-style\u2026",
+"sev": "normal",
+"key": "reachable-fix-invisible-tooling-dominant-cve-shape",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Toolchain-as-attack-surface: 10 of Go's 12 CVEs are build/link-time, not runtime.",
+"sev": "normal",
+"key": "toolchainasattacksurface-cves-buildlinktime-runtime",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Runtime-owned trust stores vs OS stores: eMudhra distrust landing separately in Go and Python means your TLS trust decisions now depend on which runtime minor you're on \u2014 a config fact that used to\u2026",
+"sev": "normal",
+"key": "runtimeowned-trust-stores-stores-emudhra-distrust-landing",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"aiappdev": {
+"status": "urgent",
+"items": [
+{
+"title": "Prefix check now enforced for every account (Nov 9) \u2014 a breaking message-format change.",
+"sev": "normal",
+"key": "prefix-check-enforced-every-account-nov-breaking",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Computer-use toolset bump is breaking (Nov 9). computer_toolset_20260801 is now required; the older computer_20251124 returns 400 everywhere except Amazon Bedrock.",
+"sev": "normal",
+"key": "computeruse-toolset-bump-breaking-nov-computertoolset20260801-required",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "New API version 2026-10-21 with major SDK bumps (Oct 21).",
+"sev": "normal",
+"key": "api-version-20261021-major-sdk-bumps-oct",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Server-side message threads (beta, Nov 2).",
+"sev": "normal",
+"key": "serverside-message-threads-beta-nov",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Prompt-caching economics + larger payloads (Oct 7 / Oct 28).",
+"sev": "normal",
+"key": "promptcaching-economics-larger-payloads-oct-oct",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "First-party OpenTelemetry export (beta, Oct 14).",
+"sev": "normal",
+"key": "firstparty-opentelemetry-export-beta-oct",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Draft spec: OAuth Client ID Metadata Document bumped to draft-03 (now MUST), and _meta restored on five types. _meta was unintentionally dropped from CreateMessageRequestParams, both\u2026",
+"sev": "normal",
+"key": "draft-spec-oauth-client-metadata-document-bumped",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "vLLM v0.33.0 (tag dated Nov 1): LM Format Enforcer deprecated, CUDA 13-only builds.",
+"sev": "high",
+"key": "vllm-v0330-tag-dated-nov-format-enforcer",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "LiteLLM Private Registry (announced Oct 27, GA Nov 12).",
+"sev": "normal",
+"key": "litellm-private-registry-announced-oct-nov",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Malicious LiteLLM 1.107.0 (Oct 21) \u2014 credential-stealing malware + RCE loader.",
+"sev": "urgent",
+"key": "malicious-litellm-11070-oct-credentialstealing-malware-rce",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Anthropic fast mode for Opus 4.8 deprecated (Oct 30), removed Nov 30 2026 \u2014 speed:\"fast\" will then 400; migrate to Opus 5.5.",
+"sev": "high",
+"key": "anthropic-fast-mode-opus-48-deprecated-oct",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "OpenAI AgentKit \u2014 Agent Builder + Evals reportedly wind down Nov 30 2026 (migrate workflows to the Agents SDK).",
+"sev": "normal",
+"key": "openai-agentkit-agent-builder-evals-reportedly-wind",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Context is moving server-side. Anthropic message threads (Nov 2) and Google's Interactions API (GA June 2026, now Google's primary Gemini interface, 55-day server-side retention on paid tier) both\u2026",
+"sev": "normal",
+"key": "context-moving-serverside-anthropic-message-threads-nov",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "OTel GenAI semantic conventions are still unstable. gen_ai.system \u2192 gen_ai.provider.name rename, plus the June 2026 move of GenAI conventions to a dedicated semantic-conventions-genai repo, means\u2026",
+"sev": "normal",
+"key": "otel-genai-semantic-conventions-still-unstable-genaisystem",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"frontend": {
+"status": "urgent",
+"items": [
+{
+"title": "React Server Components unauthenticated RCE \u2014 CVE-2026-126187, CVSS 9.5 (CVSS 4.0 vector), Critical. react-server-dom-webpack/-parcel/-turbopack 19.x before 19.0.9 / 19.1.10 / 19.2.9 / 19.3.1 can be\u2026",
+"sev": "urgent",
+"key": "resolved-scannerinvisibility-half-react-rsc-unauthenticated-rce",
+"first_seen": "2026-11-11",
+"days_seen": 3
+},
+{
+"title": "Next.js is the dangerous surface here, because it vendors react-server-dom- as a file: dependency that no lockfile scan and no overrides pin can reach \u2014 judge a Next app by its next version, not by a\u2026",
+"sev": "normal",
+"key": "nextjs-dangerous-surface-here-vendors-reactserverdom-file",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Vite __vite-browser-external RCE \u2014 GHSA-p4f5-76q4-ffq7, CVSS 9.1 Critical, no CVE id.",
+"sev": "urgent",
+"key": "vite-critical-absent-github-advisory-database-npm",
+"first_seen": "2026-11-10",
+"days_seen": 3
+},
+{
+"title": "Next.js Image Optimization SVG RCE \u2014 GHSA-2464-fhr4-w9xw, Critical, published 2026-10-14 \u2014 unauthenticated RCE via SVG files through the image-optimization API. Plus a batch of 7 Moderate Next\u2026",
+"sev": "high",
+"key": "even-cve-sufficient-cve202696889-exists-osv-only",
+"first_seen": "2026-10-18",
+"days_seen": 8
+},
+{
+"title": "Frameworks shipped heavy security drops. Nuxt 4.6.4 (2026-11-03) fixes 8 Nuxt advisories + 3 Nitro advisories (nitropack 2.13.6); 4.6.3 (2026-10-27) fixed 5 more (client error-report file reads, dev\u2026",
+"sev": "normal",
+"key": "frameworks-shipped-heavy-security-drops-nuxt-464",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Node.js security releases 2026-11-11 \u2014 26.13.1 / 24.22.3 / 22.23.5, 16 CVEs (7 High), including three TLS/mTLS auth bypasses.",
+"sev": "normal",
+"key": "nodejs-security-releases-20261111-26131-24223-22235",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Chrome 158 removes client-side XSLT on 2026-11-17 (Stable).",
+"sev": "normal",
+"key": "chrome-158-removes-clientside-xslt-20261117-17th",
+"first_seen": "2026-11-12",
+"days_seen": 2
+},
+{
+"title": "Three features reached Baseline (newly interoperable) on 2026-10-27: Scroll-driven animations, Scoped custom element registries, and the EXT_texture_norm16 WebGL extension.",
+"sev": "normal",
+"key": "three-features-reached-baseline-newly-20261027-unblocked",
+"first_seen": "2026-11-10",
+"days_seen": 2
+},
+{
+"title": "TypeScript 7.1 Beta shipped 2026-10-20 (npm i -D typescript@beta, dist-tag beta = 7.1.0-beta).",
+"sev": "normal",
+"key": "typescript-71-beta-shipped-20261020-npm-typescript",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Angular is at v22 \u2014 stable 22.2.6 (2026-11-12) and 22.3.0-rc.0 the same day. 22.3 reports unknown property bindings on explicit ng-template elements (new compile errors), disallows attribute/property\u2026",
+"sev": "normal",
+"key": "angular-v22-stable-2226-20261112-2230rc0-day",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "SvelteKit 3.2.0 (2026-11-10) \u2014 SvelteKit 3.x is current; 3.2 adds clickable remote-function links in dev logs plus fixes to remote functions, afterNavigate params during hydration, and asset\u2026",
+"sev": "normal",
+"key": "sveltekit-320-20261110-sveltekit-3x-current-32",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Vue 3.6 (Vapor mode) is still RC \u2014 3.6.0-rc.15 (2026-11-12); stable line is 3.5.45 (2026-11-05).",
+"sev": "normal",
+"key": "vue-36-vapor-mode-still-360rc15-20261112",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Astro split its renderers into standalone packages (@astrojs/react-renderer, @astrojs/solid-js-renderer, @astrojs/svelte-renderer, @astrojs/vue-renderer + @astrojs/runtime, all 0.1.x on 2026-11-11)\u2026",
+"sev": "normal",
+"key": "astro-split-renderers-standalone-packages-astrojsreactrenderer-astrojssolidjsren",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Tailwind CSS 4.3.4 (2026-11-09) adds @tailwindcss/turbopack, a first-party Turbopack loader for using Tailwind with Next.js, and re-signs the standalone macOS binaries (macOS 27 was killing them at\u2026",
+"sev": "normal",
+"key": "tailwind-css-434-20261109-adds-tailwindcssturbopack-firstparty",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Vite 8.3.x is a steady stream of perf work (latest 8.3.8, 2026-11-11): removed a quadratic link scan in the preload helper (8.3.2), regexp-free inline source-map extraction (8.3.5), index rendered\u2026",
+"sev": "urgent",
+"key": "vite-83x-steady-stream-perf-work-latest",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Try TypeScript 7.1 beta's new split compiler API (typescript/sync etc.) against a real codegen/lint integration \u2014 this is the unblock for the whole native-compiler tooling ecosystem.",
+"sev": "normal",
+"key": "try-typescript-71-beta-split-compiler-api",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Audit for client-side XSLT before 2026-11-17: grep your templates and any feed/sitemap generators for XSLTProcessor and type=\"text/xsl\"; wire the WASM polyfill or server-render the transform.",
+"sev": "normal",
+"key": "audit-clientside-xslt-20261117-grep-templates-feedsitemap",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Verify your React/Next RSC patch state by next version, not by a scanner \u2014 a green osv-scanner/Dependabot run is weak evidence here because Next vendors react-server-dom- as file:.",
+"sev": "normal",
+"key": "verify-reactnext-rsc-patch-state-next-version",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-17 \u2014 Chrome 158 removes client-side XSLT (Stable).",
+"sev": "normal",
+"key": "20261117-days-chrome-158-stable-clientside-xslt",
+"first_seen": "2026-11-11",
+"days_seen": 2
+},
+{
+"title": "Now \u2014 Upgrade Vite to 8.2.6 / 8.3.7+ (latest 8.3.8) for GHSA-p4f5 RCE; the advisory's 8.2.5 is a 404, use 8.2.6.",
+"sev": "urgent",
+"key": "upgrade-vite-826-837-latest-838-ghsap4f5",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Now \u2014 Upgrade Next.js to \u226516.4.1 (15.x: latest backport) and react-server-dom- to 19.0.9/19.1.10/19.2.9/19.3.1 for the RSC RCE.",
+"sev": "urgent",
+"key": "upgrade-nextjs-1641-15x-latest-backport-reactserverdom",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Now \u2014 Node.js 26.13.1 / 24.22.3 / 22.23.5 for the TLS/mTLS bypasses; Nuxt 4.6.4, SvelteKit 2.70.4 security backports.",
+"sev": "normal",
+"key": "nodejs-26131-24223-22235-tlsmtls-bypasses-nuxt",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Carried note HOLDS: no Electron line reaches the Chrome 157.0.8103.50 floor \u2014 newest stable Electron is v45.3.2 (2026-11-13) on Chromium 156.0.8078.100. Do not tell an Electron reader to \"upgrade\u2026",
+"sev": "normal",
+"key": "carried-note-holds-electron-line-reaches-chrome",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Scanner-blindness is now the dominant frontend-security shape, not missing patches.",
+"sev": "normal",
+"key": "scannerblindness-dominant-frontendsecurity-shape-missing-patches",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The native-TypeScript ecosystem is reassembling its tooling layer.",
+"sev": "normal",
+"key": "nativetypescript-ecosystem-reassembling-tooling-layer",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Turbopack is consolidating as the Next/Tailwind default path \u2014 Tailwind shipping a first-party Turbopack loader (4.3.4) alongside Next 16's Turbopack-default rendering points at webpack's slow\u2026",
+"sev": "normal",
+"key": "turbopack-consolidating-nexttailwind-default-path-tailwind-shipping",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"devops": {
+"status": "urgent",
+"items": [
+{
+"title": "EKS 1.31 end of extended support is 2026-11-26. After that AWS stops new-cluster creation on 1.31 and auto-upgrades existing control planes to the oldest supported version (1.32) \"at any time, with\u2026",
+"sev": "urgent",
+"key": "eks-131-end-extended-support-20261126-aws",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Upstream Kubernetes is at 1.37.1 (GA 1.37 was 2026-08-26); 1.38 cuts 2026-12-16. v1.38 milestones: RC 2026-12-09, docs freeze 2026-12-03/04. Nothing requires action yet, but plan the cycle: EKS 1.34\u2026",
+"sev": "normal",
+"key": "upstream-kubernetes-1371-137-20260826-138-cuts",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "ingress-nginx is retired \u2014 this is a standing EOL, re-verified.",
+"sev": "high",
+"key": "ingressnginx-retired-standing-eol-reverified",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "GitHub Actions pull_request_target is blocked by default on 2026-12-02 (19 days out), not sooner.",
+"sev": "normal",
+"key": "github-actions-pullrequesttarget-blocked-default-20261202-days",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Terraform 1.17.0 GA (2026-10-21; 1.17.2 is latest, 2026-11-11).",
+"sev": "normal",
+"key": "terraform-1170-20261021-1172-shipped-today",
+"first_seen": "2026-11-11",
+"days_seen": 2
+},
+{
+"title": "OpenTofu 1.13.x is the active line (1.13.9, 2026-11-05).",
+"sev": "normal",
+"key": "opentofu-113x-active-line-1139-20261105",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Docker Engine 29.9.3 (2026-11-03) is latest, bundling BuildKit v0.34.2. The 29.9.x stream is almost entirely CVE maintenance: 29.9.3 fixes CVE-2026-116587/-116591/-115538/-115539 plus two BuildKit\u2026",
+"sev": "high",
+"key": "docker-engine-2993-20261103-latest-bundling-buildkit",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Grafana Alloy 1.21.0 (2026-10-23) ships a new OpenTelemetry Engine \u2014 you can now configure Alloy with standard OTel Collector YAML, easing migration off bespoke Alloy config.",
+"sev": "normal",
+"key": "grafana-alloy-1210-20261023-ships-opentelemetry-engine",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Brotli \"Node2Shell\" (CVE-2026-111497) \u2014 out-of-bounds write in the decoder, actively exploited, in CISA KEV, remediation due 2026-11-10 (3 days PAST).",
+"sev": "urgent",
+"key": "brotli-cve2026111497-cvss-98-92-remote-unauthenticated",
+"first_seen": "2026-11-01",
+"days_seen": 2
+},
+{
+"title": "OpenSSH CVE-2026-123158 \u2014 KEV date passed 2026-11-12. On musl libc without PAM (think Alpine-based images running sshd), a short/medium password can authenticate for some configs. musl itself is\u2026",
+"sev": "high",
+"key": "20261112-days-cisa-kev-date-openssh-cve2026123158",
+"first_seen": "2026-11-10",
+"days_seen": 3
+},
+{
+"title": "Late-2025 runc container-escape trio is still the floor to clear (CVE-2025-31133/-52565/-52881; fixed runc 1.2.8/1.3.3/1.4.0): outside the 30-day window, but if you've not rebased nodes since last\u2026",
+"sev": "high",
+"key": "late2025-runc-containerescape-trio-still-floor-clear",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Run kubectl get nodes across your fleet and confirm nothing is on EKS 1.31; if it is, plan the 1.31\u21921.32 (or straight to 1.34/1.37) upgrade before 2026-11-26 rather than letting AWS pick the moment.",
+"sev": "urgent",
+"key": "run-kubectl-nodes-fleet-confirm-nothing-eks",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Test Terraform 1.17's -minimal-refresh against your largest state \u2014 it can cut plan time dramatically on big configs where refresh dominates.",
+"sev": "normal",
+"key": "test-terraform-117-minimalrefresh-largest-state-cut",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Grep your image inventory for libbrotli/brotli and Node < 24.22.1; the Brotli KEV is a rebuild problem, not a host-patch problem.",
+"sev": "urgent",
+"key": "grep-image-inventory-libbrotlibrotli-node-24221-brotli",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-16 16:00\u201318:00 UTC \u2014 GitHub Actions pull_request_target brownout window 2 (FAIL mode); permanent enforcement 2026-11-... \u2192 2026-12-02.",
+"sev": "high",
+"key": "20261116-utc-github-actions-pullrequesttarget-brownout-window",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-26 \u2014 EKS 1.31 end of extended support (auto-upgrade follows).",
+"sev": "urgent",
+"key": "nov-days-eks-131-end-extended-support",
+"first_seen": "2026-10-04",
+"days_seen": 3
+},
+{
+"title": "2026-12-02 \u2014 EKS 1.34 end of standard support (moves to paid extended support).",
+"sev": "normal",
+"key": "dec-2026-eks-134-leaves-standard-support",
+"first_seen": "2026-09-10",
+"days_seen": 12
+},
+{
+"title": "2026-12-16 \u2014 Kubernetes 1.38 release cut (GA, requires nothing of readers).",
+"sev": "normal",
+"key": "20261216-kubernetes-138-release-cut-requires-nothing",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Docker 29.9.2+ and Terraform 1.17 both distrust eMudhra CA chains \u2014 registries/backends on those chains will fail TLS until they re-issue.",
+"sev": "normal",
+"key": "docker-2992-terraform-117-distrust-emudhra-chains",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The eMudhra CA distrust (CVE-2026-111943) is rippling through the entire Go-built DevOps toolchain simultaneously \u2014 Terraform 1.17 (Go 1.26.10), Docker Engine 29.9.2, and more will follow as each\u2026",
+"sev": "high",
+"key": "cilium-11816-11910-1204-oct-outofband-releases",
+"first_seen": "2026-10-27",
+"days_seen": 7
+},
+{
+"title": "Gateway API is now the only forward path for ingress on Kubernetes post ingress-nginx retirement; expect the migration pressure (and ingress2gateway edge cases around annotation-driven config) to\u2026",
+"sev": "normal",
+"key": "gateway-api-only-forward-path-ingress-kubernetes",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "OTel Collector YAML is becoming the lingua franca \u2014 Alloy 1.21's OTel Engine and Splunk's versioned Collector fleet-management (Oct 2026) both converge on standard Collector config, reducing\u2026",
+"sev": "normal",
+"key": "otel-collector-yaml-becoming-lingua-franca-alloy",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"mobile": {
+"status": "urgent",
+"items": [
+{
+"title": "New age-rating content descriptors become mandatory 2026-11-16; \"Dating and Relationships\" sets a minimum 18+ rating.",
+"sev": "normal",
+"key": "agerating-content-descriptors-become-mandatory-20261116-dating",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Prior questionnaire overhaul still in force.",
+"sev": "normal",
+"key": "prior-questionnaire-overhaul-still-force",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "iOS/iPadOS 27.2.1 (24B156), 26.7.3 (23H131) and 18.7.12 (22H390) all shipped 2026-11-09; the current stable line is 27.2.1. iOS 27.2 was 2026-10-26, Xcode 27.2 (27B52) 2026-10-29, Xcode 27.3 beta\u2026",
+"sev": "normal",
+"key": "iosipados-2721-24b156-2673-23h131-18712-22h390",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "WebKit CVE-2024-27834 added to CISA KEV 2026-11-04, federal remediation due 2026-11-18 (5 days out).",
+"sev": "urgent",
+"key": "cve202427834-cisa-kev-entry-added-20261104-due",
+"first_seen": "2026-11-06",
+"days_seen": 5
+},
+{
+"title": "Brotli OOB-write CVE-2026-111497 is fixed in iOS 27.2.1 and 26.7.3 but NOT in iOS 18.7.12 \u2014 I confirmed this by reading both security pages: the 27.2.1 content lists a brotli / CVE-2026-111497 entry\u2026",
+"sev": "high",
+"key": "brotli-decoder-outofbounds-write-cve2026111497-cvss-31",
+"first_seen": "2026-10-29",
+"days_seen": 8
+},
+{
+"title": "November 2026 Android Security Bulletin: 216 CVEs (23 Critical), no known exploitation.",
+"sev": "normal",
+"key": "november-2026-android-security-bulletin-216-cves",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Tooling landmarks: current stable IDE is Android Studio Rabbit 2 (2026.2.2 Patch 1); AGP 9.x is the line (Flutter 3.50 defaults new projects to AGP 9.3.1 / Gradle 9.5.0 / KGP 2.4.20 / Java 17 min\u2026",
+"sev": "normal",
+"key": "tooling-landmarks-current-stable-ide-android-studio",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Flutter 3.50 shipped 2026-11-11 with Dart 3.14 \u2014 direct native interop (FFIgen ObjC, JNIgen Java/Kotlin) is now stable, and material_ui/cupertino_ui are the default UI packages for new projects. iOS\u2026",
+"sev": "normal",
+"key": "flutter-350-shipped-20261111-dart-314-direct",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "React Native stable is 0.88.1 (2026-10-27), following 0.88.0 (2026-10-15); 0.89.0 is in RC (rc.0 2026-11-04, rc.1 2026-11-10).",
+"sev": "normal",
+"key": "react-native-stable-0881-20261027-following-0880",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Expo latest is SDK 57 (2026-06-30, RN 0.86) \u2014 not in window, but two carried gotchas still bite: apps built against the iOS 27 SDK need the UIKit scene-based lifecycle (opt-in in SDK 57, default in\u2026",
+"sev": "normal",
+"key": "expo-latest-sdk-20260630-086-window-two",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "CocoaPods Trunk goes permanently read-only on 2026-12-02 (19 days out).",
+"sev": "normal",
+"key": "cocoapods-trunk-goes-permanently-readonly-20261202-days",
+"first_seen": "2026-09-27",
+"days_seen": 2
+},
+{
+"title": "Audit your age-rating questionnaire before 2026-11-16 so the next update submission isn't surprised by the Shared Location / Dating descriptors \u2014 especially if any feature touches location sharing\u2026",
+"sev": "normal",
+"key": "audit-agerating-questionnaire-20261116-next-update-submission",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Grep your fleet's minimum iOS floor: confirm it is \u226517.5 (covers the WebKit KEV) and decide whether the un-fixed Brotli OOB-write on the iOS 18 line is acceptable for the devices you can't move to\u2026",
+"sev": "urgent",
+"key": "grep-fleet-minimum-ios-floor-confirm-175",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Try Flutter 3.50 native interop (FFIgen/JNIgen) on a plugin that currently uses platform channels; and if you ship via CocoaPods in a Flutter iOS app, test the SPM path before the fallback is removed.",
+"sev": "normal",
+"key": "try-flutter-350-native-interop-ffigenjnigen-plugin",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-16 \u2014 Apple age-rating content descriptors mandatory; Dating & Relationships \u2192 18+ floor; declarations required on update submission; all apps by 2027-01-12.",
+"sev": "normal",
+"key": "20261116-apple-agerating-content-descriptors-mandatory-dating",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "2026-11-18 \u2014 CISA KEV remediation due for WebKit CVE-2024-27834 (fix already in iOS \u226517.5).",
+"sev": "urgent",
+"key": "20261118-days-cisa-kev-due-date-cve202427834",
+"first_seen": "2026-11-08",
+"days_seen": 5
+},
+{
+"title": "2026-12-02 \u2014 CocoaPods Trunk permanently read-only (publishing ends; resolution continues).",
+"sev": "normal",
+"key": "20261202-cocoapods-trunk-permanently-readonly-publishing-ends",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Ongoing/no-fix \u2014 Brotli CVE-2026-111497 unpatched on the iOS 18 line despite the 2026-11-09 iOS 18.7.12 update; AGP 10 removes the built-in-Kotlin opt-out; Flutter Intel-Mac host support winding down.",
+"sev": "high",
+"key": "20261110-days-cisa-kev-due-date-cve2026111497-4",
+"first_seen": "2026-10-29",
+"days_seen": 7
+},
+{
+"title": "Package managers are consolidating on SPM across the board \u2014 CocoaPods read-only (Dec 2), Flutter retiring its CocoaPods fallback, Capacitor/Expo defaulting to SPM. The migration tax is now\u2026",
+"sev": "normal",
+"key": "package-managers-consolidating-spm-board-cocoapods-readonly",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "\"Severity unreadable by a CVSS gate\" keeps recurring on mobile: Android's headline Framework RCE (CVE-2026-58868) shipped with no CVSS score at publication, so triage-by-number ranks the single worst\u2026",
+"sev": "high",
+"key": "november-android-bulletin-worst-entry-critical-remote",
+"first_seen": "2026-11-03",
+"days_seen": 4
+},
+{
+"title": "The iOS-18-vs-current split is a deliberate backport gap, not an oversight \u2014 Apple issued iOS 18.7.12 the same day as 27.2.1 but chose which CVEs to carry back, so \"my device got a November security\u2026",
+"sev": "normal",
+"key": "ios18vscurrent-split-deliberate-backport-gap-oversight-apple",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"aidaily": {
+"status": "ok",
+"items": [
+{
+"title": "Google ships the Gemini 4 family GA, this week. gemini-4-hydrogen went GA 2026-11-12 (free tier + paid $1.50/$7.50 per 1M in/out, new xhigh thinking level above the default high, now the default for\u2026",
+"sev": "normal",
+"key": "google-ships-gemini-family-week-gemini4hydrogen-went",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Gemini \"Decisions API\" is a new primitive worth knowing about (2026-11-11). gemini-decision-1 returns binary/categorical/rubric decisions across text, images, audio, video and PDF using zero output\u2026",
+"sev": "normal",
+"key": "gemini-decisions-api-primitive-worth-knowing-20261111",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Anthropic's newest models are claude-fable-5-2 / claude-mythos-5-2 (2026-11-09), priced $8/$40 per MTok (down from $10/$50 on 5.1), 1M context, $0.20/MTok cache reads; Fable 5.2 is now the Claude\u2026",
+"sev": "normal",
+"key": "anthropic-newest-models-claudefable52-claudemythos52-20261109-priced",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Older, still landing: OpenAI's last primary-doc entries are gpt-6-cyber (restricted, Daybreak-gated, 2026-11-05) and gpt-image-2.6-sunburst/flare (2026-11-04) \u2014 nothing in the 24-48h window.",
+"sev": "normal",
+"key": "older-still-landing-openai-last-primarydoc-entries",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Claude Code shipped \"Code Mode\" (v2.1.323, experimental opt-in): Claude writes JavaScript to call its tools instead of emitting tool-call JSON. Same drop hardens the plugin system\u2026",
+"sev": "normal",
+"key": "claude-code-shipped-code-mode-v21323-experimental",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Anthropic launched self-hosted Claude Managed Agents (2026-11-12) \u2014 run the whole Managed Agents service (agents, sessions, history) on your own infra, with model requests forwarded to a provider of\u2026",
+"sev": "normal",
+"key": "anthropic-launched-selfhosted-claude-managed-agents-20261112",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Cursor's recent headline features (just outside the window): Voice Chat with agents (2026-11-06) and \"Build Live Apps\" with managed DB/auth/hosting shared by link (2026-11-05).",
+"sev": "normal",
+"key": "cursor-recent-headline-features-window-voice-chat",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "llama.cpp tagged v1.0.0 today (2026-11-13), nightly b12359 \u2014 its first 1.0. Beyond the milestone, the release folds in a batch of server security fixes (SSRF in the CORS proxy and media-URL handling\u2026",
+"sev": "normal",
+"key": "llamacpp-tagged-v100-today-20261113-nightly-b12359",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "vLLM is in the v0.34.0 RC cycle (rc2 2026-11-12, rc1 2026-11-11).",
+"sev": "normal",
+"key": "vllm-v0340-cycle-rc2-20261112-rc1-20261111",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "SGLang v0.5.23 (2026-11-02, ~11 days old, 1007 PRs): DeepSeek-V4.1 prefill up to 1.5x on GB300, opt-in low-latency fused decode kernels (up to 44% GB300 / 75% MI350X single-user), \"Paged Experts\" to\u2026",
+"sev": "normal",
+"key": "sglang-v0523-20261102-days-old-1007-prs",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Try Claude Code Code Mode on a tool-heavy workflow and compare tokens/latency vs JSON tool calls \u2014 it's experimental, so measure before trusting.",
+"sev": "normal",
+"key": "try-claude-code-code-mode-toolheavy-workflow",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Benchmark Gemini 4 Hydrogen xhigh against your current reasoning default on your own eval set (SWE-bench/Aider/LiveCodeBench, not MMLU); the price is low enough ($1.50/$7.50) to be interesting if\u2026",
+"sev": "normal",
+"key": "benchmark-gemini-hydrogen-xhigh-current-reasoning-default",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "If you run llama.cpp as a server, pull v1.0.0 and re-check your CORS/proxy exposure against the fixed SSRF/DNS-rebinding paths.",
+"sev": "normal",
+"key": "run-llamacpp-server-pull-v100-recheck-corsproxy",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Gemini 2.5 auto-routing with breaking API differences lands 2026-12-01 (18 days out \u2014 outside today's 14-day bar, flagged for planning): gemini-2.5-pro \u2192 gemini-3.8-flash, gemini-2.5-flash \u2192\u2026",
+"sev": "normal",
+"key": "gemini-25-autorouting-breaking-api-differences-lands",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "gemini-embedding-2-preview is already deprecated (2026-11-06) and auto-routes to gemini-embedding-2 at the same rate \u2014 update the model string; no re-indexing needed.",
+"sev": "high",
+"key": "geminiembedding2preview-already-deprecated-20261106-autoroutes-geminiembedding2-",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "vLLM 0.33.0 dropped CUDA 12.9 \u2014 images/wheels are CUDA 13.0 only going forward.",
+"sev": "normal",
+"key": "vllm-0330-drops-cuda-129-wheels-images",
+"first_seen": "2026-11-04",
+"days_seen": 5
+},
+{
+"title": "Anthropic computer_20251124 returns 400 on Fable/Mythos 5.2 (except on Bedrock) \u2014 move to computer_toolset_20260801.",
+"sev": "normal",
+"key": "anthropic-computer20251124-returns-400-fablemythos-52-bedrock",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Model cadence is now near-weekly across three labs simultaneously: Anthropic (5.2, 11-09), Google (Gemini 4 GA, 11-10..11-12) and OpenAI (gpt-6-cyber / image-2.6, 11-04..11-05) all shipped inside ~10\u2026",
+"sev": "normal",
+"key": "model-cadence-nearweekly-three-labs-simultaneously-anthropic",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "\"Zero output token\" decision endpoints (Gemini Decisions API) are a pricing-model shift for classify/route/judge workloads \u2014 if it holds up, LLM-as-classifier gets materially cheaper than a normal\u2026",
+"sev": "normal",
+"key": "zero-output-token-decision-endpoints-gemini-decisions",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Coding agents are converging on sandboxed/agentic execution surfaces \u2014 Claude Code Code Mode (JS execution), self-hosted Managed Agents, Cursor Live Apps with managed infra \u2014 which widens the attack\u2026",
+"sev": "normal",
+"key": "coding-agents-converging-sandboxedagentic-execution-surfaces-claude",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"nl2sql": {
+"status": "ok",
+"items": [
+{
+"title": "GRIPS: An Empirical Study of Pre-SQL Grounding Information (arXiv:2611.02314, 1 Nov) \u2014 Separates schema/value grounding into its own structured, inspectable step before generation, with an \"Adaptive\"\u2026",
+"sev": "normal",
+"key": "grips-empirical-study-presql-grounding-information-arxiv",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Post-SQLFix: Property-Guided Repair with Runtime Verification (arXiv:2610.41472, 30 Oct) \u2014 Names the \"Arbitration Paradox\" of execution-feedback repair (the unverified LLM both proposes the fix and\u2026",
+"sev": "normal",
+"key": "postsqlfix-stop-asking-model-grade-repair-261041472",
+"first_seen": "2026-11-09",
+"days_seen": 2
+},
+{
+"title": "Schema-Free Text-to-SQL: Learning Enterprise Structure from Query Logs (arXiv:2610.33946, 24 Oct) \u2014 Mines historical query logs for which tables join together and which columns map to business\u2026",
+"sev": "normal",
+"key": "schemafree-texttosql-learning-enterprise-structure-query-logs",
+"first_seen": "2026-11-01",
+"days_seen": 3
+},
+{
+"title": "Verifying Text-to-SQL under Changing Business Semantics (arXiv:2610.41090, 29 Oct) \u2014 A successful-executing query is not a correct one once definitions change (refund attribution, tax treatment\u2026",
+"sev": "normal",
+"key": "verifying-texttosql-changing-business-semantics-arxiv-261041090",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Text-to-SQL Models Make Choices Without Saying So (arXiv:2611.04318, 2 Nov) \u2014 On ambiguous calculations (count rows vs count distinct), models silently pick one reading. \"The gap lies in reporting\u2026",
+"sev": "normal",
+"key": "specbridge-arxiv-261104318-single-productionrelevant-paper-window",
+"first_seen": "2026-11-05",
+"days_seen": 4
+},
+{
+"title": "Does a Governed Confidence Score Know When an Answer Is Right?",
+"sev": "normal",
+"key": "governed-confidence-score-know-answer-right",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Can LLM Agents Be Forward-Deployed Engineers?",
+"sev": "normal",
+"key": "llm-agents-forwarddeployed-engineers",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "PremiseSQL: Premise Critique and Abstention (arXiv:2610.22158, 15 Oct) \u2014 1,800 flawed NL2SQL queries across four premise-failure categories, testing whether a system declines instead of confidently\u2026",
+"sev": "normal",
+"key": "models-almost-never-push-back-broken-question",
+"first_seen": "2026-10-25",
+"days_seen": 6
+},
+{
+"title": "DSABench: Multi-Database Source Discovery, Coordination, Execution (arXiv:2610.14700, 10 Oct) \u2014 815 human-reviewed tasks (618 need multiple DBs) that, unlike Spider/BIRD, do not hand you the target\u2026",
+"sev": "normal",
+"key": "dsabench-multidatabase-source-discovery-coordination-execution-arxiv",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "TSSDA \u2192 TERN time-series benchmark (arXiv:2611.02132, 1 Nov) \u2014 Autonomous agent constructs a time-series Text-to-SQL benchmark, a thin-coverage area for existing suites.",
+"sev": "normal",
+"key": "tssda-tern-timeseries-benchmark-arxiv-261102132-nov",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Wire GRIPS-style selective grounding (arXiv:2611.02314) into one pipeline and measure token drop \u2014 the \u221247.8% call-token claim is the kind of thing that pays for itself.",
+"sev": "normal",
+"key": "wire-gripsstyle-selective-grounding-arxiv-261102314-one",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Run the SpecBridge detect-then-answer-each pattern (arXiv:2611.04318) against your own ambiguous-question log; it's a prompting-only change and will likely reveal your eval is scoring correct answers\u2026",
+"sev": "normal",
+"key": "run-specbridge-detectthenanswereach-pattern-arxiv-261104318-ambiguousquestion",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "If you own a semantic layer, build one obligation ledger from a recent definition change (arXiv:2610.41090) and replay last quarter's saved queries against it \u2014 the \"executes fine, silently wrong on\u2026",
+"sev": "normal",
+"key": "semantic-layer-build-one-obligation-ledger-recent",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "No act-now deadline or CVE in this lane this window.",
+"sev": "high",
+"key": "dated-deadline-lane-window",
+"first_seen": "2026-10-15",
+"days_seen": 5
+},
+{
+"title": "Ambiguity/clarification is the dominant research cluster this month \u2014 2611.04318 (silent choices), 2610.24248 (adversarial intent resolution), 2610.20052 (estimating model-dependent ambiguity)\u2026",
+"sev": "normal",
+"key": "ambiguityclarification-dominant-research-cluster-month-261104318-silent",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "\"Stop letting the LLM judge its own SQL\" is now a design principle with multiple independent implementations in one window: Post-SQLFix's temporal monitor (2610.41472), VeriPIE's Lean-checked query\u2026",
+"sev": "normal",
+"key": "stop-letting-llm-judge-sql-design-principle",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Enterprise retrieval is shifting from embeddings to query-logs + GraphRAG. Schema-Free (2610.33946, BEAVER 95.7% vs 60.8%) and a SEC-filings study (arXiv:2610.37728) both report GraphRAG/structured\u2026",
+"sev": "normal",
+"key": "enterprise-retrieval-shifting-embeddings-querylogs-graphrag-schemafree",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+},
+"aihw": {
+"status": "ok",
+"items": [
+{
+"title": "AMD Instinct MI450 Series is in volume shipment; first Helios racks are live at five hyperscalers.",
+"sev": "normal",
+"key": "amd-instinct-mi450-series-volume-shipment-first",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "MI455X sizing numbers for the comparison sheet: 432 GB HBM4, ~40 PFLOPS FP4 / 20 PFLOPS FP8 per GPU, 72 GPUs per Helios rack.",
+"sev": "normal",
+"key": "mi455x-sizing-numbers-comparison-sheet-432-hbm4",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "AMD\u2013Meta partnership expanded (Oct 27\u201329); Meta has installed initial Helios racks for testing ahead of wider rollout.",
+"sev": "normal",
+"key": "amd-meta-partnership-expanded-oct-meta-installed",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Memory is now the dominant cost variable in cluster planning, and it's still climbing.",
+"sev": "normal",
+"key": "memory-dominant-cost-variable-cluster-planning-still",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The shortage is flowing through to AI-server sticker prices.",
+"sev": "normal",
+"key": "shortage-flowing-aiserver-sticker-prices",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "HBM4 pricing for 2027 is being negotiated up sharply.",
+"sev": "normal",
+"key": "hbm4-pricing-2027-negotiated-sharply",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Vendor-published bandwidth is quietly getting revised down \u2014 verify against independent benchmarks.",
+"sev": "normal",
+"key": "vendorpublished-bandwidth-quietly-getting-revised-down-verify",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "The MI450-vs-Rubin contest has become a memory-capacity-and-bandwidth fight, not a FLOPS fight.",
+"sev": "normal",
+"key": "mi450vsrubin-contest-become-memorycapacityandbandwidth-fight-flops-fight",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Memory \"demand destruction\" risk: some cloud operators are reportedly considering cutting HBM loaded onto in-house accelerators to manage cost \u2014 a sign that even hyperscalers are treating HBM\u2026",
+"sev": "normal",
+"key": "memory-demand-destruction-risk-cloud-operators-reportedly",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "No hard dated AI-hardware deadline requiring reader action falls inside the flag window (on/before 2026-11-27) in this lane.",
+"sev": "high",
+"key": "hard-dated-aihardware-deadline-requiring-reader-action",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "NVIDIA fiscal Q3 earnings land Nov 19, 2026 (just outside this window) \u2014 the read-through for HBM supply commentary and Rubin ramp will matter for Q1-2027 availability planning.",
+"sev": "normal",
+"key": "nvidia-fiscal-earnings-land-nov-2026-window",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "If you run large-context or high-concurrency inference, re-run your KV-cache sizing against MI455X's 432 GB/GPU vs Rubin's 288 GB/GPU and see whether the capacity lead collapses your shard count\u2026",
+"sev": "normal",
+"key": "run-largecontext-highconcurrency-inference-rerun-kvcache-sizing",
+"first_seen": "2026-11-13",
+"days_seen": 1
+},
+{
+"title": "Re-price any 2027 cluster TCO model with memory as a first-class line item (HBM + system DRAM), not a rounding error \u2014 at ~68% of projected CSP capex, memory assumptions now dominate the result.",
+"sev": "normal",
+"key": "reprice-2027-cluster-tco-model-memory-firstclass",
+"first_seen": "2026-11-13",
+"days_seen": 1
+}
+]
+}
+}
+}
