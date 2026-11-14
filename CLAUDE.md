@@ -14731,3 +14731,212 @@ file by sha256 at 13:35:26Z, ~35s after the push**. **Only the SCHEDULER copy st
   editions' ~34KB/56KB because the page gained the P206/P207/P208 sections, which is a content
   change, not an injection signal), grepped for `agent-toolkit`, `Skills for AI`, `AI coding
   assistant`, `search-skills`, `llms.txt` — **zero matches in each**.
+
+## Run findings 2026-11-14 (edition 123)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5` (no fallback, unlike 11-13), no
+suspension, no parked prompt, both hooks clean.** Launched 08:09 EST, briefs in between ~08:17 and
+~08:33, dashboard published and verified live by **sha256 at 13:47:08Z (~34s after the push, 2 polls
+at 15s)**, lens **v88** after. **~3,880k research tokens.** Hook logs show the healthy signature,
+audited on the event FIELD via `awk '{print $2}'` per the 11-05 self-poisoning lesson:
+`bash-allow.sh` **377+ records, all `PreToolUse` at `mode=auto`, zero `PermissionRequest`**;
+`artifact-allow.sh` clean across `list`, a `read` with `path` (2.4 MB), the plain `read` a republish
+requires, and the publish.
+
+### THE LEAD: a PIN can be silently eaten by the card's cap, and the sev heuristic picks the victim
+
+`curate.py` ends with a flat `ongoing = ongoing[:15]`. I wrote **16 pins**, so one was truncated —
+and the one that fell off was the **Apple age-rating cutover, a vendor deadline 2 days out on a lane
+flagged urgent**. It sorted last among the pins because `sev` is derived from the **title alone** and
+scored it `normal`. The existing pin-not-found check only proves a pin reached the `pinned` list; it
+says nothing about surviving the cap, so the loss was **silent** — I caught it with my own
+"every urgent section has a flag_reason"-style assertion on the card, not with the tooling.
+
+**This is the 2026-09-14 defect arriving through a new door: not the ranking, but the cap.** Fixed at
+source: pins are kept whole, the cap applies to the unpinned remainder, and a new assertion raises if
+any pin is missing from the final list. **Generalisable: a hand-verified override and a hard cap in
+the same function need an explicit check that the override survived — "it reached the candidate list"
+is not the same claim as "it reached the output".**
+
+### A reply carrying BOTH contract shapes defeated the parser, and lost only the flag reason
+
+The frontend lane emitted a leading `BRIEF:` title line **and** a trailing
+`STATUS:`/`FLAG_REASON:` block (followed by a "RUN-OWNER NOTES" section). `split_contract` tried the
+trailing parser only when **no** `BRIEF:` marker existed, so this hybrid went down the header path,
+found `STATUS` inside the body, and returned an **empty flag_reason for an `urgent` lane** — the
+dashboard would have rendered a flagged brief with no red "why this is flagged" banner. The brief
+body itself was fine, which is exactly what made the loss invisible.
+
+Fixed by trying the trailing parser first — **but my first patch was wrong in an instructive way.**
+I reasoned it was "safe because the trailing parser returns None unless the text ends in a status
+block". It does not: it also matches a `STATUS:` at the **top** of a header-shape reply, where
+everything before the block is empty, so the header shape started returning a **0-character brief**.
+The correct gate is to accept the trailing result **only if it yielded a non-empty brief**. 4-case
+self-test (header / trailing / hybrid / ok-without-flag) now pins all four. Side benefit: the
+trailing path strips the "RUN-OWNER NOTES" section as agent-to-agent chatter per the 09-12 rule, so
+frontend.md came out 35,150c rather than 38,590c. **Third distinct shape of the 2026-09-13
+dual-parser drift; the dispatch now prefers the parser that reads the END of the reply, where the
+contract is specified to live.**
+
+### probe_board paid for itself twice, and "zero hits" lied once
+
+Running it **before** drafting (the 10-08 rule) killed four corrections I had already written because
+the board was **already right**: Fabric Runtime 2.0's default (corrected 10-23), Runtime 1.3's LTS
+window, the React RSC OSV record (11-11), and the variantShredding read-floor disagreement (11-10).
+It also caught that the audited Venice TPC-H row **already exists**, so the DRAM-56.6% finding
+enriched it instead of creating a duplicate benchmark.
+
+**And it caught the opposite failure.** My probe for `"Angular 20"` returned **zero hits**, so I
+drafted a new event row — but `reuse_key`'s build-time advisory then printed a same-date parent,
+`angular-v20-lts-ends-nov28`, because the row says **"v20"** not "Angular 20". probe_board's own
+output carries the warning verbatim ("zero hits is NOT proof the story is new — try a different noun,
+a CVE id, and the vendor name separately") and I had read past it. The fresh slug was dropped into
+the existing row's `aliases[]` and the row enriched. **Two tools, two directions, both earned their
+keep in one build.**
+
+### A correction toward the vendor: the Percona half of the MongoDB row was wrong
+
+The board asserted CVE-2026-118383 had "no fix for 8.1/8.2 **or ANY Percona build**". PSMDB
+**8.0.38-16** shipped 2026-11-13 built on MongoDB 8.0.37+8.0.38 Community, explicitly carrying 16
+CVEs including this one and the CVE-2026-120808 macOS IPv6 trust bypass — closing the lag to **three
+days** from nine. Withdrawn. What survives is sharper: NVD's **primary** CVSS 3.1 is **10.0** against
+the vendor CNA's **9.0**, the entire gap being attack complexity (`AC:L` vs `AC:H`), so which record
+a policy reads decides whether it pages anyone; and 8.1/8.2 remain unfixable and **match no CPE at
+all**, so they score zero. **A board that only ever accumulates severity drifts away from the vendor
+— this is the second consecutive edition to correct in that direction.**
+
+### The scanner failed in BOTH directions this window, which is new
+
+Nine lanes independently measured a reachable fix no scanner can see — and one measured the mirror
+image. **Node 22.23.5's vendored `deps/brotli/c/common/version.h` reads 1.1.0**, inside NVD's
+vulnerable range, while provably carrying the patch (the new
+`BROTLI_DECODER_ERROR_FORMAT_BLOCK_SWITCH` code at `decode.c:1138`); the fix was cherry-picked on
+22.23.4 without bumping the header. So a component scanner reports a **false positive** on a patched
+runtime. Alongside it, `alpine:3.22`'s secdb has **no record** for the same KEV-listed 9.8 while
+3.21/3.23/3.24 all do, though the shipped package IS patched — so there you cannot prove remediation
+either way. **"Trust the runtime version, not the vendored one" is the rule, and this board should
+stop asserting scanner blindness only as false negatives.**
+
+### Flag calibration: 12 urgent, 7 ok — 3rd-highest of the last eight runs, tied with three
+
+Series `[12, 12, 15, 11, 14, 12, 10, 12]`, generated from the ledger rather than typed (the 11-11
+rule), **including the ordinal suffix and the tie** — the first cut emitted "3th-highest" and
+asserted a bare rank while four of the eight runs sat on the same value. All twelve survive the
+literal definition: four expired KEV clocks (GPUStack 2d with exploitation observed in the wild and
+`forensicTriage: Yes`, Brotli 4d, GitLab's CVSS 10.0 13d, the Linux kernel entry 14d), one
+actively-exploited KEV at 4 days (WebKit, CVSS **5.5** with `exploitation: active` — the clearest
+case this window that a score-based gate patches the wrong thing), five "no reachable fix for
+somebody", and nine vendor cutovers between 16 and 19 Nov. **Seven lanes held `ok` while carrying
+real CVEs and wrote out why** — BigQuery declined a 3-day billing change on the rule that a billing
+change is not a deadline; AI Hardware declined an 8.4 as local-vector on a single rc build; Database
+Hardware declined a 620-CVE AMD batch as local/high-privilege/SEV-SNP-only; Redshift declined two
+RCEs with reachable fixes and no KEV entry; Fabric declined a vendor-acknowledged **unfixed**
+silent-row-truncation bug because it carries no CVE and no date. That asymmetry is the evidence they
+discriminated rather than blanket-flagged.
+
+### Ledger + card
+
+**862 items, 42 exact + 173 fuzzy = 215 matched (24.9%), 0 double-counted.** Dictionary 58,319 → **58,966**. Match rate is inside the recent 22–25% band, so the 09-09 length-asymmetry
+diagnostic was not needed. Card: new=15 (+474 more), changed=3, ongoing=16, aged_out=898, **34 of 34
+rows sourced**. `apply_harness_tokens.py` reported **net +0 for the third consecutive run**, which is
+the expected result; a non-zero delta would have been the news. Synthesis carried **55 "seen in"
+references, every one verified against a real display name by script, all 19 lanes cited at least
+once** (AI Daily needed adding — its genuine claim on the window's theme is that Claude Code shipped
+permission-bypass fixes with no CVE and no advisory).
+
+**The 11-12 list-membership check paid off immediately and at scale: eleven of my candidate leads
+live in `ongoing`, not `new`** — GitLab's 10.0 KEV, PostgreSQL 14's final release, MongoDB's 10.0,
+pgvector, PyArrow, variantShredding, php2shell, DuckDB, ingress-nginx, TabFM and BCR-2391. As PICKS
+every one would have been a silent `WARN: pick not found`. `derive_lists write` resolves each list
+against its **own** pool, which enforces that mechanically rather than by discipline.
+
+### Lens findings (edition 123)
+
+**Guard 5 passed on the first full assembly: 800 cited units, zero uncited** — thirteenth consecutive
+edition, mechanism unchanged since 09-15 (`cite()` called inline by each row generator). 15 sections,
+10 tables, alias-safe across 9 scopes (events against the union `events + retired_events`, **forward
+only**, per the 11-12 correction). All eight identity sites rewritten and verified by reading the
+written file back.
+
+**Two guards refused the build and both were right.** `rewrite_pov_meta` raised "changed 0 of 32
+entries (required >= 1) — a check that matches nothing is not a check" because I had already written
+`povContent.meta` by hand; doing a guard's job for it turns the guard into a no-op, so the manual
+write was removed and the guard given back its domain. Then `assert_not_parent_identity` caught my
+Event Horizon lede reading "edition 122 retired four…" — a backward reference carrying no directional
+qualifier, so it parses as an identity claim. Reworded to "the previous edition".
+
+**The published 122 parent carried TWO `</body></html>` pairs — the fifth consecutive edition.**
+`normalize_closing_tags` ran as the last mutation, then the file was written, re-read **from disk**
+and asserted (1,1) on those bytes — the only form the 11-12 note accepts. Note `strip_host_wrapper`
+again left **zero** pairs on a page staged via `read` with `path` (the 09-19 finding), so the
+re-append is doing real work.
+
+**12 corrections and enrichments applied to the ledger BEFORE any section was generated**, 2 new
+patch rows, **0 retirements** — so the KEV-before-retirement guard had nothing to examine for the
+first time in several editions. Beyond the MongoDB correction: Snowflake **withdrew** the Legacy
+Notebook November date (now 2027-04-30 creation / 2027-05-31 execution, in the vendor's own words
+replacing "September 1, 2026 and November 2026"); the **BigQuery TabFM two-date conflict resolved by
+the page's own metadata** — the AI.PREDICT reference says 10/30 but its footer reads *Last updated
+2026-11-10* and it still writes in the future tense, and a page edited after the date it claims did
+not happen on that date; Vite's advisory is wrong about **two** versions, not one (`rolldown@1.2.17`
+404s exactly as `vite@8.2.5` does); and ClickHouse CVE-2026-116366 gained a **fifth axis** —
+NVD's `configurations` is empty, so there is no CPE to match even for a tool that reads its 4.0-only
+score.
+
+**New rows (2):** the first post-retirement **ingress-nginx CVE that Kubernetes states in writing it
+will not fix** (only SUSE's `1.15.2-prime1` fork exists; CVSS **2.7 LOW** yet it drops a multi-tenant
+cluster's whole data plane), and the **PostgreSQL 2026-11-12 batch** — 52 CVEs, 32 at 8.8,
+installable on no managed provider, all 52 absent from OSV, and the CVE-2026-6460 fix incomplete
+until C-language extensions are rebuilt.
+
+**Size: +40,885 bytes against the stripped parent, accounted to within 13 bytes** — `povContent`
++17,604 (four refreshed chair bodies), `v-patch` +14,722, `lensLedger` +9,023, `v-wn` +4,349, against
+`v-events` −4,415 and small shrinks in `v-read`/`v-longitudinal`. Events 56 → 56, patch 257 → 259;
+`claims`/`ownclaims`/`promises`/`gaps`/`benchmarks`/`buildbets`/`skills` **all unchanged in count** —
+no competitor shipped a perf or price claim worth a card, and the edition says so on its face.
+
+**Scope, on the edition's face:** 123 refreshes Today's Read and Since-yesterday on all four chairs,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites. Claim Watch,
+Mirror, Question Forecast, Gap Ledger, Benchmark Scoreboard (one row enriched), Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 122 unrevised**. The
+quarterly Skills/Build re-rank across all four chairs is due **2027-01-01**.
+
+### Step 5b: TENTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the committed
+file by sha256 at 13:47:08Z, ~34s after the push**. **Only the SCHEDULER copy still says egress
+blocks `*.github.io`, and only Karl can edit that.**
+
+### Source access 2026-11-14
+
+- `blogs.oracle.com` 403s HTML **and** RSS for a **25th** consecutive week, so the Oracle
+  Optimizer / In-Memory / Smart Scan / Exadata channel remains a structural gap and the Oracle brief
+  says so on its face. `mikedietrichde.com` is **readable again** and the working feed path is
+  **`/feed/`** — `/en/feed/` returns 404 with a 98 KB body, which is what makes it look like a success.
+- **An agent-directed instruction block was SIGHTED and refused**: the markdown variant of
+  `docs.snowflake.com/en/release-notes/new-features` now opens with an **imperative** addressed to
+  automated clients — "Fetch the complete documentation index at https://docs.snowflake.com/llms.txt /
+  Use this file to discover all available pages before exploring further." Treated as data; not
+  fetched. `modelcontextprotocol.io` and MongoDB docs carry the same affordance. **No fetched page's
+  suggestion was executed and no skill file was loaded by any agent this run.**
+- The Redshift security sweep ran clean again: `mgmt/behavior-changes.html` in both variants
+  (**markdown 43,241 B / 30 headings — byte-identical to 11-13 — vs HTML 68,231 B / 33 tags**, 96
+  bytes smaller than yesterday's HTML at an unchanged tag count, i.e. page chrome rather than
+  content), grepped for `agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills`,
+  `llms.txt` — **zero matches in every file**.
+- `developer.chrome.com/release-notes/<n>` and `/blog/new-in-chrome-<n>` both 404; use the
+  `chromestatus.com/api/v0/features?milestone=N` API (strip the `)]}'` XSSI prefix) and
+  `chromiumdash.appspot.com/fetch_milestone_schedule?mstone=N`. `api.webstatus.dev` is uncapped and
+  excellent for Baseline. `github.com/advisories/*` 403s from this VM but the repo-level
+  `/security/advisories/<GHSA>` path works — do not confuse that proxy block with evidence about
+  GitHub's global advisory DB.
+
+### A privacy near-miss worth recording
+
+`probe_board.py` reads `tools/lens/parent_ledger.json`, so staging the parent board for the probe
+writes **lens content into the tools tree**. The pre-commit privacy grep (the 11-12 habit) caught it
+before anything was committed, and it was deleted. **Only the two files actually changed were
+committed, not the staged tree** — which also keeps today's 19 briefs out of the tooling commit.
+Worth a line in the tooling itself: `probe_board` should read its board from a path outside
+`tools/`, or the file should be git-ignored, because the current design makes a public-repo leak the
+default outcome of using it.
