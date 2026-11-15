@@ -164,10 +164,32 @@ def split_contract(txt):
     Agents wrap these in backticks, bold them, or add a stray '---' line; be
     liberal in what is accepted and strict about what is written.
     """
-    if not re.search(r"^[`*\s]*BRIEF[`*]*\s*:", txt, re.M | re.I):
-        alt = _split_trailing_contract(txt)
-        if alt:
-            return alt
+    # Try the TRAILING-contract parser first, unconditionally. It returns None
+    # unless the text actually ends in a status block, so this is safe for the
+    # header shape and strictly more capable for everything else.
+    #
+    # Why unconditionally (2026-11-14): the dispatch used to try it only when no
+    # leading `BRIEF:` marker existed. The frontend lane emitted BOTH -- a
+    # leading "BRIEF: frontend — ..." title line AND a trailing
+    # STATUS/FLAG_REASON block (followed by a "RUN-OWNER NOTES" section) -- a
+    # hybrid neither shape anticipated. The `BRIEF:` marker sent it down the
+    # header path, which found STATUS inside the body but silently returned an
+    # EMPTY flag_reason for an `urgent` lane, so the dashboard would have
+    # rendered a flagged brief with no red "why this is flagged" banner. The
+    # brief body itself was unaffected, which is what made the loss invisible:
+    # only an explicit "every urgent section has a flag_reason" assertion
+    # caught it. This is the 2026-09-13 dual-parser contract drift recurring in
+    # a third shape, so the dispatch now prefers the parser that reads the END
+    # of the reply, where the contract is specified to live.
+    # Accept the trailing result ONLY if it actually yielded a brief. The
+    # trailing parser also matches a STATUS line at the TOP of a header-shape
+    # reply, where everything "before the status block" is empty -- trying it
+    # first unconditionally therefore returned a 0-character brief for the
+    # header shape. Gating on a non-empty brief keeps both shapes working and
+    # is what the 4-case self-test below pins.
+    alt = _split_trailing_contract(txt)
+    if alt and alt[2].strip():
+        return alt
 
     status = "ok"
     m = re.search(r"^[`*\s]*STATUS[`*]*\s*:?\s*[`*]*\s*(urgent|slow|ok)\b",

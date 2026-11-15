@@ -27,42 +27,44 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    # 2026-09-17 hand curation. Order: KEV entries whose due date has ALREADY
-    # PASSED, then imminent KEV, then "no fix exists for somebody", then dated
-    # cutovers, then the one structural non-security item. One row per distinct
-    # story -- the two Chrome V8 zero-days are carried in `ongoing` instead,
-    # where they have day counts, so their short "Heads up" restatements here
-    # are deliberately NOT picked.
-    "CVE-2026-21962 is still in CISA KEV and PAST DUE",
-    "LiteLLM CVE-2026-59822 — CISA KEV, added 2 Sep, due 16 Sep (PASSED), actively exploited",
-    "CVE-2026-48710 (Starlette) added to CISA KEV 2 Sep, due date 16 Sep — already passed",
-    "2026-09-14 — GitLab CVE-2026-85706 KEV due date has PASSED",
-    "CVE-2026-82067 — authorization can silently fail to start",
-    "MongoDB 8.2 is EOL (31 July 2026) and has already missed two CVE batches",
-    "Apache Doris 2.0.x, 2.1.x, 3.0.x and 3.1.x have no patched release",
-    "StarRocks — three CVEs against \"through 4.0.13\", and the project has published zero security advisories",
-    "Angular 19 is EOL and the advisories say so explicitly",
-    # JFrog is carried in `ongoing` instead: the DevOps row is longer, carries a
-    # source link, and has a day count, so pinning it there and dropping the
-    # short App Dev restatement keeps one story on one row (09-15 rule).
-    "Trust Center went secure-by-default (Sep 8)",
-    "LiteLLM CVE-2026-37004 — CVSS 9.8, SSTI → RCE",
-    "Google Play: register every app package name by 2026-09-30 or face global removal",
-    "Azure Databricks Standard tier EOL — 1 October 2026, auto-upgrade to Premium",
-    "CVE-2026-73334 — Apache parquet-java, KMS token can be sent to an attacker-chosen host",
-    "64GB DDR5 server DRAM hit $1,500 contract / $3,100 spot on 15 Sep",
+    "Chrome 158 removes client-side XSLT on 2026-11-17",
+    "2026-11-16 (TOMORROW) — Apple age-rating content descriptors",
+    "LiteLLM, three days ago: a low-privilege key holder can read LITELLM_MASTER_KEY",
+    "PHP2Shell: Oracle Secure Backup 19.1.0.0.0–19.1.0.1.0 is in scope",
+    "GitHub Actions' second pull_request_target brownout is 2026-11-16",
+    "variantShredding becomes automatic on new VARIANT tables on 2026-11-18",
+    "2026-11-18 (3 days, no opt-out, Azure only) — BCR-2391",
+    "PgBouncer: upgrade to 1.26.1 or later",
+    "CVE-2026-73322 is the security item of this window",
+    "CVE-2026-111959 (CVSS 3.1 9.1 CRITICAL) in arrow-rs is invisible",
+    "Claude Code 2.1.325 (11-13) is a security-and-permissions release",
+    "Percona Server for MongoDB is NOT unpatched for the September batch",
+    "CSPU November 2026 is 2026-11-17 and the pre-release is already published",
+    "No auto-redirect for DeepSeek — your calls just stop",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
 # already carried in PICKS above, and the fuzzy dup check does not catch it
 # because the two phrasings share little vocabulary. A hand-read list beats a
 # loosened threshold here -- same reasoning as the lens fold_map.
+# Rows whose only "movement" is the title-only `sev` heuristic re-deriving a
+# different band on a REWORDED headline, while the underlying fact did not move.
+# The 19 research agents restate carried items in fresh words every run, so a
+# "urgent -> normal" note on an unchanged fact is a classifier artifact, not
+# news -- and the spec's "do not invent movement" rule says to drop it. Added
+# 2026-10-23, when 3 of 7 `changed` rows were of this shape. Substring match,
+# same convention as EXCLUDE_ONGOING; resolve fragments with derive_lists.py.
+EXCLUDE_CHANGED = [
+    "2026-11-18 (3 days) — CISA KEV remediation due, Apple CVE-2024-27834",
+]
+
 EXCLUDE_ONGOING = [
-    # 2026-09-17: each restates a row picked or pinned elsewhere. Per the 09-15
-    # lesson the SHORT duplicate is excluded and the LONG survivor kept --
-    # never both on one card.
-    "30 Sep 2026 — Supervisor API (Beta) end of life, no replacement in place",
-    "GitLab CVE-2026-85706 — CVSS 10.0 unauthenticated arbitrary file read",
+    "2026-11-18 (3 days out) — Databricks adds variantShredding",
+    "2026-11-18 (3 days) — variantShredding is added automatically",
+    "TOMORROW, 2026-11-16 16:00–18:00 UTC — GitHub Actions pull_request_target",
+    "2026-11-16, 16:00–18:00 UTC — GitHub Actions pull_request_target brownout window 2",
+    "BCR-2391 (2026-11-18, 3 days out, unbundled, no opt-out)",
+    "2026-11-19 (4 days) — databricks-deepseek-v4-1-flash retires",
 ]
 
 
@@ -74,18 +76,14 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    # 2026-09-17: carried deadlines and unpatched-for-someone rows that outrank
-    # most of today's new rows and would otherwise sort below them. Snowflake is
-    # 3 days out and its dashboards are unrecoverable; the two Chrome V8 KEV
-    # dates are 1 and 6 days out. Pins bypass the COMMENTARY heading filter
-    # because dated cutovers are almost always written under "## Heads up".
-    "2026-09-20 (3 days) — reader accounts are upgraded to Workspaces",
-    "CVE-2026-85046 — V8 type confusion, exploited in the wild, CISA KEV due 2026-09-18",
-    "CVE-2026-87491 — V8 out-of-bounds write, exploited in the wild, CISA KEV due 2026-09-23",
-    "2026-09-30 — TLS 1.2 minimum enforced. TLS 1.0/1.1 connections are REJECTED",
-    "Percona Server for MongoDB users have no fix available for the September CVEs",
-    "Supervisor API (Beta) end of life — 30 September 2026",
-    "JFrog Artifactory: two flaws chained in the wild to mint admin tokens",
+    "CVE-2026-118383 is real, is pre-auth, and NVD scores it higher",
+    "2026-11-17 (2 days out) — DuckDB 1.4 LTS end of support",
+    "2026-11-26 — Amazon EKS 1.31 end of extended support",
+    "BCR-2473 (2026-11-17, 2 days out, no opt-out)",
+    "52 CVEs, 32 of them CVSS 8.8, fixed in 18.7",
+    "ingress-nginx has a CVE that Kubernetes has stated in writing it will not fix",
+    "Mongoose CVE-2026-125120: the 91-day gap is confirmed",
+    "CVE-2026-123859 — CVSS 3.1 8.1 HIGH, SQL injection in write_pandas()",
 ]
 
 
@@ -145,7 +143,9 @@ def main():
     new_more = len(folded)
 
     # ---- changed: keep all real movement ----
-    changed = sorted(raw["changed"], key=lambda r: rank.get(r.get("_sev"), 2))
+    changed = [r for r in raw["changed"]
+               if not any(x in r["title"] for x in EXCLUDE_CHANGED)]
+    changed = sorted(changed, key=lambda r: rank.get(r.get("_sev"), 2))
 
     # ---- ongoing: the ones that still matter ----
     # A story must not appear in two lists -- the Heads-up restatement of an
@@ -178,7 +178,63 @@ def main():
            if is_news(r) and not dup_of_picked(r) and not excluded(r)]
     ong.sort(key=lambda r: (rank.get(r.get("_sev"), 2), -int(r.get("days") or 0)))
     rest = [r for r in ong if r not in pinned]
-    ongoing = (pinned + rest)[:12]
+
+    # Dedupe ONGOING against ITSELF, not only against PICKS. Why (2026-11-01):
+    # dup_of_picked() guards the new/ongoing boundary but nothing guarded
+    # ongoing-vs-ongoing, so a pinned GitLab KEV row and that same brief's
+    # "## Heads up" restatement of it both reached the card -- the 09-18
+    # one-story-twice shape arriving through a different door, worked around
+    # that day with a hand-written EXCLUDE_ONGOING entry. Same criterion as
+    # dup_of_picked (same topic, content-word Jaccard >= 0.45) and applied in
+    # priority order, so a pin always wins over the restatement that follows it
+    # and an explicit EXCLUDE_ONGOING is no longer needed for this case.
+    # Two measures, because one is not enough (measured 2026-11-02). Symmetric
+    # Jaccard misses the commonest real duplicate on this card: the SAME story
+    # written once as a terse "## Heads up" line and once as a full paragraph.
+    # The paragraph's extra content words sit in the union and drag the score
+    # under any sane threshold -- two Fabric Foundry rows for the 2026-11-06
+    # cutover scored below 0.45 and both shipped. That is the 2026-09-09
+    # length-asymmetry finding in a new place: a symmetric measure is the wrong
+    # tool when the two sides differ in length. So also test the OVERLAP
+    # COEFFICIENT (intersection over the SMALLER side), which asks the right
+    # question -- "is the short row essentially contained in the long one?".
+    # Guards against over-merging: same topic only, the shorter row must carry
+    # at least 5 content words, and priority order is preserved so a pin always
+    # survives and the restatement is what gets dropped.
+    def dup_of_kept(r, w, keep_words):
+        for t, kw in keep_words:
+            if t != r["topic"] or not w or not kw:
+                continue
+            inter = len(w & kw)
+            if inter / len(w | kw) >= 0.45:
+                return True
+            if min(len(w), len(kw)) >= 5 and inter / min(len(w), len(kw)) >= 0.60:
+                return True
+        return False
+
+    ongoing, keep_words = [], []
+    for r in pinned + rest:
+        w = set(L.content_words(r["title"]))
+        if dup_of_kept(r, w, keep_words):
+            continue
+        ongoing.append(r)
+        keep_words.append((r["topic"], w))
+    # Cap the card, but NEVER let the cap eat a PIN. Why (2026-11-14): this run
+    # wrote 16 pins against a flat `ongoing[:15]`, and the one that fell off was
+    # the Apple age-rating cutover -- a vendor deadline 2 days out on a lane
+    # flagged urgent. It sorted last among the pins because `sev` is derived from
+    # the TITLE ALONE and scored it `normal`, which is the 2026-09-14 defect
+    # exactly, arriving through the cap instead of through the ranking. The
+    # pin-not-found check above only proves a pin reached `pinned`; it says
+    # nothing about surviving truncation, so the loss was silent.
+    # A pin is a hand-verified assertion that the row matters, so pins are kept
+    # whole and the cap applies to the unpinned remainder.
+    kept_pins = [r for r in ongoing if any(x in r["title"] for x in PIN_ONGOING)]
+    kept_rest = [r for r in ongoing if r not in kept_pins]
+    ongoing = kept_pins + kept_rest[:max(0, 15 - len(kept_pins))]
+    for x in PIN_ONGOING:
+        if not any(x in r["title"] for r in ongoing):
+            raise SystemExit("ERROR: pin dropped after dedupe/cap: %s" % x)
 
     out = {
         "prev_date": raw["prev_date"],

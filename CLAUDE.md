@@ -2310,3 +2310,203 @@ Output is 957 bytes larger than the parent: new sections and four new event rows
 folded patch rows. **The quarterly Skills/Build re-rank across all four chairs is due
 2026-10-01 — 10 days out, and it has now been flagged as approaching for five consecutive
 editions. It must not slip again.**
+
+## Run findings 2026-11-15 (edition 124)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5` (no fallback), no suspension, no parked
+prompt, both hooks clean.** Launched 08:14 EST, briefs in between ~08:21 and ~08:34, dashboard published and
+verified live by **sha256 at 13:39:12Z (~34s after the push, 3 polls at 15s)**, lens **v89** after.
+**~4,110k research tokens — a new record** (prior high ~3,880k on 11-14), driven by agents averaging 55–75
+tool calls each against primary sources. Hook logs audited on the event FIELD via `awk '{print $2}'` per the
+11-05 self-poisoning lesson: `artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain `read` a
+republish needs, the publish), `bash-allow.sh` **489 records** — all `PreToolUse` at `mode=auto`, **zero
+`PermissionRequest` in either**.
+
+### THE LEAD: a public-repo privacy leak that three prior runs deleted and that keeps coming back
+
+`tools/lens/build_lens_030.py` (107 KB) and `tools/lens/corrections_064.py` are lens **content** — chair prose
+naming Snowflake and Databricks 40 and 27 times — sitting in a **public** repo. The git log shows three
+separate commits deleting them ("drop the lens-content file again", "drop the lens builder that leaked chair
+prose", "re-delete the lens-content file"). **All three are on `claude/*` branches that were never merged, so
+the files are still on `main` today.** Deleted again on this branch, which is the fourth attempt.
+
+**The generalisable finding is not about these two files.** A fix that only exists on an unmerged branch is not
+a fix, and for a *privacy* fix that gap is the whole exposure: the deletion has been "done" since at least
+2026-10-28 and the content has been public throughout. **A deletion is the one kind of change where landing it
+on an unmerged branch is worse than not doing it, because the commit message creates a false record that it
+was handled.** Karl: merging this branch is what actually removes them.
+
+### `tools/` is STILL not on main — and today main was byte-identical to the session branch point
+
+`main` is at `dfaa5fc`, the same commit this session's branch started from, and its `tools/lens/` holds nine
+files against the staged toolkit's sixteen — **no `countdowns.py`, `events_table.py`, `lens_extra.py`,
+`lens_identity.py`, `longitudinal.py`, `patch_radar.py`, `probe_board.py`**, and `tools/ledger/` has no
+`SHARED_RULES.md`, `derive_lists.py` or `shared_rules.py`. The 27-module set lives only on
+`origin/claude/great-clarke-3gc5gh` (2026-11-14). Working incantation until a merge:
+`git archive origin/claude/great-clarke-3gc5gh tools | tar -x -C <scratchpad>`. Landed again here with all
+self-tests green (derive_lists 5/5, shared_rules 16/16, countdowns 8/8, events_table PASS, patch_radar
+23/23 + 14/14 + 10/10, lens_extra 16/16).
+
+### `probe_board.py` made a public leak the DEFAULT OUTCOME of using it — fixed at source
+
+The 11-14 note recorded that staging the parent board for `probe_board.py` writes lens content into
+`tools/lens/parent_ledger.json`, caught by a pre-commit grep. That is a design defect, not a near-miss: the
+module's `LED` constant defaulted to a path **inside** `tools/`, so the documented way to use it put private
+content in the public tree every time. It now resolves `--ledger PATH` > `$LENS_PARENT_LEDGER` >
+`../../lens/parent_ledger.json` — one level **above** `tools/` — and exits with a message naming the path when
+the board is absent. **Rule worth generalising: when a tool's default path crosses a trust boundary, the
+default is the bug; a grep that catches it is a mitigation.**
+
+### Flag calibration: 13 urgent, 6 ok — and the honest reason the number is high
+
+Generated run of the last eight editions: `12, 15, 11, 14, 12, 10, 12, 13` (14-day mean 12.5), so 13 is
+unremarkable for this window rather than an over-flag. All thirteen survive the literal definition: **nine
+dated vendor cutovers inside four days** (Apple age-rating descriptors and the GitHub Actions
+`pull_request_target` brownout on 11-16; Oracle CSPU, DuckDB 1.4 EOL, Snowflake BCR-2473 and Chrome 158's XSLT
+removal on 11-17; Databricks `variantShredding` and Snowflake BCR-2391 on 11-18; PostgreSQL 19 GA and the
+DeepSeek retirement on 11-19), plus a **pre-authentication CVSS 10.0** with no reachable fix on Percona, a
+52-CVE PostgreSQL batch installable on no managed provider, a CVSS 8.8 PgBouncer auth bypass unfixed on two
+Debian releases, and two LiteLLM key-disclosure paths one of which is unauthenticated at 10.0. **Six lanes
+held `ok` while carrying real CVEs and wrote out why** — BigQuery declined a 2-day item on the standing rule
+that a billing change is not a deadline; Fabric verified **zero** Fabric/Power BI/Synapse CVEs against the
+MSRC CVRF JSON rather than inferring; AI Hardware declined three patched NVIDIA CVEs as local-vector; Redshift,
+Database Hardware and NL2SQL likewise. That asymmetry is the evidence the agents discriminated.
+
+### Ledger + card
+
+**911 items, 50 exact + 157 fuzzy = 207 matched (22.7%), 0 double-counted.** Dictionary 58,966 → **59,670**.
+Match rate is inside the recent 22–25% band, so the 09-09 length-asymmetry diagnostic was not needed. Card:
+new=14 (+511 more), changed=6, ongoing=15, aged_out=807, **35 of 35 rows sourced** (one attached by reuse from
+a URL the DevOps brief itself cites for that exact fact, asserted in code before writing). All 8 pins survived
+the cap. `apply_harness_tokens.py` reported **net +0 for the fourth consecutive run**, the expected result.
+Synthesis carried **74 "seen in" references, every one verified against a real display name by script, all 19
+lanes cited at least once**.
+
+**The 11-12 list-membership check paid off again, and at scale: 12 of my candidate leads live in `ongoing`,
+not `new`** — MongoDB's 10.0, DuckDB 1.4, EKS 1.31, Brotli, BCR-2473, the PostgreSQL batch, PgBouncer's 8.8,
+Mongoose, Snowflake's `write_pandas` injection, React's RSC RCE, ingress-nginx and the Oracle eMudhra row. As
+PICKS every one would have been a silent `WARN: pick not found`. `derive_lists write` resolved all 28
+fragments against their own pool with zero misses.
+
+### Lens findings (edition 124)
+
+**Guard 5 passed on the first full assembly: 750 cited units, zero uncited** — fourteenth consecutive edition,
+mechanism unchanged since 09-15 (`cite()` called inline by each row generator; board-about-itself claims use
+the dated archive fallback). `assert_structure` 15 sections, `assert_table_shape` 10 tables, all four identity
+guards PASS, alias-safe across 8 section scopes plus the events union **forward only**.
+
+**`assert_not_parent_identity` refused the build over my own prose, for the second edition running.** My
+Since-yesterday text said "Carried forward unrevised from edition 123" — a backward reference with no
+directional qualifier, so it parses as an identity assertion, exactly the 11-14 catch. Reworded to "the
+previous edition". **This guard has now caught the same authoring habit twice; the habit is writing the parent's
+number instead of the word "previous".**
+
+**The published 123 parent carried TWO `</body></html>` pairs — the sixth consecutive edition.** Ran
+`normalize_closing_tags` as the last mutation, wrote, then **re-read from disk and asserted (1,1) on those
+bytes**, the only form the 11-12 note accepts. `strip_host_wrapper` again left **zero** pairs on a page staged
+via `read` with `path`, so the re-append is doing real work.
+
+**Two corrections where THIS BOARD was wrong, which are worth more than the two new rows.** (1) The Trino
+CVE-2026-34214 row claimed the fix landed 2026-10-16; **Trino 480 shipped 2026-03-24**, read off trino.io's own
+release page. That is wrong by almost seven months and it collapses the row's only in-window claim — the fix
+predates its own CVE disclosure by a week, so *nothing* about the item is in-window on either end, and the
+11-13 framing ("what landed in-window is the fix") is retired. (2) The MongoDB CVE-2026-118383 row's `due`
+field read "Percona RESOLVED 2026-11-13" — **true of the September batch tracked on a different row, and a
+false all-clear for this CVE**: PSMDB's newest builds rebase on an upstream from eight days *before* the 10-30
+drop. **A correction carried on the wrong row reads as an all-clear, which is the most expensive kind of
+ledger error.** Also added: NVD moved the record to `Analyzed` on 11-13 with a **primary 10.0** against the
+CNA's 9.0.
+
+**Three rows I drafted corrections for turned out to be already right** — the 11-17 lesson holding for the
+third time. The Snowflake Legacy Notebook row already carried the 60-day-activity carve-out *and* already
+named it as the likeliest source of the lingering "November 2026" reading; the Chrome 158 row already had the
+escape hatches and the Chrome-176 expiry; the Fabric Runtime 1.3 row was already retired on the right date.
+**Check the board before drafting a correction, not after.**
+
+**The Chrome 158 "two surfaces disagree" entry was closed, and it was never a disagreement.** `chromiumdash`
+carries both numbers as distinct fields of one milestone — `stable_date` 2026-11-17 and `late_stable_date`
+2026-11-18 — so 11-18 is the late-stable wave of the same release. The genuinely new fact is that **Firefox 159
+has not followed**, making this Chrome-only breakage that a cross-browser check actively hides.
+
+**`countdowns.refresh_rows` left 6 event fragments for hand reading and two were genuinely stale** — more than
+the usual one. DuckDB's row said "20 days" for a date **2 days** out, and the DeepSeek row said "a model
+retiring TODAY" written on a day that has passed. Both were restated with absolute dates and a computed
+delta. The other four were policy durations ("30 or 90 days' notice", "the prior 30 days") which the adjacency
+rule correctly declined. **Read the report with `len(r['fixed'])` / `len(r['left'])`, never truthiness** — the
+REPORT SHAPE PIN held and the counts printed correctly this run.
+
+**`reuse_key`'s advisory found no same-date peers for either new row**, which is the right outcome rather than
+a quiet one: it returns the row's own key when nothing is reused, and printed no candidate list. The two new
+rows are **arrow-rs CVE-2026-111959** (CVSS 9.1 OOB read whose GHSA is `Unreviewed` with package, versions and
+severity all literally "Unknown", and whose OSV record is filed against `arrow-data` not the umbrella `arrow`
+crate, so only `cargo audit` sees it) and **Claude Code 2.1.325** (a security release with no CVE/advisory/OSV
+whose same-release default flip makes sandboxed Bash follow the normal permission flow — recorded because that
+is the failure mode this routine itself was bitten by on 09-12 and 09-15).
+
+**Size: 16,806 bytes SMALLER than the stripped parent, accounted to within 252 bytes** — `povContent` −16,304
+(four tighter chair bodies, deliberate), `v-patch` −5,030, `v-wn` −3,136, `v-longitudinal` −292, against
+`lensLedger` **+6,452** (2 new rows, 5 corrections, 2 countdown fixes), `v-events` +1,357 and `v-read` +399.
+The 252-byte residue is the chip/NAV/runbar/title rewrites outside sections. Events 56 → 56 with **nothing
+retired** (no board date has passed since edition 123, so the KEV-before-retirement guard had nothing to
+examine), patch 259 → 261; `claims`/`ownclaims`/`promises`/`gaps`/`benchmarks`/`buildbets`/`skills` **all
+unchanged in count** — no competitor shipped a perf or price claim worth a card.
+
+**Scope, on the edition's face:** 124 refreshes Today's Read and Since-yesterday on all four chairs, Event
+Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites. Claim Watch, Mirror,
+Question Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build Radar, Skills Radar
+and Vendor Dossiers **carry forward from the previous edition unrevised and the edition says so on its face**.
+The quarterly Skills/Build re-rank across all four chairs is due **2027-01-01**.
+
+### The window's dominant finding, measured by 14 of 19 lanes independently
+
+Fourteen lanes each measured, without seeing each other's work, that standard vulnerability tooling cannot see
+this window's CVEs — and the failure has **six distinct mechanisms**, which is why no single gate catches it:
+*empty CPE* (69 of MongoDB's 70, 11 of 13 Oracle DB Server CVEs, all 12 analytics-engine CVEs swept, every
+PostgreSQL and PgBouncer record); *unbounded CPE* (Brotli's `apache:arrow` entry has no version bounds, so it
+matches the patched build and can never be cleared); *no package identity* (Snowflake's three OSV records carry
+`package: null`; four SvelteKit CVEs carry `package: {}` with git SHAs); *no CVE id at all* (containerd's
+disk-exhaustion DoS, Vite's 9.1 RCE, LiteLLM's 10.0, SQLite's 32-bit overflow, Flutter's Intent fix); *an id
+that resolves nowhere* (the GHSA in Google's own bulletin 404s out of both GitHub and OSV); and *vendored with
+no manifest entry* (no published Next.js version declares `react-server-dom-*` at all, so there is nothing for
+a lockfile to resolve or an `overrides` pin to rewrite). **A green scan is evidence about your scanner, not
+about your code.** Corollary several lanes reached separately: the fix now routinely ships *before* anyone can
+name it — measured at 11, 27, 34 and 92 days this window — so "patch when the scanner lights up" is
+measurably slower than tracking upstream releases.
+
+**A new axis worth carrying: a bundled version string can lie in BOTH directions.** Node 22.23.5 carries the
+Brotli fix (symbol present, decoder file byte-identical to upstream 1.1.0 only at 22.23.3) while its
+`version.h` still reports the vulnerable 1.1.0 — so an SBOM keyed on the bundled version reports a Critical on
+a patched runtime and cannot distinguish it from a genuinely exposed build. Upstream `google/brotli` master
+self-reports 1.2.0 while containing the fix. **Grep for the symbol; do not read the version.**
+
+### Step 5b: ELEVENTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the committed file by
+sha256 at 13:39:12Z, ~34s after the push**, after 3 polls at 15s. A byte-identical live fetch is strictly
+stronger evidence than any workflow-status poll, so the `deploy`-job read was not needed. **Only the SCHEDULER
+copy still says egress blocks `*.github.io`, and only Karl can edit that.**
+
+### Source access 2026-11-15
+
+- `blogs.oracle.com` 403s HTML **and** RSS for a **26th** consecutive week — tried `/optimizer/rss`,
+  `/database/rss`, WebFetch and curl with a browser UA — so the Optimizer / In-Memory / Smart Scan / Exadata
+  channel remains a structural gap and the Oracle brief says so on its face rather than reporting a quiet
+  month. `connor-mcdonald.com/feed/` returned **429** this run, so the usual substitute was unavailable too;
+  `mikedietrichde.com/feed/` is readable and carried the lane.
+- **New agent-directed sighting, and it is a NEW SHAPE: silent content loss rather than injection.** The
+  Redshift agent measured ten `/mgmt/` pages in both variants and found three — `odbc20-install.html`,
+  `configure-odbc-connection.html`, `configuring-connections.html` — whose **agent-facing markdown variant is
+  ~2.0–2.3 KB of site-wide boilerplate against 14–15 KB of real HTML**, i.e. HTTP 200 with a plausible body
+  and no page content. All three are driver/connection pages, exactly where the ODBC end-of-support notice and
+  the JDBC `sslmode` change live. **Generalisable: the risk from an agent-only variant is not only injected
+  instructions but silent omission, and a 200 with a believable size is not evidence the variant carries the
+  page. Diff the two variants' sizes before trusting either.**
+- The **markdown variant** of `docs.snowflake.com/en/release-notes/new-features` still opens with the
+  imperative addressed to automated clients ("Fetch the complete documentation index at …/llms.txt"). MongoDB
+  and `developer.android.com` carry the same `llms.txt` pointer, but in the **HTML a human also sees**, which
+  makes those ordinary first-party documentation rather than an agent-only injection. **No fetched page's
+  suggestion was executed and no skill file was loaded by any of the 19 agents.**
+- The Redshift security sweep ran clean again: `mgmt/behavior-changes.html` in both variants (**markdown
+  43,241 B / 30 headings — byte-identical to 11-13 and 11-14 — vs HTML 68,231 B / 33 tags**) plus
+  `cluster-versions.html` both ways, grepped for `agent-toolkit`, `Skills for AI`, `AI coding assistant`,
+  `search-skills`, `llms.txt` — **zero matches in all four files**.
