@@ -2486,6 +2486,29 @@ sha256 at 13:39:12Z, ~34s after the push**, after 3 polls at 15s. A byte-identic
 stronger evidence than any workflow-status poll, so the `deploy`-job read was not needed. **Only the SCHEDULER
 copy still says egress blocks `*.github.io`, and only Karl can edit that.**
 
+### A mistake I made this run: "keep both copies identical" is NOT symmetric
+
+Acting on the standing rule that main's and gh-pages' CLAUDE.md stay identical, I copied the branch's
+CLAUDE.md onto gh-pages and pushed it. **The branch's copy came from `main` at 2,512 lines; gh-pages' copy
+was 14,942 lines.** I deleted roughly 12,400 lines of run history in one commit (`bc89032`) and pushed it
+before noticing. Restored in `6a98ded` from the pre-sync commit with only the new section appended, giving
+15,143 lines; the edition-070 notes were checked present again afterwards. The published dashboard was never
+affected — both commits touched only CLAUDE.md, and the live page was re-verified byte-identical.
+
+**The rule as written is a trap, and the 09-10 note already said why:** gh-pages' copy has been *ahead* of
+main's since at least 2026-09-10, so "make them identical" has a direction, and only one direction is
+lossless. Two durable fixes, both cheap:
+
+- **Diff the line counts BEFORE copying either way.** `wc -l` on both copies takes a second and would have
+  stopped this outright.
+- **Append the new section; never replace the whole file.** Read the target's own copy, assert the new
+  heading is absent, concatenate, write. That is what the restore commit does and what every future sync
+  should do.
+
+Worth being blunt about the near-miss: a `git push` of a destructive change to a branch nobody diffs is
+exactly the shape that goes unnoticed for weeks. It was caught only because the line count printed in the
+same command output.
+
 ### Source access 2026-11-15
 
 - `blogs.oracle.com` 403s HTML **and** RSS for a **26th** consecutive week — tried `/optimizer/rss`,
