@@ -15195,6 +15195,23 @@ final bullet** (the WebSearch-budget line). The other 17 were byte-identical.
 `apply_harness_tokens` delta is not a token-accounting curiosity — it is a cheap, automatic signal that a
 brief was read off an incomplete transcript. Keep running the overlay precisely because it can detect this.
 
+**CORRECTION, same run, and it is worse than the paragraph above says: the narration problem was SIX briefs,
+not two, and all six shipped.** Writing a guard for the above — "a real brief opens with its TL;DR, so flag
+anything before it" — and then replaying it across the board found leading agent narration in **nl2sql, aihw,
+oltp, frontend, mobile and oracle**: lines like *"I have what I need. Writing the brief."* rendering as the
+first line of a third of the dashboard. Two of them (dbhw, formats) had additionally been truncated, which is
+the only reason the token delta pointed anywhere at all; the other four were complete briefs with a narration
+preamble and **no** token anomaly, so nothing would ever have surfaced them. This almost certainly affected
+prior editions too, invisibly, because nobody had checked a brief's first line.
+
+Fixed at source rather than reported: `extract_briefs.py` now **strips** everything before `**TL;DR**` — which
+is where the OUTPUT FORMAT contract says a brief begins — and prints every strip, so a silent fix can never
+hide an incomplete transcript. The dashboard was rebuilt and republished the same day with all 19 briefs
+starting at their TL;DR, verified by asserting it over the parsed DATA block. The ledger needed no re-run: no
+narration line was ever a `**Headline**` bullet, verified by grepping the day's ledger for the stripped text.
+**The generalisable lesson is about the guard, not the bug: a check written for one defect found five more of
+a different shape, and the defect it was written for was the only one with a visible symptom.**
+
 ### My own pin/exclude collision check gave a false OK, and the reason generalises
 
 `curate.py` died with `ERROR: pin not found` on the DeepSeek retirement — the 11-15 rule ("never exclude a row
