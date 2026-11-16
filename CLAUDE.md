@@ -15163,3 +15163,221 @@ same command output.
   43,241 B / 30 headings — byte-identical to 11-13 and 11-14 — vs HTML 68,231 B / 33 tags**) plus
   `cluster-versions.html` both ways, grepped for `agent-toolkit`, `Skills for AI`, `AI coding assistant`,
   `search-skills`, `llms.txt` — **zero matches in all four files**.
+
+## Run findings 2026-11-16 (edition 125)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked prompt, both hooks
+clean.** Launched 08:09 EST, briefs in between ~08:16 and ~08:52, dashboard published and verified live by
+**sha256 at 13:46:24Z (~41s after the push, 3 polls at 15s)**, lens **v90** after. **~4,380k research tokens —
+a new record** (prior high ~4,110k on 11-15). Hook logs audited on the event FIELD per the 11-05
+self-poisoning lesson: `artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain `read` a
+republish needs, the publish), `bash-allow.sh` **641 records** — all `PreToolUse` at `mode=auto`, **zero
+`PermissionRequest` in either**.
+
+### THE LEAD: extracting a brief before its completion notification silently corrupts it, and the token overlay is the free detector
+
+`apply_harness_tokens.py` reported **net +63,320**, the first non-zero overlay in five runs against a
+documented "expect +0". The delta was not spread: **exactly 4 of 18 lanes** (mobile, aihw, formats, dbhw) at
+**+5.7% to +7.1%**, with the other 14 at exactly +0. The obvious hypothesis — agents emitting text *after*
+`SubagentHandback`, which would leave the last assistant record's `usage` short — was **disproved by
+measurement**: every lane, including all four, had **zero** assistant records after its last handback.
+
+The real cause is timing. Those four were extracted by a polling loop *before* their completion notification
+arrived, i.e. while the transcript was still being flushed. Re-running `extract_briefs.py --force` after all
+19 transcripts were complete converged all four token figures to the harness value **exactly**, and oracle
+repeated the whole pattern a fifth time (231,551 → 245,821). **Two briefs also changed content**, which is
+the part that matters: `dbhw` and `formats` had both been carrying an *earlier* text block prefixed with
+agent narration — "I have enough primary-sourced material. Writing the brief." — and `dbhw` was **missing its
+final bullet** (the WebSearch-budget line). The other 17 were byte-identical.
+
+**Rules: do not extract a brief until that agent's completion notification has arrived; and regardless, re-run
+`--force` once all 19 are in and diff the briefs against the pre-force copies.** A non-zero
+`apply_harness_tokens` delta is not a token-accounting curiosity — it is a cheap, automatic signal that a
+brief was read off an incomplete transcript. Keep running the overlay precisely because it can detect this.
+
+### My own pin/exclude collision check gave a false OK, and the reason generalises
+
+`curate.py` died with `ERROR: pin not found` on the DeepSeek retirement — the 11-15 rule ("never exclude a row
+you also pin") biting, because my `EXCLUDE_ONGOING` fragment matched the *same* row my `PIN_ONGOING` fragment
+did. I wrote a collision check first and **it reported OK**: it re-parsed the lists out of `curate.py` source
+with `unicode_escape`, which mangled the em-dashes, so neither fragment matched any row and the intersection
+was trivially empty. **A check that silently matches nothing reports clean** — the same class as the 11-10
+`rewrite_pov_meta` defect. Re-doing it by `exec`-ing the module with `__file__` set and reading its real
+`PIN_ONGOING` / `EXCLUDE_ONGOING` constants found the collision immediately. **Read a module's constants from
+the module, never from a re-parse of its source; and have the check assert that each pin matches at least one
+raw row, so "no collisions" cannot be produced by matching nothing.**
+
+### Three curation guards earned their keep in one pass
+
+- **`derive_lists` refused an `EXCLUDE_ONGOING` target that actually lives in `new`** (the DuckDB 1.4 EOL row).
+  That is the 11-12 list-membership rule working mechanically rather than by eye.
+- **One story reached both 🆕 New and ➰ Still ongoing** — the Gemini 2.5 reroute, as an AI App Dev pick and an
+  AI Daily carried row at day 9. The 09-18 shape, and across *different topics*, which is why a per-topic
+  dedupe would not catch it. Dropped the pick (the ongoing row carries an honest day count) and promoted
+  Istio 1.32 into the freed slot. A post-curation Jaccard sweep over all 35 rows now runs as a check and
+  reports 0 pairs above 0.28.
+- **`changed` carried CVE-2024-27834 twice**; `EXCLUDE_CHANGED` (the 4th `derive_lists` file) removed the dup.
+
+Final card: new=15 (+516 more), changed=5, ongoing=15, aged_out=830, **35 of 35 rows sourced** (3 links
+attached by reuse from URLs the same brief cites for that exact fact, asserted in code against the brief text
+before writing). All 14 pins survived the cap.
+
+### Ledger + synthesis
+
+**931 items, 46 exact + 179 fuzzy = 225 matched (24.2%), 0 double-counted.** Dictionary 59,670 → **60,376**.
+Match rate is inside the recent 22–25% band, so the 09-09 length-asymmetry diagnostic was not needed.
+Synthesis carried **68 "seen in" references, every one verified against a real display name by script, all 19
+lanes cited** — BigQuery was uncited on the first pass and was folded into the cost-opacity bullet rather than
+left out. All 14 inline URLs were verified present in a brief before publishing (reuse, not invention).
+
+### Lens findings (edition 125)
+
+**The published 124 parent carried TWO `</body></html>` pairs — the seventh consecutive edition.** Ran
+`normalize_closing_tags` as the last mutation, wrote, then **re-read from disk and asserted (1,1)** on those
+bytes, the only form the 11-12 note accepts.
+
+**`rewrite_pov_meta` refused the full `nav_meta` dict, correctly.** `povContent.meta` knows only the **8
+chair-flipped** viewids; passing all 15 raised `unknown povContent meta viewid(s)` naming the 7 shared
+sections. Pass the flipped subset. This is the guard the 11-10 note added *because* a wrong-shape check had
+passed silently for editions — it is now refusing wrong input instead.
+
+**`merge_parent` needs explicit `sections=`, because two ledger keys are lists of STRINGS.**
+`_corrections_108` and `_corrections_109` hold plain strings, so the default "every list-valued key" scope
+crashes on `row["k"]`. Also: `retired_events` holds full rows and `merge_parent`'s `drop_events_before` only
+*removes* past events from `events` — it does not move them, so a build must append the dropped rows itself
+(with a `retired_on` stamp) or the board loses its retirement history.
+
+**Guard 5 failed the first assembly on exactly one unit** — a bullet claiming "Nothing retired. No board date
+has passed since the previous edition", which is a claim about *this edition's own board* and takes the dated
+archive fallback, not a vendor URL. Final: **751 cited units, zero uncited**; `assert_structure` 15 sections,
+`assert_table_shape` 10 tables, all four identity guards PASS, alias-safe across 9 section scopes.
+
+**Three corrections, and in two of them this board was the thing that was wrong:**
+- **Percona IS patched for CVE-2026-118383** — PSMDB **8.0.38-16 (2026-11-13)** names the CVE explicitly and
+  rebases on upstream 8.0.38, one day after edition 124 recorded "no reachable fix: Percona". **The board has
+  now been wrong in both directions on Percona inside eight days**, which is the cost of carrying a vendor's
+  patch state as a field rather than re-reading it. What survives: 8.1/8.2 still got nothing, and PSMDB 8.3 is
+  three patch levels behind — but Percona labels 8.3 a Technical Preview, so that is a reason to stay on 8.0
+  rather than a gap to close.
+- **This board's own "unbounded `apache:arrow` CPE can never be cleared" claim expired.** NVD's Brotli record
+  (last modified 2026-11-10) now bounds that entry at `versionEndIncluding: 26.0.0`, and pyarrow is at 26.0.1
+  — above it. The unbounded shape survives elsewhere on the same CVE; `duckdb` and `clickhouse` were not
+  re-measured, so that clause is now **unverified rather than confirmed**, and the row says so.
+- **Chrome 158's XSLT removal started 12 days ago, not tomorrow** — `chromiumdash` carries
+  `early_stable: 2026-11-04` and Stable is already serving 158.0.8127.x. Also corrected: current Firefox
+  Stable is **160**, not the 159 the board carried.
+
+**Four drafted corrections turned out to be already applied** — Legacy Notebook (retracted 11-14 with the
+2027 dates), Trino CVE-2026-34214 (corrected 11-15), parquet 1.18.1, and containerd's advisories
+(resolved-as-trackable). The 11-17 "check the board before drafting a correction" rule held for a fourth time.
+The Brotli 22.23.x detail was likewise **already right on the board** — it was my reading of yesterday's
+CLAUDE.md note that was imprecise, not the ledger.
+
+**`reuse_key`'s advisory printed same-date parents for all three new event rows** (one on 12-08, four on
+11-30, one on 12-08) and none was a duplicate — confirming in seconds rather than in an edition. Only **4 rows
+were genuinely new** at edition 125: three GitHub/Databricks platform clocks nobody had carried (ARM32 runner
+retirement 12-08, the `X-GitHub-Stateless-S2S-Token` header cutover 11-30, OpenSharing legacy-token expiry
+12-08) and one patch row (MongoDB Node driver CVE-2026-126837, whose fix exists only in the 7.x major while
+**three of four maintained mongoose lines pin a driver ceiling below it**). Everything else today's briefs
+raised was already tracked.
+
+**events 56 → 59, patch 261 → 262, nothing retired** (no board date has passed since edition 124, so the
+KEV-before-retirement guard had nothing to examine). `claims`/`ownclaims`/`promises`/`gaps`/`benchmarks`/
+`buildbets`/`skills` all unchanged in count. **Size +12,129 bytes, accounted to within 48**: `lensLedger`
++7,906, `v-events` +3,899, `povContent` +2,050, against `v-patch` −1,859 and `v-wn` −41; the −48 residue is
+the chip/NAV/runbar/title rewrites outside sections. All 48 `(unsourced — verify)` markers are inherited from
+the parent, unchanged — none added by the regenerated sections or authored prose.
+
+**Scope, on the edition's face:** 125 refreshes Today's Read and Since-yesterday on all four chairs, Event
+Horizon, Patch-Risk Radar, Longitudinal, the ledger and all identity sites. Claim Watch, Mirror, Question
+Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build Radar, Skills Radar and
+Vendor Dossiers **carry forward from the previous edition unrevised and the edition says so on its face** —
+no competitor shipped a perf or price claim worth a card. The quarterly Skills/Build re-rank is due
+**2027-01-01**.
+
+### The notification went out BEFORE step 5c, deliberately
+
+Two deadlines landed today (the Apple age-rating descriptors and the GitHub Actions brownout window), so the
+alert was sent immediately after the dashboard was verified live and before the ~25-minute lens build. The
+09-05 note explicitly sanctions this ordering ("if the hook ever proves unreliable, move step 6 ahead of 5c so
+a parked lens never delays the alert"); with a same-day deadline in the set it is the right default regardless
+of hook health. The lens then published cleanly, so no "Lens NOT published" line was needed.
+
+### Flag calibration: 13 urgent, 6 ok
+
+Generated run of the last eight editions: `15, 11, 14, 12, 10, 12, 13, 13` (14-day mean 12.6), so 13 is
+unremarkable for this window. The strongest item is one no scanner can attribute: **Oracle Secure Backup
+19.1 embeds the PHP "PHP2Shell" RCE (CVE-2026-109618/109619, CVSS 9.8, unauthenticated), in CISA KEV since
+26 Oct with a due date 18 days past and `forensicTriage: Yes`** — filed under "PHP Group", with NVD's 316
+CPEs naming no Oracle product, so Oracle's own Security Alert is the only surface linking them. **Six lanes
+held `ok` while carrying real CVEs and wrote out why** — BigQuery declined a next-day item on the standing
+rule that a billing change is not a deadline; Fabric verified **zero** Fabric/Power BI/Synapse CVEs against
+the MSRC CVRF JSON (18.6 MB, 1,644 vulns, zero occurrences of `fabric`/`power bi`/`onelake`/`synapse`) rather
+than inferring; Redshift declined a patched CVSS 9.2 JDBC RCE and said plainly it could not establish whether
+the TLS 1.2 enforcement that passed 16 days ago is live; AI Hardware, Database Hardware and NL2SQL likewise.
+
+### The window's dominant finding, reached by fourteen lanes independently
+
+**A green scan is evidence about your scanner, not your code**, and this window has six distinct mechanisms:
+*empty CPE* (all 52 PostgreSQL CVEs, 69 of 70 MongoDB, 11 of 13 Oracle DB Server, every PgBouncer record);
+*no CVE id at all* (containerd's three advisories, Vite's CVSS 9.1 dev-server RCE, pgvector's and SQLite's
+buffer overflows, StarRocks' whole credential-hardening pass); *a GHSA that 404s out of both GitHub and OSV*;
+*no package identity* (Snowflake's `package: null`, Vitess's ten High SQLi advisories absent from OSV, the
+Redshift JDBC RCE carrying a GIT-only range); *the right record indexed under the wrong package* (arrow-rs
+filed against `arrow-data`, not the umbrella `arrow` crate); and *a product that appears nowhere in its own
+CVE* (Oracle Secure Backup). Corollary several lanes reached separately: **the fix now routinely ships before
+anything can name it** — measured at 5–7 days (arrow-rs), 19 (Redshift JDBC), 27 (React RSC), 35 (Snowflake
+driver), 50 (MCP SDK) and 91 (Mongoose) — so **version currency is a better control than advisory coverage**.
+
+A second axis worth carrying: **"no reachable fix" has become provider-shaped rather than branch-shaped.**
+PostgreSQL's 52-CVE batch is installable on Neon and PlanetScale (both 11-13) and on **none** of RDS, Aurora,
+Azure Flexible Server or Cloud SQL; PgBouncer's 8.8 SCRAM auth bypass is unfixed in both released Debian
+suites 33 days on with no DSA; MongoDB's Node driver 6.x has no fix at all while mongoose pins below even the
+one 6.x patch; Apache Pinot is patched only in a 1.6.0 that also demands Java 25 and deletes the native text
+indexes; MySQL 8.0 Server is absent from Oracle's October matrix with Percona the only maintained path; and
+TensorRT-LLM's fix lives in a pre-release `pip` will not select.
+
+### Source access 2026-11-16
+
+- **NEW AGENT-DIRECTED SHAPE, and it is the most deliberate one this board has seen: `docs.snowflake.com`
+  serves the `llms.txt` imperative in the HTML a human loads, inside `<aside class="sr-only">`** — visually
+  hidden from a sighted reader while present in the DOM. Two previous runs recorded the markdown-variant
+  sighting only. It was treated as data; no `llms.txt` was fetched.
+- **RETRACTION: the 11-15 "silent content LOSS on three Redshift `/mgmt/` pages" finding is a measured false
+  positive.** The byte sizes reproduce exactly (md 2,004 / 2,103 / 2,322 vs HTML 14,319 / 14,869 / 15,014),
+  but extracting each HTML page's own main-body text yields **1,625 / 1,704 / 2,161 characters — less than the
+  markdown**, which additionally carries link URLs. The 6–7× ratio measured navigation chrome and the
+  "Javascript is disabled" notice, not lost content. **The correct test is markdown against the HTML's
+  extracted body text, never against its byte size.** Content loss in a markdown variant *is* real elsewhere
+  — Snowflake's `new-features` page serves 1,306 bytes against 218,499 of HTML and drops all 73 GA/Preview
+  labels — which is exactly why the test has to be a content marker rather than a ratio.
+- **`blogs.oracle.com` 403s HTML *and* RSS for a 27th consecutive week** (tried `/optimizer/rss`,
+  `/database/rss`, `/exadata/rss`, `/feed` and the JSON API, WebFetch and curl with a browser UA), so the
+  Optimizer / In-Memory / Smart Scan / Exadata-monthly channel remains a structural gap and the Oracle brief
+  says so on its face. `connor-mcdonald.com/feed/` returned **429** again; `mikedietrichde.com/feed/` was
+  readable and carried the lane. The genuinely new Oracle performance source this window was **VLDB**:
+  "Real-time SQL Plan Management in Oracle" (PVLDB vol 19 p4169) with fleet numbers — 190,588 potential plan
+  regressions caught across 20,015 Autonomous instances in five days with no patches applied.
+- **New and better Fabric source: the known-issues RSS is a rolling 8-item window** and missed both Canadian
+  DST issues (17–18 days old). The SPA's backing endpoint
+  `support.fabric.microsoft.com/fabric-json2/?productId=<id>` returns full JSON per product with `Status`,
+  `PublishedOn`, `ModifiedOn`, `IssueID`, description **and workaround** — 80 issues across ten product ids.
+  `learn.microsoft.com/fabric/known-issues/*` is retired and 404s.
+- `www.snowflake.com` 403s to both WebFetch and curl-with-browser-UA (Cloudflare challenge), so Snowflake's
+  security bulletins and engineering blog are a standing gap; `docs.snowflake.com` serves fine.
+- `services.nvd.nist.gov` returns **503 (Cloudflare) or an empty body** on rapid successive calls — space them
+  ~6s and re-query every negative, or a rate-limit reads as "not in NVD". `api.osv.dev/v1/vulns/<CVE>` returns
+  a 404 body that **names the aliases it does know**, which is how the arrow-rs record was found under its
+  RUSTSEC/GHSA ids: **a bare 404 from OSV is not "no advisory"**.
+- Measured gotcha worth carrying: **Maven `lastUpdated` diverged from real artifact dates on 5 of 5 projects
+  checked, by −6 to +23 days, in both directions.** Three of those would have put an out-of-window release
+  inside the window. Cross-check the artifact listing and the project's own announcement.
+- **A GitHub repo's `master` can be stale while `main` is current** — `amazon-redshift-odbc-driver` master is
+  two releases behind, and the Redshift docs link `master`.
+
+### Step 5b: TWELFTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the committed file by
+sha256 at 13:46:24Z, ~41s after the push**, after 3 polls at 15s. A byte-identical live fetch is strictly
+stronger evidence than any workflow-status poll, so the `deploy`-job read was not needed. **Only the
+SCHEDULER copy still says egress blocks `*.github.io`, and only Karl can edit that.**
