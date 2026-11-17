@@ -15398,3 +15398,285 @@ TensorRT-LLM's fix lives in a pre-release `pip` will not select.
 sha256 at 13:46:24Z, ~41s after the push**, after 3 polls at 15s. A byte-identical live fetch is strictly
 stronger evidence than any workflow-status poll, so the `deploy`-job read was not needed. **Only the
 SCHEDULER copy still says egress blocks `*.github.io`, and only Karl can edit that.**
+
+## Run findings 2026-11-17 (edition 126)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked prompt, both
+hooks clean.** Launched 08:14 EST, briefs in between ~08:23 and ~08:40, dashboard published and verified
+live by **sha256 at 13:46:5xZ (~30s after the push, 2 polls at 15s)**, lens **v91** after.
+**~4,210k research tokens** (11-16 high was ~4,380k). Hook logs audited on the event FIELD per the 11-05
+self-poisoning lesson: `artifact-allow.sh` **4 records** (list, a `read` with `path`, the plain `read` a
+republish needs, the publish), `bash-allow.sh` **578 records** (265 allow / 313 pass) — all `PreToolUse`
+at `mode=auto`, **zero `PermissionRequest` in either**.
+
+### THE LEAD: two lanes contradicted each other on a deadline, and the loser's negative came from a 404
+
+The Databricks lane quoted the `variantShredding` 2026-11-18 default **verbatim** from
+`docs.databricks.com/aws/en/release-notes/whats-coming` and its Azure twin. The Open Formats lane reported
+that it could find **no** Databricks surface carrying that date, having checked five pages — and its own
+"Filtered out" section records that it tried `docs.databricks.com/aws/en/whats-coming`, which **404s**. The
+live path is `/aws/en/release-notes/whats-coming`; it never fetched that one.
+
+**Rule, and it is the sharper form of the 11-13 "verify a negative against the primary API" lesson: a
+negative sourced from a 404 is not a negative.** Before reporting "no vendor surface carries this", confirm
+every URL you checked returned 200. A lane that enumerates five pages and finds nothing is persuasive
+exactly in proportion to whether those five pages existed. The read-floor conflict therefore **stands** —
+the deadline notice says 16.4, all four cloud copies of the feature page say 17.3, the
+feature-compatibility table gives no version — and both lanes independently confirmed that half.
+
+### A board row was right before its own lane was, which is a first worth recording
+
+The Oracle lane opened the day expecting the November CSPU to carry a fix for **CVE-2026-21962** (CVSS 10.0,
+KEV, 82 days past due) and ended it concluding the CVE **is not a database CVE at all** — CISA names "HTTP
+Server and Oracle Weblogic Server Proxy Plug-in", NVD scopes it to OHS / WLS Proxy Plug-in 12.2.1.4.0 /
+14.1.1.0.0 / 14.1.2.0.0, published 2026-01-20 with Oracle as CNA, fixed on the middleware train in January.
+**The lens board already carried it under `cve-2026-21962-ohs-weblogic-kev` with exactly that scoping.** So
+for once the drafted "correction" was a correction to the lane, not to the board. Generalisable: the 11-17
+"check the board before drafting a correction" habit paid off for a **fifth** consecutive run, and this is
+the first time it caught a lane re-deriving a conclusion the board had already reached rather than the board
+being stale. Day count 80d → 82d is the only edit the row needed.
+
+### `reuse_key`'s advisory stopped two fresh slugs, and both were real duplicates
+
+Of five drafted event rows, the advisory printed the same-date parents and **two were the same story under
+an existing key**: `opus-48-fast-mode-removed-nov30` (my drafted
+`anthropic-sonnet-45-retire-opus48-fast-removed-nov30`) and `gemini-25-reroute-breaking-dec1` (my
+`google-gemini-25-silent-reroute-dec1`). Both were declared with `same_as=` and **enriched in place**
+rather than minted. Three were genuinely new (OpenAI's 11-30 triple shutdown, the Play Japan PSA
+authorization, EKS 1.34's 12-02 support end). This is the 09-11 correction holding: identity is declared at
+authoring time, the matcher is advisory only, and the value is that confirming took seconds.
+
+One builder detail worth keeping: a drafted row whose key resolves to a parent key must be routed to an
+**enrichment**, not appended — otherwise `place()`-less code silently creates a second row with the same key
+and `assert_alias_safe` passes (the key is present). The phase-1 script now folds on key collision and
+prints which keys folded.
+
+### `assert_alias_safe` is the wrong guard for an explicit retirement, and the fix is scoping not weakening
+
+Retiring two past-dated events (the GitHub Actions brownout window and the Apple age-rating descriptors)
+moved them out of `events` into `retired_events` — and `assert_alias_safe(ledger["events"], parent["events"])`
+failed with "2 parent keys vanished". That is the guard doing its job: a key left `events` without an alias.
+The correct repair is to let the guard see the rows it was given, not to skip it —
+`assert_alias_safe(ledger[sec] + retired, parent[sec], sec)` for events only. Guard 2's intent (no row
+leaves by omission) is preserved and the **explicit** retirement is allowed. Both retired rows converted
+into standing obligations rather than discharging, which is why `retired_events` is the right destination.
+
+### Curation: a collision check that reads the module's real constants, and a pin that matched nothing
+
+Following the 11-16 lesson, the pin/exclude collision check `runpy.run_path`s `curate.py` and reads its real
+`PICKS` / `PIN_ONGOING` / `EXCLUDE_ONGOING` / `EXCLUDE_CHANGED` objects rather than re-parsing the source —
+and it asserts **each pin and pick matches exactly one raw row**, so "no collisions" cannot be produced by
+matching nothing. It caught one fragment immediately: `EXCLUDE_ONGOING`'s Apple WebKit entry was typed as
+"CISA KEV due date for CVE-2024-27834" where the row reads "…for **Apple WebKit** CVE-2024-27834". A miss,
+not a collision, and `derive_lists.py write` refused it before `curate.py` ran.
+
+Final card: **new=16 (+486 more), changed=4, ongoing=15, aged_out=832, 35 of 35 rows sourced** (5 links
+attached by reuse from URLs the same brief cites for that exact fact, each asserted present in the brief
+text in code before writing). A post-curation Jaccard sweep over all 35 rows reports **0 pairs above 0.28**.
+Ten `changed` rows were dropped as pure title-only `sev`-reclassification artifacts on unchanged facts (the
+10-23 rule), including a "normal → urgent" on the Gemini 3.6 Flash retirement that is the *harmless* half of
+that day's pair.
+
+### Ledger + synthesis
+
+**894 items, 50 exact + 170 fuzzy = 220 matched (24.6%), 0 double-counted.** Dictionary 60,376 → **61,050**.
+Match rate is inside the recent 22–25% band, so the 09-09 length-asymmetry diagnostic was not needed.
+`apply_harness_tokens` reported **net +0** across 19 lanes — the expected result, and per the 11-16 lesson
+the cheap automatic signal that no brief was read off an incomplete transcript. The extractor's narration
+strip fired on five lanes for 6–51 characters each (the TL;DR strip working, not a truncation), and all 19
+briefs were asserted to open at `**TL;DR**` **over the parsed DATA block**, not over the source files.
+Synthesis carried **18 "seen in" references verified against real display names by script, all 19 lanes
+cited** — NL2SQL was uncited on the first pass and was folded into the no-reachable-fix bullet (Vanna's
+CVE-2026-4229 has no `fixed` event at all and a maintainer who stopped) rather than left out. All 6 inline
+URLs were verified present in a brief before publishing.
+
+### Lens findings (edition 126)
+
+**12 corrections applied to the ledger before any section was generated** (the 09-14 build-order rule), and
+the pattern of the day is that most were enrichments of rows the board already had roughly right:
+- **Percona + MongoDB CVE-2026-118383 has now been wrong in both directions inside eight days, and the
+  current reading is narrower than either.** 8.0 *is* patched (8.0.38-16); **8.3 is not** — 8.3.13-4 is three
+  patch levels below the 8.3.16 fix — and the "it's only a Technical Preview" qualifier the board carried is
+  now false, because **Percona declared 8.3 GA and "the latest, default and recommended version" on
+  2026-10-27**. The unpatched branch is the one the vendor points you at.
+- **The Brotli row's unbounded-CPE claim is fully expired and the replacement shape is worse for DuckDB.**
+  NVD's 11-10 revision bounds all three entries (`apache:arrow` 26.0.0, `duckdb` 2.0.0,
+  `clickhouse` 26.10.2.103), so the shape is "bounded at or above the newest release" — and DuckDB's bound
+  is its current stable with nothing above it. Measured at source: the fix symbol is absent from DuckDB's
+  vendored decoder at both `v1.5.6` and `v2.0.0` and present only on `main`, while
+  `third_party/brotli/VERSION` reads `1.1.0` in **both** trees. **Node's fix is 22.23.4, not the 22.23.3
+  this board carried** (symbol absent at .1/.2/.3), and the bundled-version lie is confined to the 22.x
+  cherry-pick line — 24.22.3 and 26.13.1 self-report 1.2.1 and are genuinely scannable.
+- **Percona Server for MySQL shipped on 11-12 and did not close its row**: 8.4.11-12 rebases on a July
+  upstream, three releases behind, names no CVEs, still inside Oracle's October-CPU affected range including
+  two CVSS 9.8 unauthenticated items in bundled **curl** and **OpenSSL** that no MySQL-version SBOM match
+  catches.
+- **Snowflake's BCR-2473 question the board carried for a week is answered: existing warehouses are NOT
+  rewritten.** The trap is `CREATE OR REPLACE` without an explicit `AUTO_SUSPEND`, which silently adopts the
+  new 1-hour default — and the cost arithmetic cuts against acting on the change at all, because one hour is
+  also the **minimum billable period per resume** and Snowflake's own guide says the 24-hour floor "helps
+  prevent excessive suspend/resume cycles".
+- **Chrome 158's XSLT removal gained an escape hatch the board had not carried**: the `XSLTEnabled`
+  enterprise policy and the deprecation origin trial both run to **Chrome 176 (2027-08-17)**, and Chrome
+  files the change as a *stepped rollout* with `early_stable: 2026-11-04`, so feature-detect
+  `'XSLTProcessor' in window` rather than version-detect.
+- **OpenSharing's 2026-12-08 is a floor, not a cliff** — "one year from creation or 12-08, whichever is
+  further in the future" — so it binds only tokens created on or before 2025-12-08, while the URL transition
+  it exists to bridge is postponed with no new date. Tokens can expire before the migration they bridge has
+  a date.
+- **Fabric's tzdata row splits in two**: Runtime 2.0 carries the three-vintages hazard (system 2025c /
+  `python-tzdata` 2026.3 / `pytz` 2026.2, re-confirmed in a build candidate dated 11-16), Runtime 1.3 is
+  *uniformly* three years stale (2024a / 2023.3 / 2023.3.post1) rather than split, and **MongoDB 8.0 joins
+  the row** as the only supported line without 2026e.
+
+**Seven new patch rows, and together they are one argument**: the severity in this window is almost never in
+a CVE you can look up. Istio's bulletin is **eight GHSAs rated 8.2 with zero CVE ids** (including an ambient
+mTLS bypass and DENY rules failing open); runc's 7.9 host escape is **absent from NVD *and* OSV** five days
+after the fix; Vite's 9.1 has no CVE id, is missing from GitHub's own advisory-database mirror, and names
+**two patched versions that 404 on npm**; PgBouncer's 8.8 is fixed upstream and in neither released Debian
+suite with no DSA. The one fully-scannable new row, **GPUStack CVE-2026-102895**, is also the one with a KEV
+date already past and in-the-wild exploitation — and its fix predated its own name by **144 days, a board
+high** against 57, 50, 27, 22, 18, 13 and 9 measured elsewhere today.
+
+**Every guard passed on the FIRST assembly**, which has not happened often: `assert_structure` 15 sections,
+`assert_table_shape` 10 tables, all four identity guards (`rewrite_identity` + `assert_no_stale_identity` +
+`assert_not_parent_identity` + `assert_ledger_identity`), alias-safe across 9 section scopes, and **guard 5
+at 772 cited units with zero uncited**. Mechanism unchanged since 09-15: every row generator calls `cite()`
+inline as it emits, and claims about *this edition's own board* take the dated archive fallback because a
+vendor URL would be a wrong link. All **48** `(unsourced — verify)` markers are inherited from the parent,
+unchanged — none added.
+
+**`rewrite_pov_meta` refused the full `navmeta` dict, correctly** — `povContent.meta` knows only the **8**
+chair-flipped viewids, so the flipped subset is what it takes. **`normalize_closing_tags` ran as the last
+mutation**, then the file was re-read **from disk** and asserted `(1,1)` on those bytes, the only form the
+11-12 note accepts; the parent had exactly one pair this time, which `strip_host_wrapper` removes, so the
+re-append is load-bearing rather than cosmetic.
+
+**NAV and the pov chips disagreed about carried sections, and the honest fix asserts fewer numbers.** NAV
+said "carried from 124" for Claim Watch, Mirror, Question Forecast, Gap Ledger, Build and Skills while the
+pov `.c` said "carried from **119**" — the pov value tracks the last edition that actually revised those
+sections and is the truthful one, so both are now driven from one `navmeta` dict on 119. For the **shared**
+carried sections (Perf Signals, Benchmarks, Promise Tracker, Dossiers) the ledger cannot establish which
+edition last revised them, so they now read "carried, unrevised" with **no edition number** — the 11-20 rule
+applied rather than a number picked.
+
+**Size +55,767 bytes, accounted to within 90**: `lensLedger` +25,746, `v-patch` +19,276, `v-events` +5,385,
+`v-wn` +2,572, `v-longitudinal` +1,499, `v-read` +693, `povContent` +686, against a −90 residue from the
+chip/NAV/runbar/title rewrites being shorter than the parent's.
+
+**Scope, on the edition's face:** 126 refreshes Today's Read and Since-yesterday on all four chairs, Event
+Horizon, Patch-Risk Radar, Longitudinal, the ledger and all identity sites. Claim Watch, Mirror, Question
+Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build Radar, Skills Radar and
+Vendor Dossiers **carry forward unrevised and the edition says so on its face** — no competitor shipped a
+perf or price claim worth a card; the day was deadlines and unreachable fixes. events 59 → 60 (3 new, 2
+enriched onto existing keys, 2 retired), patch 262 → 269. The quarterly Skills/Build re-rank is due
+**2027-01-01**.
+
+### The notification went out BEFORE step 5c again, and with five same-day deadlines that is the default
+
+Sent immediately after the dashboard was verified live and before the ~30-minute lens build, per the 09-05
+sanction. Five deadlines landed today and three tomorrow; waiting on the lens to alert on those would be the
+wrong trade regardless of hook health. The lens then published cleanly, so no "Lens NOT published" line was
+needed.
+
+### Flag calibration: 14 urgent, 5 ok — and the weakest of the 14 is named
+
+Generated run of the last eight editions: `11, 14, 12, 10, 12, 13, 13, 14` (14-day mean 12.6), so 14 equals
+the series high and is unremarkable for this window. Audited one at a time against the literal definition:
+four KEV items (GPUStack 9.8 **exploited in the wild**, 5 days past, `forensicTriage: Yes`; Oracle PHP2Shell
+19 days past with forensic triage; Brotli 7 days past with no reachable fix in any released DuckDB; Apple
+WebKit due tomorrow), five "no reachable fix for somebody" (PgBouncer in Debian, PostgreSQL 14 plus four
+unpatched hyperscalers, MongoDB 8.1/8.2 and PSMDB 8.3, Doris 3.1 archived, Nuxt 3 EOL with four open
+advisories), and five hard deadlines inside the bar (Snowflake ×2, Databricks ×2, DuckDB today, Play Japan
+12-01, OpenAI/Anthropic 11-30, Chrome 158 already in force).
+
+**`fabric` is the weakest of the 14 and is recorded as such.** Its flag rests on two silent-wrong-answer
+defects with no reachable fix — Power BI truncating Databricks rows under the ADBC driver (a driver fix
+exists at Databricks that Microsoft has not adopted) and Warehouse Time Travel returning *current* data from
+`INSERT … SELECT … OPTION(FOR TIMESTAMP AS OF …)` against the same table, with no workaround published.
+Neither is a CVE and neither is a deadline, so it fails the bar's literal wording while being, arguably,
+more act-now than several items that pass. Recording the tension rather than trimming the number: the bar
+has no clause for "unpatched correctness defect that returns wrong numbers without erroring", and after this
+window it probably should.
+
+**Five lanes held `ok` while carrying real CVEs and each wrote out why** — NL2SQL (Vanna's unfixed injection
+is 8 months old, not in KEV, and reaches only the BigQuery vector-store path), Database Hardware (AMD's
+DRAM-contention brief has no CVE, no exploitation and no fix — only a PMU counter to watch), Platform &
+DevOps (runc 7.9, Istio 8.2 and Cilium's two bypasses all have reachable fixes shipped inside 14 days, and
+its two biggest deadlines fall on 12-02, **one day outside the bar**), BigQuery (GCP-2026-075 is Medium with
+every fix published, and a billing-basis change requiring nothing of the reader is not a deadline), Redshift
+(a patched CVSS 9.2 JDBC RCE, no KEV entry, and the CISA catalog holds **zero** entries under any Amazon/AWS
+vendor). That asymmetry is the evidence the agents discriminated rather than blanket-flagged.
+
+### The window's dominant finding, reached by fifteen lanes independently
+
+**A green scan is evidence about your scanner, and this run measured eight distinct mechanisms in one day**:
+*no CVE id at all* (Istio ×8, Cilium ×2, containerd ×2, pgvector, SQLite, TimescaleDB, Citus, Vite's 9.1);
+*empty CPE* (**78 of 80** MongoDB CVEs, all five live Challengers CVEs, every PgBouncer record); *absent from
+NVD **and** OSV* (runc); *`package: null` with GIT ranges* (Snowflake drivers, n8n, BuildKit, containerd);
+*a transitive pin flooring below the fix* (mongoose pins the MongoDB driver below its own patched version on
+three of four maintained lines); *indexed by id but not by package* (BuildKit); *a GHSA that 404s out of
+GitHub's own mirror* (Vite); and *a CPE bounded at or above the newest release* (DuckDB). Corollary several
+lanes reached separately: **version currency beats advisory coverage** — with a counterweight that is new
+this run and worth holding onto, because version currency also silently installed a **`timeoutMS` no-op** in
+the MongoDB Node driver and turned R8 on by default in Expo release builds.
+
+A second axis: **CVSS 4.0 vs 3.1 is now an operational fork that inverts**. 18 of 66 scored MongoDB CVEs
+disagree by >1.5 points in both directions (a confidentiality bypass reads 8.2 on 4.0 and 5.9 on 3.1; a
+privilege-escalation-via-restore reads 5.2 and 8.6); ClickHouse's unauthenticated-RCE 9.5 carries **no 3.1
+vector at all**; the Redshift JDBC RCE reads 9.2 and 8.1. Decide which vector your gate reads and write it
+down.
+
+### Source access 2026-11-17
+
+- **`blogs.oracle.com` 403s HTML *and* RSS for a 28th consecutive week.** Today's only Oracle performance
+  content came from **product documentation** — the Exadata Flash Cache Size Advisor (which needs Exadata
+  System Software 26.2.0 *and* database 23.26.4, double-gated) and Autonomous's `DBMS_USERDIAG` SQL tracing
+  — not from any blog. `mikedietrichde.com` is readable again but **intermittent per post**: two of three
+  post bodies returned in full and the third returned HTTP 200 with 2,972 bytes and no article text, via both
+  curl and WebFetch. `connor-mcdonald.com/feed/` served without a 429 and has exactly one in-window post.
+- **Exadata doc URL trap**: the what's-new filenames use **underscores**
+  (`…-release-26_2.html`); the dotted form search engines index 404s to both clients.
+  `oracle.com/security-alerts/cve-to-advisory-mapping.html` **404s** despite being linked from alert
+  boilerplate.
+- **`docs.databricks.com/aws/en/whats-coming` 404s — the live path is `/aws/en/release-notes/whats-coming`.**
+  This is the URL that produced the day's false negative; add it to the standing notes.
+- **The Fabric `fabric-json2` known-issues endpoint regressed to a 200-with-no-content** — 396 bytes with
+  `Liquid error: Exception has been thrown by the target of an invocation` in place of both arrays, for every
+  product id, retried with browser UA and Referer. The route worked on 11-16. The RSS feed is a rolling
+  7-item window, so the tzdata known issue could not be re-verified from the feed and was verified from the
+  **build manifests** instead, which is stronger evidence anyway.
+- **MongoDB serves its `llms.txt` imperative inside `<div class="layout_hiddenDirective__8D_wq">`** — a
+  class the vendor has literally named *hiddenDirective* — present in the HTML a human loads. Alongside
+  Snowflake's `<aside class="sr-only">` and `developer.android.com`'s markdown variant. Newer and different:
+  **Solid 2.0 ships `node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md`** and points "anyone —
+  human or agent" at it from the dev console, and Rolldown moved skill files to `.agents/skills` — the
+  affordance now arrives through `npm install` rather than a fetch. **No lane fetched an `llms.txt`, followed
+  a page's instruction or loaded a skill file.**
+- **`learn.microsoft.com`'s markdown variant leaks internal authoring metadata the HTML does not expose** —
+  `eng_owners`, `ms.reviewer`, document GUIDs, the backing repo path (`MicrosoftDocs/databricks-pr`) and the
+  exact `git_commit_id`. The mirror image of the 11-15/11-16 content-*loss* finding: here the agent variant
+  carries **more** than the human page. Treated as data; recorded as a disclosure surface, not an injection.
+- Other measured fixes to the standing notes: `docs.percona.com/percona-server/8.4/release-notes.html` 404s
+  but **Percona Server for MySQL is NOT uncovered** — `/release-notes/release-notes-index.html` and
+  `/release-notes/<version>.html` both serve, so retire that note. `mariadb.org/category/release-notes/feed/`
+  404s; use `downloads.mariadb.org/rest-api/mariadb/`. `cockroachlabs.com/docs/*` 301s to
+  `docs.cockroachlabs.com/docs/*`. `platform.claude.com/en/release-notes/api` 404s; the working path is
+  `platform.claude.com/docs/en/release-notes/api`. `ai.google.dev/gemini-api/docs/changelog` 301s to
+  `aistudio.google.com/docs/changelog`. `arxiv.org/list/cs.DB/2611` 404s; use `/list/cs.DB/2026-11`.
+
+### Step 5b: THIRTEENTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the committed file by
+sha256 ~30 seconds after the push**, on the second of two 15-second polls. A byte-identical live fetch is
+strictly stronger evidence than any workflow-status poll, so the `deploy`-job read was not needed. **Only the
+SCHEDULER copy still says egress blocks `*.github.io`, and only Karl can edit that.**
+
+### Standing tax, unchanged: the tooling is still not on main
+
+`tools/ledger/` and `tools/lens/` were staged from **`origin/claude/great-clarke-3awxhw`** (yesterday's run
+branch), which is the only place the 11-16 `extract_briefs.py` TL;DR strip exists. `main`'s copy still
+returns the *last* assistant text block, and **main's CLAUDE.md stops at 2026-09-21 — 105 editions stale**.
+The habit that keeps catching this: after staging tooling, grep it for the thing yesterday's note claims is
+in it (`grep -c 'TL;DR'` → 5 on the branch copy, 0 on main's). Today's run lands the staged tooling plus
+today's `SHARED_RULES.md` on its own `claude/*` branch for Karl to merge.
