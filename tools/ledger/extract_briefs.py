@@ -164,10 +164,32 @@ def split_contract(txt):
     Agents wrap these in backticks, bold them, or add a stray '---' line; be
     liberal in what is accepted and strict about what is written.
     """
-    if not re.search(r"^[`*\s]*BRIEF[`*]*\s*:", txt, re.M | re.I):
-        alt = _split_trailing_contract(txt)
-        if alt:
-            return alt
+    # Try the TRAILING-contract parser first, unconditionally. It returns None
+    # unless the text actually ends in a status block, so this is safe for the
+    # header shape and strictly more capable for everything else.
+    #
+    # Why unconditionally (2026-11-14): the dispatch used to try it only when no
+    # leading `BRIEF:` marker existed. The frontend lane emitted BOTH -- a
+    # leading "BRIEF: frontend — ..." title line AND a trailing
+    # STATUS/FLAG_REASON block (followed by a "RUN-OWNER NOTES" section) -- a
+    # hybrid neither shape anticipated. The `BRIEF:` marker sent it down the
+    # header path, which found STATUS inside the body but silently returned an
+    # EMPTY flag_reason for an `urgent` lane, so the dashboard would have
+    # rendered a flagged brief with no red "why this is flagged" banner. The
+    # brief body itself was unaffected, which is what made the loss invisible:
+    # only an explicit "every urgent section has a flag_reason" assertion
+    # caught it. This is the 2026-09-13 dual-parser contract drift recurring in
+    # a third shape, so the dispatch now prefers the parser that reads the END
+    # of the reply, where the contract is specified to live.
+    # Accept the trailing result ONLY if it actually yielded a brief. The
+    # trailing parser also matches a STATUS line at the TOP of a header-shape
+    # reply, where everything "before the status block" is empty -- trying it
+    # first unconditionally therefore returned a 0-character brief for the
+    # header shape. Gating on a non-empty brief keeps both shapes working and
+    # is what the 4-case self-test below pins.
+    alt = _split_trailing_contract(txt)
+    if alt and alt[2].strip():
+        return alt
 
     status = "ok"
     m = re.search(r"^[`*\s]*STATUS[`*]*\s*:?\s*[`*]*\s*(urgent|slow|ok)\b",
@@ -219,6 +241,7 @@ def main():
     force = "--force" in sys.argv
     os.makedirs(BRIEFS, exist_ok=True)
     done, skipped, missing = [], [], []
+    suspect = []
     for aid, tid in AGENTS.items():
         md_path = os.path.join(BRIEFS, tid + ".md")
         if os.path.exists(md_path) and not force:
@@ -236,6 +259,29 @@ def main():
         if len(body) < 400:
             missing.append(tid + "(short:%d)" % len(body))
             continue
+        # 2026-11-16: a brief extracted while its transcript was still being
+        # flushed can be a DIFFERENT, earlier text block -- narration-prefixed
+        # ("I have enough primary-sourced material. Writing the brief.") and
+        # missing its tail. Two of 19 landed that way this run, and the only
+        # visible symptom was a non-zero apply_harness_tokens delta on exactly
+        # those lanes. A real brief opens with its TL;DR, so anything before
+        # that is the agent talking to itself: say so loudly rather than
+        # writing it silently. The durable fix is to extract AFTER the agent's
+        # completion notification and re-run with --force once all lanes are
+        # in; this is the detector for when that did not happen.
+        # The OUTPUT FORMAT contract starts the brief at **TL;DR**, so anything
+        # before it is narration and is STRIPPED, not just reported -- edition
+        # 125 shipped an Oracle brief whose first rendered line was "I have what
+        # I need. Writing the brief." Report every strip so a silent fix never
+        # hides an incomplete transcript.
+        if "TL;DR" in body[:2000]:
+            i = body.find("**TL;DR")
+            if i < 0:
+                i = body.find("TL;DR")
+            pre = body[:i].strip()
+            if pre:
+                suspect.append("%s(stripped %dc narration)" % (tid, len(pre)))
+                body = body[i:].lstrip()
         open(md_path, "w", encoding="utf-8").write(body + "\n")
         with open(os.path.join(BRIEFS, tid + ".status"), "w", encoding="utf-8") as fh:
             fh.write("status: %s\n" % status)
@@ -243,6 +289,10 @@ def main():
                 fh.write("flag_reason: %s\n" % flag)
         open(os.path.join(BRIEFS, tid + ".tokens"), "w").write("%d\n" % usage)
         done.append("%s[%s,%dc,%dtok]" % (tid, status, len(body), usage))
+    if suspect:
+        print("NARRATION STRIPPED (also a signal the transcript may have been "
+              "incomplete; re-run --force after the completion notification): %s"
+              % ", ".join(suspect))
     print("extracted: %s" % (", ".join(done) or "-"))
     print("already had: %s" % (", ".join(skipped) or "-"))
     print("not ready: %s" % (", ".join(missing) or "-"))
