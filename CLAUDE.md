@@ -15680,3 +15680,281 @@ returns the *last* assistant text block, and **main's CLAUDE.md stops at 2026-09
 The habit that keeps catching this: after staging tooling, grep it for the thing yesterday's note claims is
 in it (`grep -c 'TL;DR'` → 5 on the branch copy, 0 on main's). Today's run lands the staged tooling plus
 today's `SHARED_RULES.md` on its own `claude/*` branch for Karl to merge.
+
+## Run findings 2026-11-18 (edition 127)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked prompt,
+both hooks clean.** Launched 08:39 EST, briefs in between ~08:47 and ~09:07, dashboard published and
+verified live by **sha256 (~30s after the push)**, lens **v92** after. **~4,586k research tokens — a
+new record** (prior high ~4,380k on 11-16). Hook logs audited on the event FIELD per the 11-05
+self-poisoning lesson: both `/tmp/claude-artifact-hook.log` and `/tmp/claude-bash-hook.log` are **all
+`PreToolUse` at `mode=auto`, zero `PermissionRequest`**.
+
+### THE LEAD: a watchdog that was a FALSE POSITIVE, and the module that already documented it had been dropped from the lineage
+
+The first handback check this run was `grep -q SubagentHandback tasks/<id>.output`. It reported **all
+19 agents handed back about seven minutes after launch**, and the extractor then returned
+`not ready: <topic>(no-brief)` for all 19 — because none had finished. The string lives in each
+agent's own **tool list**, inside its `user`/`attachment` records, so every transcript matches from
+its first second (measured: 3 matching lines in a fresh transcript, the first two `type=user` and
+`type=attachment`). The only reliable signal is a **`tool_use` content block whose `name` is
+`SubagentHandback`**.
+
+**Same family as the 09-11 unfollowed-symlink bug and the 09-08 126-byte-stub claim — but the
+opposite polarity.** Those were false *negatives*, where the signal was absent; this is a false
+*positive*, where the signal is present **before the event**. Both shapes produce a watchdog that
+cannot fail, which is worse than none.
+
+**The part worth more than the bug: `tools/handback_poll.py` already documented this exact lesson**
+("the literal string appears in every agent's system prompt as a tool DEFINITION, so a poller built
+on it always fires immediately — observed 2026-10-20"), and **the 11-17 branch had DROPPED the module
+from the tooling lineage**, so I re-derived it from scratch. A module that falls out of main-track
+takes its documented lessons with it. Restored from `3gc5gh` with the transcript-age signal folded in,
+rather than landing today's overlapping scratch script beside it.
+
+**And restoring it exposed a latent path bug of exactly the 11-10 class.** `BASE` was
+`dirname^3(__file__)`, which was right while the module sat in `<session>/scratchpad/tools/` and
+became **wrong the moment it was promoted to `<repo>/tools/`** — there it resolves to the repo's
+*parent*, finds no `tasks/`, and `status()` returns **zero rows: a clean bill of health for a
+directory it never read**. Fixed with `--base` > `$CLAUDE_SESSION_DIR` > a walk up from cwd, and a
+hard refusal when none match. Verified with both controls, and the negative one caught a second
+defect on the first try — my guard sat *below* the `agents.json` join, so it died with a `TypeError`
+instead of its own message. **A guard placed after the thing it guards is not a guard.** Positive
+control now returns 19/19 with real ages and sizes; negative control exits 1 with the explanation;
+import is still side-effect free (the 11-04 lesson).
+
+### The match rate fell to 13.1% and I ran BOTH diagnostics before touching anything — the matcher is exonerated twice over
+
+**943 items, 14 exact-ish changed + 110 ongoing = 124 matched (13.1%)**, against a recent band of
+22–25%. Two independent checks, and neither blames the matcher:
+1. **Length asymmetry ruled out.** Today's titles run a median **126** chars against the 45-day
+   candidate pool's **142** — ratio **0.887**, i.e. today's are *shorter*, the opposite direction from
+   the 09-09 pathology (~2.0).
+2. **Verdict-shaped headlines ruled out.** 1 of 819 `new` titles (**0.1%**), exactly where the 10-22
+   SHARED_RULES headline-shape fix left it, against 5.9% before that fix.
+
+**So I sampled for real novelty — and found the permanent fix for the 09-30 circularity trap.** That
+note records that sampling `new` rows against `keys.json` is self-fulfilling, because `ledger.py`'s
+`stamp()` writes the dictionary at the end of its own run, so today's items are already in it; it was
+recoverable that day only because a manual pre-snapshot happened to exist. **The pre-run dictionary is
+available from git for free, every run:** `git show HEAD~1:archive/ledger/keys.json`. Against that
+non-circular 32,092-entry pool, **0 of 14 random `new` rows have a plausible merge candidate** (best
+jaccard 0.42, all below 0.50). The low rate is **real novelty**, and the day explains it — Java4Shell
+disclosed the day before with no lane briefed on it, a Puppet KEV entry added yesterday, the entire
+meta-framework SSR layer disclosing on one day, the November CSPU's 655 patches, the TimescaleDB
+ordering break, and a new audited TPC-H result. **Thresholds and `TITLE_CAP` untouched. Use the git
+route for this check from now on rather than a hand snapshot.**
+
+### A defect in MY OWN lane prompt, caught by the agent — and it had been on the board for four editions
+
+My oltp handoff said **"PgBouncer's 8.8 SCRAM auth bypass"**. 8.8 is the **CVSS score**, not a
+version: PgBouncer is 1.x (bookworm 1.18.0, trixie 1.24.1, sid 1.26.1) and the id is
+**CVE-2026-107350**. The agent flagged it rather than hunting for a nonexistent PgBouncer 8.x, and
+also corrected the not-shipped provider list I handed it — **AlloyDB and Supabase belong on it too**.
+**Rule: when a carried row's prose puts a bare severity number next to a product name, the next
+prompt reads it as a version. Write "CVSS 8.8" explicitly in the handoff, never a bare number.** Four
+prior editions carried the ambiguous phrasing, so it was fixed **on the board**, not just in the
+prompt — which is the only fix that stops it recurring.
+
+### The variantShredding read floor was never a two-way conflict — it is FIVE-way, and two lanes converged on the part no vendor page states
+
+Yesterday's board carried "the notice says 16.4, the feature pages say 17.3". Today's Open Formats
+lane settled it: **the two numbers are not about the same thing.** 17.3 is the **writer** floor (the
+runtime that auto-adds the feature) *and* what every cloud feature page states for read and write;
+16.4 is what the deadline notice tells you to upgrade **readers** to, which the feature page
+contradicts outright; 18.1 is recommended for variant statistics; and **15.4 is what the
+feature-compatibility table lists for plain `Variant` while omitting shredding entirely** — so the
+page an operator would actually consult gives no floor at all.
+
+**The sharpest new fact is absent from every Databricks surface: OSS `delta-spark` 3.3.x contains ZERO
+occurrences of `variantShredding`**, so a Spark 3.5 reader is locked out of the table completely.
+And **`formats` and `databricks` reached the same protocol reading independently, both from
+`PROTOCOL.md` rather than any vendor page**: `delta.enableVariantShredding=false` leaves the feature
+*supported, not enabled*, still in `readerFeatures`, so **the documented opt-out does not restore
+old-client reads** — only `ALTER TABLE … DROP FEATURE`, which rewrites data. Two lanes converging
+with no sight of each other's work is the strongest evidence form this routine produces; author it
+once and place it twice.
+
+**Two reusable rules fell out of it.** (a) **Recency is the wrong tie-breaker** — `whats-coming` is
+stamped `ms.date 2026-11-17` and carries the **lower** floor, while the feature page is 2026-09-11
+and carries 17.3 on four surfaces. (b) **Record the enumeration, not the count**: the lanes
+"disagreed" three-vs-four only because they enumerated different sets (one checked `/sap/`, which
+404s; the other added `docs.azure.cn` and an alias). Both verified 200, so neither was wrong.
+The 11-17 "a negative from a 404 is not a negative" rule also held — this lane re-measured
+`/aws/en/whats-coming` as 12,986 bytes of 404 page and used the live path.
+
+### Patching is now an ORDERING problem, not a currency problem
+
+The strongest new operational finding, from oltp. The 2026-11-12 PostgreSQL minors
+(18.7/17.12/16.16/15.20) **break every TimescaleDB background job** —
+`cannot drop portal "" while it is being set up` — so compression policies, continuous-aggregate
+refresh, retention and reorder all fail while the engine upgrade itself succeeds. Timescale shipped
+six patch releases in 48 hours and says to upgrade **TimescaleDB first**; **2.32.0 has no forward
+fix** and points at a 2.32.1 that does not exist, so a 2.32.0 user must step *back* to 2.31.1.
+Pairs with Vitess 24.0.4 refusing to start where CRLs were previously ignored, CockroachDB v26.4
+wiping persisted SQL statistics on upgrade, and PG19 refusing `pg_upgrade` on `btree_gist`
+inet/cidr indexes. **"Patch to latest" is actively unsafe this window; the discipline is a
+dependency-ordered plan — extensions and proxies before engines.**
+
+### A one-way door harder than variantShredding, and the generalisable form
+
+**Efficient Column Updates (Beta, 2026-11-13) cannot be dropped at all** — `DROP FEATURE` is
+unsupported, it pins the table to **DBR 19+ forever**, and after a rollback "the table feature
+remains enabled in the table protocol". **Generalisable: a feature in `readerFeatures` is a hard
+compatibility floor, not a performance hint — and reversibility is a per-feature question that no
+doc surfaces where you choose.**
+
+### Flag calibration: 17 urgent, 2 ok — and the honest comparison, which my own notification got wrong
+
+Generated series over the last eight editions: `14, 12, 10, 12, 13, 13, 14, 17`, 14-day mean **12.9**,
+eight-run floor 10. **17 TIES the series high set 2026-10-24; it is not a new high.** The
+notification I sent said "a new series high (prior 14)" — wrong, because 14 is only the *recent
+window's* high. The lens prose states the tie correctly. **When a comparative is interesting enough
+to put in a notification, generate it from `longitudinal.stats` like the lens does, rather than
+typing it from the window you happen to be looking at** (the 11-11 rule, which I applied to the
+edition and not to the push).
+
+All 17 audited one at a time against the literal bar; ~14 distinct stories, with Java4Shell alone
+reaching four lanes. **`dbhw` and `redshift` held `ok` while carrying real CVEs and both wrote out
+why** — dbhw on AMD's November EPYC drop being local-only, high-complexity, mid-severity and not in
+KEV; redshift likewise, and it handed over a do-not-fold instruction the board needed. **`fabric` and
+`nl2sql` are the weakest of the 17 and are recorded as such.**
+
+### Severity is now unreadable from one source on a CRITICAL, which is new
+
+The board's standing category finally hit a Critical. **Java4Shell (CVE-2026-114938)** — a pre-auth
+RCE in OpenJDK's AVX-512 VBMI Base64 intrinsic, where `Base64.getDecoder()` on untrusted input is
+enough and the PoC is a 64-character `"AAAA…="` string — carries **Google: Critical**, **finders:
+CVSS 4.0 9.2**, **OpenJDK: CVSS 3.1 8.1**, **NVD: only Oracle's *secondary* 8.1, no primary, no 4.0
+vector, status `Received`**, and **`api.osv.dev` returns "Vulnerability not found"** a day after a
+public PoC. A 9.0 gate sees nothing and `osv-scanner` sees nothing. Unusual shape worth noting:
+**17.0.0–17.0.5, 11 and 8 are NOT affected** — being behind protects you.
+
+**The mitigation split two lanes and the narrower reading won.** Google recommends `-XX:UseAVX=2`,
+which kills AVX-512 wholesale; appdev measured that **on a mixed-arch fleet it makes ARM JVMs fail to
+start**, and prefers **`-XX:-UseBASE64Intrinsics`**, which disables only the intrinsic. Both lanes
+agree the scope test is all four of `avx512f avx512bw avx512vbmi bmi2` in `/proc/cpuinfo`.
+Also measured: AMD-SB-3066 publishes **all 21 vectors as CVSS 4.0 with no 3.1 twin**, and
+CVE-2024-36313's vector is **malformed** (`CVSS:4.0:AV:N/AC:H/...`, colon where the spec wants a
+slash), which a strict parser rejects outright — so a 3.1-only gate scored an 8.9 at zero this month.
+
+### The number of the month, audited, and it belongs above the line
+
+HPE's TPC-H result on the just-shipped EPYC 9006 "Venice" (DL525 Gen13, *In Review*) prices a
+**128 GB DDR5-8000 RDIMM at $102,547** against **$13,778** for the same capacity and rank
+organisation in HPE's own November-2025 sheet — **7.44× in twelve months**, both audited by
+InfoSizing. Speed grade differs (8000 vs 6400 MT/s) so it is not pure like-for-like, and the lane
+said so. Memory went **21.5% → 65.9% of list BOM**, the software subtotal is **identical** in both
+results, and **86% of the hardware cost growth is DRAM**. **Price/performance parity is a discounting
+artefact**: $247.03 → $245.66 per kQphH looks flat, but at **list** it is $308.05 → $781.42, a
+**2.54× regression**, with the discount widening from 55% to 68.7%. Venice's audited config chose
+RDIMM-8000 rather than MRDIMM-12800 — the ~1,024 GB/s path, not the headline ~1,628 GB/s.
+**TPC listings disagree with their own executive summaries on dates; quote the listing.**
+
+### Ledger, card and synthesis
+
+**943 items, 124 matched (13.1%), 0 double-counted.** Dictionary → **61,807 entries**; 132 ledger
+files. Card: **new=16 (+564 more), changed=4, ongoing=15, aged_out=827**. `derive_lists.py write`
+resolved all 34 fragments to exactly one row each after one shell-quoting fix (`$(… shlex.quote)` was
+word-split into 300+ single-word probes — resolve in-process by importing the module instead).
+`curate.py`'s fatal "pin not found" did not fire. **PgBouncer appeared twice on the card** — my `new`
+pick plus a carried `ongoing` row, the 09-18 shape where two bullets in one brief yield both a new key
+and a match; dropped the pick and kept the carried row with its day count. Synthesis: 4 sections × 4
+bullets, **19/19 lanes cited**, all 8 inline URLs verified present in a brief before publishing.
+
+**`apply_harness_tokens.py` was NOT a no-op** — `appdev` came back 253,061 against a harness-reported
+267,958. Per the 11-16 rule a non-zero delta is the cheap automatic signal that a brief may have been
+read off an incomplete transcript, and it was: one lane (`aidaily`) had been extracted from a
+still-running transcript, with the extractor itself warning "NARRATION STRIPPED … may have been
+incomplete". Deleted that file and re-extracted everything with `--force` **only after all 19
+completion notifications had arrived**. Keep running the overlay precisely because it detects this.
+
+### Lens findings (edition 127)
+
+**Eight corrections applied to the ledger BEFORE any section was generated** (the 09-14 rule), each
+through a helper that **asserts the substring matched** — a `.replace()` that does not match is a
+silent no-op. Beyond the PgBouncer fix: the **vanna** row split (CVE-2026-4229 is CWE-89 SQL
+injection; the prompt-injection RCE is the separate CVE-2024-5565, whose `exec()` sink was
+**relocated** to `legacy/` rather than removed, still shipped in 2.0.2 while OSV bounds it at 0.5.5
+so scanners clear it); **Percona 8.3 patched today** by PSMDB 8.3.17-5, closing yesterday's "8.3 is
+not patched" reading within one day, leaving only 8.1/8.2 unfixable; **Brotli/DuckDB** sharpened (the
+port landed on `main` 2026-10-31, **ten days after 2.0.0 shipped**, and NVD is now Analyzed with
+**primary CVSS 3.1 9.8** against the board's 4.0-only reading); **GPUStack** 144d → **139d** with the
+upgrade target corrected to **2.3.1**, not the 2.2.0 KEV names; and **Apple added as an affected
+Brotli vendor**, which no lane had been tracking there.
+
+**A correction to this file, not the board: `corrections_064.py` is NOT a privacy case.** The 11-15
+note lumped it with `build_lens_030.py`. Measured today: **0 positioning markers, 0 artifact URLs**,
+five bare vendor nouns inside dated ledger facts — exactly the 10-11 ruling that it carries row prose
+rather than positioning. The two files are different; only `build_lens_030.py` is the leak.
+
+**5 new patch rows, 2 new event rows, 5 past-dated events retired into `retired_events`.**
+`reuse_key`'s advisory printed all four existing 2026-12-02 parents for confirmation and none was a
+duplicate. `assert_alias_safe` passed for `events + retired` (**forward only**, the 11-12 correction)
+and for `patch`. Final sections: events 57, patch 273, claims 171, ownclaims 44, promises 98, gaps 22,
+benchmarks 25, retired_events 128.
+
+**`assert_not_parent_identity` refused the build with "4 unqualified parent-identity assertions
+survive" — and it found an identity site neither rewriter covers.**
+`povContent.content[chair][vid]["c"]` still read `edition 126` on `v-read` and `vs edition 125` on
+`v-wn`, across all four chairs: outside `rewrite_identity` *and* outside `rewrite_pov_meta`. Driven
+from `ED`/`TODAY`/`PED` in the chair pass; all guards then passed. **`rewrite_pov_meta` also correctly
+refused the full 15-entry nav dict** — `povContent.meta` knows only the 8 chair-flipped viewids.
+
+**Every guard green on the final assembly:** `assert_structure` 15 sections, `assert_table_shape` 10
+tables, all four identity guards, and **guard 5 at 747 cited units with zero uncited** — mechanism
+unchanged since 09-15, `cite()` called inline by each row generator, with board-about-itself claims
+taking the dated archive fallback. `normalize_closing_tags` ran as the **last** mutation and the file
+was re-read **from disk** to assert `(1,1)`, the only form the 11-12 note accepts.
+
+**Size: 2,542,770 bytes, 15,105 SMALLER than the parent, accounted to within 413 bytes** —
+`v-patch` and the four chair bodies came out tighter than edition 126's against ledger growth.
+**v-events 46 rows (23 inside 14 days, 3 landing today); v-patch 26 of 273 with no-fix = 45.**
+Published as **Version 92**; the mandatory plain `action:"read"` before publishing returned
+version `1794923891-c01c` with `<title>… 2026-11-17`, confirming the live artifact was exactly the
+edition-126 parent this build inherited from — nobody published underneath the run.
+
+**Scope, on the edition's face:** 127 refreshes Today's Read and Since-yesterday on all four chairs,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all identity sites. Claim Watch,
+Mirror, Question Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build
+Radar, Skills Radar and Vendor Dossiers **carry forward unrevised and the edition says so**. The
+quarterly Skills/Build re-rank is due **2027-01-01**.
+
+### Two tooling notes worth not re-deriving
+
+- **`python3 -I` breaks the lens tooling's intra-package imports.** `python3 -I
+  tools/lens/lens_extra.py --selftest` fails with `ModuleNotFoundError: No module named 'lens_guard'`
+  — isolated mode drops the script's own directory from `sys.path`. The `-I` rule in the environment
+  preamble is for **downloaded, untrusted** data; this repo's own version-controlled tooling needs
+  plain `python3`. All selftests pass that way: lens_guard 5/5, lens_extra 16/16, lens_links OK,
+  events_table PASS, patch_radar 23/23 + 10/10 + 14/14, countdowns 8/8, shared_rules 16/16.
+- **The edition number is not the ledger-file count.** `archive/ledger/*.json` holds **131** files
+  dated ≤ 2026-11-17 while the parent is edition **126** — the spec's formula is off by 5 (backfills
+  and rerun-skipped lens days). The authoritative source is the parent artifact's embedded `edition`
+  field + 1.
+
+### Step 5b: FOURTEENTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the committed
+file by sha256 ~30s after the push**. A byte-identical live fetch is strictly stronger than any
+workflow-status poll. **Only the SCHEDULER copy still says egress blocks `*.github.io`, and only Karl
+can edit that.**
+
+### Source access 2026-11-18
+
+- **`docs.cloud.google.com` serves a clean markdown variant at `<path>.md.txt`** for every page — far
+  cheaper than scraping 300–700 KB of HTML, and Google's own docs cross-link in that form. Verified no
+  content loss **by content marker, not byte ratio** (the 11-16 rule): 219/220 "generally available"
+  and 154/154 "Preview" labels present. Worth putting in the topic specs.
+- **CORRECTION to a standing note the board carried for weeks: Oracle's CVE-to-advisory map WORKS.**
+  `oracle.com/security-alerts/public-vuln-to-advisory-mapping.html` serves; it is the hyphenated
+  `cve-to-advisory-mapping.html` form that 404s.
+- `blogs.oracle.com` 403s HTML *and* RSS for a **29th** consecutive week, so the Optimizer /
+  In-Memory / Smart Scan / Exadata channel remains a structural gap and the Oracle brief says so on
+  its face. **`googleapis/python-bigquery` `releases.atom` is frozen at 3.40.1 (2026-02-12)** while
+  PyPI and the monorepo changelog read 3.47.0 — nine months and seven versions stale.
+- **Affordance sighting escalated and is now GA: `solid-js` 2.0.1 ships THREE skill files**
+  (`/skills/reactivity-diagnostics/SKILL.md`, `/skills/solid-2.0/SKILL.md` and a third), up from one,
+  and points "anyone — human or agent" at them from the dev console. The affordance now arrives
+  through `npm install` rather than a fetch. **No lane fetched an `llms.txt`, followed a page's
+  instruction, or loaded a skill file.**
