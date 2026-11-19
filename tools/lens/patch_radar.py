@@ -450,3 +450,30 @@ def _selftest_cvss() -> str:
         else:
             print("  FAIL %-38r got=%s want=%s" % (text, got, want))
     return "%d/%d" % (ok, len(cases))
+
+
+# ---------------------------------------------------------------------------
+# 2026-11-19: `python3 patch_radar.py --selftest` previously printed NOTHING
+# and exited 0, because this module had no __main__ block -- the three
+# _selftest_* functions were only ever called by importing them. A selftest
+# invocation that cannot fail is the same class as the 09-11 unfollowed-symlink
+# watchdog and the 11-18 handback false positive: it reports health for a check
+# it never ran. The three functions themselves were always correct (23/23,
+# 10/10, 14/14); only the CLI was a no-op.
+if __name__ == "__main__":
+    import sys as _sys
+    if "--selftest" not in _sys.argv:
+        raise SystemExit("usage: patch_radar.py --selftest")
+    _cases = (("no_fix", _selftest_no_fix),
+              ("touched_critical", _selftest_touched_critical),
+              ("cvss", _selftest_cvss))
+    _bad = []
+    for _name, _fn in _cases:
+        _res = _fn()
+        _got, _want = (int(x) for x in _res.split("/"))
+        print("patch_radar %-18s %s" % (_name, _res))
+        if _got != _want:
+            _bad.append(_name)
+    if _bad:
+        raise SystemExit("patch_radar selftest FAILED: " + ", ".join(_bad))
+    print("patch_radar self-test OK")
