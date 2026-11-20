@@ -50,7 +50,17 @@ RETURNING_DAYS = 7
 
 LINK_RE = re.compile(r"\[([^\]]*)\]\((https?://[^\s)]+)\)")
 BOLD_RE = re.compile(r"\*\*([^*]+)\*\*")
-SKIP_HEADINGS = {"filtered out"}
+# Headings whose bullets are NOT news items and must never enter the dictionary.
+# "Filtered out" was always excluded. "Worth your weekend" and "Signals worth
+# watching" were added 2026-11-20 after measuring: of 941 extracted items, 131
+# came from those two headings, and excluding them removed 129 rows from `new`
+# while costing only 2 matches -- i.e. they essentially never match, because by
+# the OUTPUT FORMAT's own definition they are advice ("things to test") and trend
+# commentary, reworded freely every run. They were inflating `new`, poisoning the
+# match rate (14.6% -> 16.7% once removed) and adding ~130 junk entries a day to
+# keys.json with meaningless day counts. curate.py already excluded them from its
+# counts; this makes the dictionary agree with the card (the single-source rule).
+SKIP_HEADINGS = {"filtered out", "worth your weekend", "signals worth watching"}
 
 STOP = set("""a an the and or but of for to in on at by with from as is are was were be been
 being it its this that these those has have had will would can could should may might must
