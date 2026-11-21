@@ -27,22 +27,22 @@ COMMENTARY = {"worth your weekend", "signals worth watching", "filtered out", "h
 # Titles hand-picked for the card, in display order. Matched by substring
 # against the raw rows so wording stays exactly as the brief published it.
 PICKS = [
-    "ACT NOW — CVE-2026-102895, GPUStack",
-    "Vite GHSA-p4f5-76q4-ffq7",
-    "SvelteKit CVE-2026-128118",
-    "PgBouncer's SCRAM authentication bypass is fixed upstream and unfixed",
-    "52 CVEs and over 140 bugs across 18.7",
-    "Percona Server for MySQL shipped 5 days ago and is three upstream releases behind",
-    "DuckDB 1.4 LTS support ends TODAY, 2026-11-17",
-    "Doris 3.1 is now under",
-    "Nuxt says it in its own words",
-    "There is NO documented redirect for DeepSeek V4.1 Flash",
-    "BCR-2391 is due TOMORROW",
-    "Power BI silently truncates Databricks rows",
-    "if you sell into or out of Japan and have not completed the Payment Services Act",
-    "OpenAI shuts down /v1/prompts and reusable prompt objects",
-    "Istio's November bulletin is eight GHSAs and zero CVE ids",
-    "The hardest number anyone published this window is in a TPC filing",
+    "Apache Roller CVE-2026-129448 is in KEV",
+    "CISA KEV remediation due for CVE-2026-125350",
+    "The LiteLLM KEV fix is 1.83.10",
+    "November CSPU ships three CVSS 9.9",
+    "Oracle Secure Backup 19.1.0.0.0",
+    "Argo CD GHSA-rq7v",
+    "Spring Security's ELRequestMatcher",
+    "The Next.js floor is 16.4.5",
+    "Mongoose 8.24.10 pins",
+    "On Python 3.10 there is no reachable fix",
+    "Google's interim AVX-512 VBMI safeguard for Java4Shell runs out",
+    "Arrow Java 20.0.0 stops the Flight SQL JDBC driver dropping TLS",
+    "BCR-2391's 90-day Azure allowlist obligation expired",
+    "Preview Domains REST APIs are removed",
+    "Amazon EKS 1.31 reaches end of extended support",
+    "Google Play's Japan payment authorization is due 2026-12-01",
 ]
 
 # Hand-verified same-story rows to keep out of `ongoing`: each restates a story
@@ -57,27 +57,27 @@ PICKS = [
 # 2026-10-23, when 3 of 7 `changed` rows were of this shape. Substring match,
 # same convention as EXCLUDE_ONGOING; resolve fragments with derive_lists.py.
 EXCLUDE_CHANGED = [
-    "YugabyteDB v2024.2 LTS end of maintenance",
-    "A macOS TLS trust bypass that only fires on IPv6",
-    "MongoDB 9.0 is current (GA September 2026",
-    "No fix on the Node driver 6.x line for CVE-2026-126837",
-    "Gemini 3.6 Flash retires but calls are automatically redirected",
-    "ClickHouse 26.7 and older are EOL with no fix for the 9.5",
-    "removes four deprecated confighttp fields",
-    "X-GitHub-Stateless-S2S-Token stops being honoured.",
-    "Three MCP Python SDK CVEs published 2026-10-27 were fixed",
-    "Kubernetes 1.35 enters maintenance mode, after which backports",
+    "Azure Database for PostgreSQL flexible server is at 18.6 / 17.11",
+    "Removed, no date — the BigQuery Metadata curation console page is gone",
+    "CVE-2026-115563 (CVSS 3.1 HIGH, published 2026-11-19) lets a malicious MCP server",
+    "LiteLLM's salt key doubles as a session-token signing key",
+    "iOS/iPadOS 27.2.1 and 26.7.3 carry the Brotli KEV fix",
+    "2026-12-01 (10 days) — OpenAI deprecates gpt-image-1-mini",
+    "New notice dated 2026-11-18: GPT-5.2, GPT-5.4 and GPT-5.4 mini",
+    "GPUStack CVE-2026-102895: KEV remediation date was 2026-11-12",
 ]
 
 EXCLUDE_ONGOING = [
-    "TODAY 2026-11-17 — DuckDB 1.4 LTS end of support.",
-    "Brotli decoder out-of-bounds write) is unfixed in every released DuckDB",
-    "CISA KEV due date for Apple WebKit CVE-2024-27834",
-    "CVE-2026-118383 is the one to act on",
-    "Settle the 16.4-vs-17.3 question empirically",
-    "I am NOT flagging CVE-2026-114456, and the reasoning matters.",
-    "No new AI-infra CVE or advisory landed in the 24-48h window",
-    "third consecutive release with no user-facing breaking changes",
+    "CVE-2026-90436 (Apache Axis 1.x) — CISA KEV remediation due TODAY",
+    "2026-11-24 (3 days): CISA KEV remediation due for Chromium CVE-2026-125350",
+    "2026-12-02 (11 days) — CISA KEV remediation due for LiteLLM",
+    "2026-12-02 (11 days) — Amazon EKS 1.34 end of standard support.",
+    "2026-12-02 (11 days) — CREATE OR REPLACE VIEW updates views in place",
+    "NVD carries CVE-2026-125350 at CVSS 3.1 8.8 as a SECONDARY metric",
+    "The Data Intelligence Index publishes a \"v1.0 Muscle\"",
+    "Oracle AI Database 26ai Standard Edition 2 became available",
+    "osv-scanner, npm audit and Dependabot all report clean on the two worst Node driver bugs",
+    "OSV's record for the 10.0 server CVE exists and has no package identity at all",
 ]
 
 
@@ -89,20 +89,16 @@ EXCLUDE_ONGOING = [
 # vendor deadline and its topic is flagged urgent. A hand-verified pin beats
 # loosening the ranking, same reasoning as PICKS and the lens fold_map.
 PIN_ONGOING = [
-    "No reachable fix for CVE-2026-118383 on MongoDB 8.1/8.2 or on Percona Server for MongoDB 8.3",
-    "PostgreSQL 14: EOL 2026-11-12, 5 days ago",
-    "PHP2Shell): CISA KEV, due 2026-10-29",
-    "variantShredding auto-added to new VARIANT tables created on DBR 17.3+",
-    "CISA KEV remediation for Apple WebKit CVE-2024-27834 is due 2026-11-18",
-    "GitHub deprecates the X-GitHub-Stateless-S2S-Token header",
-    "Genie One MCP Beta endpoint /api/2.0/mcp/genie reaches end of life",
-    "ingress-nginx mirror-target self-DoS",
-    "React RSC RCE CVE-2026-126187: real, Critical",
-    "Redshift JDBC driver RCE via unsafe reflection",
-    "NeMo Agent Toolkit, CVSS 3.1 10.0 Critical",
-    "with broker access control on, the single-stage engine authorise",
-    "Rotate, do not just patch, if you have ever run a pre-fix driver",
-    "LiteLLM privilege escalation to Proxy Admin via cross-domain salt-key reuse",
+    "Apache Axis 1.x CVE-2026-90436 hits its KEV date today",
+    "GPUStack CVE-2026-102895 is in CISA KEV with forensicTriage",
+    "CREATE OR REPLACE VIEW goes in-place on 2026-12-02",
+    "vanna 2.0.2 still contains",
+    "CVE-2026-118383 is a pre-authentication use-after-free",
+    "ORDS CVE-2026-114849 is a CVSS 9.8 unauthenticated takeover",
+    "gemini-2.5-pro and gemini-2.5-flash requests start routing automatically",
+    "The React RSC RCE (CVE-2026-126187, CVSS 4.0 9.5) is physically present",
+    "Claude Opus 4.8 fast mode is removed",
+    "CocoaPods Trunk stops accepting new Podspecs permanently on 2026-12-02",
 ]
 
 
