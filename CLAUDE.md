@@ -16504,3 +16504,205 @@ JVM CVE. Against that, **Skills over MCP** landed with SHA-256 manifests, approv
 set, a MUST not to prefetch, and **"treat skill content as untrusted input" as a MUST** — while npm 12's
 new install-script block explicitly does **not** cover `.claude` or `.vscode` hooks. **No lane fetched
 an `llms.txt`, loaded a skill file, or ran a command any page suggested.**
+
+## Run findings 2026-11-21 (edition 130)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked prompt,
+both hooks clean.** Launched ~09:08 EST, briefs in between ~09:16 and ~09:33, dashboard published and
+**verified live by sha256 ~45s after the push**, lens **v95** after. **~4,785k research tokens — the
+second-highest total, NOT a record** (yesterday was ~4,932k); worth stating because three consecutive
+runs set records and the habit of writing "a new record" needs the series checked, not assumed.
+Hook logs audited on the event FIELD per the 11-05 lesson: `/tmp/claude-artifact-hook.log` holds
+**4 records** (list, `read` with `path`, the plain `read` a republish requires, publish) and
+`/tmp/claude-bash-hook.log` **987** (519 allow / 468 pass) — **all `PreToolUse` at `mode=auto`, zero
+`PermissionRequest`**. `apply_harness_tokens.py` reported **+0** across all 19, the expected no-op.
+
+### THE LEAD: my retraction was wrong, and the mechanism is the finding
+
+The edition-129 pass retracted the Google Play Japan payment-authorization row as unsourceable. That
+negative was **reproducible and still wrong**. It grepped the live Policy Deadlines table (13 rows, no
+Japan row, no `2026-12-*` date anywhere) and the policy page; the date is published on Play Console
+Help's **"Policy announcement: October 29, 2026"** page, written in **ordinal form — "December 1st,
+2026"** — which no ISO-shaped date pattern can match. The penalty is a hold on earnings in **every**
+region. Row un-retracted.
+
+**The standing rule this produces, and it is more useful than the row:** a sourced negative certifies
+*the surface you read*, never the fact. When a negative rests on a date-pattern grep, it is not a
+negative until you have also (a) grepped the ordinal and month-name forms (`December 1st`, `Dec 1`,
+`1 December`), and (b) read the **announcements** surface, not only the structured table — vendors put
+deadlines in prose on a blog and backfill the table later, or never. Edition 129's own text said "a
+sourced negative, not a 404 artefact", which was true and insufficient.
+
+**This is the second time in two runs that a reproducible measurement was wrong about the world** —
+11-20's Dataproc/Dataflow reversal was the `.md.txt` variant trailing its HTML twin by seven
+bulletins. Same shape: the instrument was fine, the surface was not. Both belong under one heading
+now: **measure the surface, then ask what the surface cannot show you.**
+
+### Match rate 27.1%, and the explanation is mechanical rather than a change in the world
+
+**220 of 812 matched (59 exact + 161 fuzzy) against yesterday's 16.7%** — the biggest single-day jump
+the board has recorded, and no threshold was touched. The cause is yesterday's `SKIP_HEADINGS` fix
+read forward: today is the first run matching against a dictionary whose **newest layer was written by
+the same fixed extractor**, so the asymmetry against ~130 junk advice entries a day disappeared. The
+09-09 note predicted exactly this ("expect tomorrow's match rate to be better without any change")
+and this is its third confirmation. Dictionary 63,190 → 63,782; **0 double-counted**, 220 bumped,
+592 created. Items 810 → 812, i.e. flat, which is the honest read now that the instrument is stable.
+Card: new=16 (+517 more), changed=**0**, ongoing=15, **31 of 31 rows sourced**.
+
+**`changed=0` is a real answer, not a gap.** All eight raw `changed` rows were sev-classifier artifacts
+on reworded headlines (urgent→normal, high→normal, urgent→high) where the underlying fact had not
+moved — the 10-23 shape. The one genuine escalation (GPUStack high→urgent) is carried better as a
+pinned `ongoing` row with the full remediation text, and putting it in both lists would be the 09-18
+one-story-twice defect. Excluding all eight and saying so is more honest than manufacturing movement.
+
+**`curate.py` gotcha worth not re-deriving: `PICKS` only matches `raw['new']`.** Four of my first-cut
+picks were carried rows living in `ongoing` (Axis, GPUStack, the Databricks view change, vanna), and
+`derive_lists.py write` reported them as `MISS in PICKS` rather than silently dropping them — which is
+what that helper is for. **A carried row goes in `PIN_ONGOING`, never in `PICKS`.** Watch the
+interaction: a pin that duplicates a pick at jaccard ≥0.45 is dropped by `dup_of_picked` and then
+fails the fatal "pin not found" check, so pins and picks must name different stories.
+
+### The no-reachable-fix register gained FOUR new mechanisms in one run — the most ever at once
+
+None is an EOL branch or a paywall, and the register now carries **six distinct shapes**:
+- **Your interpreter cannot install it.** Snowflake's `write_pandas()` SQLi (CVE-2026-123859) is fixed
+  in connector 4.8.1, which raised `requires_python` to ≥3.11, so `pip` on 3.10 resolves to the
+  vulnerable 4.8.0 and stops. Sharpened today: **5.0.0 and 5.1.0 are both GA and both unfixed** — the
+  5.x line took half the fix in 5.0.0rc4 and the rest only in 5.2.0 — so there are two stranded
+  populations for one CVE, not one.
+- **The fix ships only inside a container image.** MySQL 8.4.12 is, in Oracle's own words, "a Critical
+  Security Patch Update for the MySQL Server docker image, only". Percona declines to rebase on it;
+  AWS shipped Aurora MySQL 8.4 GA labelled "8.4.12" on 11-20. **Three vendors, three meanings for one
+  version string, and no SBOM gate can express any of it.**
+- **Your ODM's tilde pin forbids it.** `mongoose@8.24.10` pins `mongodb: "~6.20.0"` and so cannot
+  resolve the 6.22.0 that fixes a cross-user data-exposure bug. The fix is published, free and
+  same-ecosystem; no scanner models a parent package's range as the binding constraint.
+- **The fix is coupled to a JDK major.** Arrow Java 20.0.0 is the only release carrying the Flight SQL
+  JDBC TLS fix and it moves `maven.compiler.release` 11 → 17, with no 19.x backport.
+Against the older shapes (ASF will never ship an Axis 1.x fix; Spring's maintenance-branch fixes are
+Enterprise-only), the generalisation is worth stating plainly: **"upgrade to the patched version"
+assumes a patched version you can resolve, and that assumption now fails in at least six ways.**
+
+A seventh, sharper variant of the paywalled shape also landed: **Spring Security CVE-2026-59273's fix
+version numbers are absent from Maven Central entirely** — newest public 5.8 build is 2024-11-18 and
+6.4 is 2025-11-17, thirteen and seven releases behind the advisory — so a currency dashboard reports a
+vulnerable build as up to date. Every prior instance at least let you *see* you were behind.
+
+### Lens build: two lessons about my own guards, both caught by instruments rather than by eye
+
+- **The per-section size delta is a correctness check, not just an accounting courtesy.** The first
+  assembly showed `v-read` and `v-wn` at **delta exactly +0**, which meant their section *shells* still
+  carried the edition-129 Oracle body — and **first paint renders the shell before `setPov()` runs**.
+  That is the 09-09 defect reappearing, and nothing else caught it: all five guards were green, because
+  the stale body contains no unqualified parent-identity assertion. **Promote to a hard rule: run the
+  per-section delta table every build, and treat a +0 on any section you intended to refresh as a
+  failed build.** The ten genuinely carried sections are the ones that should read +0, and they did.
+- **`rewrite_pov_meta` raised 0-of-32 and was right to.** I had hand-rewritten `pov["meta"]` in an
+  earlier block, so the function that owns that site found nothing to change — and by its 11-10 design
+  it raises rather than passing. **Let the function own its site; doing the work by hand first converts
+  a real guard into a silent no-op.** This is the general form of the 11-10 note: a guard that can
+  match zero things and still pass is not a guard, so never pre-empt one.
+
+**Guard 4 fired with 14 hits, all legitimate backward references**, and the 11-20 recommendation is
+confirmed as the right fix: the **hyphenated adjectival form — "the edition-129 pass" — sits outside
+the `edition\s+129` pattern entirely and reads better** than a bolted-on connective. Applied in the
+generators this time rather than patched per build, so it does not recur.
+
+**Every other guard green on the first assembly:** `assert_structure` 15 sections, `assert_table_shape`
+10 tables, `assert_identity_consistent`, `assert_not_parent_identity`, `assert_ledger_identity`, and
+**guard 5 at 687 cited units with zero uncited** — mechanism unchanged since 09-15, `cite()` called
+inline by each row generator, board-about-itself claims taking the dated archive fallback.
+`normalize_closing_tags` ran last and the file was re-read **from disk** to assert `(1,1)`.
+
+**Size: 2,599,658 bytes, +24,313 against the parent, accounted to within 143 bytes** (`__ledger__`
++12,328, `__pov__` +8,547, `v-events` +4,780, `v-wn` +675, `v-longitudinal` +522, `v-read` +322
+against `v-patch` −2,641; the 143-byte residue is the identity rewrites). **PRIVACY: none of the lens
+build scripts was committed** — `step1`/`step4`/`step5` carry lens prose, and per the 10-11 and 11-10
+breaches lens CONTENT never enters the public repo.
+
+**`reuse_key`'s advisory paid for itself again: 2 of 6 drafted patch rows belonged on existing keys.**
+The Argo CD advisory (a fifth one on the same stranded 2.x population) and Spring Security
+CVE-2026-59273 were enriched onto their owners rather than given fresh slugs; only Roller, Arrow Java,
+MySQL-docker-only and vanna were genuinely new. Both drafted events were new, and the advisory printed
+zero same-date parents for each, which is the confirmation rather than the absence of a check.
+**Two hand-verified folds**: two Apache Axis rows and two GPUStack rows, each a same-CVE same-date
+duplicate, losers preserved in `aliases[]`, `assert_alias_safe` run new-first/parent-second per 11-20.
+
+### Flag calibration: 15 urgent, 14 distinct stories, generated from the series rather than typed
+
+`longitudinal.stats`: last eight editions **12, 13, 13, 14, 17, 13, 14, 15**, 14-day mean **13.2**,
+eight-run floor **12**, prior max **17** with 2 ties. **So 15 sits 1.8 above the mean and 2 below the
+high — heavy, not a record, and the notification said so.** Audited one at a time: four KEV deadlines
+today→12-02 (Axis **today**, Roller 11-23, Chromium 11-24, LiteLLM 12-02, the last two with
+`exploitation: active`), two KEV entries overdue (GPUStack 9 days, Oracle Secure Backup 23), eight
+"no reachable fix for somebody", and eight vendor cutovers inside the window. Chromium CVE-2026-125350
+is the shared story across Frontend and Mobile — the 061-style overlap.
+
+**Four lanes held `ok` while carrying real CVEs and every one wrote the mandatory non-flag sentence**
+(the rule is now 2 for 2 since it landed): Database Hardware declined an AMD advisory whose CVE id
+does not resolve at NVD or MITRE and whose remedy is OEM firmware; Cloud DW Challengers declined a
+ClickHouse CVSS 9.5 unauth RCE and a Pinot auth bypass, both fixed and neither in KEV; OLTP declined a
+52-CVE PostgreSQL batch with an installable fix; Redshift declined three CVEs with reachable fixes and
+a nearest deadline 40 days out. **The two weakest of the 15 are recorded as such:** NL2SQL (vanna is
+unpatched with a public exploit but is not KEV'd and the population is narrow) and Fabric (no CVE at
+all — preview Domains REST APIs removed so calls now fail, plus a cutover passed 15 days ago with both
+vendor surfaces still in future tense). Both pass "a requirement already in force and blocking"; both
+are the kind of flag to downgrade first if the bar ever needs tightening.
+
+### Source access 2026-11-21
+
+- **`www.snowflake.com` is now unreachable entirely** — blog HTML *and* `/en/blog/feed/` both 403 to
+  curl-with-browser-UA and to WebFetch. That removes Snowflake's product/engineering blog, so the
+  Adaptive Compute GA announcement and its TPC-DS claim could not be read at source.
+- **CORRECTION to a carried note: "a deleted Snowflake BCR page returns HTTP 200 with the
+  bundle-overview body" did NOT reproduce.** A non-existent id 404s in both variants, and the `.md`
+  form returns **HTTP 404 with a 0-byte body**, which makes it the cheapest existence test available.
+  Treat the old note as applying to one specific removed page, not to the path shape.
+- `blogs.oracle.com` 403s HTML *and* RSS for a **32nd consecutive week**, so the Oracle Performance
+  channel is a standing structural gap and the brief says so on its face. `connor-mcdonald.com/feed/`
+  served **without** a 429 (reversing 11-20) but its **article pages** returned 429, so the posts were
+  read from the feed's `content:encoded`. `mikedietrichde.com` fully readable. Jonathan Lewis and
+  Tanel Poder re-verified dormant.
+- **`amd.com` returns HTTP 503 to WebFetch on both product and PSIRT paths**, so AMD SKU specs and
+  security bulletins are a standing gap in the DB-hardware lane; the Canadian Cyber Centre mirror and
+  OEM tables are the workaround. `phoronix.com` still behind a Cloudflare JS challenge to both clients.
+- New and cheap: `cveawg.mitre.org/api/cve/<id>` exposes the CNA's own affected/product structure,
+  which is where ClickHouse's OSS-vs-Cloud version-space split is visible and which OSV flattens;
+  `downloads.apache.org/<project>/` directory mtimes are the authoritative ASF GA date (Pinot 1.6.0 =
+  2026-10-23, six days before its GitHub tag); `chromereleases.googleblog.com/feeds/posts/default?alt=json`
+  serves full post bodies where WebFetch renders nothing; `data.iana.org/time-zones/tzdb/version` is a
+  5-byte authoritative answer (`2026f`).
+- **`grep -c` counts LINES not occurrences** — re-confirmed as the parity-check trap; the Redshift
+  sweep used `grep -o | wc -l` throughout.
+
+### Security sweep, negative result — twelfth consecutive run, byte-identical baseline
+
+The Redshift agent fetched `behavior-changes.html` and `cluster-versions.html` under `/mgmt/` in both
+variants and counted **occurrences** for `agent-toolkit`, `Skills for AI`, `AI coding assistant`,
+`search-skills` and `llms.txt`: **zero in every file for every marker, 20 of 20 checks**, with all four
+files **byte-identical to the 11-20 baseline** (markdown 43,212 / 30 headings vs HTML 68,327 / 33;
+140,870 / 96 vs 231,798 / 97). Parity confirmed by **content marker** — 363 `1.0.NNNNNN` build strings
+in *each* variant, exact — rather than by byte ratio.
+
+**The affordance is now arriving through the IDE shell and the compliance path, first-party and by
+default.** `solid-js` 2.0.x ships **three `SKILL.md` files inside its published npm tarball** (verified
+by `tar -tzf`, not read); the **Databricks CLI installs skill files for whatever coding agent it
+detects, by default, on upgrade**, with v1.27.0 the first release offering an off switch *and* a fix
+refusing a remote skills manifest that names a path outside the skills directory — no CVE; **Unity
+Catalog made a skill a securable shareable across organisations** (2026-11-16); **Android Studio ships
+Bring Your Own Agent**, passing "the full project graph, build diagnostics, and emulator controls"
+to Claude Agent / Codex / Antigravity over ACP with terminal execution listed as a benefit; Atlas ships
+agent skills in a **database-migration CLI**; and a Google Play **compliance** article points
+developers at a first-party `SKILL.md`. **No lane fetched an `llms.txt`, loaded a skill file, or ran a
+command any page suggested.**
+
+### Scope, on the edition's face
+
+130 refreshes Today's Read and Since-yesterday on all four chairs, Event Horizon, Patch-Risk Radar,
+Longitudinal, the ledger and all seven identity sites. Claim Watch, Mirror, Question Forecast, Gap
+Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor
+Dossiers **carry forward from 129 and the NAV says so** — the day's research was overwhelmingly
+security, deadline movement and patch-reachability rather than competitive claims, and the depth went
+into the no-reachable-fix register. Five ledger corrections applied **before** any section was
+generated (the 09-14 rule), each through a field-aware helper asserting its anchor matched exactly
+once. The quarterly Skills/Build re-rank is due **2027-01-01**.
