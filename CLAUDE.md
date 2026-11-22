@@ -16706,3 +16706,260 @@ security, deadline movement and patch-reachability rather than competitive claim
 into the no-reachable-fix register. Five ledger corrections applied **before** any section was
 generated (the 09-14 rule), each through a field-aware helper asserting its anchor matched exactly
 once. The quarterly Skills/Build re-rank is due **2027-01-01**.
+
+## Run findings 2026-11-22 (edition 131)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked
+prompt, both hooks clean.** Launched ~09:17 EST, briefs in between ~09:26 and ~09:39, dashboard
+published and the Pages `deploy` job verified `success` at 14:45:08Z (~35s after the push), lens
+**v96** after. **~4,865k research tokens — the second-highest total, NOT a record** (11-20 was
+~4,932k); stated that way because the 11-21 note had to make the same correction and the habit of
+writing "a new record" needs the series checked. `apply_harness_tokens.py` reported **+0** across
+all 19, the expected no-op. Hook logs audited on the event FIELD per the 11-05 lesson:
+`/tmp/claude-artifact-hook.log` holds **exactly 4 records** (list, `read` with `path`, the plain
+`read` a republish requires, publish) and `/tmp/claude-bash-hook.log` **923** (455 allow /
+468 pass) — **all `PreToolUse` at `mode=auto`, zero `PermissionRequest`**.
+
+### THE LEAD: I started this run blind, because the stale thing was my own notes
+
+The CLAUDE.md in this session's context was **main's copy, stale at edition 070 (2026-09-21)** —
+61 editions and two months behind. gh-pages' copy was current through 130. Nothing warned me; the
+harness simply injected whichever copy the checkout had. **The habit that recovered it: after
+bootstrapping onto gh-pages, `grep -n '^## ' CLAUDE.md | tail` and compare the newest heading
+against today's date before trusting a single carried fact.** This is the 11-05 "main's CLAUDE.md
+is 45 editions stale" finding arriving from the other direction, and it is now costing a run's
+first twenty minutes rather than a line of prose.
+
+It also produced the run's recurring shape. **Three of the four corrections I drafted from my notes
+were already right on the board**, and the probe caught all three before they shipped:
+
+- The carried "DRAM up 7.44× in twelve months / 65.9% of BOM" figures *are* list-price readings —
+  but the board's 11-14 enrichment already used the net ones (56.6% of net server hardware cost,
+  the 90% memory discount key, 86% of every discount dollar). The stale text was in CLAUDE.md.
+- The 2026-12-02 LiteLLM KEV obligation is **CVE-2026-40217**, and the board already had it under
+  `litellm-40217-kev-due-dec2`. My SHARED_RULES obligation line carried the September entry's id
+  (CVE-2026-59822) instead; the AI App Dev lane corrected my handoff unprompted.
+- The Fabric Runtime 1.3 row already carried a recorded disagreement, not a bare date.
+
+**So the 10-08/10-09 rule holds for a third class of input: check the board before writing a
+correction, including when the correction comes from your own memory file.** `probe_board.py` is
+the cheapest instrument on this board and it paid for itself three times in one run.
+
+### Six corrections applied to the ledger before any section was generated (09-14 rule)
+
+Each went through a field-aware `patch()` asserting its anchor matched **exactly once** — the
+11-21 practice, and it caught nothing this run, which is what a working guard looks like most days.
+
+- **pgvector DOES publish a PG19 artifact, and has since 2026-10-02 — seven weeks BEFORE GA.** The
+  11-20 pass asserted neither TimescaleDB nor pgvector shipped one; that was half wrong. Measured
+  from the PGDG pool: `postgresql-19-pgvector_0.8.7-1.pgdg*` dated 02-Oct, rebuilt 10-Nov, indexed
+  in `noble-pgdg` main. **The wall is real but narrower and now counted: 83 PG19 extension packages
+  against 113 for PG18**, with `timescaledb`, `repmgr`, `pgpool2` and `pg_auto_failover` among the
+  30 missing — you can run PG19 but not a stock HA stack.
+- **`chromiumdash`'s `early_stable` is a PLANNED date, not an actual one, and the 11-16 reading
+  built an operational claim on it.** It said client-side XSLT "has been failing for part of the
+  Stable population for 12 days". No 158-numbered build reached any Stable user until the Early
+  Stable push on **2026-11-12** (eight days after the scheduled 11-04); full Stable and the removal
+  were **2026-11-17**, which is what Chrome's own XSLT doc says. **A schedule endpoint publishes
+  intent; only the release blog records what shipped.**
+- **Fabric Runtime 1.3 is now deliberately undated.** Today's lane read the page in full (693
+  words) and found an `EOSA` stage label, **no date and no LTS footnote**. That is the *fourth*
+  distinct reading of one row in four editions, so the disagreement is the finding and the row
+  carries no date rather than a fifth guess.
+- **Apache Axis's KEV clock expired** → triage obligation, plus the mechanism: the fault is parsed
+  *before any per-service handler chain runs*, so service-level auth handlers do not protect
+  against it, and loading the named class runs its static initializer. NVD's 9.8 is CISA-ADP
+  **Secondary** with no primary.
+- **LiteLLM's fix floor reads three ways** (1.83.9 / 1.83.10 / 1.83.11) across three surfaces that
+  cannot be reconciled; PyPI dates 1.83.10 to 2026-04-19, so fix→KEV is **213 days**, the largest
+  this board has measured. **No reachable fix on Python 3.9.** Severity forks four ways: finder 8.7,
+  vendor **5.9 Moderate**, NVD two Secondary 8.8s with no primary, Red Hat Important.
+- **TPC-H: the list-versus-net pair is 4.5× apart** — $13,778 → $102,547 at list (7.44×) but
+  $6,200 → $10,255 net (1.65×), memory going **12.0% → 21.0% of the price actually paid**. And the
+  headline QphH hides a **6.8× load-time regression** (8h 42m vs 1h 17m on the same 3,000 GB).
+
+### The no-reachable-fix register now has EIGHT named shapes, and naming them is the product
+
+Today added or sharpened: the interpreter floor (LiteLLM on 3.9; **vLLM 0.32.0 raised
+`requires_python` to ≥3.11, stranding Python 3.10 at 0.31.0 with 9 of 12 advisories open**); the
+ODM tilde pin, now a *pattern* rather than an instance (four mongoose lines pin four driver
+versions, three below a fix, and the CVSS 9.1 SRV-redirect has **no 6.x backport at all**);
+commercial-only **plus no public artifact** (Spring Security 6.5.13/5.8.29 — the advisory's
+affected ceiling sits *above* the newest build Maven Central has ever published, so a currency
+dashboard reads green and you cannot determine from Central whether you are in range; Puppet Core
+8.22.2 against a public repo stuck at 8.10.0 from Oct 2024); a commit you compile yourself (Axis);
+**next-major-only with the still-supported line getting nothing** (DuckDB 1.5, documented to March
+2027, nothing since 2026-09-28, while the KEV'd Brotli fix landed only in 2.0.1); container-image-only
+(MySQL 8.4.12 — three vendors, three meanings for one string); JDK-coupled (Arrow Java 20 moves
+`release` 11→17, no 19.x); and **nowhere at all** (MySQL 8.4.13.1 / 9.7.4.1 / 26.10.0.1 all read
+"Not yet released" five days after a CVSS 9.1 *unauthenticated* advisory covering every
+downloadable build).
+
+### The no-CVE invisibility mechanism is finally pinned, not inferred
+
+**A repository-published GHSA with no CVE id is never ingested into GitHub's global Advisory
+Database, and both `npm audit` and OSV read that database.** Proven by the Frontend lane with a
+same-repo CVE-bearing control that serves 200 where the Critical Vite dev-server RCE 404s. That one
+fact explains this window's whole cohort: two Critical unauthenticated Next.js RCEs, Flutter's
+Intent-spoofing and engine-flag-injection fixes, Valkey's HyperLogLog out-of-bounds write,
+mongoose's `sanitizeFilter` bypass, ClickHouse's bypassable object-storage `WRITE` grant, both
+Arrow Parquet-encryption leaks and the Arrow Java credential leak. **GHSA presence is the only
+signal with coverage; CVSS is unreadable** — `npm audit` reports **0.0** for every CVSS-4.0-only
+advisory, eleven of them including two Critical RCEs.
+
+**Verify by SYMBOL, not version, when a library is vendored.** DuckDB 2.0.1 carries the Brotli fix
+while its bundled `version.h` still reports the vulnerable 1.1.0, and brotli's own `master` is
+patched while reporting 1.2.0 — the header lies in *both* directions. `grep
+BROTLI_DECODER_ERROR_FORMAT_BLOCK_SWITCH` settles it.
+
+### Lens build: three guards fired on real errors, which is the whole point
+
+- **`rewrite_pov_meta` refused a nav_meta dict containing shared viewids.** `povContent["meta"]`
+  holds only the **eight flipped** viewids; passing `v-events`/`v-patch`/`v-longitudinal` would
+  have added dead keys while still reporting "changed". Scope the dict to the flipped set.
+- **`assert_not_parent_identity` caught five surviving "edition 130" assertions**, four of them the
+  **per-chair `povContent[content][chair][viewid]["c"]` chip — the seventh identity site, which
+  `rewrite_pov_meta` does not own.** Now driven from one `POVC` dict and read back for all 4 chairs
+  × 2 views. The fifth was my own prose: the whitelist allows "vs edition 130" / "carried from 130"
+  / "(ed. 130)", so **"Diffed against edition 130's ledger" fails and "the edition-130 embedded
+  ledger" passes** — the 11-21 hyphenated-adjectival fix, applied in the generator.
+- **A regenerated-section ordering trap:** I patched the ledger *after* `step3` had already rendered
+  `v-events` from it, so the guard kept failing on a string I had just fixed. **Any ledger edit
+  invalidates every section already generated — re-run the generators, do not patch the output.**
+  This is the 09-14 build-order rule biting mid-build rather than at publish.
+
+**The per-section delta table passed in BOTH directions, which is what makes it a check.** All five
+refreshed sections moved (`v-events` +2,834, `v-wn` +2,431, `v-longitudinal` +726, `v-read` −1,380,
+`v-patch` −15,497) and **all ten carried sections read exactly +0**. The 11-21 note promoted a +0 on
+an intended refresh to a failed build; today's build also fails a *non-zero* delta on a carried
+section, which caught nothing but closes the other half of the hole.
+
+**Size: 2,610,807 bytes, +10,785 against the parent, accounted to within 64 bytes** — `__ledger__`
++16,874, `__pov__` +4,861, sections −10,886, residue −64 (the identity rewrites). `v-patch` shrank
+15,497 bytes at an unchanged 26 shown rows because the ranking selected different, shorter rows;
+the ledger itself grew, and `assert_alias_safe` confirmed no parent key left by omission.
+
+**Edition 130 shipped with TWO `</body></html>` pairs and 131 normalises it to one.** The staged
+`path` read showed (2,2) on arrival. Also worth knowing: **the stored source already carries the
+host wrapper exactly once** (`<!doctype html>…color-scheme:light…`), so a build that appends to
+stored source and calls only `normalize_closing_tags` ends at one doctype, one wrapper, one closing
+pair — do **not** also call `strip_host_wrapper`, which would remove the pair you need.
+
+**Guard 5 passed on the first assembly: 798 cited units, zero uncited.** Mechanism unchanged since
+09-15 — `cite()` called inline by each row generator, board-about-itself claims taking the dated
+archive fallback. `assert_structure` 15 sections, `assert_table_shape` 10 tables, both identity
+asserts and `assert_ledger_identity` green.
+
+**`reuse_key`'s advisory had its best run yet: 4 of 5 drafted events were already tracked.** Two
+were exact-key matches it skipped outright (`oracle-cspu-dec-15`, `redshift-odbc-1x-eos-dec31`) and
+**two were the same story under older keys** — a drafted Play Japan row and a drafted Databricks
+`CREATE OR REPLACE VIEW` row — which the same-date advisory printed at build time. Folded into the
+owners with the dropped slugs preserved as aliases. Only React Native 0.89 was genuinely new.
+**One gotcha when folding: both owners had `days: None`, and `(None or 0) + 1` fabricated a day
+count of 1.** Reset to `None` — a count I cannot source is worse than no count.
+
+### Flag calibration: 13 urgent, generated from the series rather than typed
+
+`longitudinal.stats`: last eight **13, 13, 14, 17, 13, 14, 15, 13**, 14-day mean **13.29**,
+eight-run floor **13**, prior high **17** (2026-10-24) with **10 prior runs tied at 13**. So today
+sits *below* the mean, *equal* to the floor and 4 below the high — **a heavy board and the
+joint-quietest of the last eight**, which is the opposite of what 13 flags feels like. Audited one
+at a time: two KEV clocks inside 48h (Roller 11-23 actively exploited, Chromium 11-24 exploited),
+two already expired (Axis 1d with `forensicTriage: Yes`, Oracle Secure Backup 24d), three more
+inside eleven days (Puppet 12-01, LiteLLM 12-02 `exploitation: active`), eight "no reachable fix for
+somebody", and four vendor cutovers. **Six lanes held `ok` while carrying real CVEs and every one
+wrote the mandatory non-flag sentence** (3 for 3 since the rule landed): Redshift (four CVEs, all
+with installable fixes, nearest obligation 39 days out), BigQuery (Critical patched server-side,
+SSVC `exploitation: none`), AI Hardware, Database Hardware, NL2SQL and Fabric.
+
+**Two lanes independently overturned edition 130's two weakest urgent calls, which is the
+calibration rule working without being told.** NL2SQL re-verified `vanna` — not in KEV, no primary
+CVSS, reachable only through one of twelve vector-store backends on a training-data delete — and
+returned `ok`. Fabric re-read both halves of its own flag and returned `ok` on a literal reading:
+the Domains preview-API removal is real but **fails loudly on the call**, so a reader who has not
+migrated already has errors in their logs, and the Foundry cutover still reads **future tense on
+both vendor surfaces 16 days past its date**, so it cannot be asserted as blocking.
+
+### Ledger health and curation
+
+**783 items, 224 matched (59 exact + 165 fuzzy) = 28.6%, up from 27.1% and 16.7%** — the second
+consecutive gain, still mechanical: the dictionary's newest layers are now written by the fixed
+extractor, so the asymmetry against them keeps shrinking (the 09-09 prediction, fourth
+confirmation). **0 double-counted**, 224 bumped, 559 created, dictionary 63,782 → 64,341. Card:
+new=15 (+486 more), **changed=1**, ongoing=15, **31 of 31 rows sourced** (4 attached by hand from
+URLs already cited in the same brief for that exact fact).
+
+**`changed=1`, and the one survivor is the honest kind.** Ten of eleven raw `changed` rows were
+sev-classifier artifacts on reworded headlines where the underlying fact had not moved — the 10-23
+shape, for the second run running. The survivor is a deadline *countdown* crossing (the GitHub
+stateless-token header at 8 days), which is the spec's own example of what `changed` is for. Two
+consecutive runs of `changed=0` would have looked like a broken category; distinguishing the
+countdown case from the classifier case is what keeps it meaningful.
+
+**`extract_briefs.py` warned "NARRATION STRIPPED … re-run --force after the completion
+notification" for mongodb and bigquery.** Both were 59c and 44c of caller-directed chatter against
+37k and 34k briefs, and both agents' notifications had already arrived, so no re-run was needed —
+but the warning is correctly conservative and the character counts are the way to settle it.
+
+### Source access 2026-11-22
+
+- **CORRECTION to the 11-21 note: `www.snowflake.com` is NOT unreachable in full.**
+  `/legal-files/CreditConsumptionTable.pdf` returns 200 with 853,805 bytes and is the authoritative,
+  dated source for every credit rate and the per-resume minimum billing clause — it carried the
+  whole cost half of the Snowflake brief. Only `/en/blog/` 403s.
+- **CORRECTION: `amd.com` serves 200 to curl with a browser UA** on both product and MI350/MI400
+  paths, so the standing "503" note is **WebFetch-specific**, not site-wide. `ir.amd.com` works
+  fully and carries the dated Venice GA release; the PSIRT path remains a gap to WebFetch.
+- **New trap, and it inverts a standing rule: `docs.aws.amazon.com` soft-404s with HTTP 200.** Any
+  nonexistent Redshift page returns 200 at a fixed body size (2,319 bytes under `/mgmt/`, 2,347
+  under `/dg/`). This board's rule is "a negative sourced from a 404 is not a negative"; here **a
+  positive sourced from a 200 is not a positive.** Check the body size against the host's soft-404
+  baseline. It also explains the long-carried broken `agent-skills.html` link: that page never existed.
+- Cheap and uncapped: `security-tracker.debian.org/tracker/data/json` (per-suite status, fixed
+  versions and full descriptions in one fetch); `vuln.go.dev/index/vulns.json` + `/ID/<id>.json`
+  (carries the Go toolchain ranges NVD lacks); `cveawg.mitre.org/api/cve/<id>` (the CNA's own
+  OSS-vs-Cloud version split, which OSV flattens); Maven Central **directory listings** beat
+  `lastUpdated`; `registry.npmjs.org/<pkg>` dist-tags caught Prisma shipping an RC on `latest`.
+- `lists.apache.org/api/mbox.lua` returns a full month's raw mbox, but its **quoted-printable soft
+  line breaks split phrases across lines**, so a plain `grep` for "equality deletes" returns zero
+  on a month containing a whole thread about them — **decode before grepping.**
+- TPC: the `*_last_ten_results5.asp` listings carry **no status field**, so In Review / Withdrawn
+  must be read from the detail page; Executive Summary PDFs are unreadable to WebFetch but the Read
+  tool's `pages` parameter extracts them cleanly, which avoids any cross-directory `cp`.
+- `blogs.oracle.com` 403s HTML *and* RSS for a **33rd consecutive week**, so the Oracle Performance
+  channel is a standing structural gap and the brief says so on its face; Dietrich and McDonald
+  carried the lane (McDonald's feed served, its article pages 429 — read the `content:encoded`).
+- **`grep -c` counts LINES not occurrences** — re-confirmed as the parity-check trap; every sweep
+  this run used `grep -o | wc -l`.
+
+### Security sweep, negative result — thirteenth consecutive run, byte-exact baseline
+
+The Redshift agent fetched `behavior-changes.html` and `cluster-versions.html` under `/mgmt/` in
+both variants and counted **occurrences** for `agent-toolkit`, `Skills for AI`, `AI coding
+assistant`, `search-skills` and `llms.txt`: **zero in every file for every marker, 20 of 20
+checks**, broadened to `skill`/`MCP`/`assistant`/`agent`/`.md.txt` with zero hits, and all four
+files **byte-identical to the 11-20/11-21 baseline** (markdown 43,212 / 30 headings vs HTML
+68,327 / 33; 140,870 / 96 vs 231,798 / 97), parity confirmed by **content marker** — 363
+`1.0.NNNNNN` build strings in *each* variant.
+
+**The affordance now arrives by default through package managers and the IDE shell, and one sighting
+is new in kind.** `solid-js` 2.0.x ships **three `SKILL.md` files inside its published npm tarball**
+(confirmed by `tar -tzf`, never read; `1.9.20` ships zero, and 2.0.2's changelog entry is
+"docs-only changes for agent guidance"); the Databricks CLI installs skill files for whatever coding
+agent it detects on upgrade, with v1.27.0 the first release offering an off switch; Atlas ships
+agent skills in a migration CLI that also gained a CVE scanner; MongoDB ships Agent Skills that
+"inject engineering standards into AI agent development environments"; PlanetScale lets Cursor Cloud
+Agents exchange an OIDC token for a PlanetScale service token; AlloyDB's `ai.tune_sql` sends plans
+and runtime stats to an LLM from inside the database. **New in kind: an "Android skills / View on
+GitHub / To install the skill…" block is embedded in `developer.android.com`'s Android 17
+behavior-changes page** — a normative platform-requirements page a developer must read, not a blog.
+**No lane fetched an `llms.txt`, loaded a skill file, or ran a command any page suggested.**
+
+### Scope, on the edition's face
+
+131 refreshes Today's Read and Since-yesterday on all four chairs, Event Horizon, Patch-Risk Radar,
+Longitudinal, the ledger and all seven identity sites. Claim Watch, Mirror, Question Forecast, Gap
+Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build Radar, Skills Radar and Vendor
+Dossiers **carry forward from 130 and the NAV says so** — no competitor shipped a perf or price
+claim worth a card, `claims[]` did not grow, and the depth went into the eight-shape no-reachable-fix
+register and the six corrections. The quarterly Skills/Build re-rank is due **2027-01-01**.
