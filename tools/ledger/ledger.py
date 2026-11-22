@@ -50,7 +50,17 @@ RETURNING_DAYS = 7
 
 LINK_RE = re.compile(r"\[([^\]]*)\]\((https?://[^\s)]+)\)")
 BOLD_RE = re.compile(r"\*\*([^*]+)\*\*")
-SKIP_HEADINGS = {"filtered out"}
+# Headings whose bullets are NOT news items and must never enter the dictionary.
+# "Filtered out" was always excluded. "Worth your weekend" and "Signals worth
+# watching" were added 2026-11-20 after measuring: of 941 extracted items, 131
+# came from those two headings, and excluding them removed 129 rows from `new`
+# while costing only 2 matches -- i.e. they essentially never match, because by
+# the OUTPUT FORMAT's own definition they are advice ("things to test") and trend
+# commentary, reworded freely every run. They were inflating `new`, poisoning the
+# match rate (14.6% -> 16.7% once removed) and adding ~130 junk entries a day to
+# keys.json with meaningless day counts. curate.py already excluded them from its
+# counts; this makes the dictionary agree with the card (the single-source rule).
+SKIP_HEADINGS = {"filtered out", "worth your weekend", "signals worth watching"}
 
 STOP = set("""a an the and or but of for to in on at by with from as is are was were be been
 being it its this that these those has have had will would can could should may might must
@@ -128,6 +138,23 @@ def strong_anchors(title):
         if not VER_RE.fullmatch(w) and w not in ("2026", "2025"):
             out.add(w)
     return out
+
+
+_HARD_ID = re.compile(
+    r"\b(?:CVE-\d{4}-\d{3,7}|GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4})\b", re.I)
+
+
+def hard_ids(text):
+    """Exact advisory identifiers ONLY -- CVE and GHSA ids, nothing else.
+
+    Deliberately narrower than strong_anchors(), which also returns dotted
+    versions ("1.2", "9.9") and part names. Those collide constantly: on
+    2026-10-21 "CVSS 9.9" matched an unrelated Argo row and "TLS 1.0/1.1"
+    matched three. An exact CVE or GHSA id does not collide -- it names one
+    advisory -- which is what makes it safe to merge on without a similarity
+    floor (see the shared-id route in match_all).
+    """
+    return {m.group(0).lower() for m in _HARD_ID.finditer(text or "")}
 
 
 def slug(title, maxwords=7):
@@ -302,6 +329,7 @@ def match_all(today, today_date, keys):
             title = it["title"]
             anc = strong_anchors(title)
             cw = content_words(title)
+            hid = hard_ids(title)
 
             # Cheap prune first: token overlap costs a set op, ratio costs O(n*m).
             # Only the handful of candidates that share real vocabulary are worth
@@ -313,24 +341,45 @@ def match_all(today, today_date, keys):
                 ce = cache.get(cand)
                 if ce is None:
                     ct = entries[cand].get("title", "")
-                    ce = cache[cand] = (ct, content_words(ct), strong_anchors(ct))
+                    ce = cache[cand] = (ct, content_words(ct), strong_anchors(ct),
+                                        hard_ids(ct))
                 j = jaccard(cw, ce[1])
                 if j >= 0.30 or (anc & ce[2]):
                     shortlist.append((j, cand, ce))
-            shortlist.sort(key=lambda x: -x[0])
+            # Candidates sharing an exact CVE/GHSA id jump the queue: their
+            # token overlap is often near zero (a verdict about a CVE shares
+            # little vocabulary with the claim it judges), so sorting by
+            # jaccard alone can push the right candidate past the [:8] cut.
+            shortlist.sort(key=lambda x: (bool(hid & x[2][3]), x[0]), reverse=True)
 
             best, best_r, best_why = None, 0.0, ""
-            for j, cand, (ct, _cwc, canc) in shortlist[:8]:
+            for j, cand, (ct, _cwc, canc, chid) in shortlist[:8]:
                 r = ratio(title, ct)
                 pr = partial_ratio(title, ct)
                 shared_anchor = bool(anc & canc)
+                # SHARED EXACT ID route (added 2026-10-21, measured not guessed).
+                # Same topic + the same CVE/GHSA id = the same story, however the
+                # two sentences are worded. This exists because the carried-context
+                # prompts make agents write headlines that JUDGE a prior claim
+                # ("CVE-2026-21962 is NOT changed by the October CPU") rather than
+                # restate it, and a verdict shares almost no vocabulary with the
+                # claim: that pair scores r=0.28 / j=0.06 while sharing the exact
+                # id. The match rate fell to 7.6% on 2026-10-21 and the countdowns
+                # a reader acts on (Redshift TLS at 10 days) were reading day 1.
+                # Dry-run before enabling: 30 extra merges, ALL 30 hand-read and
+                # all genuine same-story pairs. Narrow on purpose -- hard_ids()
+                # excludes dotted versions, so "CVSS 9.9" cannot trigger it, and
+                # the same-topic bucket plus the claimed-set rule still hold.
+                shared_id = bool(hid & chid)
                 ok = (r >= 0.90
+                      or shared_id
                       or (r >= 0.62 and (shared_anchor or j >= 0.50))
                       or (pr >= 0.78 and (shared_anchor or j >= 0.45))
                       or (j >= 0.60 and shared_anchor))
                 if not ok:
                     continue
-                score = max(r, pr * 0.98) + (0.10 if shared_anchor else 0.0)
+                score = (max(r, pr * 0.98) + (0.10 if shared_anchor else 0.0)
+                         + (0.50 if shared_id else 0.0))
                 if score > best_r:
                     best, best_r, best_why = cand, score, (
                         "r=%.2f p=%.2f%s j=%.2f" % (r, pr, "+anchor" if shared_anchor else "", j))
@@ -366,7 +415,29 @@ def prior_ledger_path(dirpath, today_date):
 SEV_RANK = {"normal": 0, "high": 1, "urgent": 2}
 
 
-def build(today, today_date, keys, prior, prior_date, names):
+def aged_out_ref(dirpath, today_date, days=AGED_OUT_DAYS):
+    """The ledger date the aged-out count must be measured against.
+
+    The naive form -- count entries whose last_seen is EXACTLY today-7 -- reads
+    0 whenever today-7 was a GAP DAY with no run, because no entry can carry a
+    last_seen on a date nobody researched. That failure is silent: the card
+    simply says nothing aged out, which is indistinguishable from a genuinely
+    quiet week. (Identified 2026-10-17; it did not bite on 10-18 only because
+    2026-10-11 happened to have a run. Landed 2026-10-19.) The honest reference
+    is the most recent ledger date at or before today-days; if there is none
+    (the first week), nothing can have aged out and the caller gets None.
+    """
+    target = (datetime.strptime(today_date, "%Y-%m-%d")
+              - timedelta(days=days)).strftime("%Y-%m-%d")
+    cand = []
+    for fn in os.listdir(dirpath):
+        m = re.fullmatch(r"(\d{4}-\d{2}-\d{2})\.json", fn)
+        if m and m.group(1) <= target:
+            cand.append(m.group(1))
+    return max(cand) if cand else None
+
+
+def build(today, today_date, keys, prior, prior_date, names, aged_ref=None):
     entries = keys["entries"]
     prior_sev = {}
     if prior:
@@ -411,10 +482,14 @@ def build(today, today_date, keys, prior, prior_date, names):
                 row["days"] = int(e.get("seen_count", 0)) + 1
                 ongoing.append(row)
 
-    # aged out: entries whose last_seen is exactly AGED_OUT_DAYS before today
-    target = (datetime.strptime(today_date, "%Y-%m-%d")
-              - timedelta(days=AGED_OUT_DAYS)).strftime("%Y-%m-%d")
-    aged_out = sum(1 for e in entries.values() if e.get("last_seen") == target)
+    # aged out: entries last seen on the reference day and not since. The
+    # reference comes from aged_out_ref() -- the most recent ledger date at or
+    # before today-AGED_OUT_DAYS -- NOT the literal calendar date, which
+    # silently reads 0 when that day was a gap day with no run.
+    if aged_ref is None:
+        aged_ref = (datetime.strptime(today_date, "%Y-%m-%d")
+                    - timedelta(days=AGED_OUT_DAYS)).strftime("%Y-%m-%d")
+    aged_out = sum(1 for e in entries.values() if e.get("last_seen") == aged_ref)
 
     return {"prev_date": prior_date, "new": new, "changed": changed,
             "ongoing": ongoing, "aged_out": aged_out}
@@ -511,7 +586,13 @@ def main():
 
     prior_path, prior_date = prior_ledger_path(a.ledger_dir, a.date)
     prior = json.load(open(prior_path)) if prior_path else None
-    wn = build(today, a.date, keys, prior, prior_date, names)
+    aged_ref = aged_out_ref(a.ledger_dir, a.date)
+    nominal = (datetime.strptime(a.date, "%Y-%m-%d")
+               - timedelta(days=AGED_OUT_DAYS)).strftime("%Y-%m-%d")
+    if aged_ref != nominal:
+        print("aged-out reference: %s (today-%d = %s has no ledger)"
+              % (aged_ref, AGED_OUT_DAYS, nominal), file=sys.stderr)
+    wn = build(today, a.date, keys, prior, prior_date, names, aged_ref=aged_ref)
 
     st = stamp(today, a.date, keys)
     print("stamp: bumped=%(bumped)d guarded=%(guarded)d created=%(created)d" % st, file=sys.stderr)
