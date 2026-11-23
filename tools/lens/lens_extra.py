@@ -287,6 +287,93 @@ def assert_structure(html: str, expect_sections: int | None = None) -> int:
 
 
 # ---------------------------------------------------------------------------
+# 4b. Markup-integrity guard.
+#
+#     THE HOLE THIS FILLS (2026-11-23).  An edition-132 build truncated row
+#     prose to a character count and so cut INSIDE HTML tags, shipping
+#     `<span class`, `<a href="https://d` and `</c` into table cells.
+#     `assert_table_shape` passed (the column counts were right) and guard 5
+#     passed (the citations were present) -- NEITHER validates markup
+#     integrity, and the only thing that caught it was the per-section size
+#     delta (92,453 bytes against the parent).
+#
+#     Two checks, both cheap:
+#       * `<` and `>` must balance inside each generated section;
+#       * no `<tag...` may sit immediately before `</td>`, `</th>`, `</li>`
+#         or `</p>`, which is what a mid-tag cut looks like.
+#
+#     FALSE POSITIVE TO EXPECT when checking by hand instead: a fragment like
+#     `<a href="https://d` is a legitimate prefix of any URL beginning with
+#     "d", so an ad-hoc grep for it is noisier than this guard.  The guard
+#     only fires when such a fragment is UNTERMINATED at a cell boundary.
+# ---------------------------------------------------------------------------
+_TRUNC_RE = re.compile(r"<[a-zA-Z/][^<>]{0,60}(?=</t[dh]>|</li>|</p>)")
+
+
+def section_bodies(html: str) -> dict:
+    """{section id: inner html} for every <section id="v-..."> in the page."""
+    out = {}
+    for m in re.finditer(r'<section[^>]*\bid="(v-[^"]+)"[^>]*>', html):
+        sid, start = m.group(1), m.end()
+        end = html.find("</section>", start)
+        out[sid] = html[start:end if end != -1 else len(html)]
+    return out
+
+
+def assert_markup_sane(html: str, sids) -> bool:
+    """Fail on a truncated tag inside any of `sids`.
+
+    Pass the sections this build GENERATED; inherited sections are the
+    parent's problem and a carried defect would fail every future build.
+    """
+    want = set(sids)
+    bad = []
+    for sid, body in section_bodies(html).items():
+        if sid not in want:
+            continue
+        opens, closes = body.count("<"), body.count(">")
+        if opens != closes:
+            bad.append("%s: %d '<' vs %d '>'" % (sid, opens, closes))
+        for frag in _TRUNC_RE.findall(body):
+            bad.append("%s: truncated tag %r" % (sid, frag))
+    if bad:
+        raise LensBuildError("MARKUP NOT SANE:\n  " + "\n  ".join(bad))
+    return True
+
+
+def _selftest_assert_markup_sane() -> str:
+    good = ('<section class="view" id="v-x" data-title="x" data-eyebrow="x" '
+            'data-chips="x"><table><tr><td>fine <a href="https://docs.example/'
+            'a">src</a></td></tr></table></section>')
+    assert assert_markup_sane(good, {"v-x"}) is True
+    ok = 0
+    for bad in (
+        # mid-tag cut before a cell close -- the real edition-132 shapes
+        '<section id="v-x"><table><tr><td>text <span class</td></tr></table></section>',
+        '<section id="v-x"><table><tr><td>text <a href="https://d</td></tr></table></section>',
+        '<section id="v-x"><p>text <em</p></section>',
+        '<section id="v-x"><ul><li>text <b class="x"</li></ul></section>',
+        # a stray unmatched '<' -- note the balance check is a COUNT, not a
+        # parse, so it catches a stray bracket and not a never-closed tag
+        '<section id="v-x"><td>a < b</td></section>',
+    ):
+        try:
+            assert_markup_sane(bad, {"v-x"})
+        except LensBuildError:
+            ok += 1
+    # a section NOT in sids must be ignored even when broken
+    assert assert_markup_sane(
+        '<section id="v-y"><td>text <span class</td></section>', {"v-x"}) is True
+    # a legitimate URL prefix that IS terminated must pass
+    assert assert_markup_sane(
+        '<section id="v-x"><td><a href="https://d.example/p">s</a></td></section>',
+        {"v-x"}) is True
+    total = 1 + ok + 2
+    assert ok == 5, "expected 5 raises, got %d" % ok
+    return "assert_markup_sane: %d/%d" % (total, 8)
+
+
+# ---------------------------------------------------------------------------
 # 5. Day-count drift detector.  A row's stated day count lives in BOTH its
 #    `due`/date prose and its `t` prose; a repair that edits one leaves the
 #    other.  The 10-05 run found 9 stale counts its own hand pass missed, and
@@ -328,8 +415,13 @@ def daycounts_rows(rows: list, today: str, *, datefield: str = "date",
 
 
 if __name__ == "__main__":
+    # EVERY selftest in this module must be reachable from here.  The 11-19
+    # run found `patch_radar.py --selftest` printing nothing and exiting 0
+    # because its functions were only reachable by import -- a selftest
+    # invocation that cannot fail reports health for a check it never ran.
     print("assert_not_parent_identity self-test:",
           _selftest_assert_not_parent_identity())
+    print(_selftest_assert_markup_sane())
 
 
 # ---------------------------------------------------------------------------

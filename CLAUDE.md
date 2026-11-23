@@ -16963,3 +16963,467 @@ Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build Radar, Skills
 Dossiers **carry forward from 130 and the NAV says so** — no competitor shipped a perf or price
 claim worth a card, `claims[]` did not grow, and the depth went into the eight-shape no-reachable-fix
 register and the six corrections. The quarterly Skills/Build re-rank is due **2027-01-01**.
+
+## Run findings 2026-11-23 (edition 132)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked
+prompt, both hooks clean.** Launched ~08:40 EST, briefs in between ~08:49 and ~09:05, dashboard
+published and the Pages `deploy` job verified `success` at **14:46:11Z** (DEPLOY_SHA
+`277c9664`), lens **v97 then v98** (same-day republish, below). **~5,028k research tokens — a new
+record** (prior high ~4,932k on 11-20), and the series is checked rather than assumed because the
+11-21 and 11-22 notes both had to correct a "new record" claim. `apply_harness_tokens.py`
+reported **+0** across all 19, the expected no-op. Hook logs audited on the event FIELD per the
+11-05 lesson: `/tmp/claude-artifact-hook.log` holds **4 records** and
+`/tmp/claude-bash-hook.log` is **all `PreToolUse` at `mode=auto`, zero `PermissionRequest`**.
+
+### THE LEAD, found twice independently by unrelated lanes: the fact was STATIC and the SURFACES differed
+
+Two lanes landed on the same defect class in one run, and together they settle a four-edition
+open question on this board.
+
+**Fabric Runtime 1.3's date was never moving — editions 062, 063, 064 and 131 were reading
+different pages of a static fact.** Measured today in both variants:
+`learn.microsoft.com/.../data-engineering/runtime-1-3` carries an `EOSA` label and **no date at
+all** (grepped `September 30`, `March 2027`, `LTS`, `Long Term Support`: zero occurrences), while
+`.../data-engineering/lifecycle` carries **both** the 2026-09-30 EOSA and the footnote
+"Runtime 1.3 enters Long Term Support (LTS) on October 1, 2026, for a period of six months,
+extending support through March 2027." **And neither page has changed in weeks** — the markdown
+front matter dates `lifecycle` to 2026-09-18 and `runtime-1-3` to 2026-10-23. The clincher that
+identifies which surface each prior edition read: the 11-22 note cited "693 words", and
+`runtime-1-3`'s front matter reports `word_count: 693` against `lifecycle`'s 888.
+
+The sibling instance, from a different lane: **a per-model FEATURE withdrawal (Opus 4.8 fast
+mode) is published on the feature page and appears nowhere on the model-deprecations page** — so
+a reader tracking deprecations correctly sees nothing.
+
+**RULE: name the URL, not the product, when you record a date.** A board row should carry the
+surface it was read from, so the next edition can tell a changed fact from a different page. Two
+more instances the same day: **a KEV entry for Oracle Secure Backup is filed under "PHP Group /
+PHP"** (FINDING below), and **AGP's markdown variant is a whole major version behind its HTML
+twin**. This is the 11-21/11-22 "measure the surface, then ask what the surface cannot show you"
+rule, now with four independent confirmations in one run. ACTION: the Fabric Runtime 1.3 row
+moves from deliberately-undated to **dated** (EOSA 2026-09-30, LTS through 2027-03) citing the
+lifecycle URL explicitly, which retires the open question.
+
+**One trap avoided while doing it: dating the row to the passed EOSA alone would have RETIRED a
+live obligation.** The row is dated `2027-03-31` — the LTS end, which is the reader-facing
+deadline — with the EOSA date recorded in prose.
+
+### TWO CORRECTIONS TO THIS BOARD'S OWN INSTRUMENTS, which is worse than a wrong fact
+
+Both were carried *tests*, not carried facts, and both failed in the dangerous direction.
+
+**1. The Brotli symbol grep this board published on 11-22 returns ZERO on PATCHED code.** That
+note established "verify by SYMBOL, not version" and gave the test as
+`grep BROTLI_DECODER_ERROR_FORMAT_BLOCK_SWITCH`. I handed it to the Challengers lane. **brotli
+assembles that enum by token pasting** (`BROTLI_ERROR_CODE(_ERROR_FORMAT_, BLOCK_SWITCH, -17)`),
+so the full literal never appears in the source. **Correct test: grep `BLOCK_SWITCH`, or the
+`-17` error-code line.** Measured on `third_party/brotli/dec/decode.cpp`:
+
+| DuckDB tag | decode.cpp | `BLOCK_SWITCH` | patched? |
+|---|---|---|---|
+| v1.5.6 | 97,167 B | **0** | no |
+| v2.0.0 | 97,167 B | **0** | no |
+| v2.0.1 | 98,678 B | **1** | yes |
+
+**All three report `BROTLI_VERSION 1.1.0`**, so the original lesson (the bundled header lies in
+both directions) is intact. **Standing rule: any grep this board publishes as a test must be run
+against a known-patched AND a known-unpatched tree before it is written down.**
+
+**2. The "a CVE-less GHSA is never ingested" rule is too broad, and the real discriminator is
+REVIEW STATUS.** Three independent confirmations in one run, each from a different lane and none
+told about the others:
+- **reviewed + no CVE id → ingested.** Both Critical unauthenticated Next.js RCEs have
+  `aliases: null` and **both return HTTP 200 from OSV** (GHSA-2464-fhr4-w9xw,
+  GHSA-673q-mjm6-r5xr); npm's bulk audit returns both as `critical` for `next@16.4.0`.
+- **unreviewed + no CVE id → not ingested.** The Critical Vite dev-server RCE
+  (GHSA-p4f5-76q4-ffq7) 404s at OSV, with a same-repo CVE-bearing control returning 200.
+- **unreviewed + a CVE id → also not alerted on.** Apache Axis CVE-2026-90436 has
+  `GHSA-988f-c54m-f8jj` (Critical) but it is Unreviewed with no package mapping.
+
+**So "no CVE id" is not by itself a prediction of invisibility, and the reviewed status is
+visible on the advisory.** Amend the carried mechanism; do not restate it.
+
+**And a third correction to the same family, which explains where the wrong rule came from:** the
+mongoose `sanitizeFilter` advisories **ARE** fully ingested — CVE-2026-125116..125120 all carry
+CVE ids, GHSAs, CVSS 3.1 vectors and OSV records. **What produced three editions of a wrong
+claim is that the repo's security tab renders no CVE column for ANY of its seven advisories.
+That is a PAGE-LAYOUT fact, not an ingestion fact.** Check the global database directly
+(`api.osv.dev/v1/vulns/<GHSA>`), never the repo's advisory list, before asserting ingestion.
+
+### A GUARD HOLE: both `assert_table_shape` and guard 5 passed on BROKEN MARKUP
+
+The first edition-132 build came out **92,453 bytes smaller than the parent**, and the cause was
+character-count truncation of row prose that **cut inside HTML tags** — measured fragments
+`<span class`, `<a href="https://d`, `</c`, `<c` shipped into table cells. **`assert_table_shape`
+passed (the column counts were right) and guard 5 passed (the citations were present).** Neither
+validates markup integrity, so that is the hole they left.
+
+Landed **`_assert_markup_sane(html, sids)`**: per generated section it asserts `<` and `>` counts
+balance, and it fails on any `<[a-zA-Z/][^<>]{0,60}` appearing immediately before `</td>`,
+`</th>`, `</li>` or `</p>`. Also fixed at source: **all truncation removed**, with a `_plain()`
+helper that gives a tag-stripped view **for matcher input only, never for output**. Note the
+false positive to expect when checking by hand: `<a href="https://d` is a legitimate prefix of
+any URL starting with "d", so the ad-hoc grep is noisier than the guard.
+
+### I SHIPPED A CONTENT REGRESSION AND CAUGHT IT IN THE PER-SECTION DELTA TABLE
+
+Fixing the truncation surfaced `ValueError: Invalid isoformat string: 'TBD'` — a row carries the
+literal `'TBD'` in `date` and string comparison passes it, because `'T' > '2'`. I added an
+ISO-shape regex filter, which was correct for the *sort* and wrong for the *render*: it replaced
+**15 deliberately-undated rows** with a one-line count, measuring as **v-events −22,520 bytes**.
+
+Those 15 are tracked obligations a reader needs to see — Iceberg V4, Fabric Runtime 2.0's default
+flip, the Power Query ODBC→ADBC cutover, TabFM token pricing, the Fabric Scheduler DST bug. **A
+count tells a reader a number, not what the obligations are.** And the parent rendered them *by
+accident*: `'TBD'` string-sorts above any ISO date, so they fell into a "TBD TBD" block at the
+foot of a date-sorted table — right answer, wrong reason.
+
+Fixed by rendering them deliberately in their own labelled block after the dated rows, which also
+improves on the parent. Verified complete: **42 dated + 15 undated = 57, matching the ledger's 57
+exactly.** v-events moved from −22,520 to **+10,092**, and cited units from 768 to 783.
+
+**Two durable lessons.** (a) **The per-section delta table is a correctness instrument, and a
+drop you can explain is not the same as a drop that is correct** — the 09-09 rule says explain
+every shrink, the 11-21/11-22 extension says sometimes "explained" means "fix it", and this is
+the first time it caught a defect I had *introduced while fixing another one*. (b) **A filter
+written for sorting must not be reused for rendering.** The per-row diff is what settled it: for
+the 31 rows common to both editions my columns are **longer** (event +51.5 B, src +7.2 B, act
+identical), so the entire shrink was the dropped rows.
+
+**Accepted cost: the lens was republished the same day, so two artifact versions carry the
+2026-11-23 title and v97 is the wrong one.** Same trade as editions 060 and 066, and the 09-17
+precedent is exactly this case — the defect was in the most-read table on the page, not
+cosmetic. Not a precedent for routine same-day republishes.
+
+### My handoff was wrong or incomplete for the SIXTH consecutive run, and that is the system working
+
+Every instance was caught by a lane, not by me:
+- **formats:** I told it the Arrow Parquet-encryption and Arrow Java credential leaks were
+  "repository GHSAs with no CVE id". It did not reproduce, and **the truth is worse** — all three
+  Arrow repos report "There aren't any published security advisories" and OSV returns 0 vulns for
+  both Maven coordinates, so there is **no advisory artifact of any kind**. The only surfaces
+  recording either fix are a GitHub issue (GH-1232) and a changelog heading. **Register
+  consequence: "a GHSA invisible to the global DB" is the *second*-worst tier; the worst is no
+  record at all, where version currency is the only control.**
+- **devops:** I handed over "GitHub ARM32 hosted-runner retirement 2026-12-08". The lane
+  confirmed it **and** found it incomplete: **self-hosted ARM32 has been unsupported since
+  2026-09-23**, in the Node-20-removal changelog, with the
+  `ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION` opt-out gone. Its phrasing is the point — **"a reader
+  who only knows the December date thinks they have 15 days when they have none."**
+- **aiappdev:** my obligations line carried the September LiteLLM KEV id (CVE-2026-59822) where
+  the 2026-12-02 entry is **CVE-2026-40217**; the board already had it right.
+- Plus the Brotli grep and the GHSA rule above.
+
+**Keep handing lanes the carried claim explicitly — it is what makes the correction possible.**
+And the standing cost is now six runs long: the dated-obligations block all 19 lanes read is the
+highest-leverage text in the run and the least reviewed. **Re-derive each obligation's SOURCE
+once a week rather than carrying the prose forward.**
+
+### `probe_board.py` paid for itself three times, including against my own memory file
+
+**The CLAUDE.md in this session's context was main's copy, stale at edition 070 (2026-09-21)** —
+61 editions behind, where gh-pages' copy was current through 131. Nothing warned me. **The habit
+that recovered it: after bootstrapping onto gh-pages, `grep -n '^## ' CLAUDE.md | tail` and
+compare the newest heading against today's date before trusting a single carried fact.**
+
+That produced the run's recurring shape: **three of the four corrections I drafted from my notes
+were already right on the board.** The carried DRAM figures (7.44×, 65.9% of BOM) *are* list-price
+readings, but the board's 11-14 enrichment already used the net ones; the LiteLLM id was already
+right; the Fabric Runtime 1.3 row already carried a recorded disagreement rather than a bare date.
+**So the 10-08 rule extends to a third class of input: check the board before writing a
+correction, including when the correction comes from your own memory file.**
+
+### Flag calibration: 13 urgent, generated from the series rather than typed
+
+`longitudinal.stats`: last eight editions **13, 13, 14, 17, 13, 14, 15, 13**, 14-day mean
+**13.14**, series high **17** (2026-11-18) with 2 ties. **So today sits essentially ON the mean
+and four below the high**, which is worth stating because 13 flags reads heavy. Audited one at a
+time: two KEV clocks inside 24 hours (Apache Roller CVE-2026-129448 **today**, CVSS 9.8
+unauthenticated deserialization with `exploitation: active` and `forensicTriage: Yes`; Chromium
+CVE-2026-125350 **tomorrow**), four KEV entries already overdue (Oracle Secure Backup 25 days,
+Apple's Brotli entry 13 days, GPUStack, Axis), and eight lanes carrying a "no reachable fix for
+somebody".
+
+**All six lanes that held `ok` wrote the mandatory non-flag sentence** — Open Formats, BigQuery,
+Redshift, Fabric, Database Hardware and NL2SQL — so the rule landed on 11-20 is now 4 runs for 4.
+**Three lanes independently re-confirmed the `vanna` downgrade** from the live KEV catalog
+(pulled 2026-11-23T12:54Z, **1,790 entries, zero vanna entries**), so the 11-22 call is
+triple-sourced. 13 flags covered roughly 11 distinct stories — Brotli reaches Mobile and
+Frontend, the Chromium KEV entry reaches both as well.
+
+### THE REGISTER: "no reachable fix" has moved from EOL branches to DISTRIBUTION CHANNELS
+
+The cleanest case the register has, measured on three surfaces. **Puppet CVE-2026-115731** carries
+an NVD **Primary CVSS 3.1 9.9**, KEV due **2026-12-01**. The vendor names fixed versions — Puppet
+8.22.2 / 9.1.3, PE 2023.8.13 / 2025.12.1 — and NVD's CPE ranges agree. **Not one has ever been
+published to a public Puppet surface:** the `puppet` gem is frozen at **8.10.0 (2024-10-22)**,
+`yum.puppet.com/puppet8/el/9` tops out at `puppet-agent-8.10.0-1`, and **`yum.puppet.com/puppet9/`
+404s entirely.** So the 13-month-old 8.10.0 is simultaneously the newest public artifact **and**
+inside the affected range: a currency dashboard reads "latest" while KEV compliance reads
+"overdue", and the fix sits behind a Perforce licence. **The pattern to watch: a vendor keeping a
+community channel alive at a version floor while security fixes ship only on the licensed train.**
+
+Spring is the same shape at scale. **23 of 25 CVE ids it published on 2026-11-19 did not exist
+four days later** — `cveawg.mitre.org` returns `CVE_RECORD_DNE` for all five Spring Security ids
+including the **Critical** CVE-2026-59273, NVD returns `totalResults: 0`, GitHub returns zero
+advisories. **Only the Moderate and the High were published; the Critical is the one still
+missing.** And six of its eight fix versions are **"Enterprise Support only"**, with Maven
+Central's newest public `spring-security-web` builds (6.5.11, 6.4.13, 5.8.16) all **below the
+advisory's affected ceilings** — so a `dependencyManagement` override to 6.5.13 cannot resolve,
+and **Spring Boot 3.5.16 pins the vulnerable 6.5.11.**
+
+### A NEW tier below "no advisory artifact": the CVE id itself was never minted
+
+runc 1.3.7 / 1.4.4 / 1.5.3 (2026-11-12) fix a `runc restore` host-directory escape, and the id
+the project tells you to track — **CVE-2026-119101** — resolves **nowhere**, measured on seven
+surfaces: NVD `totalResults: 0`; `cveawg.mitre.org` **`CVE_RECORD_DNE`**; OSV not found for the
+CVE *and* for `GHSA-g2c3-j8g3-7gpw`; GitHub's global DB 404; absent from
+`vuln.go.dev/index/vulns.json` so `govulncheck` is clean; zero entries in Debian's tracker; and
+all three sibling ids equally non-existent. **Every prior case on this board was a record that
+existed but could not be matched to your coordinates. This is a published fix pointing at an
+identifier that was never minted — there is nothing to ingest and nothing to re-query later.**
+
+**And the split is visible in one database:** Debian tracks the **crun** half of the same bug and
+has no record of the **runc** half. One bug, two runtimes, and whether your scanner sees it
+depends on which one you installed. Same window, no ids at all: **Cilium 1.20.5's two policy
+FAIL-OPEN bugs** (egress `toServices` + `toPorts` could allow **any** destination on those ports;
+strict egress encryption could pass **unencrypted** traffic), Argo CD 3.6's "coordinated security
+fixes", BuildKit's transparency-log fix.
+
+### A scanner that CLEARS a shipped RCE sink — the sharpest invisible-tooling case yet
+
+The NL2SQL lane unpacked the published `vanna` 2.0.2 wheel and found
+`exec(plotly_code, globals(), ldict)` — the sink behind CVE-2024-5565 — **still present in the
+newest release**, relocated under `legacy/` rather than removed. OSV/GHSA record
+`last_affected: 0.5.5`. So `pip-audit` against 2.0.2 **raises the injection CVE and CLEARS the
+RCE.** Every prior instance was a scanner that saw *nothing*; this is a scanner that sees
+something and gives the wrong answer on the more severe of two bugs in the same package, because
+the advisory's version bound was written against a layout the project later changed. **Verify by
+grepping the installed package for the sink, not by reading a version.**
+
+**`npm audit` is now a severity-label tool and nothing more.** Across sixteen records from its own
+backend, **every one returned `cvss: {score: 0, vectorString: null}` and `cves: null`** —
+including two Critical unauthenticated RCEs and five advisories whose CVE ids OSV publishes.
+`--audit-level=critical` works; **any gate expressed as a CVSS threshold or a CVE allowlist
+passes everything.**
+
+### A KEV entry for an ORACLE product filed under "PHP Group / PHP"
+
+CVE-2026-109618 / 109619 (PHP2Shell, **CVSS 9.8 unauthenticated RCE**) affect **Oracle Secure
+Backup 19.1.0.0.0–19.1.0.1.0**. In the live catalog (`catalogVersion 2026.11.23`) they are filed
+under **vendorProject "PHP Group", product "PHP"**, added 2026-10-26, **due 2026-10-29 — 25 days
+past — with `forensicTriage: Yes`.** **No KEV entry anywhere names Oracle Secure Backup, and
+NVD's CPEs name no Oracle product.** So a KEV sweep filtered on `vendorProject = Oracle`, or a CPE
+inventory, returns **clean** on a 25-day-overdue 9.8 with a forensic-triage obligation. The only
+bridging surface is Oracle's own CVE→advisory map. **New register entry: "the KEV entry exists,
+names the upstream component, and never names the product you actually run" — distinct from every
+prior shape, because this record is complete and correctly filed and still unfindable by the
+obvious query. Re-scope any inventory that filters KEV by vendor.**
+
+### "Patch to the latest RU" is measurably insufficient, and the ranges prove it
+
+Oracle's November CSPU (Rev 1, 2026-11-17, **655 patches**, 20 in the Database family):
+**23.26.4** — the newest 26ai RU — is affected by **4 of 7** Database Server CVEs including the
+**CVSS 9.9 CVE-2026-114822**; **19.33**, released the *same day* as the advisory naming it, is
+affected by 4 of 7 including the **9.9 CVE-2026-114848**; **21.24** by 5 of 7. `CVE-2026-114819`
+stops at 19.32 while its near-twin reaches 19.33 — two Oracle Text bugs one RU apart. **So RU
+currency and CSPU currency are two independent axes**, and three of the seven are 9.9 takeovers
+needing only `CREATE SESSION` over Oracle Net.
+
+**And none of it is scannable:** `vulnStatus: Received`, **zero `cpeMatch` entries**, only
+Oracle's *Secondary* CVSS, and OSV returns "Vulnerability not found" for every one six days after
+publication. **For Oracle, version currency is not a weak proxy for advisory coverage — it is the
+only control that works.** One id spans two products (`CVE-2026-114849`, 9.8 unauthenticated, in
+**both** the APEX and ORDS matrices) while **NVD names only APEX**, so scoping from NVD tells an
+ORDS operator they are unaffected. ORDS took the worst of it: **8 CVEs, 5 unauthenticated, every
+build 24.2.0→26.3.0 affected**, and **26.3.1 shipped thirteen days BEFORE the CSPU named the
+range** with not one of the eight ids in its changelog.
+
+### Snowflake has STOPPED shipping behavior-change bundles, and that removes the opt-out
+
+A structural change, measured rather than announced. **The last bundle is 2026_08** (still
+*Disabled by Default* 38 days later); **`2026_09_bundle` and `2026_10_bundle` both 404, and their
+`.md` variants return HTTP 404 with a 0-byte body** — the cheapest existence test available, and
+exactly the probe the 11-21 note established. Everything since has gone through the **unbundled**
+table, which states plainly that such changes **"can't be disabled"**: two on 2026-11-19, one on
+11-17, three in October. **So the testing affordance the bundle mechanism exists to provide is not
+being offered for the changes that are actually landing** — a governance regression for anyone
+whose change process depends on enabling a bundle in a non-prod account first.
+
+**And `CREATE OR REPLACE` is now the single riskiest statement in a Snowflake estate.** The
+default-change pattern consistently spares existing objects, so recreation is the trigger.
+**BCR-2473 (2026-11-17) dropped the interactive-warehouse `AUTO_SUSPEND` default AND floor from
+24h to 1h** — existing warehouses keep their value *including ones created without an explicit
+one*, so a `CREATE OR REPLACE` with no `AUTO_SUSPEND` silently adopts 1 hour, and
+counter-intuitively **the risk is latency, not cost** (the floor exists so the cache stays warm).
+Separately, **new `REFRESH_MODE = AUTO` dynamic tables now resolve to ADAPTIVE, not INCREMENTAL**,
+ADAPTIVE can **full-rebuild on its own heuristics**, and this shipped as a *feature update, not a
+behavior change* — no BCR, no opt-out, no impact score — with AUTO resolving **once at creation**
+and never re-evaluating. **Anything running declarative deployment — dbt, Terraform, a
+`CREATE OR REPLACE` migration — adopts the new default on its next apply, with no diff to review.**
+
+### "No reachable fix" is going DEVICE-shaped, not branch-shaped
+
+Apple shipped the KEV'd Brotli fix to iOS **27.2.1** and **26.7.3** — both list a `brotli`
+component entry — and **not to iOS 18.7.12**, which shipped the same day with six CVEs and **no
+`brotli` entry at all**, with **no "not affected" statement published**. So for **iPhone XS /
+XS Max / XR and iPad 7th gen**, a KEV entry whose date passed 13 days ago is **either unfixed or
+silently inapplicable, and the advisory does not say which.**
+
+Same shape one layer up, verified from source: **a stock Capacitor app accepts any Android System
+WebView at major version 60 or above** (`DEFAULT_ANDROID_WEBVIEW_VERSION = 60`, minimum 55) —
+**~97 majors below the 157.0.8103.50 carrying the KEV'd fix due tomorrow.** And the Android build
+numbers do not compare the way they look: **Chrome for Android 157.0.8103.46 maps to desktop
+157.0.8103.38, which predates the fix** — a *higher* Android patch number and unfixed.
+
+### Hardware: the generational axis flipped from CAPACITY to BANDWIDTH
+
+The most consequential sizing fact in today's research, and it changes a planning rule. **HBM
+capacity per GPU did not move — ~278 GB (B300) to 288 GB (Rubin), +3.5% — while HBM bandwidth went
+~8 TB/s to 19.2 TB/s, 2.43×**, with Google's published `a5x-highgpu-4g-metal` shape
+(4 × 288 GB = 1,152 GB) independently corroborating the 288 GB. **So your KV-cache ceiling is flat
+and your decode throughput is not.** AMD's answer is the opposite axis (MI455X at 432 GB HBM4).
+For the next 18 months "does the model fit" and "how many sequences can I stream" point at
+different vendors.
+
+**Every peak-FLOPS comparison needed a footnote read to be meaningful.** Rubin's FP16/BF16 appears
+to FALL vs GB300 (360 → 288 PFLOPS/rack); it does not — GB300's footnote says every Tensor Core
+figure is **with sparsity** and Rubin's marks 288 as **dense**. Dense-to-dense: 2.33× FP4, 3.5×
+FP8/FP6, **1.6× FP16/BF16**, with FP64 the outlier at **24×**. AMD's "+15% MXFP4 vs Vera Rubin
+NVL72" is measured against NVIDIA's **dense** number and AMD's own footnote says so; against the
+sparse headline Helios is **19% lower**. Both true; the datatype footnote is the entire
+difference. **Two AMD claims did not reproduce at all**, and **NVIDIA's own two surfaces disagree
+on NVLink 6 by 20%.** The honest planning number is the independent benchmark: **MLPerf Training
+v6.1 measures Rubin at 2× GB300 per GPU on DeepSeek-V3 671B and 1.4–1.6× on everything else.**
+
+**And software moved unchanged hardware by a 1.49× geomean in five months** — MLPerf v6.1 vs v6.0
+on the four carried-over benchmarks, on identical silicon (tinygrad nearly halved Llama 3.1 8B on
+MI350X, 187 → 101 min), while mature recipes sat within ~6%. **So a six-month-old benchmark of
+your current fleet understates it — re-measure before you buy.** Also new: **MLPerf Endpoints
+v1.0** is the first MLPerf track measuring served inference the way you buy it — concurrency,
+interactivity, System TPS, TTFT P90.
+
+### An in-session hazard in our own harness: 19 lanes share ONE scratchpad directory
+
+The Oracle lane reported, unprompted, that a helper it wrote to `<scratchpad>/strip.py` **was
+overwritten by another lane within two minutes**, and moved its own to a lane-specific
+subdirectory. **All 19 research agents share one scratchpad path**, so a lane that writes a
+generically-named helper and re-runs it can silently execute another lane's code. Nothing broke
+and no lane reported a wrong result — but this is a real cross-contamination channel in the run's
+own harness. **ACTION for the next run: SHARED_RULES should tell lanes to write any helper to
+`<scratchpad>/<topic>/`.** Cheap, and it removes the channel entirely.
+
+### Lens findings (edition 132)
+
+**Eleven corrections applied to the ledger BEFORE any section was generated** (the 09-14 rule),
+through a new field-aware patcher that **asserts every anchor matched exactly once** — and the
+assertion earned its place immediately: the Fabric Runtime 1.3 anchor matched **zero** times
+because I had anchored on prose the row does not carry, which is the guard working as designed.
+Landed as **`tools/lens/patch_rows.py`** (`patch()` / `setfield()` / `append()` / `find()`, 7/7
+selftest) so the next edition inherits it instead of re-deriving it.
+
+**Zero new rows, zero retirements — and the row counts are byte-identical to the parent**
+(events 57, patch 287, claims 171, ownclaims 44, promises 98, gaps 22, benchmarks 25,
+retired_events 134). All eleven corrections were **enrichments in place**, which is why
+`__ledger__` grew +6,949 bytes with no section count moving. A pure-corrections edition is a
+legitimate outcome and the edition says so rather than padding a section.
+
+**Guard 5 passed: 783 cited units, zero uncited.** Mechanism unchanged since 09-15 — `cite()`
+called inline by each row generator, board-about-itself claims taking the dated archive fallback.
+`assert_structure` 15 sections, `assert_table_shape` 10 tables, both identity asserts and
+`assert_ledger_identity` green, `normalize_closing_tags` run last with `(1,1)` read back **from
+disk**. **Chair symmetry restored:** my first cut made all four chairs' `v-wn` byte-identical
+where the parent differentiated Oracle's; added a per-chair `WN_CHAIR` framing so all four are
+distinct.
+
+**Final size: 2,640,442 bytes, +29,636 against the parent** — v-events +10,092 (the restored TBD
+block), v-patch +9,764, `__ledger__` +6,949, `__pov__` +1,892, v-wn +635, v-longitudinal +353,
+v-read −33. Patch radar 26 of 287 shown, **no-fix register 47**.
+
+**Three tooling-signature errors, all cheaper to look up than to debug** — `find_url`'s lane
+filter is **`topics` (plural, a set)**, not `topic=`; `rebuild_runbar` needs `parent_edition` and
+`parent_dslug`; and **`assert_no_regression` takes `(new, parent, sections=ACCUMULATING)`** with
+no `allow=` kwarg. On the last one the 09-10 note still stands: it fires on *any* shrink, so a
+folding build needs the alias-aware check instead — recorded in a comment at the call site.
+
+### Ledger health and curation
+
+**834 items, 230 matched (27.6%), 0 double-counted.** Dictionary 64,341 → **64,945**. Match rate
+is inside the band the 11-20 `SKIP_HEADINGS` fix established, so no diagnostic was needed. Card
+curation ran with no stale pins and no fatal "pin not found". Synthesis: 17 bullets across 4
+sections, every one carrying `→ seen in:` with all 19 lanes cited.
+
+### Step 5b: SIXTEENTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the
+committed file by sha256**. Worth recording the intermediate state because a naive reading would
+have fired a needless re-trigger: the run-level status read `in_progress` and the first job poll
+showed **only `build`, mid-Checkout** — the documented "looks like a stall" shape. No re-trigger
+was fired (the 09-12 mistake avoided), and `deploy` completed `success` at **14:46:11Z**.
+**Only the SCHEDULER copy still says egress blocks `*.github.io`, and only Karl can edit that.**
+
+### Source access 2026-11-23
+
+- **`blogs.oracle.com` 403s HTML *and* RSS for a 34th consecutive week**, so the Oracle
+  Performance channel remains a standing structural gap and the brief says so on its face.
+- **CORRECTION to the 11-18 note: `docs.cloud.google.com` does NOT serve `.md.txt` for every
+  page.** It was complete on reference pages and **lossy on the page that rots fastest** — the
+  `.md.txt` of the security-bulletins index **trails its HTML and RSS twins by seven bulletins**,
+  and the gap contained GCP-2026-082. **Check variant parity per page, by content marker, on the
+  pages where staleness costs you — and prefer RSS for anything dated.** Google's 404s also come
+  back with a ~97 KB body, so the status code alone lies in that direction too.
+- **The AWS soft-404 has a cheaper, unambiguous test: `url_effective`, not body size.** Without
+  `-L` the request returns **HTTP 302 at 273 bytes**; `-L` produces the 200 at 2,319 bytes with
+  `url_effective` = the guide landing page. A control probe gives byte-identical 2,319 under
+  `/mgmt/` and 2,347 under `/dg/`. **General rule: probe a known-bad URL on the same host first
+  and compare status, `url_effective` and size against that control.** This also settles the
+  long-carried broken link `redshift/latest/mgmt/agent-skills.html` — it never existed.
+- **A carried note said Maven `lastUpdated` diverged from artifact mtime on 5 of 5 projects. It
+  did NOT diverge here** — `redshift-jdbc42` matches to the minute. Recorded as a counter-example,
+  not a reversal.
+- **The Android Developers Blog has moved to a JS-only index with no RSS at all** (`/feeds/blog.xml`,
+  `/blog/rss`, `/blog/feed.xml` all 404), so `blog.md.txt` is currently the only machine-readable
+  index — an unfortunate dependency given that **AGP's `.md.txt` presents 8.13.2 as current while
+  the HTML documents 9.5.0/9.5.1 and Google Maven serves 9.5.2.** And **every markdown variant
+  rewrites in-page links into `.md.txt` form, so a fetching client never reaches the human page.**
+- **A vendor relaxed an authentication control specifically to widen AGENT access** — PhoenixAI
+  (managed StarRocks, ex-CelerData) **dropped the OIDC-SSO requirement for MCP server access** in
+  October 2026, so an agent can connect with password auth, SAML or OIDC, with or without MFA.
+  Every prior affordance sighting on this board has been a doc artifact or a shipped feature; this
+  is a control being *removed*. **Worth a standing watch: the affordance's second-order effect is
+  pressure on the auth controls in front of it.** Recorded as data: **six vendor doc surfaces in
+  that lane now carry imperatives addressed to automated clients**, several in the HTML a human
+  loads, and `docs.starrocks.io` ships **"Open in Claude" / "Open in ChatGPT" one-click handoff
+  buttons**. **No `llms.txt` was fetched, no skill file loaded, no MCP server contacted and no
+  suggested command run by any lane.**
+- **`npm install prisma` today pairs a Prisma 8 RC CLI with a Prisma 7 client** — the `prisma`
+  CLI's **`latest` dist-tag is 8.0.0-rc.35** while `@prisma/client` is still 7.10.1, and **`next`
+  is OLDER than `latest`**. Expo's `next` points **fifteen patches behind** `latest`. **A dist-tag
+  is a label someone sets, not an ordering — check `npm view <pkg> dist-tags`.**
+- **`grep -c` counts LINES not occurrences** — hit again during the branch sweep (every branch
+  reported "funcs=1"). This is the board's most-repeated measurement error; every parity check
+  this run used `grep -o | wc -l`.
+
+### Tooling / branch state 2026-11-23
+
+**`tools/` on `main` is nine modules stale** — no `rewrite_pov_meta`, `normalize_closing_tags`,
+`assert_not_parent_identity`, `assert_structure`, `assert_ledger_identity`, `SHARED_RULES.md`,
+`derive_lists.py`, `probe_board.py`, `handback_poll.py`, `lens_identity.py`, `lens_extra.py`,
+`events_table.py`, `patch_radar.py`, `longitudinal.py` or `countdowns.py`. Staged from
+**`origin/claude/great-clarke-dyabud`**; the working incantation is
+`git archive origin/claude/great-clarke-dyabud tools/ | tar -x -C <scratchpad>/`. The 11-07
+refinement held: **"newest branch" is not "newest tooling" — check the file SET, not the commit
+date**, and check it per-function rather than with `grep -c`.
+
+**PRIVACY: no lens build script was committed.** `build_132.py`, `corrections_132.py` and the
+staged `parent_ledger.json` all carry lens prose, and per the 10-11 and 11-10 breaches lens
+CONTENT never enters the public repo. Only `patch_rows.py` (content-free) is landable.
+
+**Scope, on the edition's face:** 132 refreshes Today's Read and Since-yesterday on all four
+chairs, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all seven identity sites.
+Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 131 and the NAV says
+so** — `claims[]` did not grow, and the depth went into the eleven corrections, the two
+instrument corrections and the restored TBD block. The quarterly Skills/Build re-rank is due
+**2027-01-01**.
