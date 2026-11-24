@@ -17643,3 +17643,28 @@ Skills/Build re-rank is due **2027-01-01**.
   behind. Staged from the newest branch carrying the full reusable set; the 11-07 refinement
   holds — **"newest branch" is not "newest tooling", so check the file SET per function, and
   never with `grep -c`.**
+
+### Post-run addendum 2026-11-24 — the privacy grep has a permanent, benign self-reference
+
+Grepping the staged set before `git add` (the 11-10 rule, run over
+`git diff --cached --name-only`) reported **5 positioning hits in CLAUDE.md**, which reads like
+the 10-11 breach recurring. It is not: all five are the **10-11 and 11-15 breach notes quoting
+the markers they describe** — a note that says *this file leaked "Our counter is not a…"* must
+quote the phrase to be evidence of anything. Zero artifact URLs anywhere in the file, and the
+edition-133 section introduced none of the five.
+
+**So the grep's hit count is not the signal; the hit's GRAMMAR is.** A *descriptive* hit (a note
+about a leak, in past tense, naming a file) is fine; a *generative* hit (chair lede, counter/ask
+prose, Mirror text as live content) is the breach. Read every hit rather than trusting or
+dismissing the count — and expect CLAUDE.md to hit forever, because the memory of a leak has to
+contain the thing that leaked.
+
+**Also settled: the designated `claude/*` branch existed as a STALE LOCAL REF while absent from
+the remote.** `git ls-remote --heads` returned nothing while the local ref pointed at
+`dfaa5fc` — a 2026-09-21 commit, 61 editions old — so `git checkout -b` failed with "a branch
+named … already exists" and the subsequent patch commands ran against `gh-pages`, where
+`tools/` does not exist. Nothing was damaged (the working tree stayed clean and the one `cp` was
+a file onto itself), but **the failure mode is a patch silently applied to the wrong branch.**
+The fix is `git branch -D` then recreate from the newest tooling branch. **Check `ls-remote`
+before trusting any local `claude/*` ref, and verify the base commit's DATE after checkout** —
+`git log -1 --format='%h %ci %s'` would have shown September at a glance.
