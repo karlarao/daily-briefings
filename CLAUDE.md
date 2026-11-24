@@ -17427,3 +17427,219 @@ Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 131 
 so** — `claims[]` did not grow, and the depth went into the eleven corrections, the two
 instrument corrections and the restored TBD block. The quarterly Skills/Build re-rank is due
 **2027-01-01**.
+
+## Run findings 2026-11-24 (edition 133)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked
+prompt, both hooks clean.** Dashboard published `10f19d1`, Pages `deploy` job verified `success`
+at **14:52:45Z**, live page byte-identical by sha256, archive page 200. Lens published as
+**Version 99** (`1795532638-ba36`). **~4,870k research tokens — the second-highest total, NOT a
+record** (11-23 was ~5,028k); stated that way because the 11-21, 11-22 and 11-23 notes each had
+to correct a "new record" claim, so the series gets checked rather than assumed. Hook logs
+audited on the event FIELD per the 11-05 lesson: `/tmp/claude-artifact-hook.log` holds **exactly
+4 records** (list, `read` with `path`, the plain `read` a republish requires, publish) and
+`/tmp/claude-bash-hook.log` **1,076** (575 allow / 502 pass) — **all `PreToolUse` at
+`mode=auto`, zero `PermissionRequest`**.
+
+### THE LEAD: a default of `"ok"` silently ERASED a flag, and the token delta is the only tell
+
+`assemble.py` ended its status parse with `if status not in (...): status = "ok"`. That is the one
+value in the vocabulary that **suppresses** a flag, and it was the fallback for every reply the
+contract parser could not read.
+
+**It fired today and it fired on the worst possible lane.** The `STATUS:`/`FLAG_REASON:` lines
+come **after** the brief in an agent's reply, so a transcript caught mid-flush yields **complete
+prose and no contract**. `appdev` extracted as `ok`; a `--force` re-extract after its completion
+notification returned **byte-identical brief text** and a status of **`urgent`**, carrying two
+past-due KEV RCEs. Nothing else in the pipeline would have caught it: the brief was whole, the
+dashboard rendered it, and a green lane is exactly what nobody re-reads.
+
+Fixed at source — the fallback is now **`"pending"`**, with the reasoning in the code:
+
+```python
+    if status not in ("ok", "slow", "urgent"):
+        # NEVER default to "ok" here (fixed 2026-11-24). The STATUS:/FLAG_REASON:
+        # contract lines come AFTER the brief, so a transcript caught mid-flush
+        # yields COMPLETE prose and NO contract -- and the old fallback then
+        # labelled it "ok", the one value that suppresses a flag.
+        status = "pending"
+```
+
+**The generalisable rule, and it is sharper than "do not default":** when a parse failure has to
+pick a value, it must pick the one that is **loud**, never the one that is **quiet**. Every
+status in that vocabulary is a claim; `ok` is a claim that nothing needs doing, and a parser is
+not entitled to make it.
+
+**And the detector is already in the pipeline: `apply_harness_tokens.py`.** A non-zero delta
+means a brief was read mid-flush. **Refinement to the 11-16 rule, measured today:** a non-zero
+delta does **not** imply truncated text — `snowflake` came back +16,780 and its brief text was
+byte-identical across the re-extract, with only the `usage` record lagging. So the delta is a
+**flush-timing** signal, not a content-loss signal, and the correct response is to re-extract and
+**diff both the text and the status**, because the status can move while the text does not.
+Today's totals: `snowflake` 297,494 and `appdev` 295,897 were the two corrected late.
+
+### A LANE CORRECTED A TEST THIS BOARD PUBLISHED THE DAY BEFORE — and the 11-23 rule predicted it
+
+Edition 132 established "verify by SYMBOL, not version" for the vendored Brotli fix and gave the
+test as **`grep BLOCK_SWITCH`, or the `-17` error-code line**. The Challengers lane measured the
+second half against four upstream controls and it is **INERT**: the `-17` form returns **0 on
+unpatched v1.1.0/v1.2.0 AND 0 on fixed v1.1.1/v1.2.1**, while `grep -o BLOCK_SWITCH | wc -l`
+returns **0 / 0 / 1 / 1** and matches NVD's `versionEndExcluding` boundaries exactly.
+
+**The 11-23 note had written the governing rule one day earlier** — *"any grep this board
+publishes as a test must be run against a known-patched AND a known-unpatched tree before it is
+written down"* — and the half that was never run against controls is precisely the half that was
+wrong. Patched in SHARED_RULES and in the obligations block, with the control measurements
+inline so the next edition cannot re-add it. **Two consecutive runs have now corrected one of
+this board's own instruments rather than one of its facts, which is the more expensive class:
+a wrong fact misleads one row, a wrong test misleads every future measurement.**
+
+### My own false conclusion, caught and corrected in-session: a private name cannot find a public one
+
+Chasing the guard-6 hole the 11-23 run opened, I grepped every branch for `_assert_markup_sane`
+— the **private** name the edition-132 build used — got zero hits, and told Karl the guard
+"exists on no branch". It is committed as the **public `assert_markup_sane` in `lens_extra.py`
+on `origin/claude/great-clarke-xt19ld`**, with a better 8-case selftest than mine. I had already
+added a duplicate to `lens_guard.py` by then; removed it, and the file is back to 30,715 bytes
+with its original selftest passing.
+
+**Rule: when you promote a helper from a build script into a module, its name changes, so a grep
+for the build-script name is a search for a string that was never committed.** Grep for the
+behaviour (`markup_sane`, `balanced`) or list the module's `^def` lines — not the private
+spelling. This is the `grep -c` family of error one level up: the command worked and the question
+was wrong.
+
+### Stale CLAUDE.md in context for the THIRD consecutive run, and this time it did reach a lane
+
+**main's copy was at edition 070 (2026-09-21); gh-pages' was current through 132** — 61 editions,
+two months. Caught by `grep -n '^## ' CLAUDE.md | tail` immediately after bootstrapping onto
+gh-pages, which is now the first command of the run.
+
+**The measured consequence, which the 11-22 and 11-23 notes did not have:** I built
+`specs/redshift.md` from the stale copy and handed that lane a **two-month-old security-sweep
+baseline (markdown 34,132 / HTML 55,977)**, where the current figures are **43,212 / 30 headings
+vs 68,327 / 33**. No damage, and only because the lane also reads the authoritative SHARED_RULES
+and reported its own measurements. **So the stale-memory hazard is not confined to my prose — it
+propagates into the 19 lane prompts, which are the highest-leverage text in the run.** Karl:
+merging the run branch is what ends this; until then the `grep | tail` check is mandatory before
+any carried fact is used, including in a spec file.
+
+### `probe_board.py` and `reuse_key` both paid for themselves, as they have every run since 10-08
+
+**Thirteen corrections applied to the ledger BEFORE any section was generated** (the 09-14 rule),
+every one through `patch_rows.patch/setfield/append` with its anchor asserted to match **exactly
+once** — the 11-23 practice, and it caught nothing this run, which is what a working guard looks
+like on a good day. One fold: `puppet-115731-kev-due-dec1-licensed-fix-only` into
+`...three-identities`, loser preserved in `aliases[]`.
+
+**Four PICKS missed and `derive_lists.py write` said so rather than dropping them silently** —
+all four rows lived in `ongoing`, not `new`, because `PICKS` only matches `raw['new']`. Moved to
+`PIN_ONGOING`. Also dropped the Roller pick deliberately: it was already pinned, and the 09-18
+one-story-twice defect is the thing that check exists to prevent.
+
+### A cross-lane contradiction carried rather than resolved, because both methods are sound
+
+**LiteLLM CVE-2026-40217's fix floor reads two ways.** Measured from the published wheels by
+SHA-256: **1.83.9** — 1.83.8 ships a regex blocklist, 1.83.9 adds a RestrictedPython sandbox, and
+1.83.9 and 1.83.10 are **byte-identical**. Read from NVD `versionEndExcluding` and OSV/GHSA:
+**1.83.10**. Both are on the row **with their methods named**, per the 09-21 rule that a date (or
+here a version) which flip-flops across editions is worse than one carrying a stated uncertainty.
+**The useful generalisation: a wheel diff and an advisory range answer different questions — "when
+did the code change" and "what range did the CNA assert" — and when they disagree by one patch
+release the advisory is usually rounding to the release that announced it.**
+
+### Three sequential lens guard failures, each of them correct
+
+- **`rewrite_pov_meta` → "unknown povContent meta viewid(s)".** I passed all 15 nav entries;
+  `povContent["meta"]` knows only the **8 chair-flipped** views. Fixed with an explicit
+  `POV_VIEWS` tuple. Documented on 11-18 and 11-22 and still worth the line, because the wrong
+  call *looks* right.
+- **`rewrite_pov_meta` → "changed 0 of 32 entries (required >= 1)".** I had set `pov["meta"]` by
+  hand earlier in the build, so the function that owns the site found nothing to do. Removed the
+  hand-setting. **Doing a guard's job for it converts the guard into a no-op** — the 11-10 design
+  intent, firing correctly for the third edition running.
+- **`assert_not_parent_identity` → 17 hits**, every one legitimate historical prose that mentions
+  `2026-11-23`. Switched to `check_date=False`, which is the documented default and exists
+  precisely because **a lens reports dates for a living**; the genuine date positions are covered
+  by `assert_identity_consistent`.
+
+### Flag calibration: 13 urgent, 6 ok — ON the mean, not a spike
+
+Generated from `longitudinal.stats` rather than typed (the 11-11 rule): last eight editions
+**13, 14, 17, 13, 14, 15, 13, 13**, 14-day mean **13.6**, series high **17** (2026-11-18). So
+today sits **slightly below the mean and four below the high**, which is worth stating because 13
+flags reads heavy.
+
+Audited one at a time against the literal bar. The lead is a KEV entry no scanner reports:
+**MONAI Label CVE-2026-133968** (CVSS 9.8 unauthenticated RCE, KEV due **2026-11-26**) has **zero
+CPEs at NVD**, returns nothing from OSV for its PyPI coordinate, and its only fix — 0.9.1 —
+**raised `requires_python` to ≥3.11**, so `pip` on 3.10 resolves to the vulnerable build and
+stops. That is the interpreter-floor shape and the invisible-tooling shape on one KEV clock.
+Alongside it: **Apache Roller CVE-2026-129448** (9.8, actively exploited, KEV date passed
+yesterday with `forensicTriage: Yes` — **moved from `events[]` to `patch[]` as a triage
+obligation**, which is the 11-05 standing rule applied prospectively), **Chromium
+CVE-2026-125350** (KEV due today; Capacitor's default `minWebViewVersion = 60` leaves a hybrid
+Android app ~97 majors below the fix), the **Oracle Secure Backup** PHP2Shell pair at 26 days
+past due and still filed in KEV under *"PHP Group / PHP"*, and **Puppet CVE-2026-115731** (9.9,
+due 12-01, fix published to no public channel).
+
+**All six `ok` lanes wrote the mandatory lane-level non-flag sentence** — the rule landed on
+11-20 is now **5 runs for 5**, which is long enough to call it load-bearing rather than new.
+
+### Ledger health and curation
+
+**705 items, 157 matched (6 changed + 151 ongoing) = 22.3%, 0 double-counted.** Dictionary
+64,945 → **65,456**; 138 ledger files. Match rate is inside the band the 11-20 `SKIP_HEADINGS`
+fix established, so no diagnostic was needed. Card: **new=11 (+441 more), changed=3, ongoing=15,
+aged_out=768, 29 of 29 rows sourced**, no duplicate stories, no fatal "pin not found".
+Synthesis: **16 bullets across 4 sections, 13 inline links, all 19 display names matched
+exactly** by script rather than by eye. Dashboard **740,303 bytes**, 19/19 topics, synthesis and
+whatsnew both present, summary `19 topics · 13 flagged · ~4,870k tokens`, model `claude-opus-5`,
+generated `2026-11-24 09:11 EST` (Eastern, never UTC).
+
+### Lens findings (edition 133)
+
+**Guard 5 passed on the first assembly: 706 cited units, zero uncited.** Mechanism unchanged
+since 09-15 — `chairs_133.py` calls `L.cite(L.find_url(...), TODAY, today=TODAY)` **inline per
+row** from a `c(title, topics)` helper, which is why it passes first try rather than after a
+citation pass. 718 primary links mined.
+
+**Every guard green on the final assembly:** `assert_structure` 15 sections,
+`assert_table_shape` 10 tables, **`assert_markup_sane` 5 generated sections** (balanced tags, no
+truncated tag before a cell close — the guard the 11-23 run landed after shipping broken markup
+that both `assert_table_shape` and guard 5 passed), `assert_identity_consistent`,
+`assert_not_parent_identity`, `assert_ledger_identity`, and `normalize_closing_tags` run **last**
+with `(1,1)` read back **from disk**.
+
+**All seven identity sites verified** — `<title>` = "Oracle Competitive Lens — 2026-11-24",
+`ED="133"`, runbar 133, NAV and `data-chips` agree, `pov` meta and `.c` both read
+"edition 133 · 2026-11-24". The only surviving "edition 132" strings are the **five intentional
+"vs edition 132" backward references**.
+
+**Size: 2,669,023 bytes, +28,945 against the parent**, with the per-section delta table run in
+both directions (the 11-22 rule): v-events **75,521 B (45 of 56 shown)**, v-patch **86,007 B
+(26 of 287, no-fix register 47)**, v-longitudinal 2,749 B, and **every carried section at exactly
++0**. The required plain `action:"read"` before republishing returned version `1795532638-ba36`
+and confirmed the live artifact was the edition-132 parent this build inherited from — nobody
+published underneath the run.
+
+### Scope, on the edition's face
+
+133 refreshes Today's Read and Since-yesterday on all four chairs, Event Horizon, Patch-Risk
+Radar, Longitudinal, the ledger and all seven identity sites. Claim Watch, Mirror, Question
+Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build Radar, Skills
+Radar and Vendor Dossiers **carry forward from 132 and the NAV says so** — `claims[]` did not
+grow, because the day's research was security, patch reachability and dated cutovers rather than
+competitive perf or price claims, and the depth went into the thirteen corrections. The quarterly
+Skills/Build re-rank is due **2027-01-01**.
+
+### Two notes for the next run
+
+- **The lens build scripts were NOT committed.** `build_133.py`, `chairs_133.py`,
+  `assemble_133.py`, `corrections_133.py` and the staged `parent_ledger.json` all carry lens
+  prose, and per the 10-11 and 11-10 breaches lens CONTENT never enters the public repo. Only the
+  content-free tooling fixes are landable.
+- **`tools/` on `main` is still nine modules stale** and `main`'s CLAUDE.md is still 61 editions
+  behind. Staged from the newest branch carrying the full reusable set; the 11-07 refinement
+  holds — **"newest branch" is not "newest tooling", so check the file SET per function, and
+  never with `grep -c`.**

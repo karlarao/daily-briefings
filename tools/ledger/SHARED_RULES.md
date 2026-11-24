@@ -829,7 +829,14 @@ Flag bar for this run: a hard deadline on or before **2026-12-07** (today + 14 d
 - **Verify by SYMBOL, not version, when a library is vendored.** DuckDB 2.0.1 carries the
   Brotli fix while its bundled `version.h` still reports the vulnerable 1.1.0, and brotli's
   own `master` is patched while reporting 1.2.0 — the header lies in *both* directions.
-  `grep BROTLI_DECODER_ERROR_FORMAT_BLOCK_SWITCH` settles it.
+  **Correct test: `grep -o BLOCK_SWITCH | wc -l`, and ONLY that (corrected 2026-11-24).**
+  brotli assembles that enum by token pasting, so the full
+  `BROTLI_DECODER_ERROR_FORMAT_BLOCK_SWITCH` literal never appears in source and greps
+  zero on PATCHED code; the `-17` error-code line is equally inert. Measured against four
+  upstream controls: `BLOCK_SWITCH` returns **0 / 0 / 1 / 1** on v1.1.0 / v1.2.0 / v1.1.1 /
+  v1.2.1, matching NVD's `versionEndExcluding` boundaries exactly, where both other forms
+  return 0 on all four. **Any grep this board publishes as a test must be run against a
+  known-patched AND a known-unpatched tree before it is written down.**
 - **A schedule endpoint publishes INTENT; only the release blog records what shipped.**
   `chromiumdash`'s `early_stable` is a planned date. No 158-numbered build reached any Stable
   user until the Early Stable push on **2026-11-12** (eight days after the scheduled 11-04);

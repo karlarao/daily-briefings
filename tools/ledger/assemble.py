@@ -27,7 +27,17 @@ for s in base:
             if len(tail) > len(flag):
                 flag = tail
     if status not in ("ok", "slow", "urgent"):
-        status = "pending" if not os.path.exists(md_path) else "ok"
+        # NEVER default to "ok" here (fixed 2026-11-24). The STATUS:/FLAG_REASON:
+        # contract lines come AFTER the brief in the agent's reply, so a transcript
+        # caught mid-flush yields COMPLETE prose and NO contract -- and the old
+        # fallback then labelled it "ok", the one value that SUPPRESSES a flag.
+        # Measured 2026-11-24: appdev's brief text was byte-identical across a
+        # --force re-extract while its status went ok -> urgent, carrying two
+        # past-due KEV RCEs. A parse failure must pick the LOUD value, never the
+        # quiet one. The tell that it happened is a non-zero
+        # apply_harness_tokens.py delta -- re-extract with --force and diff BOTH
+        # the text and the status, because the status can move while text does not.
+        status = "pending"
     if status != "urgent":
         flag = ""
     tokens = 0
