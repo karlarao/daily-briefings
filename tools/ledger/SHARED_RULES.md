@@ -1,8 +1,8 @@
-# SHARED RULES — daily-briefings research agents (run 2026-11-23)
+# SHARED RULES — daily-briefings research agents (run 2026-11-25)
 
-TODAY IS **2026-11-23** (Eastern). Treat 2026-11-23 as "today". Window = the past
-**30 days** (2026-10-24 .. 2026-11-23) unless your topic says otherwise (AI Daily:
-past 24-48 HOURS). Countdowns ("N days out") are relative to 2026-11-23.
+TODAY IS **2026-11-25** (Eastern). Treat 2026-11-25 as "today". Window = the past
+**30 days** (2026-10-26 .. 2026-11-25) unless your topic says otherwise (AI Daily:
+past 24-48 HOURS). Countdowns ("N days out") are relative to 2026-11-25.
 
 ## What you are doing
 You are ONE research lane of 19. Produce ONE markdown brief for a working
@@ -140,10 +140,10 @@ not pretend to. Do not narrate your process in the brief.
   Teradata: AWS Marketplace listings carry dated VantageCloud versions.
 - `export.arxiv.org` API 429s intermittently; `arxiv.org/search/` + `/abs/` serve fine.
 
-## Known from the last runs (2026-11-22 and earlier) — do not re-derive, but DO re-verify every date
+## Known from the last runs (2026-11-24 and earlier) — do not re-derive, but DO re-verify every date
 
 > **To whoever writes this section next run: do NOT type a "has passed" / "still ahead"
-> clause. Every countdown below was COMPUTED from TODAY (2026-11-23) by the generator, not
+> clause. Every countdown below was COMPUTED from TODAY (2026-11-25) by the generator, not
 > typed. On 2026-11-08 a hand-typed version of this block claimed a 11-10..11-12 wall
 > "has now PASSED" when the date was the 8th, and four lanes independently corrected it.
 > The lanes verifying against vendor pages is the behaviour to keep — not a licence to be
@@ -160,39 +160,41 @@ not pretend to. Do not narrate your process in the brief.
      python3 tools/ledger/shared_rules.py --today <ISO> --obligations obl.json
      A hand-typed relative-time claim here is read by all 19 lanes; on
      2026-11-08 one said a 11-10..11-12 wall "has now PASSED" two days early. -->
-**Dated obligations, countdowns computed from 2026-11-23:**
+**Dated obligations, countdowns computed from 2026-11-25:**
 
-- **⚑ 25 days PAST (was 2026-10-29)** — CISA KEV remediation due for the Oracle Secure Backup entry — overdue; a passed KEV date converts into a triage obligation, not a discharged one
-- **⚑ 23 days PAST (was 2026-10-31)** — CISA KEV remediation due for the Fragnesia entry — overdue
-- **⚑ 13 days PAST (was 2026-11-10)** — CISA KEV remediation due for the Brotli decoder out-of-bounds write (CVE-2026-111497). SETTLED: only the structured forensicTriage field binds and for Brotli it is No. NVD is Analyzed with PRIMARY CVSS 3.1 9.8. Apple is an affected Brotli vendor; Node's fix is 22.23.4 (not 22.23.3). NVD's own record lists all three fixed releases inside its affected ranges — a permanent false positive
-- **⚑ 11 days PAST (was 2026-11-12)** — CISA KEV remediation due for GPUStack CVE-2026-102895 — forensicTriage: Yes. Upgrade target 2.3.1: 2.2.0 clears only the KEV entry and INTRODUCES CVE-2026-103002, so the floor is 2.2.2. Patching alone is insufficient — the root cause trusted a client-supplied X-GPUStack-Real-IP, so every admin API key and worker credential needs rotating
-- **⚑ 11 days PAST (was 2026-11-12)** — CISA KEV remediation due for OpenSSH CVE-2026-123158 (musl libc without PAM). forensicTriage: Yes. musl itself is unfixed, so other crypt() callers stay exposed
-- **⚑ 6 days PAST (was 2026-11-17)** — Oracle monthly CSPU (the November drop carried 655 patches). Confirm from Oracle's own advisory surface what shipped. NOTE: CVE-2026-21962 (CVSS 10.0, KEV) is NOT a database CVE — CISA and NVD scope it to Oracle HTTP Server / WebLogic Proxy Plug-in, fixed on the middleware train in January 2026. Oracle's CVE map lives at public-vuln-to-advisory-mapping.html (the hyphenated cve-to-advisory-mapping.html 404s)
-- **⚑ 6 days PAST (was 2026-11-17)** — BigQuery TabFM token-based pricing took effect per the pricing page — but the AI.PREDICT reference page publishes a DIFFERENT date for the same change. Report BOTH surfaces; the bill is also not computable because the formula multiplies by an undocumented n_ensembles
-- **⚑ 6 days PAST (was 2026-11-17)** — DuckDB 1.4 support ended (1.5 is supported to March 2027; 2.0 carries an irreversible storage change)
-- **⚑ 6 days PAST (was 2026-11-17)** — Snowflake BCR-2473 moved the default AND minimum auto-suspend for interactive warehouses. EXISTING warehouses are NOT rewritten; the trap is CREATE OR REPLACE without an explicit AUTO_SUSPEND, which silently adopts the new 1-hour default. One hour is also the minimum billable period per resume
-- **⚑ 6 days PAST (was 2026-11-17)** — Chrome 158 STABLE removed client-side XSLT. The XSLTEnabled enterprise policy AND the deprecation origin trial both run to Chrome 176 (2027-08-17) — feature-detect 'XSLTProcessor' in window rather than version-detect. Firefox Stable has NOT followed, so a cross-browser check hides this
-- **⚑ 5 days PAST (was 2026-11-18)** — Databricks variantShredding became default. It is a reader+writer table feature, so an unsupporting client cannot open the table at all, and enableVariantShredding=false does NOT restore old-client reads. The OSS read floor measured out of the published jars is delta-spark 4.1.0 (3.3.3 has zero occurrences of the feature name; 4.0.0 carries only the preview name) against five different floors stated on Databricks' own surfaces
-- **⚑ 5 days PAST (was 2026-11-18)** — Snowflake on Azure: allowlists must carry Snowflake Network Identifiers for Azure Storage and Key Vault (BCR-2391, unbundled)
-- **⚑ 5 days PAST (was 2026-11-18)** — CISA KEV remediation due for Apple CVE-2024-27834. CORRECTED 2026-11-20: CISA's record names it Apple Multiple Products Improper Authentication, CWE-287 — a pointer-authentication bypass that already requires arbitrary read/write. It is NOT a WebKit memory-corruption bug; the board had the class wrong
-- **⚑ 4 days PAST (was 2026-11-19)** — PostgreSQL 19 GA — it DID ship, later on its scheduled day (edition 128 measured RC 2 hours earlier, which is a timing artifact, not an invented date). 19.0 is current; 14 is unsupported with a final release of 14.25. The live story is the extension wall: neither TimescaleDB nor pgvector published a PG19 artifact on GA day and TimescaleDB's released code refuses to build against 19. Re-check both, and whether the managed providers shipped the 14 final
-- **⚑ 4 days PAST (was 2026-11-19)** — DeepSeek V4.1 Flash retirement on Databricks — the successor's name is nearly identical, which is the trap
-- **⚑ 2 days PAST (was 2026-11-21)** — CISA KEV remediation due for Apache Axis 1.x — and there is NO reachable fix: the ASF states it does not expect to create an Axis 1.x release fixing this, and org.apache.axis:axis on Maven Central holds exactly one version, 1.4, last updated 2006-04-23. No version bump, no dependencyManagement override and no scanner-driven upgrade can resolve it
-- **⚑ TODAY (2026-11-23)** — CISA KEV remediation due for the Apache Roller entry (added 2026-11-20). Confirm the fixed version from the ASF advisory, not from a tracker
-- **⚑ TOMORROW (2026-11-24)** — CISA KEV remediation due for the Chrome XML use-after-free CVE-2026-125350 — exploited in the wild, and it reaches Chrome for Android and Android System WebView, which update through Play on their own cadence (so a Capacitor/Cordova app IS this engine; Capacitor's default minWebViewVersion is 60)
-- 7 days out (2026-11-30) — GitHub X-GitHub-Stateless-S2S-Token header cutover
-- 7 days out (2026-11-30) — OpenAI triple shutdown (three deprecations landing the same day) and Anthropic Opus 4.8 fast mode removed — confirm each against the vendor's own deprecations page
-- 8 days out (2026-12-01) — CISA KEV remediation due for the Puppet entry
-- 8 days out (2026-12-01) — Google Gemini 2.5 silent reroute / breaking change — confirm the surface and whether it is a reroute or a retirement
-- 8 days out (2026-12-01) — Google Play payment-authorization requirement for Japan. The date is published ONLY on Play Console Help's 'Policy announcement: October 29, 2026' page and ONLY in ordinal form ('December 1st, 2026') — it is absent from the structured Policy Deadlines table, so a date-pattern grep of that table returns a false negative. The penalty is a HOLD ON EARNINGS in every region, not only Japan
-- 9 days out (2026-12-02) — CISA KEV remediation due for LiteLLM — SSVC record reads exploitation: active
-- 9 days out (2026-12-02) — GitHub Actions pull_request_target PERMANENT enforcement (listed so a lane does not describe the November brownouts as the end of it)
-- 9 days out (2026-12-02) — Amazon EKS 1.34 standard support ends
-- 15 days out (2026-12-08) — GitHub ARM32 hosted-runner retirement, and Databricks OpenSharing legacy-token expiry. OpenSharing's 12-08 is a FLOOR not a cliff — 'one year from creation or 12-08, whichever is further in the future' — so it binds only tokens created on or before 2025-12-08, while the URL transition it bridges is postponed with no new date
-- 22 days out (2026-12-15) — Oracle monthly CSPU — the December drop. Confirm from Oracle's own advisory surface (public-vuln-to-advisory-mapping.html) what actually shipped; the hyphenated cve-to-advisory-mapping.html 404s
-- 38 days out (2026-12-31) — Redshift ODBC 1.x end of support (driver major). Confirm from the AWS driver docs, and check the body size against the host soft-404 baseline — docs.aws.amazon.com soft-404s with HTTP 200 at ~2,319 bytes under /mgmt/ and ~2,347 under /dg/
+- **⚑ 27 days PAST (was 2026-10-29)** — CISA KEV remediation due for the Oracle Secure Backup entry (CVE-2026-109618 / CVE-2026-109619, the embedded PHP "PHP2Shell" RCE, CVSS 9.8, unauthenticated, forensicTriage: Yes) -- overdue. It is still filed in KEV under "PHP Group / PHP" and NVD's 316 CPEs name NO Oracle product, so a CPE-driven inventory sweep returns clean. A passed KEV date converts into a TRIAGE obligation, not a discharged one
+- **⚑ 25 days PAST (was 2026-10-31)** — CISA KEV remediation due for the Fragnesia entry -- overdue
+- **⚑ 15 days PAST (was 2026-11-10)** — CISA KEV remediation due for the Brotli decoder out-of-bounds write (CVE-2026-111497). SETTLED: only the structured forensicTriage field binds and for Brotli it is No. NVD is Analyzed with PRIMARY CVSS 3.1 9.8. Apple is an affected Brotli vendor; Node's fix is 22.23.4 (not 22.23.3). NVD's own record lists all three fixed releases inside its affected ranges -- a permanent false positive. CORRECT TEST (controlled 2026-11-24): grep -o BLOCK_SWITCH | wc -l, and ONLY that -- it returns 0/0/1/1 on brotli v1.1.0/v1.2.0/v1.1.1/v1.2.1; both the full BROTLI_DECODER_ERROR_FORMAT_BLOCK_SWITCH literal and the -17 error-code line return 0 on patched AND unpatched trees
+- **⚑ 13 days PAST (was 2026-11-12)** — CISA KEV remediation due for GPUStack CVE-2026-102895 -- forensicTriage: Yes. Upgrade target 2.3.1: 2.2.0 clears only the KEV entry and INTRODUCES CVE-2026-103002, so the floor is 2.2.2. Patching alone is insufficient -- the root cause trusted a client-supplied X-GPUStack-Real-IP, so every admin API key and worker credential needs rotating
+- **⚑ 13 days PAST (was 2026-11-12)** — CISA KEV remediation due for OpenSSH CVE-2026-123158 (musl libc without PAM). forensicTriage: Yes. musl itself is unfixed, so other crypt() callers stay exposed
+- **⚑ 8 days PAST (was 2026-11-17)** — Oracle monthly CSPU (the November drop carried 655 patches). Confirm from Oracle's own advisory surface what shipped. NOTE: CVE-2026-21962 (CVSS 10.0, KEV) is NOT a database CVE -- CISA and NVD scope it to Oracle HTTP Server / WebLogic Proxy Plug-in, fixed on the middleware train in January 2026. Oracle's CVE map lives at public-vuln-to-advisory-mapping.html (the hyphenated cve-to-advisory-mapping.html 404s)
+- **⚑ 8 days PAST (was 2026-11-17)** — BigQuery TabFM token-based pricing took effect per the pricing page -- but the AI.PREDICT reference page publishes a DIFFERENT date for the same change. Report BOTH surfaces; the bill is also not computable because the formula multiplies by an undocumented n_ensembles
+- **⚑ 8 days PAST (was 2026-11-17)** — DuckDB 1.4 support ended (1.5 is supported to March 2027; 2.0 carries an irreversible storage change). The KEV'd Brotli fix landed only in 2.0.1 -- nothing since 2026-09-28 on the supported 1.5 line
+- **⚑ 8 days PAST (was 2026-11-17)** — Snowflake BCR-2473 moved the default AND minimum auto-suspend for interactive warehouses. EXISTING warehouses are NOT rewritten; the trap is CREATE OR REPLACE without an explicit AUTO_SUSPEND, which silently adopts the new 1-hour default. One hour is also the minimum billable period per resume
+- **⚑ 8 days PAST (was 2026-11-17)** — Chrome 158 STABLE removed client-side XSLT. The XSLTEnabled enterprise policy AND the deprecation origin trial both run to Chrome 176 (2027-08-17) -- feature-detect 'XSLTProcessor' in window rather than version-detect. Firefox Stable has NOT followed, so a cross-browser check hides this
+- **⚑ 7 days PAST (was 2026-11-18)** — Databricks variantShredding became default. It is a reader+writer table feature, so an unsupporting client cannot open the table at all, and enableVariantShredding=false leaves the feature SUPPORTED (still in readerFeatures) rather than disabled -- only ALTER TABLE ... DROP FEATURE restores old-client reads, and that rewrites data. The read floor is stated FIVE different ways on Databricks' own surfaces (15.4 / 16.4 / 17.3 / 18.1); OSS delta-spark 3.3.x contains ZERO occurrences of the feature name
+- **⚑ 7 days PAST (was 2026-11-18)** — Snowflake on Azure: allowlists must carry Snowflake Network Identifiers for Azure Storage and Key Vault (BCR-2391, unbundled)
+- **⚑ 7 days PAST (was 2026-11-18)** — CISA KEV remediation due for Apple CVE-2024-27834. CISA's record names it Apple Multiple Products Improper Authentication, CWE-287 -- a pointer-authentication bypass that already requires arbitrary read/write. It is NOT a WebKit memory-corruption bug; the board had the class wrong until 2026-11-20
+- **⚑ 6 days PAST (was 2026-11-19)** — PostgreSQL 19 GA -- it DID ship, later on its scheduled day. 19.0 is current; 14 is unsupported with a final release of 14.25. The live story is the extension wall, now counted from the PGDG pool: 83 PG19 extension packages against 113 for PG18, with timescaledb, repmgr, pgpool2 and pg_auto_failover among the ~30 missing. pgvector HAS published a PG19 artifact (since 2026-10-02). Separately: the 2026-11-12 minors break every TimescaleDB background job -- upgrade TimescaleDB FIRST, and 2.32.0 has no forward fix (step back to 2.31.1)
+- **⚑ 6 days PAST (was 2026-11-19)** — DeepSeek V4.1 Flash retirement on Databricks -- the successor's name is nearly identical, which is the trap
+- **⚑ 4 days PAST (was 2026-11-21)** — CISA KEV remediation due for Apache Axis 1.x -- and there is NO reachable fix: the ASF states it does not expect to create an Axis 1.x release fixing this, and org.apache.axis:axis on Maven Central holds exactly one version, 1.4, last updated 2006-04-23. The fault is parsed BEFORE any per-service handler chain runs, so service-level auth handlers do not protect against it
+- **⚑ 2 days PAST (was 2026-11-23)** — CISA KEV remediation due for the Apache Roller entry (CVE-2026-129448, CVSS 9.8 unauthenticated deserialization, exploitation: active, forensicTriage: Yes) -- now PAST, so it is a forensic-triage obligation rather than a patch one. Confirm the fixed version from the ASF advisory, not from a tracker
+- **⚑ 1 day PAST (was 2026-11-24)** — CISA KEV remediation due for the Chrome XML use-after-free CVE-2026-125350 -- exploited in the wild, and it reaches Chrome for Android and Android System WebView, which update through Play on their own cadence (so a Capacitor/Cordova app IS this engine; Capacitor's default minWebViewVersion is 60, ~97 majors below the fix)
+- **⚑ TOMORROW (2026-11-26)** — CISA KEV remediation due for MONAI Label CVE-2026-133968 (CVSS 9.8, unauthenticated RCE). The KEV entry no scanner reports: ZERO CPEs at NVD, nothing from OSV for its PyPI coordinate, and its only fix -- 0.9.1 -- raised requires_python to >=3.11, so pip on 3.10 resolves to the vulnerable build and stops. Interpreter-floor shape and invisible-tooling shape on one KEV clock
+- 5 days out (2026-11-30) — GitHub X-GitHub-Stateless-S2S-Token header cutover
+- 5 days out (2026-11-30) — OpenAI triple shutdown (three deprecations landing the same day) and Anthropic Opus 4.8 fast mode removed -- confirm each against the vendor's own deprecations page. NOTE the surface trap: the Opus 4.8 fast-mode withdrawal is published on the FEATURE page and appears nowhere on the model-deprecations page, so a reader tracking deprecations correctly sees nothing
+- 6 days out (2026-12-01) — CISA KEV remediation due for the Puppet entry (CVE-2026-115731, NVD Primary CVSS 3.1 9.9). The fix is published to NO public channel: the puppet gem is frozen at 8.10.0 (2024-10-22), yum.puppet.com/puppet8/el/9 tops out at puppet-agent-8.10.0-1 and yum.puppet.com/puppet9/ 404s, so the newest public artifact is simultaneously inside the affected range and the fix sits behind a Perforce licence
+- 6 days out (2026-12-01) — Google Gemini 2.5 silent reroute / breaking change -- confirm the surface and whether it is a reroute or a retirement
+- 6 days out (2026-12-01) — Google Play payment-authorization requirement for Japan. The date is published ONLY on Play Console Help's 'Policy announcement: October 29, 2026' page and ONLY in ordinal form ('December 1st, 2026') -- it is absent from the structured Policy Deadlines table, so a date-pattern grep of that table returns a false negative. The penalty is a HOLD ON EARNINGS in every region, not only Japan
+- 7 days out (2026-12-02) — CISA KEV remediation due for LiteLLM CVE-2026-40217 (NOT the September entry CVE-2026-59822) -- SSVC record reads exploitation: active. Its fix floor reads two ways and BOTH are on the board with their methods named: 1.83.9 measured from the published wheels by SHA-256 (1.83.8 ships a regex blocklist, 1.83.9 adds a RestrictedPython sandbox, and 1.83.9 and 1.83.10 are byte-identical), against 1.83.10 from NVD versionEndExcluding and OSV/GHSA
+- 7 days out (2026-12-02) — GitHub Actions pull_request_target PERMANENT enforcement (listed so a lane does not describe the November brownouts as the end of it)
+- 7 days out (2026-12-02) — Amazon EKS 1.34 standard support ends
+- 13 days out (2026-12-08) — GitHub ARM32 HOSTED-runner retirement -- and note the half that matters more: SELF-HOSTED ARM32 has been unsupported since 2026-09-23 (Node-20-removal changelog, ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION opt-out gone), so a reader who only knows the December date thinks they have time when they have none. Same date: Databricks OpenSharing legacy-token expiry, which is a FLOOR not a cliff -- 'one year from creation or 12-08, whichever is further in the future' -- binding only tokens created on or before 2025-12-08
+- 20 days out (2026-12-15) — Oracle monthly CSPU -- the December drop. Confirm from Oracle's own advisory surface (public-vuln-to-advisory-mapping.html) what actually shipped
+- 36 days out (2026-12-31) — Redshift ODBC 1.x end of support (driver major). Confirm from the AWS driver docs, and check the body size against the host soft-404 baseline -- docs.aws.amazon.com soft-404s with HTTP 200 at ~2,319 bytes under /mgmt/ and ~2,347 under /dg/
+- 126 days out (2027-03-31) — Microsoft Fabric Runtime 1.3 end of LTS. SETTLED 2026-11-23 after four editions of disagreement, and it was never a moving date -- it was two different pages: data-engineering/runtime-1-3 carries an EOSA label and NO date at all, while data-engineering/lifecycle carries BOTH the 2026-09-30 EOSA and the footnote putting 1.3 into LTS through March 2027. Cite the lifecycle URL
 
-Flag bar for this run: a hard deadline on or before **2026-12-07** (today + 14 days).
+Flag bar for this run: a hard deadline on or before **2026-12-09** (today + 14 days).
 
 - Snowflake Legacy Notebook execution end: **November 2026, vendor published NO day** —
   month precision only. Do not invent a day; if you find one, cite the surface.
@@ -894,6 +896,104 @@ Flag bar for this run: a hard deadline on or before **2026-12-07** (today + 14 d
 - **`grep -c` counts LINES, not occurrences.** Use `grep -o … | wc -l` for any parity or
   marker count. This has been the single most repeated measurement error on this board.
 
+## Settled or sharpened on 2026-11-23 (edition 132) — re-verify, do not re-derive
+
+- **NAME THE URL, NOT THE PRODUCT, WHEN YOU RECORD A DATE.** Four independent confirmations in
+  one run that a "moving" date was a *static fact read on different pages*. The flagship:
+  **Fabric Runtime 1.3** — `learn.microsoft.com/.../data-engineering/runtime-1-3` carries an
+  `EOSA` label and **no date at all** (zero occurrences of `September 30`, `March 2027`, `LTS`),
+  while `.../data-engineering/lifecycle` carries **both** the 2026-09-30 EOSA **and** the footnote
+  putting 1.3 into LTS through **March 2027** — and neither page had changed in weeks. Siblings:
+  a per-model **feature** withdrawal (Opus 4.8 fast mode) published on the feature page and absent
+  from the model-deprecations page, so a reader tracking deprecations correctly sees nothing; a KEV
+  entry for **Oracle Secure Backup filed under "PHP Group / PHP"**; and **AGP's markdown variant a
+  whole major version behind its HTML twin**. Record the surface you read.
+- **A "no CVE id" advisory is NOT by itself invisible — the discriminator is REVIEW STATUS**, and
+  this amends the carried rule rather than restating it. Measured three ways in one run:
+  *reviewed + no CVE id → ingested* (both Critical unauthenticated Next.js RCEs have
+  `aliases: null` and both return **HTTP 200** from OSV; npm's bulk audit returns both as
+  `critical` for `next@16.4.0`); *unreviewed + no CVE id → not ingested* (the Critical Vite
+  dev-server RCE `GHSA-p4f5-76q4-ffq7` 404s at OSV against a same-repo CVE-bearing control at
+  200); *unreviewed + a CVE id → also not alerted on* (Apache Axis CVE-2026-90436 /
+  `GHSA-988f-c54m-f8jj`, Critical, Unreviewed, no package mapping). **Reviewed status is visible
+  on the advisory.**
+- **Check the global database directly, never a repo's security tab.** Three editions carried
+  "the mongoose `sanitizeFilter` advisories have no CVE ids"; they all do
+  (CVE-2026-125116..125120, with GHSAs, CVSS 3.1 vectors and OSV records). What produced the wrong
+  claim is that the repo's security tab renders **no CVE column for any of its seven advisories** —
+  a page-layout fact, not an ingestion fact. Use `api.osv.dev/v1/vulns/<GHSA>`.
+- **A new tier BELOW "no advisory artifact": the CVE id itself was never minted.** runc
+  1.3.7 / 1.4.4 / 1.5.3 (2026-11-12) fix a `runc restore` host-directory escape and the id the
+  project tells you to track, **CVE-2026-119101**, resolves nowhere on seven surfaces (NVD
+  `totalResults: 0`; `cveawg.mitre.org` `CVE_RECORD_DNE`; OSV not found for the CVE *and* for
+  `GHSA-g2c3-j8g3-7gpw`; GitHub's global DB 404; absent from `vuln.go.dev` so `govulncheck` is
+  clean; zero Debian entries; all three sibling ids equally non-existent). **And the split is
+  visible in one database: Debian tracks the `crun` half of the same bug and has no record of the
+  `runc` half** — one bug, two runtimes, and whether your scanner sees it depends on which you
+  installed. Same window, no ids at all: **Cilium 1.20.5's two policy FAIL-OPEN bugs** (egress
+  `toServices` + `toPorts` could allow **any** destination on those ports; strict egress encryption
+  could pass **unencrypted** traffic), Argo CD 3.6's "coordinated security fixes", BuildKit's
+  transparency-log fix.
+- **The worst tier of all, measured: no record of ANY kind.** All three Arrow repos report "There
+  aren't any published security advisories" and OSV returns 0 vulns for both Maven coordinates for
+  the Parquet-encryption and Arrow Java credential-leak fixes — the only surfaces recording either
+  are a GitHub issue (GH-1232) and a changelog heading. **Where there is no artifact, version
+  currency is the only control.**
+- **A scanner that CLEARS a shipped RCE sink.** The published `vanna` 2.0.2 wheel still contains
+  `exec(plotly_code, globals(), ldict)` — the CVE-2024-5565 sink — relocated under `legacy/` rather
+  than removed, while OSV/GHSA record `last_affected: 0.5.5`. So `pip-audit` against 2.0.2 raises
+  the injection CVE (CVE-2026-4229, CWE-89) and **clears the RCE**. Also: `vanna` is **not** in
+  KEV — the live catalog pulled 2026-11-23T12:54Z held 1,790 entries and **zero** vanna entries,
+  triple-sourced by three lanes.
+- **"No reachable fix" has moved from EOL branches to DISTRIBUTION CHANNELS.** Puppet
+  CVE-2026-115731 (NVD **Primary** CVSS 3.1 9.9, KEV due 12-01): the vendor names fixed versions
+  (8.22.2 / 9.1.3, PE 2023.8.13 / 2025.12.1) and NVD's CPE ranges agree, but **not one has ever
+  been published to a public Puppet surface** — the `puppet` gem is frozen at 8.10.0 (2024-10-22),
+  `yum.puppet.com/puppet8/el/9` tops out at `puppet-agent-8.10.0-1`, `yum.puppet.com/puppet9/`
+  404s. A currency dashboard reads "latest" while KEV compliance reads "overdue". **Spring is the
+  same shape at scale: 23 of the 25 CVE ids it published on 2026-11-19 did not exist four days
+  later** (`CVE_RECORD_DNE` for all five Spring Security ids **including the Critical
+  CVE-2026-59273**; NVD `totalResults: 0`), six of its eight fix versions are **Enterprise Support
+  only**, Maven Central's newest public `spring-security-web` builds (6.5.11 / 6.4.13 / 5.8.16) are
+  all **below** the advisory's affected ceilings, and **Spring Boot 3.5.16 pins the vulnerable
+  6.5.11**.
+
+## Settled or sharpened on 2026-11-24 (edition 133) — re-verify, do not re-derive
+
+- **A KEV entry that no scanner reports, and it is the shape to look for.** **MONAI Label
+  CVE-2026-133968** (CVSS 9.8, unauthenticated RCE, KEV due **2026-11-26**) has **zero CPEs at
+  NVD**, returns nothing from OSV for its PyPI coordinate, and its only fix — 0.9.1 — **raised
+  `requires_python` to >=3.11**, so `pip` on 3.10 resolves to the vulnerable build and stops.
+  That is the **interpreter-floor** shape and the **invisible-tooling** shape on one KEV clock.
+- **The Brotli symbol test was HALF WRONG and the wrong half was the one never run against
+  controls.** Edition 132 gave the test as "grep `BLOCK_SWITCH`, **or** the `-17` error-code
+  line". Measured against four upstream controls, the `-17` form returns **0 on unpatched
+  v1.1.0/v1.2.0 AND 0 on fixed v1.1.1/v1.2.1** — inert — while `grep -o BLOCK_SWITCH | wc -l`
+  returns **0 / 0 / 1 / 1** and matches NVD's `versionEndExcluding` boundaries exactly. **Use
+  `grep -o BLOCK_SWITCH | wc -l` and only that.** The governing rule had been written one day
+  earlier and the half that skipped it is the half that was wrong: **any grep this board publishes
+  as a test must be run against a known-patched AND a known-unpatched tree before it is written
+  down.**
+- **A wrong TEST is more expensive than a wrong FACT** — it misleads every future measurement
+  rather than one row. Two consecutive runs have now corrected one of this board's own instruments.
+- **When a helper is promoted from a build script into a module its NAME changes**, so grepping
+  for the build-script spelling searches for a string that was never committed. Grep for the
+  behaviour, or list the module's `^def` lines. Same family as `grep -c`: the command worked and
+  the question was wrong.
+- **`grep -c` counts LINES, not occurrences** — still the single most repeated measurement error
+  on this board. Use `grep -o <pat> | wc -l` for any parity or marker count.
+- **A cross-lane contradiction is carried with both methods named, not resolved**, when both
+  methods are sound: LiteLLM CVE-2026-40217's fix floor is **1.83.9** measured from the published
+  wheels by SHA-256 (1.83.8 ships a regex blocklist, 1.83.9 adds a RestrictedPython sandbox, and
+  1.83.9 and 1.83.10 are byte-identical) and **1.83.10** read from NVD `versionEndExcluding` and
+  OSV/GHSA. **A wheel diff and an advisory range answer different questions** — "when did the code
+  change" versus "what range did the CNA assert" — and when they disagree by one patch release the
+  advisory is usually rounding to the release that announced it.
+- **Source access measured 11-24:** the **Redshift security-sweep baseline moved for the first
+  time in weeks** and the current figures are **markdown 43,212 bytes / 30 headings against HTML
+  68,327 / 33** — the growth is ordinary new content, confirmed by 16 matching content markers.
+  Any older baseline (the long-stable 34,132 / 55,977 pair) is stale; measure, do not carry.
+
 ## OUTPUT FORMAT (exactly this skeleton, markdown)
 
     **TL;DR** — 1-2 sentences: the one thing to know today.
@@ -939,7 +1039,7 @@ produces this board's best findings; just state its OUTCOME, not its verdict.
 
 - `urgent` ONLY for a genuine ACT-NOW item: an actively-exploited or unpatched CVE on
   a stack a reader actually runs, OR a hard deadline within ~14 days (i.e. on or
-  before 2026-12-07). A date that requires NOTHING of the reader (a GA, a billing
+  before 2026-12-09). A date that requires NOTHING of the reader (a GA, a billing
   change, a conference) is NOT a deadline. A requirement already in force and
   blocking is past its deadline — that still counts.
 - `slow` = genuinely little or nothing happened in your lane.

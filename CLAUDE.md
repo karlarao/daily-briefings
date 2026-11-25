@@ -17668,3 +17668,305 @@ a file onto itself), but **the failure mode is a patch silently applied to the w
 The fix is `git branch -D` then recreate from the newest tooling branch. **Check `ls-remote`
 before trusting any local `claude/*` ref, and verify the base commit's DATE after checkout** —
 `git log -1 --format='%h %ci %s'` would have shown September at a glance.
+
+## Run findings 2026-11-25 (edition 134)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked
+prompt, both hooks clean.** Dashboard published `bc9523c`, live page byte-identical by sha256 at
+**14:53:20Z, ~30s after the push**, Pages run 304 `completed/success`. Lens published as
+**Version 100** (`1795618929-65cf`). **~4,831k research tokens** — the second-highest total, NOT
+a record (11-20 was ~4,932k); stated that way because the 11-21, 11-22 and 11-23 notes each had
+to correct a "new record" claim, so the series gets checked rather than assumed. Hook logs
+audited on the event FIELD per the 11-05 self-poisoning lesson: `/tmp/claude-artifact-hook.log`
+**5 records**, `/tmp/claude-bash-hook.log` **1,040** — **all `PreToolUse` at `mode=auto`, zero
+`PermissionRequest` in either**.
+
+### THE LEAD: doing the KEV-compliant thing lands you on a vulnerable build
+
+Three KEV clocks inside 48 hours, and **each one's remediation fails in a different way** — none
+is fixed by what a patch process does. The sharpest is MONAI Label CVE-2026-133968 (due
+**2026-11-26**, `forensicTriage: Yes`): **the build CISA, NVD and OSV all name as the fix,
+0.8.6, had two Critical unauthenticated RCEs disclosed against it today.** Measured from
+`pypi.org/pypi/monailabel/json` and the GitHub releases — 0.8.5 (2024-11-25) is the exploited
+build, 0.8.6 (2026-11-22) clears the KEV CVE, **0.8.7** (2026-11-25 03:17Z) fixes
+GHSA-j5c7-p3x5-gw2x affecting 0.6.0–0.8.6, **0.8.8** (08:48Z) fixes GHSA-gfjg-c3x6-24gw
+affecting 0.7.0–0.8.7. **Neither new advisory carries a CVE id or an OSV record**, so no scanner
+can tell you the KEV fix is not the floor. The floor is 0.8.8. And the interpreter gate is real:
+0.8.6+ requires Python ≥3.11, so on 3.9/3.10 `pip install -U monailabel` resolves to the
+exploited 0.8.5 and **exits 0**.
+
+**Generalisable: a KEV entry names the fix that cleared *that* CVE on the day it was listed. It
+is a point-in-time claim, not a floor.** Before acting on a KEV remediation version, check what
+has been published against it since.
+
+### A NEW TIER ON THE NO-REACHABLE-FIX REGISTER: no manifest entry to be wrong about
+
+Idunno.AntiCsrf CVE-2026-131914 (KEV, due 2026-11-27). Every prior mechanism on this register
+assumed a manifest entry existed and something about it was wrong — an empty CPE, an unbounded
+CPE, a GIT range with no package identity, a parent's tilde pin, an interpreter floor. **This one
+has no manifest entry to be wrong about.** Measured: `api.nuget.org/.../idunno.anticsrf/index.json`
+→ **404**; an OSV NuGet query → `{}`; `api.osv.dev/v1/vulns/CVE-2026-131914` → *not found* six
+days after NVD published it; and **NVD's two CPEs file it under vendor `blowdart`**, not the
+`Idunno` KEV names, so even a CPE sweep needs the right vendor string. A NuGet text search for
+"anticsrf" returns an unrelated healthy package, which is how someone talks themselves out of it.
+
+Mechanism, because it explains why no `<form runat="server">` is needed:
+`AntiCsrfModule.PreRequestHandlerExecute` runs at the `HttpApplication` pipeline level, *before*
+PreInit/Init/Page_Load; it checks only that `__CSRFCOOKIE` and `__CSRFTOKEN` are non-empty, then
+calls `new ObjectStateFormatter().Deserialize(...)` — and the parameterless constructor does no
+MAC, no signature, no encryption, no `machineKey` validation and sets no `SerializationBinder`.
+Project dead since December 2008, so **remediation is deleting the DLL and detection is
+`grep -ril "Idunno.AntiCsrf\|AntiCsrfModule"`**. **The vendor's own advice is a filesystem grep;
+that is what detection looks like when the dependency graph does not contain the dependency.**
+Same shape covers vendored JARs, `lib/` directories and anything installed by a 2010-era guide.
+
+### TWO drafted corrections WITHDRAWN because the board was already right
+
+The 10-08 rule applying to the orchestrator rather than to a lane, twice in one run, and both
+were caught by `probe_board.py` before anything shipped:
+
+- **The Redshift JDBC "conflation" does not exist.** A lane measured that two records carry the
+  identical 9.2/8.1 Secondary pair and concluded the board's single row is two. The board already
+  carries `redshift-driver-rces` (CVE-2026-8178, fixed 2.2.2) and
+  `redshift-jdbc-119084-rce-not-in-osv` as **separate rows**, and the 119084 row's 11-18
+  enrichment already carries the lane's own control verbatim — "an OSV Maven query … does return
+  the May one (CVE-2026-8178, same CWE-470, identical 9.2 / 8.1 scores) with ECOSYSTEM range
+  fixed: 2.2.2". Already split, already attached to the right half.
+- **The postgres-mcp "conflation" does not exist either.** The row distinguishes crystaldba's
+  unpatched project from AWS's patched one explicitly, including the install-count comparison
+  "529,340 PyPI downloads last month against 8,353 … 63× more installs on the unpatched server".
+
+**The shape is worth naming: two true facts about similarly-named things read as a contradiction
+until you read the row.** A lane measuring the world correctly is not evidence the board is
+wrong — and at 134 editions the board is usually the thing that already knows.
+
+### What the probe DID find was a correction on the half nobody reads
+
+Two real corrections, and both are the 11-23 class (a correction must touch the prose, the dated
+field and the aliases together) failing on the half that was missed:
+
+- **`postgres-mcp-servers-readonly-bypass`'s `due` field read "no fixed version for *either*
+  server" while its own prose already said AWS fixed theirs in 1.1.7.** The prose was right and
+  the field a reader skims was six months stale. Re-measured: AWS shipped 2026-06-25, now at
+  1.2.5; crystaldba frozen at 0.3.0 (2025-05-16) with PR #200 still unmerged.
+- **The Apache Roller row carried a workaround that does not close the path.** The XML-RPC servlet
+  is mapped unconditionally and deserializes vendor extension types during request *parsing*,
+  before any feature check runs, so disabling the global XML-RPC feature does nothing — **6.1.6 is
+  the release that makes the disabled setting actually reject the request.** Until then the only
+  mitigation that holds is removing the `/roller-services/xmlrpc` mapping or blocking it at the
+  proxy. A wrong remediation is worse than a vague one, because it looks actionable.
+
+### A row was duplicated on this board, and YESTERDAY'S OWN FIX created it
+
+The passed Roller KEV event moved from `events[]` into `patch[]` on 11-24 under the standing rule
+that a passed KEV date converts to a triage obligation — correct, except the move minted a second
+row for a CVE the register already carried. Both rows named CVE-2026-129448, same due date, same
+`forensicTriage`, same fix. Folded today, loser in `aliases[]`. **The lesson is about the rule
+rather than the row: a rule that CREATES a row has to probe for the row it is about to
+duplicate.** The 11-05 move-to-patch rule needs the 10-06 probe in front of it.
+
+### And the probe that would have caught it was blind to how this board stores ids
+
+`probe_identifiers`' id route matched only a full `CVE-YYYY-NNNNN` string — but **nine rows write
+the id into the KEY as a bare numeric tail while the row's prose never spells it out**, including
+two flagship cases: the live Apache Axis KEV entry, whose text names no id at all, and the
+Critical Spring Security row. For every one of those, a future edition drafting the full id gets
+"no peer" and mints a duplicate, which is exactly what happened to Roller. Fixed in
+`tools/lens/lens_extra.py`: `_TAIL_RE` + `id_tails()` match a full id in the NEW row against its
+≥5-digit tail in a parent KEY. **Deliberately one-directional and ≥5 digits, because four-digit
+tails collide with the version numbers this board also puts in keys** (`parquet-java-1180`,
+`litellm-1107`, `mysql-8412` are versions, not CVE tails). New selftest 8/8 with controls in both
+directions, plus a noun-collision control — the first cut matched `roller` against `argocd-…`,
+`nvidia-infra-controller-…` and `ingress-nginx-…`, so the noun route is now word-boundaried.
+
+### THIRTY-THREE stale relative-time phrases, and no instrument on this board could see them
+
+Three shapes defeated both detectors at once:
+- **A spelled relative time carries no digit.** `KEV due 2026-11-12 (TODAY)` and
+  `(TOMORROW)` had no pattern in `countdowns.refresh`, and `daycounts_rows`, which scans for
+  numbers, could not detect them either. Two live KEV rows were advertising "due today" and "due
+  tomorrow" **thirteen and four days after their dates passed**.
+- **A bare compact count whose direction is stated BEFORE the date**:
+  `KEV date PASSED 2026-11-10 (8d)` — `COMPACT`'s required trailing marker is absent.
+Fixed at source in `tools/lens/countdowns.py` with `WORDFORM`, a `BARE` pattern gated on a
+direction word anywhere before the count, and a `phrase()` helper emitting the board's own idiom.
+Adjacency rules unchanged; a bare `Nd` with no direction word anywhere still refuses.
+**Selftest 8/8 → 18/18**, every new case run against a known-stale AND a known-correct input
+(the 11-23 rule). One offset bug worth recording: the first cut sliced `view` with an index into
+`before` — the direction search must run over the same string the index came from.
+
+### `lens_extra`'s `__main__` block sat ABOVE section 6, so section 6 was unreachable
+
+The module's own comment says "EVERY selftest in this module must be reachable from here",
+written 11-19 after `patch_radar --selftest` printed nothing and exited 0. **The same defect was
+latent in this file**: the entry point preceded the identifier-probe section, so a selftest added
+there could never run. Block moved to the end. Measured consequence: none yet, because section 6
+had no selftest until today — **which is how the hole stayed invisible.**
+
+### MY OWN HANDOFF WAS WRONG THREE TIMES, and a lane caught every one
+
+Seventh through ninth consecutive runs of this, and the rate is the finding rather than any one
+error:
+- **A fix version that does not exist.** Edition 133's note said MONAI's "only fix — 0.9.1 —
+  raised requires_python to ≥3.11" and I copied it verbatim into the dated-obligations block all
+  19 lanes read. **No 0.9.x was ever published.** Two lanes measured the real sequence
+  independently. The interpreter-floor *shape* was right and the version was invented — and the
+  operational consequence is larger than a typo, because it is the row whose compliant build is
+  itself vulnerable.
+- **A bulletin scoped to the wrong product.** I said Google names Dataproc and Dataflow as
+  Java4Shell-affected in GCP-2026-082 (from the 11-20 note). The BigQuery lane read the bulletin's
+  HTML: `Dataflow` six times, `Dataproc` and `BigQuery` **zero** — it names Dataflow and Managed
+  Service for Apache Airflow, and the only `Dataproc` strings on the page sit in a 2019-era
+  bulletin.
+- **A conference placed inside a window it follows.** Three specs said "re:Invent is in this
+  window". **It runs 2026-11-30 to 12-04, entirely after it.** The AI Hardware lane called it "a
+  correction to the brief, not news"; the Redshift lane measured the consequence —
+  `whats-new-v2` returned **461 all-time Redshift items and only 4 inside the window** — and
+  concluded "the quiet month is calendar position, not a stale feed." **Next run should expect the
+  opposite problem**: re:Invent volume lands inside the window and the changelog-shaped lanes will
+  have far more to triage.
+
+**The MONAI one came from the previous edition's note by way of my own prose, which is exactly the
+stale-memory hazard the 11-24 note named.** The dated-obligations block is the highest-leverage
+text in the run and the least reviewed. **Keep handing lanes the carried claim explicitly; that is
+what makes the correction possible.**
+
+### A row gained a date it has lacked for four editions, from a known-issue page
+
+**Microsoft's known issue gives the Fabric Runtime 2.0 default flip as 2026-10-06, day-precise** —
+the what's-new and lifecycle pages still do not. Four editions of this row said "the vendor never
+published a day", and the day was on the surface nobody treats as a release note. Not cosmetic:
+the same known issue records that **Spark 3.5 jobs pinned to Runtime 1.3 are failing right now**
+with a `VeloxRuntimeError` under the native execution engine, so a workspace that changed nothing
+inherited a breaking default. **Companion to the 11-23 "name the URL, not the product" rule: when
+a date is missing from the release notes, check the known-issues surface.**
+
+### The KEV remediation window collapsed to 3 days six months ago — measured twice
+
+The AI Daily lane computed `dueDate − dateAdded` across the live catalog and I recomputed it
+independently from my own pull. **The two agree exactly:** 2025-10..2026-02 median **21 days**;
+2026-03..05 median **14**; **2026-06..11 median 3 days, every month** (max still 14). Today's
+three additions fit — added 11-24, due 11-27. **Consequence for this routine: the flag bar's
+"~14 days" is calibrated to a window CISA abandoned in June**, so nearly every new KEV entry now
+lands inside the bar by construction, which is part of why the urgent count has sat at 13–15 for
+a fortnight. The bar is not wrong — a 3-day clock is more urgent, not less — but this board should
+stop describing 14 days as the typical KEV window. Also worth keeping: `forensicTriage: Yes` is
+**116 of 1,795** entries (6%), so quoting the structured field is meaningful and quoting the
+boilerplate `requiredAction` prose, which 162 entries share, is not.
+
+### Curation
+
+**723 items, 66 exact + 138 fuzzy = 204 matched (28.2%), 0 double-counted.** Dictionary
+65,456 → 65,975. Match rate is above the recent band, so the 09-09 length-asymmetry diagnostic
+was not needed. The 15 weakest accepted merges were eyeballed and all are genuine same-story
+rewordings. A finalize ordering note: I ran the ledger for real and *then* dry-ran it, so the
+"weakest merges" list matched against the already-updated dictionary and showed one merge —
+meaningless. **`git checkout archive/ledger/keys.json`, remove today's file, dry-run to eyeball,
+then one real run.**
+
+Card: **new=15 (+449 more), changed=2, ongoing=15, aged_out=812, 32 of 32 rows sourced.** Two
+`[src]` links attached by reuse from URLs the mongodb brief itself cites for those exact facts,
+each asserted present in the brief text in code before writing.
+
+**Four carried curation rules all fired, and two caught something:**
+- **`PICKS` only matches `raw['new']`** — four of my first-cut picks were carried rows living in
+  `ongoing` and `derive_lists.py write` reported them as `MISS in PICKS` rather than dropping
+  them silently. Moved to `PIN_ONGOING`.
+- **The cross-list id check found what the Jaccard check could not, twice.** CVE-2026-97229 sat on
+  two `ongoing` rows (the overdue framing and the Ruby-regex mechanism) — same story, almost no
+  shared vocabulary, so the 0.28 story-noun sweep missed it. Swapped the pin to the **richer**
+  wording (the 09-15 rule) and excluded the other. Then a **looser** sweep (jaccard ≥0.20 **or**
+  overlap ≥0.40) caught a third: the InfiniBand Exadata story in both `new` and `ongoing` at
+  d=10. **Run the overlap coefficient as well as Jaccard — a short row contained in a long one
+  scores low on Jaccard by construction.**
+- **One flagged pair was correctly NOT a duplicate**: "Oracle's November CSPU carries a CVSS 9.1
+  **MySQL Server** flaw" vs "…three CVSS 9.9 **Database Server** flaws" — different products,
+  different CVEs, same advisory. The shared vocabulary is the stem. Recorded as a judgment rather
+  than mechanically dropped.
+- **18 of 20 `changed` rows were sev-classifier artifacts** on reworded headlines where the
+  underlying fact had not moved (the 10-23 shape, now routine). The two kept are genuine countdown
+  crossings: EKS 1.34 at 7 days and the OpenAI `/v1/prompts` shutdown at 5. One excluded for a
+  *different* reason worth distinguishing — the X-GitHub token row was a real crossing that
+  duplicated a pin.
+
+### Lens findings (edition 134)
+
+**Every guard passed on the FIRST assembly: 15 sections, 10 tables, `assert_markup_sane` across
+all five regenerated sections, all four identity guards, `assert_ledger_identity`, and guard 5 at
+688 cited units with zero uncited.** Mechanism unchanged since 09-15 — every row generator calls
+`cite()` inline as it emits, and board-about-itself claims take the dated archive fallback.
+`normalize_closing_tags` ran as the **last** mutation and the (1,1) check was read back **from
+disk**.
+
+**The per-section delta table passed in BOTH directions** (the 11-21/22 rule): all five refreshed
+sections moved and **all ten carried sections read exactly +0**. Size **2,655,407 bytes, −13,980
+against the parent**, accounted to within 203: sections −7,601, `povContent` **−15,805** (four
+chairs' tighter Read and Since-yesterday bodies), `lensLedger` **+9,629** (4 new rows, 3
+corrections). The shrink is a deliberate scope choice in the authored chair bodies, not a lost
+section — and it is worth stating that the first cut of Since-yesterday came in at 3.9k against
+the parent's 8.9k, which is thin; three substantive paragraphs were added rather than the number
+accepted (the 11-22 lesson that "explained" sometimes means "fix it").
+
+**Four signature errors, each cheaper to look up than to debug — and all four are pinned in the
+modules' own docstrings already:** `events_table.render` cites internally and takes `lane_of` /
+`act_of` as **mappings**; `patch_radar.select(rows, today_as_date, cap, must_show)` takes `today`
+positionally as a `date` and asserts `must_show` itself; `mark_touched(rows, new_keys, *markers)`
+takes a set of row **KEYS**, not dates; and the Roller patch anchor had to be the **raw markup**
+(`<code>enabledForExtensions</code>`), not the tag-stripped text a reader sees. The
+assert-the-anchor-matched discipline caught that last one immediately, which is what it is for.
+
+**Two guards refused the build and both were right** — `rewrite_pov_meta` rejected the full
+15-entry nav dict because `povContent["meta"]` knows only the **8 chair-flipped** viewids, and
+the flipped **section shells carry the ORACLE body** (the 09-09 finding: first paint reads the
+shell before `setPov()` runs, so splicing "" renders blank panels).
+
+**Ledger: events 55 → 58, patch 286 → 290, no-fix register 48, retired_events 136.** Four new
+rows (MONAI, Idunno.AntiCsrf, Optimizely, and MongoDB's NUL-byte SASL batch — one bug class across
+eight drivers with two instances at CVSS 9.1), one fold, three corrections, **nothing retired
+because no board date has passed since edition 133**. `reuse_key`'s advisory printed the 11-26
+peer (EKS 1.31) for the MONAI event and it was not the same story — confirmed in seconds rather
+than in an edition. Event Horizon: **43 dated + 15 deliberately undated, 26 inside fourteen days,
+16 of them on 11-30/12-01/12-02** — a wall, not a slope, in the week after a US holiday.
+
+**Scope, on the edition's face:** 134 refreshes Today's Read and Since-yesterday on all four
+chairs, Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and all eight identity sites.
+Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf
+Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward unrevised and the NAV says
+so** — `claims[]` did not grow. Note the NAV said "carried from 132" for the battlecard group
+while the chips said "carried from 119"; **119 is the truthful value** (the edition that last
+revised them, per 11-26) and both are now driven from one dict, with the shared carried sections
+reading "carried, unrevised" with **no edition number** because the ledger cannot establish one.
+The quarterly Skills/Build re-rank is due **2027-01-01**.
+
+### Flag calibration: 15 urgent, 4 ok
+
+Generated from `longitudinal.stats` rather than typed (the 11-11 rule): last eight editions
+**17, 13, 14, 15, 13, 13, 13, 15**, 14-day mean **13.29**, prior high **17** (2026-10-24, 2 ties).
+So today **sits 1.71 above the mean, ties 11-21, and is 2 below the series high** — heavy, not a
+record, and the lens says so. Items 723 against a series peak of 1,376 (10-19), with the
+**11-20 `SKIP_HEADINGS` fix** making anything before that date not comparable on that column.
+
+### Step 5b: SEVENTEENTH consecutive confirmation that the spec's egress claim is wrong
+
+`curl https://karlarao.github.io/daily-briefings/claude.html` went **byte-identical to the
+committed file by sha256 at 14:53:20Z, ~30s after the push** (2 polls at 15s). Worth recording
+that this time the API was *in step* rather than lagging: run 304 completed at 14:53:24Z, four
+seconds after the live page matched — the opposite of the 10-21 lag that has held for weeks.
+**Only the SCHEDULER copy still says egress blocks `*.github.io`, and only Karl can edit that.**
+
+### Branch state, and the 11-24 stale-local-ref trap reproduced exactly
+
+**The designated branch `claude/great-clarke-ozrago` existed as a STALE LOCAL REF while absent
+from the remote**, pointing at `dfaa5fc` — a 2026-09-21 commit, **65 editions old**. `ls-remote`
+returned nothing. Deleted and recreated from `origin/claude/great-clarke-92kvx7` (11-24, 30 tool
+files), which is the newest branch carrying the full reusable set. **Check `ls-remote` before
+trusting any local `claude/*` ref, and verify the base commit's DATE after checkout** —
+`git log -1 --format='%h %ci %s'` shows September at a glance.
+
+**`main`'s CLAUDE.md is still 2,312 lines against gh-pages' 17,670** — 65 editions behind, after
+the 11-15 and 11-24 runs each pushed a fix that was never merged. The session-start context
+carried main's copy again, caught by `grep -n '^## ' CLAUDE.md | tail` immediately after
+bootstrapping onto gh-pages, which is now the first command of the run. **It reached a lane
+prompt this time too** (the MONAI 0.9.1 version), so the hazard is no longer hypothetical twice
+over. The findings were **appended**, never copied over — the 11-15 rule, which is the only
+lossless direction.

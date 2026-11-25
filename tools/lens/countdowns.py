@@ -58,6 +58,41 @@ COUNT = re.compile(
 COMPACT = re.compile(r"(\d{1,4})\s*d\b(\s*(?:out|past\s+due|past|ago|left|away))",
                      re.I)
 
+# A BARE compact count -- "(8d)" with no direction marker -- used to be refused
+# outright, and the reason given was that "a bare 25d could be anything". True
+# in isolation, but it is NOT in isolation when the DIRECTION is stated before
+# the date instead of after the count: the edition-133 board carried
+# `KEV date PASSED 2026-11-10 (8d)`, which was 15 days stale on 2026-11-25 and
+# matched NEITHER pattern -- COUNT wants the word "day", COMPACT wants a
+# trailing marker. Measured 2026-11-25. So a bare Nd is rewritable when a
+# direction word sits between the row's own date and the count, which is the
+# same ADJACENCY argument the module is built on, read in the other direction.
+BARE = re.compile(r"(\d{1,4})\s*d\b(?!\s*(?:out|past\s+due|past|ago|left|away))", re.I)
+_DIRWORD = re.compile(r"\b(passed|overdue|past\s+due|past|elapsed|expired)\b", re.I)
+
+# The WORD forms, which carry no digit at all and were therefore invisible to
+# every instrument on this board -- `refresh` could not match them and
+# `lens_extra.daycounts_rows` scans for numbers, so a `due` field reading
+# "KEV due 2026-11-12 (TODAY)" was 13 days stale on 2026-11-25 and NOTHING
+# reported it (measured 2026-11-25, alongside an "(TOMORROW)" row 4 days past
+# and a "(2 DAYS)" row 2 days past). A stale relative-time WORD is exactly the
+# defect this module exists to kill; it just never had a pattern for the case
+# where the relative time is spelled instead of counted.
+WORDFORM = re.compile(r"\b(today|tomorrow|yesterday)\b", re.I)
+
+
+def phrase(delta: int, upper: bool = True) -> str:
+    """The board's own `due` idiom for a signed day delta."""
+    if delta < 0:
+        out = "%dd PAST DUE" % abs(delta)
+    elif delta == 0:
+        out = "TODAY"
+    elif delta == 1:
+        out = "TOMORROW"
+    else:
+        out = "%dd" % delta
+    return out if upper else out.lower()
+
 
 def _d(m) -> date:
     return date(*map(int, m.groups()))
@@ -93,7 +128,25 @@ def refresh(text: str, own: str, today: str, *, window: int = 60):
     left: list = []
     edits: list = []
 
-    spans = sorted(list(COUNT.finditer(view)) + list(COMPACT.finditer(view)),
+    # Word forms first: they replace the whole token, so doing them in the same
+    # right-to-left edit pass as the numeric spans keeps every offset valid.
+    for c in WORDFORM.finditer(view):
+        lo = max(0, c.start() - window)
+        before = view[lo:c.start()]
+        at = before.rfind(iso)
+        if at < 0 or ISO.search(before[at + len(iso):]):
+            continue
+        tok = c.group(1)
+        want = {-1: "yesterday", 0: "today", 1: "tomorrow"}.get(delta)
+        snip = re.sub(r"\s+", " ", view[lo:c.end() + 24]).strip()
+        if want == tok.lower():
+            continue
+        rep = phrase(delta, upper=tok.isupper())
+        edits.append((c.start(1), c.end(1), rep))
+        fixed.append((tok, rep, snip))
+
+    spans = sorted(list(COUNT.finditer(view)) + list(COMPACT.finditer(view))
+                   + list(BARE.finditer(view)),
                    key=lambda m: m.start())
     for c in spans:
         lo = max(0, c.start() - window)
@@ -107,8 +160,21 @@ def refresh(text: str, own: str, today: str, *, window: int = 60):
                 left.append((stated, snip))
             continue
         ng = len(c.groups())
-        tail = (c.group(3) if ng >= 3 else c.group(2)) or ""
-        past = bool(re.search(r"past|ago", tail, re.I))
+        tail = (c.group(3) if ng >= 3 else c.group(2) if ng >= 2 else "") or ""
+        if ng == 1:
+            # BARE: no trailing marker, so the sense must be stated between the
+            # row's own date and the count ("PASSED 2026-11-10 (8d)"). Without
+            # one a bare Nd really could be anything, and is refused.
+            # `at` indexes into `before`, not into `view` -- slicing `view`
+            # with it would read the wrong clause entirely. Search the whole
+            # pre-count window, which is what "the sense is stated before the
+            # count" means and keeps the offsets honest.
+            if not _DIRWORD.search(before):
+                left.append((stated, snip))
+                continue
+            past = True
+        else:
+            past = bool(re.search(r"past|ago", tail, re.I))
         # A count written in the past sense belongs to a past date and vice
         # versa; a mismatch means the clause is not this row's countdown.
         if past != (delta < 0):
@@ -180,7 +246,10 @@ def refresh_rows(rows: list, today: str, *, datefield: str = "date",
 
 
 def _selftest() -> str:
-    """Plurality + sense cases. 2026-10-15."""
+    """Plurality + sense cases (2026-10-15), word forms and bare
+    compact counts (2026-11-25). Every case ran against a known-stale AND a
+    known-correct input before it was written down -- the 2026-11-23 rule.
+    """
     cases = [
         # (text, own date, today, expected substring)
         ("<b>2026-10-16</b> &mdash; 2 days", "2026-10-16", "2026-10-15",
@@ -196,6 +265,39 @@ def _selftest() -> str:
         # untouched: no date adjacent to the count
         ("47 days behind community", "2026-10-16", "2026-10-15",
          "47 days behind"),
+
+        # --- word forms (added 2026-11-25) --------------------------------
+        # Every one of these was LIVE on the edition-133 board and invisible
+        # to both this module and lens_extra.daycounts_rows, because a spelled
+        # relative time carries no digit to detect. Measured, then fixed.
+        ("KEV due 2026-11-12 (TODAY)", "2026-11-12", "2026-11-25",
+         "(13d PAST DUE)"),
+        ("KEV due 2026-11-21 (TOMORROW)", "2026-11-21", "2026-11-25",
+         "(4d PAST DUE)"),
+        ("due 2026-11-26 (TOMORROW)", "2026-11-26", "2026-11-25",
+         "(TOMORROW)"),                      # correct already: must NOT change
+        ("due 2026-11-25 (TODAY)", "2026-11-25", "2026-11-25",
+         "(TODAY)"),                         # correct already: must NOT change
+        ("due 2026-11-27 (today)", "2026-11-27", "2026-11-25",
+         "(2d)"),                            # lower-case in, lower-case out
+        # a word form with NO adjacent own-date must never be rewritten --
+        # "shipped today" is prose, not a countdown
+        ("fixed 2026-10-01; the advisory landed today", "2026-12-01",
+         "2026-11-25", "landed today"),
+
+        # --- bare compact count (added 2026-11-25) ------------------------
+        # The direction is stated BEFORE the date, so COMPACT's trailing
+        # marker is absent. Rewritable, because adjacency still holds.
+        ("KEV date PASSED 2026-11-10 (8d)", "2026-11-10", "2026-11-25",
+         "(15d)"),
+        ("overdue since 2026-10-18 (30d)", "2026-10-18", "2026-11-25",
+         "(38d)"),
+        # a bare Nd with NO direction word anywhere before it stays refused --
+        # this is the protection the original COMPACT comment argued for
+        ("window 2026-11-10 (8d)", "2026-11-10", "2026-11-25", "(8d)"),
+        # and a bare Nd that is not a countdown at all is untouched
+        ("p99 held at 12d across 2026-11-10", "2026-12-20", "2026-11-25",
+         "12d"),
     ]
     ok = 0
     for text, own, today, want in cases:

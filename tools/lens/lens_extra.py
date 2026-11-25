@@ -414,16 +414,6 @@ def daycounts_rows(rows: list, today: str, *, datefield: str = "date",
     return out
 
 
-if __name__ == "__main__":
-    # EVERY selftest in this module must be reachable from here.  The 11-19
-    # run found `patch_radar.py --selftest` printing nothing and exiting 0
-    # because its functions were only reachable by import -- a selftest
-    # invocation that cannot fail reports health for a check it never ran.
-    print("assert_not_parent_identity self-test:",
-          _selftest_assert_not_parent_identity())
-    print(_selftest_assert_markup_sane())
-
-
 # ---------------------------------------------------------------------------
 # 6. Identifier probe — the companion `reuse_key` needs and does not have.
 #    Measured 2026-10-06: reuse_key's similarity route returned "no peer" for
@@ -446,22 +436,119 @@ if __name__ == "__main__":
 _ID_RE = re.compile(r"(?:CVE-\d{4}-\d{4,}|GHSA-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4})", re.I)
 
 
+# A CVE's NUMERIC TAIL, as it appears inside a kebab key: `apache-axis-90436-...`.
+# Why this exists (measured 2026-11-25): _ID_RE matches only a FULL
+# `CVE-YYYY-NNNNN` string, and this board routinely writes the id into the KEY as
+# a bare tail while the row's prose never spells it out. Nine rows on the
+# edition-133 board were in that shape, including two of the board's flagship
+# no-reachable-fix cases -- `apache-axis-90436-kev-no-fix-will-ever-exist` (a LIVE
+# KEV entry whose text names no id at all) and
+# `spring-security-59273-no-oss-fix-6x-5x` (the Critical) -- plus
+# `postgres-mcp-85620`, `edk2-pxe-97631`, `pinot-73322`. For every one of those the
+# id route was STRUCTURALLY blind: a future edition drafting `CVE-2026-90436` gets
+# "no peer" and mints a duplicate. That is not hypothetical -- the Roller pair
+# (`...unauth-deser-xmlrpc-kev` + `...kev-overdue-triage`) is exactly that outcome,
+# and it WAS catchable by full id, so the probe simply had not been run.
+#
+# Deliberately ONE-DIRECTIONAL and >=5 digits. The new row must carry a real full
+# id; we then look for its tail in parent keys. Matching bare-tail against
+# bare-tail both ways would collide with the version numbers this board also puts
+# in keys (`parquet-java-1180`, `litellm-1107`, `mysql-8412`, `rust-1980` are all
+# 4-digit versions, not CVE tails), which is the same over-match the 2026-10-06
+# note recorded when `_ID_RE` was left unbounded and "CVEs" collided 26 ways.
+_TAIL_RE = re.compile(r"(?:^|-)(\d{5,7})(?=-|$)")
+
+
+def id_tails(ids) -> set:
+    """Numeric tails (>=5 digits) of full CVE ids, for matching against keys."""
+    out = set()
+    for i in ids:
+        m = re.match(r"CVE-\d{4}-(\d{5,7})$", i, re.I)
+        if m:
+            out.add(m.group(1))
+    return out
+
+
 def probe_identifiers(new_row: dict, parent_rows: list, *, nouns: list | None = None) -> list:
     """Return parent rows sharing a hard id (or a given product noun) with new_row.
 
     Date-agnostic and similarity-agnostic on purpose: this is the check that
-    catches what the other two routes structurally cannot.
+    catches what the other two routes structurally cannot.  Since 2026-11-25 it
+    also matches a full id in `new_row` against its NUMERIC TAIL in a parent KEY,
+    because that is how this board usually stores an id (see _TAIL_RE above).
     """
     blob = " ".join(str(new_row.get(f, "")) for f in ("k", "t", "due", "date"))
     ids = {i.upper() for i in _ID_RE.findall(blob)}
+    tails = id_tails(ids)
     nouns = [n.lower() for n in (nouns or [])]
     hits = []
     for r in parent_rows:
         pb = " ".join(str(r.get(f, "")) for f in ("k", "t", "due", "date"))
         pids = {i.upper() for i in _ID_RE.findall(pb)}
-        if (ids & pids) or any(n in pb.lower() for n in nouns):
+        ptails = set(_TAIL_RE.findall(str(r.get("k", ""))))
+        # WORD-BOUNDARY the noun route (2026-11-25). A bare substring test makes
+        # any noun that is a substring of a common word collide: probing "roller"
+        # for the Apache Roller duplicate returned argocd-, nvidia-infra-
+        # controller- and ingress-nginx- rows, because "roller" sits inside
+        # "controller". Three of four hits were noise, which is survivable under
+        # the standing "read the hits, never count them" rule and pointless to
+        # keep. Boundaries still match multi-word and hyphenated nouns
+        # ("spring security", "parquet-java").
+        if ((ids & pids) or (tails & ptails)
+                or any(re.search(r"\b%s\b" % re.escape(n), pb, re.I) for n in nouns)):
             hits.append(r)
     return hits
+
+
+def _selftest_probe_identifiers() -> str:
+    """Controls in BOTH directions -- the 2026-11-23 rule."""
+    parent = [
+        # the real edition-133 shape: id only in the key, prose never names it
+        {"k": "apache-axis-90436-kev-no-fix-will-ever-exist",
+         "t": "An inbound SOAP Fault makes Axis load the named class."},
+        {"k": "spring-security-59273-no-oss-fix-6x-5x",
+         "t": "A Critical pre-auth SpEL RCE whose OSS fix exists only on 7.0/7.1."},
+        # 4-digit VERSION numbers in keys, which must never match a CVE tail
+        {"k": "parquet-java-1180-corruption", "t": "parquet-java 1.18.0 corruption."},
+        {"k": "mysql-8412-cspu-docker-image-only", "t": "MySQL 8.4.12 docker only."},
+        # a row that DOES spell its id out, for the original full-id route
+        {"k": "roller-dup", "t": "Apache Roller CVE-2026-129448 unauth deser."},
+    ]
+    cases = [
+        # (new row, expected hit keys)
+        ({"k": "axis-90436-redraft", "t": "Apache Axis CVE-2026-90436 is in KEV."},
+         ["apache-axis-90436-kev-no-fix-will-ever-exist"]),
+        ({"k": "spring-sec-redraft", "t": "Spring Security CVE-2026-59273, Critical."},
+         ["spring-security-59273-no-oss-fix-6x-5x"]),
+        ({"k": "roller-redraft", "t": "Roller CVE-2026-129448 overdue."},
+         ["roller-dup"]),
+        # must NOT match a version-numbered key: 1180 is 4 digits, below the floor
+        ({"k": "pq-redraft", "t": "parquet CVE-2026-1180 hypothetical."}, []),
+        # must NOT match on an unrelated tail
+        ({"k": "other", "t": "Unrelated CVE-2026-77777 thing."}, []),
+        # no id at all -> no id-route hits
+        ({"k": "noid", "t": "A release with no identifier."}, []),
+    ]
+    ok = 0
+    for row, want in cases:
+        got = [h["k"] for h in probe_identifiers(row, parent)]
+        if got == want:
+            ok += 1
+        else:
+            print("  FAIL %r -> %r want %r" % (row["k"], got, want))
+    # and the noun route must still work
+    got = [h["k"] for h in probe_identifiers({"k": "x", "t": "y"}, parent, nouns=["mysql"])]
+    ok += 1 if got == ["mysql-8412-cspu-docker-image-only"] else 0
+    if got != ["mysql-8412-cspu-docker-image-only"]:
+        print("  FAIL noun route -> %r" % got)
+    # ...and must NOT match a noun that is merely a substring of another word
+    coll = [{"k": "a-controller-row", "t": "An ingress controller issue."},
+            {"k": "roller-row", "t": "Apache Roller deserialization."}]
+    got = [h["k"] for h in probe_identifiers({"k": "x", "t": "y"}, coll, nouns=["roller"])]
+    ok += 1 if got == ["roller-row"] else 0
+    if got != ["roller-row"]:
+        print("  FAIL noun boundary -> %r" % got)
+    return "%d/%d" % (ok, len(cases) + 2)
 
 
 def assert_probed(new_rows: list, parent_rows: list, noun_map: dict) -> dict:
@@ -480,3 +567,14 @@ def assert_probed(new_rows: list, parent_rows: list, noun_map: dict) -> dict:
     return {r["k"]: [h["k"] for h in probe_identifiers(r, parent_rows,
                                                        nouns=noun_map[r["k"]])]
             for r in new_rows}
+
+
+if __name__ == "__main__":
+    # EVERY selftest in this module must be reachable from here.  The 11-19
+    # run found `patch_radar.py --selftest` printing nothing and exiting 0
+    # because its functions were only reachable by import -- a selftest
+    # invocation that cannot fail reports health for a check it never ran.
+    print("assert_not_parent_identity self-test:",
+          _selftest_assert_not_parent_identity())
+    print(_selftest_assert_markup_sane())
+    print("probe_identifiers self-test:", _selftest_probe_identifiers())
