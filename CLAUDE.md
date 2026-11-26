@@ -17970,3 +17970,385 @@ bootstrapping onto gh-pages, which is now the first command of the run. **It rea
 prompt this time too** (the MONAI 0.9.1 version), so the hazard is no longer hypothetical twice
 over. The findings were **appended**, never copied over — the 11-15 rule, which is the only
 lossless direction.
+
+## Run findings 2026-11-26 (edition 135)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked
+prompt, both hooks clean.** Dashboard published `61fda3b`, live page byte-identical by sha256 at
+**14:44:00Z, ~40s after the push** (3 polls at 15s). Lens published as **Version 101**
+(`1795704779-a4ff`). **~4,785k research tokens — the THIRD highest, not a record** (11-20
+~4,932k, 11-25 ~4,831k); stated that way because the 11-21/22/23 notes each had to correct a
+"new record" claim, so the series gets checked rather than assumed. Today was **US
+Thanksgiving**, and the lanes measured rather than assumed what that meant — see below.
+
+### A DROPPED URGENT FLAG, and the extractor's length tiebreak was the bug
+
+The AI App Dev lane returned `STATUS: urgent` on a KEV clock plus four provider cutovers, and
+**it extracted as `ok` with an empty flag_reason.** Caught by eyeballing the per-lane status
+roll-call against what the handbacks had said — not by any guard.
+Root cause, measured from the transcript: `final_text()` keeps `last` = the **last** assistant
+message's joined text, then prefers the handback only if it carries a `BRIEF:` marker **or is
+longer**. This agent emitted the full brief *both* as a trailing text block *and* as a
+`SubagentHandback` payload — **29,794 vs 28,996 chars, 798 apart** — and the text copy, which had
+no STATUS trailer, won the tiebreak. `split_contract` then found no status and defaulted to `ok`.
+**Fixed at source: prefer the handback when it carries EITHER contract shape — the `BRIEF:`
+header marker OR a trailing `STATUS: <ok|slow|urgent>` line — and fall back to length only when
+both or neither have it.** Length is not a safe discriminator when an agent emits the brief
+twice. This is the 2026-11-21 failure class exactly (a status that parses perfectly and is simply
+wrong), and the lesson generalises: **check the extracted statuses against what the lanes
+actually said, every run.** 18 of 19 were right; one was not, and it was an urgent.
+
+### THE LEAD: three KEV clocks on today and tomorrow, three different failure modes
+
+None is discharged by a patch process, and that is the frame worth keeping:
+- **MONAI Label CVE-2026-133968** (due today, `forensicTriage: Yes`) — the build CISA, NVD and
+  OSV all name as the fix, 0.8.6, had **five advisories published 2026-11-25** against it, three
+  Critical at CVSS 9.8, **none carrying a CVE id and none in OSV**. Floor is **0.8.8**. The
+  carried "zero CPEs at NVD" is also now wrong and what replaced it is worse: **one** CPE with
+  `versionEndExcluding 0.8.6`, so a CPE sweep **actively clears** a vulnerable install.
+- **Idunno.AntiCsrf CVE-2026-131914** (due tomorrow, actively exploited, NVD Primary 9.8) — the
+  no-manifest-entry tier. Mandiant is the finder; successful exploitation returns **302 or 500**
+  because the gadget runs inside `Deserialize()` and *then* RaiseError redirects, so it reads as a
+  benign CSRF rejection. Remediation is not just deleting the DLL: remove the
+  `<httpModules>`/`<modules>` registration, the `<configSections>` entry and `<csrfSettings>`
+  first, or config points at a missing assembly. Blast-radius nuance:
+  `AuthenticateRequest`/`AuthorizeRequest` run earlier so a declaratively-denied page is
+  protected, but a page checking session in `Page_Load` is **not**. And the population has no
+  upgrade clock at all — WebForms exists only on .NET Framework, which appears in none of
+  `releases-index.json`'s channels.
+- **Optimizely CVE-2026-132224** (due tomorrow) — an attacker edited `projectJS` on **188
+  snippets across 178 organisations** and `cdn.optimizely.com` served wallet-swapping,
+  card-skimming and iOS-exploit JavaScript on 2026-11-16. Nothing to upgrade. **The defensive
+  conclusion is the uncomfortable part: `'strict-dynamic'` and `'unsafe-eval'` both let the
+  payload through, SRI is useless against a snippet designed to change, and no CSP stops in-page
+  address swapping — only `connect-src` limits exfiltration.** Same actor ran an earlier wave
+  through Kissmetrics, StorifyMe and Minute Media: a campaign across tag vendors.
+
+### FOUR NEW "INVISIBLE FIX" MECHANISMS IN ONE EDITION — the most the register has taken
+
+1. **The advisory names a fixed version that was never published.** Vite's CVSS 4.0 9.1 names
+   **8.2.5**; npm goes **8.2.4 → 8.2.6**. So an auto-remediation bot pinning the advisory's
+   version fails outright. Distinct from everything else on the register: the fix exists, is
+   reachable, and the *pointer* to it is wrong.
+2. **Version-ordering collision across parallel release trains.** ClickHouse patched four
+   supported trains in three days; NVD's single linear ceiling (`26.10.2.103`) permanently marks
+   `26.8.47.5-lts` affected and permanently clears any 26.11.x, regardless of code — while the
+   brotli bump is documented *only* under 26.11 and ClickHouse's security changelog has no entry
+   for the CVE at all. **A CPE bound is a single linear version; these engines stopped being
+   linear.**
+3. **A version bound that is a calendar date.** Optimizely's one CPE ends at the string
+   `2026-11-17`, which no version-matching tool can evaluate.
+4. **A CVE attached to a package you do not have.** React's RSC Critical is fixed in
+   `react-server-dom-*`, and `registry.npmjs.org/next/16.4.6` declares those in **none** of its
+   four dependency fields — zero string occurrences in the whole version document. No lockfile
+   scan and no `overrides` pin reaches it; the audit signal is the **Next version**.
+
+### AN OSV `/v1/vulns/<CVE-id>` 404 IS NOT EVIDENCE OF ABSENCE — controlled, and it matters
+
+`api.osv.dev/v1/vulns/CVE-2024-5826` returns **404** while the *identical record* returns **200**
+under `GHSA-rrqq-fv6m-692m` and `PYSEC-2026-562`. So that endpoint 404s on a CVE **alias** for
+records OSV certainly holds. Consequence: the 11-25 Idunno note cited
+`/v1/vulns/CVE-2026-131914` → 404 as one of three proofs of absence. **That leg is worthless.**
+The conclusion survives on the other two, re-measured today — a POST `/v1/query` by NuGet package
+returns `vulns: 0` for both casings, and the NuGet index 404s. **RULE: to ask "does OSV know about
+this", query by PACKAGE. A per-CVE lookup can only confirm an id you already suspected.** Two
+lanes reached the same conclusion independently, and it bit again on the Go cgo count (all twelve
+`CVE-2026-970xx` ids 404 from that endpoint). **This is the dangerous class: a wrong reading that
+agreed with the right answer.**
+
+### `vanna` has FOUR CVEs — board said two, one lane said three, nobody named the fourth
+
+Enumerated by package: 8 records = 4 CVEs. **CVE-2024-5753** SQLi (`last_affected 0.3.4`),
+**CVE-2024-5565** prompt-injection code exec (0.5.5), **CVE-2024-5826** RCE (0.6.2),
+**CVE-2026-4229** SQLi in `remove_training_data` (2.0.2, **no fixed version**). A query for 2.0.2
+returns exactly two records, both the SQLi — so the honest "a scanner clears it" bound is
+**0.6.2**, the higher of the two RCE bounds. The two vanna rows were also a genuine duplicate pair
+and were folded (loser in `aliases[]`), with the stale "289 days with zero commits" re-measured to
+**297** from the 2026-02-02 anchor. **A day-count anchored to an EVENT date is invisible to
+`countdowns.refresh`, because the row's own date field is prose** — same family as the 11-25
+WORDFORM gap, one layer out.
+
+### THE SHAPE, now three runs running and twice in one day: a correct world-measurement is not evidence about the board
+
+- **aidaily** measured correctly that `exploitation` is **not** a CISA KEV field — I re-verified
+  from catalog 2026.11.25: all **1,805** entries carry exactly **12** fields and `exploitation`
+  appears zero times; `forensicTriage` is real at **122 Yes / 1,683 No**. But its follow-on claim
+  that *the board* quotes it as a KEV field is **wrong** — all three structured uses on the board
+  already read "CISA SSVC reads…" or "NVD's SSVC reads…". Good fact, no board correction needed.
+- **nl2sql** reported a vanna "pairing" correction; the board was right about its CVE and the lane
+  was right about a different one, and **both were incomplete**.
+**RULE, sharpened: quote the row you are contradicting, or do not claim a contradiction.**
+`probe_board.py` caught every instance before anything shipped. Also worth recording the inverse:
+I drafted a `pull_request_target` date correction and the probe showed the board had **already
+corrected it on 10-30** — probe before correcting, not just before claiming.
+
+### MY HANDOFF WAS WRONG THREE TIMES, 11th consecutive run — and one was a CONFLATION
+
+- **A three-way fusion.** I handed all 19 lanes "a MongoDB NUL-byte SASL batch — one bug class
+  across EIGHT drivers, two instances at CVSS 9.1." It is three things: the NUL-byte SASL class
+  covers **seven** drivers and is **6.3 / 3.7 LOW**; the **eight**-driver class is credential
+  exposure in parse errors; and the two **9.1**s are separate **SRV-target** bypasses where the
+  redirect survives TLS verification. Wrong count, wrong severity, wrong mechanism — and harder
+  to spot than an invention, because every component number was true somewhere.
+- **A date that was never on the surface.** TabFM pricing took effect **2026-11-21** per the
+  pricing page, which contains **zero** occurrences of 11/17; and `n_ensembles` **is** documented
+  on two pages (default 4, range 1–32), so the bill **is** computable. The real defect is better
+  than the one I asserted: those two pages carry no enforcement date at all, and the pricing page
+  still renders `[Target Enforcement Date, 12/01/2026]` — an unfilled editorial placeholder.
+- **A correction I propagated was itself the error.** 11-20 said GCP-2026-082 covers Dataproc;
+  11-25 grepped it, found `Dataproc` **0×**, and concluded otherwise; I wrote that into
+  SHARED_RULES. Today's lane found `Managed Service for Apache Spark` **2×**, which **is** Dataproc
+  under its current name — and Google kept the `/dataproc/` URL path, so a product-name grep *and*
+  a doc-URL grep both return a false negative. **RULE: a zero-hit grep for a PRODUCT NAME is
+  evidence about the name. Check for a rename before reporting a negative.**
+Also softened a carried claim that overstated a cost: DuckDB 2.0 does **not** convert existing
+files ("2.0 can still read and write your existing database files, and these remain readable by
+older versions"); the one-way lock applies only to files newly *created* by 2.0. That changes the
+recommendation, because 2.0.1 is the only build with the KEV'd Brotli fix.
+
+### TWO LANES DERIVED OPPOSITE RULES ABOUT ONE OF OUR OWN INSTRUMENTS — settled by measurement
+
+formats said Maven `<lastUpdated>` is authoritative over artifact mtimes; challengers said the
+ASF **directory** mtime drifts and the **artifact** mtime is authoritative. I reproduced all three
+cases: `druid/39.0.0` artifacts all 2026-11-06 / dir 11-18 / GitHub release 11-19;
+`pinot/1.6.0` artifacts 10-23 / dir 10-28; `parquet-column` Maven `<lastUpdated>` 11-11.
+**The pattern is consistent: artifact mtime < directory mtime ≤ announcement.** So the
+challengers *mechanism* is right and its *conclusion* is wrong — the artifact mtime is the
+RC/staging build time, a lower bound, not GA. **Settled rule: neither mtime is a GA date. Maven
+Central `<lastUpdated>`, or the project's own announcement / [VOTE] result, is the authority.**
+Second time today two sound methods produced opposite rules, and both times the resolution was a
+third measurement neither lane had made (cf. the LiteLLM floor).
+
+### The LiteLLM fix-floor contradiction resolved — and py3.9 can reach nothing
+
+11-24 carried 1.83.9 (wheel diff) vs 1.83.10 (NVD/OSV) unresolved. aiappdev found the
+disagreement is **internal to one advisory** — prose says 1.83.11, References points at
+`v1.83.10-stable`, structured range says 1.83.10 — so **≥1.83.11 is the only floor satisfying
+every reading**. appdev found the third strand and I verified it from PyPI: 1.83.8/1.83.9 declare
+`requires_python >=3.9`; **1.83.10 raised it to >=3.10**. **So on Python 3.9 the newest installable
+is 1.83.9, which only the wheel-diff reading calls fixed — the set of builds a 3.9 host can reach
+AND every source agrees is fixed is EMPTY.** A new no-reachable-fix instance whose mechanism is the
+*intersection* of two shapes the board tracks separately. **Generalisable: when two sound methods
+disagree by one patch release, check for a PACKAGING constraint before recording a contradiction.**
+
+### The Python 3.11 floor is now a security boundary — six projects in one day
+
+vLLM 0.32.0 (nine CVEs fixed only there), SGLang 0.5.22, llama-index-core 0.14.26, pymongo 4.19.0,
+litellm 1.83.10, snowflake-connector-python (4.8.1 **and** 5.2.0). Same failure every time:
+`pip install -U` succeeds, reports the old version as current, exits 0, withholds the fix.
+LlamaIndex says it out loud — PR titled "BREAKING: raise requires-python for security fixes".
+**Snowflake's is the sharpest: its own support-policy page lists a minimum supported connector
+INSIDE the affected range of its own CVSS 8.1 CVE, and recommends 5.2.0, which a 3.10 shop cannot
+install.** Not a per-project gotcha any more; a shape to test for by default.
+
+### A no-reachable-fix on a DATA FORMAT, with no CVE anywhere near it
+
+Databricks `variantShredding`, measured against source by two lanes independently:
+`grep -o variantShredding TableFeature.scala | wc -l` → **6 on delta-spark v4.4.1, 0 on v3.3.3**,
+and 3.3.3 is the newest 3.x build there is (plain VARIANT reads fine; only *shredded* locks out).
+**delta-rs rejects it by design** — `ProtocolChecker::INSTANCE` omits both `VariantShredding` and
+`VariantShreddingPreview`, with a test asserting `UnsupportedTableFeatures` — shipping as
+`deltalake` 1.7.0 and propagating to Polars, DuckDB's delta extension, Daft and dlt. **Neither
+family has a version to upgrade to.** And the vendor's own two pages disagree on the read floor by
+a full minor — `whats-coming` says 16.4, the feature page says 17.3 is required to read — **so
+following the DEADLINE notice lands you below the floor the feature page states**. Lineage favours
+17.3 (DBR 16.4 LTS is Spark 3.5.2; the feature does not exist in OSS Delta 3.x). The two lanes'
+apparent disagreement about whether it shipped resolves cleanly: the **feature page** describes the
+mechanism as live, `whats-coming` is still **future-tense** eight days after its own date.
+`enableVariantShredding=false` leaves the feature *supported*, so only `DROP FEATURE` restores an
+old client and that **rewrites data** — decide before the table grows.
+
+### Ledger + curation
+
+**733 items, 218 matched (29.7%), 0 double-counted.** Dictionary 65,975 → 66,490. Match rate above
+the recent band, so the 09-09 length-asymmetry diagnostic was not needed. Card: **new=14 (+443
+more), changed=2, ongoing=15, aged_out=829, 31 of 31 rows sourced** (three attached by reuse from
+URLs each brief already cites, asserted present in the brief text before writing).
+Carried curation rules fired as designed: **eight of sixteen first-cut PICKS came back `MISS in
+PICKS`** because they are carried rows living in `ongoing`, not `new` — moved to `PIN_ONGOING`,
+which is the 11-25 behaviour working. Four of six `changed` rows were sev-classifier artifacts on
+reworded headlines and were excluded; the two kept are genuine countdown crossings (LiteLLM KEV at
+6 days, the Gemini 2.5 reroute at 5).
+**`apply_harness_tokens` reported +16,331 rather than its documented expected +0**, i.e. the
+extractor is running ~0.34% low again — a regression from the 11-11 "matches to the token" state,
+and per the module's own docstring that is news about the extractor rather than a correction.
+Likely the same multi-text-block shape as the status bug; worth watching.
+
+### Lens findings (edition 135)
+
+**Every guard passed on the FIRST assembly**: 15 sections, 10 tables, `assert_markup_sane` across
+all five regenerated sections, all four identity guards, `assert_ledger_identity`, the alias-aware
+regression check, and **guard 5 at 773 cited units with zero uncited**. Mechanism unchanged since
+09-15 — every row generator calls `cite()` inline; board-about-itself claims take the dated archive
+fallback. `normalize_closing_tags` ran as the last mutation and the (1,1) check was read back
+**from disk**.
+**The per-section delta table passed in BOTH directions**: five refreshed sections moved and **all
+ten carried sections read exactly +0**. Size **2,668,334 bytes, +12,928 against the parent**,
+accounted to within 309 — `lensLedger` +17,334, sections +4,193, `povContent` −8,290. v-wn came in
+1,946 bytes thinner than the parent; the content is complete (5 new, 5 movement, 3 standing, all
+cited) so the number is stated rather than padded.
+**Signature errors, two, both cheaper to look up than to debug and both pinned in the modules' own
+docstrings:** `patch_rows.find` returns **`(section, row)`** not a row — and the mutators take the
+key directly, so `find` was not needed at all; and `events_table.render` returns
+**`(html, count)`**, which made `len(ev_html)` read as 2 and *look* like an empty render. The
+byte-count print is what caught the second one, which is why it is worth printing.
+**Five corrections applied to the ledger before any section was generated** (the 09-14 build-order
+rule): Fabric Runtime 1.3's LTS end **loses its day precision** (2027-03-31 was ours; Microsoft
+publishes "March 2027" — fifth time this class has corrected here, and the same page makes the
+*consequence* precise: environments are **deleted**, not merely unsupported); the OpenSharing
+legacy-token expiry **moved AWAY**, 2026-12-08 → **2027-02-25**, vendor-stated, and it is a cap
+moved 79 days rather than a reprieve; plus the MONAI, LiteLLM and Brotli enrichments above.
+**Two folds, five new rows.** Folds: both `vanna` keys and both `vite` keys were one story under
+two keys. New: the variantShredding no-reachable-fix, Babelfish **CVE-2026-119923 (CVSS 9.8
+PRE-AUTH** RCE on Aurora, fixed 78 days before its id existed and absent from the Aurora PostgreSQL
+release-notes page), `react-native-webview` (**the newest release IS the last affected version**),
+Oracle's November CSPU (three 9.9s reachable with `CREATE SESSION`, all `Scope: Changed`; a 9.8
+unauthenticated ORDS RCE across **every shipping version** whose 26.3.1 changelog **names none of
+its eight CVEs**), and Kubernetes 1.37.3's kubelet refusing to start on a `/etc/subuid` range
+matching the docs' own example. **34 countdowns rewritten** by the generator, including two KEV
+rows advertising "TOMORROW" for a date that is now today — the 11-25 WORDFORM fix earning its keep.
+Ledger: **events 58, patch 293** (290 − 2 folds + 5 new), no-fix register **49**, retired_events
+136, **nothing retired** because no board date has passed since edition 134.
+Also fixed a parent drift noticed while reading: the v-wn **eyebrow** read "VS EDITION 131" while
+its chip read "vs edition 133" — a sixth identity site, now driven from the same dict.
+
+### Flag calibration: 14 urgent, 5 ok, 0 slow
+
+Generated from `longitudinal.stats` rather than typed (the 11-11 rule): last eight editions
+**13, 14, 15, 13, 13, 13, 15, 14**, 14-day mean **13.50**, prior high **17** (2026-10-24, 12 ties).
+So today sits **0.50 above the mean and 3 below the series high** — heavy, inside the band, not a
+record, and the lens says so. Items **733** against a series peak of 1,376 (10-19). Applied
+literally all fourteen pass: five KEV clocks on today/tomorrow/inside six days, five rows where no
+fix is reachable for somebody, four vendor cutovers inside eleven days. **Five lanes held `ok`
+while carrying real CVEs and wrote out their reasoning** — Fabric (no Fabric/OneLake/Synapse CVE
+in the entire 2,479-vulnerability November MSRC drop), BigQuery (a Critical patched 40 days before
+its bulletin, `exclusively-hosted-service`), Redshift, MongoDB (nothing from its 43 CVEs in KEV),
+Database Hardware (every AMD item local-attacker firmware, zero AMD entries in KEV).
+
+### The KEV remediation window is a 3-day median, and the flag bar should stop saying 14
+
+Re-confirmed from catalog 2026.11.25. **So nearly every new KEV entry lands inside a 14-day bar by
+construction**, which is part of why this column has sat at 13–15 for a fortnight. The bar is not
+wrong — a 3-day clock is more urgent, not less — but the board should stop describing 14 days as
+the typical window. Measured counterexample worth keeping: LiteLLM's entry got **14 days**, the
+catalog maximum since June, against 3-day clocks for MONAI and Optimizely added the same week.
+
+### US Thanksgiving: the premise was half right, and the lanes enumerated it
+
+I told all 19 lanes to expect a thin vendor day. **Most of them measured otherwise and said so.**
+ClickHouse tagged builds on four trains including today; Vite 8.4.0, a Next `preview` channel and
+six canaries published today; llama.cpp v1.1.0 today; Kubernetes 11-25, Argo CD 11-24, Valkey
+11-25, MariaDB 11-23/24. The genuinely quiet feeds are quiet for their own reasons (CPython's last
+round 10-25, Trino six weeks, StarTree four months) and **AWS's quiet is calendar position** —
+re:Invent runs 2026-11-30..12-04, still four days out, so anything circulating about Trainium 3 is
+a pre-announcement. **The useful half of the premise was the instruction to say so in one sentence
+rather than pad; the wrong half was predicting it.** Note also that edition 134's own note
+predicted re:Invent would land inside *today's* window — it does not.
+
+### Source access
+
+`blogs.oracle.com` 403s HTML **and** RSS for a **25th** consecutive week, so Oracle's
+Optimizer/In-Memory/Smart-Scan channel remains a standing structural gap and the brief says so
+rather than reporting a quiet month; product documentation carried the lane's Performance section
+again (Exadata Flash Cache Size Advisor). `mikedietrichde.com` returns **HTTP 200 with exactly
+2,972 bytes and no article text to curl while serving in full via WebFetch** — byte-identical to
+the 11-17 signature, so **change client, do not just retry**. `connor-mcdonald.com` article pages
+429 while its feed serves fine (rate-limited separately). New: **`www.jedec.org` is now behind a
+Cloudflare JS challenge to curl with a browser UA**, costing the primary surface for DDR6/MRDIMM
+standards; `amd.com` confirmed again 503 to WebFetch / 200 to curl; Micron has **no working news
+feed at either published path**; `news.skhynix.com/feed/` returns ten copies of one article.
+**TPC gotcha worth carrying: the listing pages carry no status column at all** — "Result In
+Review" appears only on `*_result_detail5.asp?id=…`, so judging a TPC result from a listing
+silently treats an in-review submission as accepted. Corrections to standing notes:
+`docs.firebolt.io` is not "months stale", it is **UNDATED** (archive entries carry no dates at
+all); `docs.dremio.com` is not stuck in June 2025 (27.0 "Coming soon"); the AWS what's-new
+**search** API is not stale — the **directory** endpoint is the broken one; the Redshift
+`/mgmt/` soft-404 is **302 / 273 bytes unfollowed**, and the carried "200 / ~2,319 bytes" is what
+you get after `-L`.
+
+### Security sweep, negative result — and the affordance escalated
+
+The Redshift lane fetched `behavior-changes.html` in both variants (**markdown 43,212 bytes / 30
+headings vs HTML 68,327 / 33** — identical to the 11-24 baseline, so that baseline is confirmed
+rather than moved again) and grepped both for `agent-toolkit`, `Skills for AI`,
+`AI coding assistant`, `search-skills` and `llms.txt` with `grep -o … | wc -l`: **zero matches,
+all five markers, both variants.** No lane followed an instruction found in a fetched page,
+fetched an `llms.txt`, or loaded a skill file.
+**The escalation worth recording: a vendor now tells you to hand COMPLIANCE to an agent.** Both of
+Google Play's 2026-11-18 compliance posts point the reader at a first-party `SKILL.md` —
+"Use the Jetpack Compose adaptive skill in Android Studio or Android CLI with your AI agent of
+choice" — and the Dev Summit post advertises 30+ skills "such as permissions security" plus agent
+plugins for Claude Code, Codex and Antigravity. Databricks made Unity Catalog agent skills a
+**shareable asset over OpenSharing** (GA 11-24) and its CLI installs skill files by default, now
+with a first `aitools auto-install disable` off switch. Oracle ships MCP servers in ORDS, ADB,
+SQLcl and OCI, where **26.3.1 is simultaneously the build that fixes a 9.8 unauthenticated RCE and
+the first that can disable MCP `sql_run`**. And **ClickHouse's docs hide the `llms.txt` imperative
+behind `aria-hidden="true"`** inside `<blockquote class="sr-only" data-agent-docs-index="true">` —
+hidden from every human path, including screen readers, while remaining in the DOM for a scraper,
+with the intended audience named in the attribute. Every `developer.android.com` markdown variant
+also rewrites in-page links into `.md.txt` form, so an agent following them never reaches the human
+page.
+
+### Scope, on the edition's face
+
+135 refreshes Today's Read and Since-yesterday on all four chairs, Event Horizon, Patch-Risk
+Radar, Longitudinal, the ledger and all identity sites. Claim Watch, Mirror, Question Forecast,
+Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build Radar, Skills Radar and
+Vendor Dossiers **carry forward unrevised and the NAV says so** — `claims[]` did not grow, because
+the day's research was overwhelmingly security, deadline movement and tooling-visibility rather
+than competitor perf or price claims. The quarterly Skills/Build re-rank is due **2027-01-01**.
+
+### Post-run 2026-11-26 — the dropped flag had TWO causes and the findings above name only one
+
+Landing the fix for the dropped `urgent` turned up the actual root cause, which the
+section above does not have. **`extract_briefs.split_contract()`'s header path
+defaulted to `status = "ok"`** when it found no STATUS line — so the moment the wrong
+candidate was selected, the lane was *asserted* healthy rather than reported unparsed.
+The candidate-selection bug (the length tiebreak) is what picked the contractless copy;
+**this is what turned that into a green lane.**
+
+**And the rule that forbids it was already written down.** The 11-24 note says, in those
+words, *"when a parse failure has to pick a value, it must pick the one that is LOUD,
+never the one that is QUIET"* — and that run fixed it in `assemble.py`. The same default
+sat one layer upstream, in the module that actually produces the `.status` file, and
+nobody looked. **A rule applied at the layer where you found the symptom is not applied.
+When you fix a defaulting bug, grep every layer that can produce the same field** —
+here `grep -n 'status = "ok"'` across `tools/ledger/` would have cost one command on
+11-24. Now `"pending"`, which `assemble.py` already maps to not-ready, so the two layers
+agree rather than one quietly overriding the other.
+
+**A module-level `raise SystemExit` makes a selftest unreachable no matter where
+`__main__` sits.** `extract_briefs.py` resolved its session dir at import and exited on
+a missing one, so `--selftest` could never run and neither could any import of the
+module. Same class as the 11-19 `patch_radar --selftest` printing nothing and exiting 0,
+and the 11-04 *"a module whose import has side effects is not a library"* finding — but
+worth recording separately, because the 11-19 fix was "move the `__main__` block to the
+end" and **that would not have helped here**. The exit is now inside `main()`.
+
+**My own first fix was asymmetric, and the selftest's inverse control caught it on the
+first run.** `if hb_contract and not last_contract: ... elif hb_contract or len(...)`
+short-circuits, so a contract-bearing handback won **even when the trailing text block
+was both valid AND longer** — the one shape that silently loses content, which is the
+09-21 *"never drop a longer real brief"* rule. Rewritten as a decision table: **the
+contract marker decides VALIDITY; length only breaks a tie between two candidates that
+are both valid parses.** The generalisable half: **a preference rule that only ever
+prefers one side is not a preference rule**, so every case in the new selftest is run in
+both directions (13 cases — 7 selection pairs, 1 no-handback case, 5 contract-parsing
+cases including a declared-status control beside the missing-status one).
+
+**The control that matters is the real data, and it is cheap.** A `--force` re-extract of
+all 19 transcripts with the fix reproduces the hand-corrected result **exactly** — 14
+urgent / 5 ok, every `.status` byte-identical, with aiappdev coming out `urgent` on its
+own. The published dashboard was also checked and was already correct (its aiappdev body
+is the 28,996-char handback copy and its `flag_reason` is full), so nothing needed
+republishing. **Decode `window.BRIEFINGS` with `json.JSONDecoder().raw_decode()`** — the
+payload is followed by more script, so `json.loads` on a slice fails with "Extra data"
+and there is no `<script type="application/json">` block to find.
+
+**Landed on `claude/great-clarke-08s0ul` (`a3d716f`), pushed, and verified a strict
+superset of both `origin/main` and its base branch** — so Karl's merge is a
+fast-forward. `curate.py` deliberately not ported: its whole delta is the daily
+PICKS/PIN/EXCLUDE lists and the diff carries **no structural line**, so porting moves no
+logic and lands stale picks (the 10-04 rule, re-verified rather than assumed — a naive
+`grep -E 'if |for '` over the diff returns 12 false hits, every one the words "if" or
+"for" inside row prose).
