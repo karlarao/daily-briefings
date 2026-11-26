@@ -18297,3 +18297,58 @@ Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build Radar, Sk
 Vendor Dossiers **carry forward unrevised and the NAV says so** — `claims[]` did not grow, because
 the day's research was overwhelmingly security, deadline movement and tooling-visibility rather
 than competitor perf or price claims. The quarterly Skills/Build re-rank is due **2027-01-01**.
+
+### Post-run 2026-11-26 — the dropped flag had TWO causes and the findings above name only one
+
+Landing the fix for the dropped `urgent` turned up the actual root cause, which the
+section above does not have. **`extract_briefs.split_contract()`'s header path
+defaulted to `status = "ok"`** when it found no STATUS line — so the moment the wrong
+candidate was selected, the lane was *asserted* healthy rather than reported unparsed.
+The candidate-selection bug (the length tiebreak) is what picked the contractless copy;
+**this is what turned that into a green lane.**
+
+**And the rule that forbids it was already written down.** The 11-24 note says, in those
+words, *"when a parse failure has to pick a value, it must pick the one that is LOUD,
+never the one that is QUIET"* — and that run fixed it in `assemble.py`. The same default
+sat one layer upstream, in the module that actually produces the `.status` file, and
+nobody looked. **A rule applied at the layer where you found the symptom is not applied.
+When you fix a defaulting bug, grep every layer that can produce the same field** —
+here `grep -n 'status = "ok"'` across `tools/ledger/` would have cost one command on
+11-24. Now `"pending"`, which `assemble.py` already maps to not-ready, so the two layers
+agree rather than one quietly overriding the other.
+
+**A module-level `raise SystemExit` makes a selftest unreachable no matter where
+`__main__` sits.** `extract_briefs.py` resolved its session dir at import and exited on
+a missing one, so `--selftest` could never run and neither could any import of the
+module. Same class as the 11-19 `patch_radar --selftest` printing nothing and exiting 0,
+and the 11-04 *"a module whose import has side effects is not a library"* finding — but
+worth recording separately, because the 11-19 fix was "move the `__main__` block to the
+end" and **that would not have helped here**. The exit is now inside `main()`.
+
+**My own first fix was asymmetric, and the selftest's inverse control caught it on the
+first run.** `if hb_contract and not last_contract: ... elif hb_contract or len(...)`
+short-circuits, so a contract-bearing handback won **even when the trailing text block
+was both valid AND longer** — the one shape that silently loses content, which is the
+09-21 *"never drop a longer real brief"* rule. Rewritten as a decision table: **the
+contract marker decides VALIDITY; length only breaks a tie between two candidates that
+are both valid parses.** The generalisable half: **a preference rule that only ever
+prefers one side is not a preference rule**, so every case in the new selftest is run in
+both directions (13 cases — 7 selection pairs, 1 no-handback case, 5 contract-parsing
+cases including a declared-status control beside the missing-status one).
+
+**The control that matters is the real data, and it is cheap.** A `--force` re-extract of
+all 19 transcripts with the fix reproduces the hand-corrected result **exactly** — 14
+urgent / 5 ok, every `.status` byte-identical, with aiappdev coming out `urgent` on its
+own. The published dashboard was also checked and was already correct (its aiappdev body
+is the 28,996-char handback copy and its `flag_reason` is full), so nothing needed
+republishing. **Decode `window.BRIEFINGS` with `json.JSONDecoder().raw_decode()`** — the
+payload is followed by more script, so `json.loads` on a slice fails with "Extra data"
+and there is no `<script type="application/json">` block to find.
+
+**Landed on `claude/great-clarke-08s0ul` (`a3d716f`), pushed, and verified a strict
+superset of both `origin/main` and its base branch** — so Karl's merge is a
+fast-forward. `curate.py` deliberately not ported: its whole delta is the daily
+PICKS/PIN/EXCLUDE lists and the diff carries **no structural line**, so porting moves no
+logic and lands stale picks (the 10-04 rule, re-verified rather than assumed — a naive
+`grep -E 'if |for '` over the diff returns 12 false hits, every one the words "if" or
+"for" inside row prose).
