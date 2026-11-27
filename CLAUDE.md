@@ -18352,3 +18352,229 @@ PICKS/PIN/EXCLUDE lists and the diff carries **no structural line**, so porting 
 logic and lands stale picks (the 10-04 rule, re-verified rather than assumed — a naive
 `grep -E 'if |for '` over the diff returns 12 false hits, every one the words "if" or
 "for" inside row prose).
+
+## Run findings 2026-11-27 (edition 136)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked prompt,
+both hooks clean.** Launched 09:12 EST, last brief in ~09:40, dashboard pushed `cbf6d4a` and the
+Pages **`deploy` job completed `success` at 14:47:13Z, ~56s after the push**. Lens published as
+**Version 102** (`1795791470-5a6b`). **~5,400k research tokens — a genuine record** (prior high
+~4,932k on 11-20), checked against the series rather than asserted, because three notes in a row
+had to retract a "new record" claim.
+
+### The run's best finding came from two of my own lanes disagreeing, and the source settled it
+
+The Open Formats lane said `ALTER TABLE … DROP FEATURE "variantShredding"` is the rollback and
+rewrites data in place; the Databricks lane said the feature is **absent from the closed list** on
+`/tables/features/drop-feature` (updated 2026-10-28) which ends "You cannot drop other Delta Lake
+table features." **Both cited a real Databricks page. The disagreement was between two VENDOR
+SURFACES of different ages, not between two measurements** — which is exactly the shape where
+reading the source decides it. I fetched `TableFeature.scala` at `v4.4.1` myself:
+
+    line 859  object VariantShreddingTableFeature
+    line 860    extends ReaderWriterFeature(name = "variantShredding")
+    line 861    with FeatureAutomaticallyEnabledByMetadata
+    line 862    with VariantShreddingTableFeatureBase {
+    line 877  object DeletionVectorsTableFeature          <-- the control
+    line 879    with RemovableFeature                      <-- present here, absent above
+
+So in OSS Delta the feature is **not removable**, the newer vendor page agrees with the source, and
+the board must not offer `DROP FEATURE` as a working exit. **Third time in two runs that two sound
+methods needed a third measurement neither lane had made** (cf. the LiteLLM floor and the Maven
+mtime question on 11-26). **RULE: when two lanes disagree and both cite a vendor page, check the
+PAGE DATES first — then go to source. Do not pick the lane you trust more.**
+
+### A new "patch to latest" mechanism, and it fails in both directions on one day
+
+**Apache Tomcat CVE-2026-133325 affects the newest release on every supported line** — 11.0.29,
+10.1.62, 9.0.124 — with 11.0.30/10.1.63/9.0.125 named only "(when released)" and absent from
+`downloads.apache.org`. So **currency CREATES the exposure**. On the same day Spring Security's
+maintenance branches are capped *below* the advisory's floor, so **currency HIDES one**. A
+currency dashboard scores a green on both. Two sharp details: **11.0.28 was never distributed**, so
+on Tomcat 11 the affected population is exactly "whoever applied the 2026-11-13 security release";
+and **the same 11.0.29 that fixes ten CVEs deprecates `EncryptInterceptor` "in favour of TLS-PSK"**
+— the channel this breaks — so following the release's own advice lands you on the Critical.
+
+### Three of my own guards and scripts caught my own mistakes, which is what they are for
+
+- **`assert_markup_sane` caught `947 '<' vs 946 '>'` in v-patch.** I had truncated row prose at
+  `[:1400]`, which cut mid-tag. **Never truncate HTML.** The fix was to drop truncation entirely.
+- **`rewrite_pov_meta` RAISED on a wrong key set** rather than silently matching nothing:
+  `povContent.meta` covers only the **eight chair-flipped viewids**
+  (`v-read, v-wn, v-claims, v-mirror, v-questions, v-gaps, v-skills, v-build`), and I had passed it
+  all fifteen. This is the 09-20 "a guard that can match zero things and still pass is not a guard"
+  design paying off on the exact failure it was written for. Shared sections' nav meta lives in
+  `var NAV` only.
+- **`assert_no_stale_identity` rejected "carried from edition 135".** Its `LEGIT` patterns are
+  exactly `vs edition <N>`, `carried from <N>` and `(ed. <N>)` — an extra word between "from" and
+  the number fails it. Use the sanctioned wording in nav strings.
+- **And one it could not catch: I silently changed the Patch-Risk Radar from the parent's 3 columns
+  to 4.** `assert_table_shape` passed (it checks internal consistency, not continuity with the
+  parent), and the per-section delta table is what surfaced it — v-patch was **−19.8KB**, which I
+  then had to explain. Comparing `<th>` lists against the parent showed `['Row','Due / status','Src']`
+  vs my `['Item','Status / floor','What to do with it','Src']`, **and that I was rendering the SLUG
+  as each row's title** (`tomcat 133325 newest build on every line is...`) where the parent carried
+  authored prose. Restored to the parent's contract. **RULE: a size delta on the most-read table is
+  not accounted for until you have compared its COLUMN LIST to the parent's, not just its row count.**
+
+### My handoff was wrong twice and right-but-incomplete once — 12th consecutive run
+
+- **I gave all 19 lanes "BCR-2473 moved the default AND minimum auto-suspend" without a DIRECTION.**
+  The Snowflake lane flagged it unprompted: it **lowers** the floor (24h minimum → 1h), and said
+  "direction matters here and is easy to get backwards." A change with no direction is not a fact.
+- **Two corrections I had queued were already on the board, and probing first is what saved them.**
+  `snowsight-account-host-oct16` was corrected on 10-23 to "early February 2027 (exact date TBD)",
+  and `genie-mcp-beta-endpoint-sunset-oct31` already carries `date: 2026-11-30`. The key names look
+  stale in both cases while the `date` fields are right — **a slug is not a date; read the field.**
+- **I nearly minted a duplicate PgBouncer row.** `probe_board.py` returned
+  `patch/pgbouncer-scram-nonce-preauth-crash-19888`, which already carries CVE-2026-107350 *and* the
+  Debian-stranded population. It became a one-line day-count enrichment instead of a new slug.
+  Same for AIStore: the board had CVE-2026-65162, today's is CVE-2026-65175 — a different CVE in
+  the same product, so an enrichment and not a fold.
+
+### A bug in my own diff script, worth recording because the output looked plausible
+
+My edition-over-edition differ printed one key **18 times** under "rows whose text moved". Cause: a
+list comprehension `[k for s in SEC for r in cur[s] ...]` where `k` was never bound in the
+comprehension, so it picked up the **leaked loop variable** from the previous `for` block. The
+corrected version reports 35 moved rows (8 deliberate corrections + 33 countdown rewrites), which
+reconciles with `countdowns.refresh_rows`' own report of events 1 + patch 32. **A diff that names
+the same row N times is a scoping bug, not N findings.**
+
+### `apply_harness_tokens` is back to +0, and the 11-26 "0.34% low" was a timing artefact
+
+Yesterday's note recorded the extractor running ~0.34% low again and called it a regression. It was
+not. Today the first extraction pass read `devops` at **315,312** tokens and the `--force` pass
+after its completion notification read **339,876** — the harness figure exactly. **The first pass
+ran before that agent's final `usage` record had flushed.** `apply_harness_tokens` then reported
+`patched 19/19; net +0`, the documented expected result. **So the correct control is: extract, wait
+for every notification, re-extract with `--force`, and diff.** Today that diff came back
+**byte-identical on all 19 briefs and all 19 statuses**, with `devops.tokens` the single changed
+file — which is also the cheapest possible proof that no transcript was truncated.
+
+### Status audit against the handbacks, every lane, after the 11-26 dropped flag
+
+I recorded each lane's declared STATUS as its handback arrived and compared all 19 against the
+extracted `.status` files: **18 of 18 readable handbacks matched, 0 mismatches**, with `devops` the
+only lane whose handback arrived truncated (persisted to a tool-results file) and whose `urgent` was
+confirmed from its TL;DR instead. Also asserted mechanically: **every `urgent` lane carries a
+non-empty `flag_reason` and every `ok` lane's is empty** — the two halves of the 11-26 failure.
+
+### Flag calibration: 14 urgent, 5 ok, 0 slow — generated, not typed
+
+From `longitudinal.stats` (the 11-11 rule): last eight editions **14, 15, 13, 13, 13, 15, 14, 14**,
+14-day mean **13.79**, prior high **17** (2026-10-24, 13 ties), floor across those eight **13**. So
+today is **0.21 above the mean and 3 below the series high** — heavy, in-band, not a record, and the
+lens says so. Items **740** against a series peak of 1,376 (10-19): **a heavy day by severity and an
+ordinary one by volume, which is the shape a deadline wall produces rather than a disclosure wave.**
+Applied literally all fourteen pass: two KEV clocks expiring **today**, five more past due or inside
+six days, five rows where no fix is reachable for somebody, and four vendor cutovers inside five
+days. **Five lanes held `ok` while carrying real CVEs and wrote out their reasoning** — Fabric (zero
+Fabric/OneLake/Synapse CVEs in the entire 2,515-record November MSRC drop), Redshift (a
+denial-of-resolution bundled-c-ares bug, not in KEV, fix installable), Snowflake (three CVEs, all
+`Deferred` at NVD with zero CPEs, all with fixes), NL2SQL and Database Hardware (the AMD 9.4 needs
+local SPI-flash write access and CISA's SSVC reads `exploitation: none`). **Two lanes negotiated a
+boundary rather than both flagging it**: AI App Dev deferred GPUStack to AI Hardware, which claimed
+it and said so.
+
+### MSRC revises its own November file after release
+
+Fabric re-measured the November CVRF at **2,515 vulnerability records** against the **2,479** the
+11-26 note recorded. Not a contradiction — MSRC edits the file post-release. **A count read
+mid-month is not a stable number; date it.**
+
+### Source access
+
+`blogs.oracle.com` 403s HTML **and** RSS for a **26th** consecutive week, so Oracle's Optimizer /
+In-Memory / Smart-Scan channel remains a standing structural gap and the Oracle brief says so on its
+face; product documentation carried the Performance section again. **Both Oracle blogs inverted the
+usual client pattern today**: `connor-mcdonald.com/feed/` returned **429 to curl while serving in
+full via WebFetch**, and `mikedietrichde.com/feed/` **failed outright to curl (HTTP 000,
+`PROTOCOL_ERROR` on the HTTP/2 stream) while also serving via WebFetch** — a harder failure than the
+11-17/11-26 "200 with 2,972 bytes and no article text", and it re-confirms **change client, do not
+just retry**. Corrections to standing notes: **SQLcl DOES have a public changelog** at
+`oracle.com/tools/sqlcl/sqlcl-changelog.html` (it is `sqlcl-relnotes.html` that 404s), so the
+carried "no working public changelog" is wrong; **`www.databricks.com/feed` works** (200, real RSS)
+while `/blog/rss.xml` and `/blog/feed` return **404 with a 698KB SPA body** — a status-404 with a
+large plausible body, the inverse of the soft-404 trap. New: `docs.databricks.com` HTML is a
+Docusaurus shell (731 chars of text) but **appending `.md` to any page returns the full body**, and
+`Accept: text/markdown` does **not** work there; `docs.cloud.google.com` serves **HTTP 404 with a
+~96.9KB body**, so a body-size soft-404 test is useless on that host — grep a content marker.
+`www.jedec.org` is still behind a Cloudflare JS challenge, so DDR6/MRDIMM standards are unreachable.
+
+### Security sweep, negative result — and the affordance is now first-party everywhere
+
+The Redshift lane fetched `behavior-changes.html` in both variants (**markdown 43,212 bytes / 30
+headings vs HTML 68,327 / 33 — identical on every figure to the 11-24 and 11-26 baselines**) plus
+`cluster-versions.html` both ways (markdown 140,870 / 96 vs HTML 231,798 / 97, a baseline where none
+existed), and grepped all four for `agent-toolkit`, `Skills for AI`, `AI coding assistant`,
+`search-skills`, `llms.txt` with `grep -o … | wc -l`: **zero matches, every marker, every file**,
+then broadened to `skill`, `MCP`, `assistant`, `aria-hidden`, `sr-only`, `hiddenDirective` —
+**0 in all four for all six**. **No lane followed an instruction found in a fetched page, fetched an
+`llms.txt`, or loaded a skill file.** New hidden-affordance sightings: **CockroachDB's markdown
+variant opens with a blockquote telling automated clients to fetch its `llms.txt`**, and
+`nextjs.org` carries the same imperative in page **front-matter** — joining the recorded Snowflake
+`<aside class="sr-only">`, ClickHouse `aria-hidden` block, MongoDB docs line and MCP's own
+specification site. Counterweights shipped the same month and are worth crediting: Claude Code's
+`PreSkillShellCommand` hook (the first refusal point for a skill's inline shell commands),
+Databricks' `aitools auto-install disable` plus `aiGatewaySkills` audit events, and the Databricks
+CLI v1.27.0 refusing "a skills manifest that names a skill or file outside the skills directory,
+before writing any skill files".
+
+### Lens findings (edition 136)
+
+**Every guard passed on the FIRST assembly**: guard 1 (parent freshness against the `action:"list"`
+metadata), host-wrapper strip, 15 sections, 10 tables, `assert_markup_sane` across the five
+regenerated sections, all four identity guards, `assert_ledger_identity`, alias-safe on all eight
+non-retiring sections plus the **union forward-only** check for events+retired per that guard's own
+docstring, and **guard 5 at 771 cited units with zero uncited** — mechanism unchanged since 09-15,
+every row generator calls `cite()` inline. `normalize_closing_tags` ran last and the (1,1) check was
+read back **from disk**.
+**The per-section delta table passed in both directions: 10 of 15 carried sections read exactly
++0.** Size **2,664,592 bytes, −3,742 against the parent-as-built**, accounted to within **100**
+bytes: v-patch −19,356, v-longitudinal −2,274, v-events −777, against v-wn +1,428, v-read +105,
+`lensLedger` +11,940, `povContent` +5,075, runbar +17. **The v-patch drop is row ROTATION, not loss**
+— `select()` re-ranks by actionability each run, so the 24 rows shown have a mean prose size of
+2,443 bytes against 3,154 for the heavily-enriched rows that rotated off, and 8 of today's 24 are
+rows new or corrected today.
+**Ledger: events 58 → 59** (3 new, 2 retired by date passing), **patch 293 → 294** (1 hand fold, 2
+new), no-fix register **49**, retired_events 136 → 138. **33 countdowns rewritten, 65 declined** —
+the declined ones are non-adjacent counts the adjacency rule correctly leaves alone.
+**One hand fold, not a threshold fold:** `postgres-nov12-52-cves-managed-lag-osv-blind` into
+`postgres-52-cve-batch-nov12-no-managed-build`, loser preserved in `aliases[]` and its unique half
+(all 52 absent from OSV; the client-side `pg_restore` and `pg_dump` CVEs) carried into the survivor.
+The 09-11 measurement that `same_story` cannot separate a true duplicate from two distinct same-date
+rows still governs: **hand-verify or do not fold.**
+**Three corrections moved rows OFF the no-reachable-fix register, which is worth as much as an
+addition.** Pinot now has a fix (1.6.0, priced at a Java 25 migration plus an index rewrite rather
+than unavailable); the PostgreSQL 52-CVE batch is no longer unreachable everywhere (RDS and Aurora
+shipped — and **Aurora's 18.6.2 is documented as "compatible with PostgreSQL 18.6", so a fully
+patched cluster reports a version every CPE range calls vulnerable**, while Azure Flexible Server
+and Cloud SQL still *create new servers* below it); and the GPUStack mitigation the board carried was
+wrong — **stripping `X-GPUStack-Real-IP` closes the forged-header path only**, because a same-host
+reverse proxy whose peer genuinely is `127.0.0.1` needs no header at all, so the setting is
+`force_auth_localhost=true` and the floor is **2.2.2** (2.2.0 leaves CVE-2026-103002 and the
+Critical SAML bypass CVE-2026-102894).
+**The Vite phantom-version mechanism now has a CAUSE.** The advisory names a second unpublished
+version too — `rolldown@1.2.17` — and the `v8.2.6` tag's own CHANGELOG carries **an 8.2.5 entry AND
+an 8.2.6 entry with the identical change and the identical commit** (`8273d3d`, both 2026-11-09): a
+release cut, failed to publish, re-cut one patch up, advisory left pointing at the phantom.
+
+**Scope, on the edition's face:** 136 refreshes Today's Read and Since-yesterday on all four chairs,
+Event Horizon, Patch-Risk Radar, Longitudinal, the ledger and every identity site. Claim Watch,
+Mirror, Question Forecast, Gap Ledger, Benchmark Scoreboard, Promise Tracker, Perf Signals, Build
+Radar, Skills Radar and Vendor Dossiers **carry forward from 135 unrevised and the NAV says so** —
+`claims[]` did not grow, because the day's research was overwhelmingly security, deadline movement
+and client lockout rather than competitor perf or price claims. The quarterly Skills/Build re-rank
+is due **2027-01-01**.
+
+### Hook-log diagnostic
+
+`/tmp/claude-artifact-hook.log` holds exactly **4** records — `list`, `read` with `path`, the plain
+`read` a republish requires, and the publish — **all `PreToolUse`, none `PermissionRequest`**, all
+`mode=auto`. `/tmp/claude-bash-hook.log` holds **1,184** records, **663 allow / 521 pass**, again all
+`PreToolUse` at `mode=auto`. That is the healthy signature: zero `PermissionRequest` means
+`PreToolUse` cleared everything before the prompt layer was reached. The 09-16 republish sequence is
+re-confirmed as the working one — **`read` with `path` to stage and build → plain `read` on the URL →
+publish** — and today the plain read returned **the same version id the staged copy came from**,
+which is the cheap proof nobody published underneath the build.
