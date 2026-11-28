@@ -1,0 +1,74 @@
+[
+ [
+  "2026-10-29",
+  "CISA KEV remediation due for the Oracle Secure Backup entry (CVE-2026-109618 / CVE-2026-109619, the embedded PHP \"PHP2Shell\" RCE, CVSS 9.8, unauthenticated, forensicTriage: Yes) -- overdue. It is still filed in KEV under \"PHP Group / PHP\" and NVD's 316 CPEs name NO Oracle product, so a CPE-driven inventory sweep returns clean. A passed KEV date converts into a TRIAGE obligation, not a discharged one"
+ ],
+ [
+  "2026-11-10",
+  "CISA KEV remediation due for the Brotli decoder out-of-bounds write (CVE-2026-111497). SETTLED: only the structured forensicTriage field binds and for Brotli it is No. NVD is Analyzed with PRIMARY CVSS 3.1 9.8. Apple is an affected Brotli vendor; Node's fix is 22.23.4 (not 22.23.3). NVD's own record lists all three fixed releases inside its affected ranges -- a permanent false positive. CORRECT TEST (controlled 2026-11-24): grep -o BLOCK_SWITCH | wc -l, and ONLY that -- it returns 0/0/1/1 on brotli v1.1.0/v1.2.0/v1.1.1/v1.2.1; both the full BROTLI_DECODER_ERROR_FORMAT_BLOCK_SWITCH literal and the -17 error-code line return 0 on patched AND unpatched trees"
+ ],
+ [
+  "2026-11-12",
+  "CISA KEV remediation due for OpenSSH CVE-2026-123158 (musl libc without PAM). forensicTriage: Yes. musl itself is unfixed, so other crypt() callers stay exposed"
+ ],
+ [
+  "2026-11-17",
+  "Snowflake BCR-2473 moved the default AND minimum auto-suspend for interactive warehouses. EXISTING warehouses are NOT rewritten; the trap is CREATE OR REPLACE without an explicit AUTO_SUSPEND, which silently adopts the new 1-hour default. One hour is also the minimum billable period per resume"
+ ],
+ [
+  "2026-11-18",
+  "Databricks variantShredding became default. Reader+writer table feature, so an unsupporting client cannot open the table at all, and enableVariantShredding=false leaves it SUPPORTED (still in readerFeatures) rather than disabled. SETTLED 2026-11-27 FROM SOURCE: `ALTER TABLE ... DROP FEATURE \"variantShredding\"` is NOT a working exit -- Delta OSS TableFeature.scala at v4.4.1 declares VariantShreddingTableFeature WITHOUT the RemovableFeature trait (DeletionVectorsTableFeature, the control, HAS it), and the newer Databricks /tables/features/drop-feature page (updated 2026-10-28) omits it from its closed list. Two vendor surfaces of DIFFERENT AGES disagreed; the source and the newer page agree. The read floor is stated five different ways on Databricks' own surfaces (15.4 / 16.4 / 17.3 / 18.1); OSS delta-spark 3.3.x contains ZERO occurrences of the feature name"
+ ],
+ [
+  "2026-11-19",
+  "PostgreSQL 19 GA -- it DID ship, later on its scheduled day. 19.0 is current; 14 is unsupported with a final release of 14.25. The live story is the extension wall, now counted from the PGDG pool: 83 PG19 extension packages against 113 for PG18, with timescaledb, repmgr, pgpool2 and pg_auto_failover among the ~30 missing. pgvector HAS published a PG19 artifact (since 2026-10-02). Separately: the 2026-11-12 minors break every TimescaleDB background job -- upgrade TimescaleDB FIRST, and 2.32.0 has no forward fix (step back to 2.31.1)"
+ ],
+ [
+  "2026-11-21",
+  "CISA KEV remediation due for Apache Axis 1.x -- and there is NO reachable fix: the ASF states it does not expect to create an Axis 1.x release fixing this, and org.apache.axis:axis on Maven Central holds exactly one version, 1.4, last updated 2006-04-23. The fault is parsed BEFORE any per-service handler chain runs, so service-level auth handlers do not protect against it"
+ ],
+ [
+  "2026-11-23",
+  "CISA KEV remediation due for the Apache Roller entry (CVE-2026-129448, CVSS 9.8 unauthenticated deserialization, exploitation: active, forensicTriage: Yes) -- now PAST, so it is a forensic-triage obligation rather than a patch one. Confirm the fixed version from the ASF advisory, not from a tracker"
+ ],
+ [
+  "2026-11-24",
+  "CISA KEV remediation due for the Chrome XML use-after-free CVE-2026-125350 -- exploited in the wild, and it reaches Chrome for Android and Android System WebView, which update through Play on their own cadence (so a Capacitor/Cordova app IS this engine; Capacitor's default minWebViewVersion is 60, ~97 majors below the fix)"
+ ],
+ [
+  "2026-11-26",
+  "CISA KEV remediation due for MONAI Label CVE-2026-133968 (CVSS 9.8, unauthenticated RCE, forensicTriage: Yes). CARRIED AND CORRECTED -- edition 133's note named a fix version (0.9.1) that WAS NEVER PUBLISHED; do not repeat it. Measured 2026-11-25 from pypi.org/pypi/monailabel/json and GitHub releases: 0.8.5 is the exploited build, 0.8.6 (2026-11-22) is the build CISA/NVD/OSV name as the fix, 0.8.7 (2026-11-25) fixes GHSA-j5c7-p3x5-gw2x (affects 0.6.0-0.8.6) and 0.8.8 (2026-11-25) fixes GHSA-gfjg-c3x6-24gw (affects 0.7.0-0.8.7) -- so THE KEV-NAMED FIX IS ITSELF VULNERABLE and the floor was 0.8.8. NEITHER new advisory carries a CVE id or an OSV record. Also an interpreter floor: 0.8.6+ needs Python >=3.11, so on 3.9/3.10 `pip install -U monailabel` resolves to the exploited 0.8.5 and exits 0. RE-VERIFY the current floor -- more may have shipped since"
+ ],
+ [
+  "2026-11-27",
+  "CISA KEV remediation due for the Optimizely entry added 2026-11-24 (one of the three clocks added that day with a 3-day window). CONFIRM the id, the affected product line and whether a fix build exists from CISA's own catalog JSON -- this row is carried from edition 134 and its detail was not re-measured"
+ ],
+ [
+  "2026-11-30",
+  "GitHub X-GitHub-Stateless-S2S-Token header cutover; Databricks Genie One MCP Beta endpoint (/api/2.0/mcp/genie) stops serving requests -- move to system.ai.genie_one_mcp (the board's slug still reads 'oct31' while its date field reads 2026-11-30: READ THE FIELD, not the slug); OpenAI triple shutdown (three deprecations the same day); and Anthropic `claude-sonnet-4-5` (dated AND floating alias) starts returning 404 while fast mode on `claude-opus-4-8` starts returning an error -- the fast-mode date is published ONLY on the fast-mode feature page. Confirm each against the vendor's own deprecation surface"
+ ],
+ [
+  "2026-12-01",
+  "Google Play payment-authorization requirement for Japan. The date is published ONLY on Play Console Help's 'Policy announcement: October 29, 2026' page and ONLY in ordinal form ('December 1st, 2026') -- it is absent from the structured Policy Deadlines table, so a date-pattern grep of that table returns a false negative. The penalty is a HOLD ON EARNINGS in every region, not only Japan"
+ ],
+ [
+  "2026-12-02",
+  "CISA KEV remediation due for LiteLLM CVE-2026-40217 (NOT the September entry CVE-2026-59822) -- SSVC reads exploitation: active. Its own advisory gives three versions; >=1.83.11 is the only floor satisfying all three. ALSO on this date: GitHub Actions pull_request_target PERMANENT enforcement in all public repos (so do NOT describe the November brownouts as the end of it); Amazon EKS 1.34 standard support ends; and Databricks `CREATE OR REPLACE VIEW` changes to in-place updates"
+ ],
+ [
+  "2026-12-08",
+  "GitHub ARM32 HOSTED-runner retirement -- and note the half that matters more: SELF-HOSTED ARM32 has been unsupported since 2026-09-23 (Node-20-removal changelog, ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION opt-out gone), so a reader who only knows the December date thinks they have time when they have none. Same date: Databricks OpenSharing legacy-token expiry, which is a FLOOR not a cliff -- 'one year from creation or 12-08, whichever is further in the future' -- binding only tokens created on or before 2025-12-08"
+ ],
+ [
+  "2026-12-15",
+  "Oracle monthly CSPU -- the December drop. Confirm from Oracle's own advisory surface (public-vuln-to-advisory-mapping.html) what actually shipped"
+ ],
+ [
+  "2026-12-31",
+  "Redshift ODBC 1.x end of support (driver major). Confirm from the AWS driver docs, and check the body size against the host soft-404 baseline -- docs.aws.amazon.com soft-404s with HTTP 200 at ~2,319 bytes under /mgmt/ and ~2,347 under /dg/"
+ ],
+ [
+  "2027-03-31",
+  "Microsoft Fabric Runtime 1.3 end of LTS. SETTLED 2026-11-23 after four editions of disagreement, and it was never a moving date -- it was two different pages: data-engineering/runtime-1-3 carries an EOSA label and NO date at all, while data-engineering/lifecycle carries BOTH the 2026-09-30 EOSA and the footnote putting 1.3 into LTS through March 2027. Cite the lifecycle URL"
+ ]
+]
