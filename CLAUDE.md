@@ -18578,3 +18578,258 @@ is due **2027-01-01**.
 re-confirmed as the working one — **`read` with `path` to stage and build → plain `read` on the URL →
 publish** — and today the plain read returned **the same version id the staged copy came from**,
 which is the cheap proof nobody published underneath the build.
+
+## Run findings 2026-11-28 (edition 137)
+
+**Clean run: all 19 agents completed first try on `claude-opus-5`, no suspension, no parked
+prompt, both hooks clean.** Launched 09:14 EST, all 19 handbacks in by ~09:36, dashboard pushed
+`29ebf31` and the Pages **`deploy` job completed `success` at 14:43:50Z, 32s after the push**.
+Lens published as **Version 103** (`1795877617-a16c`). **~4,855k research tokens** — below the
+~5,400k record, and the item count tells you why: **652 items, the lowest of the last eight
+editions**, against 14 urgent lanes. That pair is the shape of a **deadline wall rather than a
+disclosure wave**, and it is the right way to describe a US-holiday Saturday.
+
+### READ THIS FIRST: main's CLAUDE.md and main's `tools/` are both stale
+
+Two orientation facts that cost time at the start of this run and will cost it again:
+
+- **The CLAUDE.md the harness loads into context is main's, and main's ends at edition 070.**
+  The live one is on **gh-pages** (18,580 lines, through edition 136). A run that trusts the
+  copy in its context is reading September. Check `git show origin/main:CLAUDE.md | wc -l`
+  against the working tree's before believing anything.
+- **`tools/` on main is stale and the 2026-11-17 "it IS on main" note no longer covers it.**
+  main has 17 files and is missing `countdowns.py`, `probe_board.py`, `patch_radar.py`,
+  `lens_identity.py`, `lens_extra.py`, `events_table.py`, `longitudinal.py`, `patch_rows.py`,
+  `derive_lists.py`, `shared_rules.py`, `handback_poll.py` and `SHARED_RULES.md`. The newest
+  full set (32 files) is on **`origin/claude/great-clarke-08s0ul`** (2026-11-26). Working
+  incantation: `git archive origin/claude/great-clarke-08s0ul tools | tar -x -C <scratchpad>/`.
+  Karl: merging that branch is what stops the next run rediscovering this.
+
+### My handoff was wrong THREE times, and all three had the same cause
+
+Thirteen runs in a row have recorded a handoff error; today there were three, and they share a
+single root: **I forwarded edition 136's prose to 19 lanes without re-probing the vendor.**
+
+- **GPUStack floor: I said 2.2.2, the real floor is 2.3.1.** I put 2.2.2 in SHARED_RULES *and*
+  in the AI Hardware topic spec. 2.2.2 leaves **19 further advisories open**, including
+  `GHSA-33f6-vcmh-2xfm` (Critical cross-tenant privilege escalation via `owner_principal_id`
+  mass-assignment) and `GHSA-gjf9-3p3r-9h9c` (server-side code execution). The lane measured it
+  from the vendor's own releases.
+- **OpenSharing legacy-token expiry: I said 2026-12-08, it moved to 2027-02-25** on 2026-11-24.
+  Worse, **the board already had it right** — the row's key still reads `...-dec8` while its
+  `date` field reads `2027-02-25`. The 11-27 rule ("a slug is not a date; read the field")
+  applied to me, not to the board.
+- **PG19 extension counts: I said 83-vs-113 with repmgr missing; it is 89-vs-112 and
+  `postgresql-19-repmgr` 5.5.1-2 EXISTS.** Operationally different: you *can* run PG19 with
+  streaming-replication HA via repmgr, just not with Pgpool-II or pg_auto_failover.
+
+**The rule this earns, stated plainly: a date or a version in yesterday's note is not a date or
+a version today.** The 11-27 note's own "read the field, not the slug" generalises to prose
+notes. Anything numeric I hand 19 lanes should be either re-probed or labelled as carried.
+The lanes caught all three, which is the system working — but each one cost 19 lanes a
+correction they had to spend budget on.
+
+### The ledger match rate ROSE out of band, and the 09-09 diagnostic does not apply
+
+Step 4c matched **211 of 652 items (32.4%)** against a recent band of 20–22%. The 09-09
+length-asymmetry diagnostic is for a match rate that is too LOW, so I did not touch thresholds.
+The explanation is the calendar and it is coherent: a holiday Saturday **re-samples the same
+2026-11-17..25 wave** rather than discovering new stories, so more of today's items are
+rewordings of things already in the dictionary. The 15 weakest accepted merges were eyeballed
+(r 0.61–0.71, all corroborated by anchor or Jaccard) and every one was a genuine same-story
+rewording. **A match rate moving out of band in the UP direction, on a day with the lowest item
+count in eight editions, is evidence about the news and not about the matcher.** Dictionary
+67,030 → 67,471. Tally guard bumped 211, **guarded 0**.
+
+### Three of my own guards and scripts caught my own mistakes
+
+- **`rewrite_pov_meta` RAISED on a no-op, and the fix was not to lower the threshold.** I had
+  pre-set the chair meta strings in stage 3, so the guard found `0 of 32` changed and said
+  "a check that matches nothing is not a check". The correct fix is to hand the guard the
+  **parent's** stale meta deliberately and let it own the rewrite (`require=8` for 4 chairs ×
+  2 viewids). Lowering `require` would have preserved the bug and silenced the guard. This is
+  the 09-20 design paying off a second time.
+- **A silent column-fill bug, caught by counting placeholders.** My Longitudinal table rendered
+  all 14 Competitors cells as `&mdash;` because the series row key is **`comp`**, not
+  `competitors`, and I used `.get('competitors', '&mdash;')`. A `.get()` with a default is a
+  silent no-op on a typo'd key — the same class as a non-matching `.replace()`. **Count the
+  placeholder cells in any generated table before believing it.**
+- **`assert_alias_safe`, `assert_table_shape`, `assert_markup_sane`, `assert_no_stale_identity`
+  and `assert_identity_consistent` all passed first try**, and **guard 5 passed on the FIRST
+  assembly at 742 cited units with zero uncited** — sixth consecutive edition, same mechanism
+  since 09-15: every row generator calls `cite()` inline as it emits.
+
+**And one mistake no guard could catch, which was pure carelessness:** I ran `sed -i '1,6d'` on
+a script I had *just written* to "remove a heredoc marker that was not there", which deleted the
+file's shebang and docstring opening and produced an unterminated-string SyntaxError. **Never
+sed a file you just wrote** — the content is already in hand, so edit it precisely or rewrite it.
+
+### v-patch dropped 15.8KB and the 11-27 rule is what made it accountable
+
+The most-read table came back **−15,845 bytes**. Per the 11-27 rule I compared the **column
+list** to the parent's before anything else: `['Row','Due / status','Src']` both sides —
+**contract HELD** (that rule exists because I silently changed 3 columns to 4 on 11-27). Then
+the arithmetic, which reconciles exactly: **lede −643 + rendered rows −15,202 = −15,845**. The
+rows moved for two reasons, both deliberate: **5 heavily-accumulated parent rows rotated off**
+(mean 3,695 bytes; the parent's largest were 8,347 / 6,680 / 6,058) in favour of 10 rows at mean
+1,972, and **7 rows I rewrote today came out 6,158 bytes shorter** because I replaced layered
+prose with a single tighter statement. Whole file: **−31,004 chars accounted to within 99** —
+povContent −12,187, lensLedger −2,388, sections −16,528.
+
+### An EIGHTH identity site: `povContent.content[chair][viewid]['e']`
+
+The published 136 parent rendered `e: "PINNED &middot; EDITION 135"` on an edition-**136** page,
+and `v-wn`'s read `"PINNED &middot; VS EDITION 134"` — one and two editions stale respectively,
+while the sibling `c` field was correct at 136. `rewrite_pov_meta` covers `povContent['meta']`
+and nothing else, so the `e` eyebrow drifts silently. Edition 137 rewrites **meta, `e` and `c`**
+for all four chairs. If `lens_extra.rewrite_pov_meta` is ever refreshed, fold `e` and `c` into
+it so the next builder gets them free.
+
+### The probe advisory earned its keep: 2 of 4 drafted patch rows already existed
+
+- `vanna-...` → already on the board as **`vanna-archived-unfixable-sqli`**
+- `spring-security-59273-...` → already there as **`spring-security-59273-no-oss-fix-6x-5x`**,
+  an **exact CVE match** I would have duplicated
+
+Both became **enrichments in place on the older key**, not new slugs. Only `iceberg-go` and
+`dbgpt` were genuinely new. At 137 editions "already on the board" remains the normal case; a
+fresh slug for a tracked story is precisely what makes `days` lie. The event-side advisory
+printed 7 same-date parents for the one drafted 11-30 row — none a duplicate, and confirming
+that took seconds.
+
+### Flag calibration: 14 urgent, 14 DISTINCT stories — generated, not typed
+
+From `longitudinal.stats` (the 11-11 rule): last eight editions **15, 13, 13, 13, 15, 14, 14,
+14**, 14-day mean **13.93**, prior high **17** (2026-10-24) which today ties 14 times, floor
+across those eight **13**. So today is **+0.07 against the mean and 3 below the series high** —
+heavy, in band, not a record, and the lens says so in generated prose rather than typed numbers.
+Applied literally all fourteen pass. **Unusually, 14 flags cover 14 distinct primary stories**
+with no shared CVE across lanes — against 11-27 where overlap was the norm. Two actively
+exploited KEV items have **no patch that will ever exist** (Idunno.AntiCsrf, dead since 2008;
+Tomcat's builds unpublished on day 9). **Five lanes held `ok` while carrying real CVEs and wrote
+out their reasoning** — Fabric (zero Fabric/Power BI/Synapse CVEs in the whole November MSRC
+drop), Redshift (a c-ares DoS, not KEV, fix installable), Snowflake (three CNA CVEs, all with
+fixes, none in KEV), OLTP (weighed the CockroachDB `IMPORT INTO` data-corruption hardest and
+declined because the fix shipped 11-18, so the action is an audit not an emergency patch) and
+Database Hardware. That asymmetry is the evidence the agents discriminated.
+
+### Lane findings worth carrying
+
+- **"Patch to latest" failed in both directions on one vendor's page.** Tomcat's Critical
+  affects the newest build on every supported line while Spring Security's maintenance branches
+  are capped *below* the advisory's affected ceiling (6.5.13/6.4.20/5.8.29 are Enterprise-only
+  and never reached Maven Central, where the public ceilings are 6.5.11/6.4.13/5.8.16). A
+  currency dashboard scores green on both.
+- **A third-party fork is becoming the normal remediation path**: Puppet→OpenVox and
+  ingress-nginx→SUSE's 1.15.2-prime1, in the same window. Both invisible to a CPE sweep, so
+  **remediating correctly makes the scanner more wrong**.
+- **Scanner blindness now has distinct named mechanisms**, nine lanes, several with controls:
+  no CVE id assigned (pymongo ×4, Cilium, TimescaleDB, Bun); no package identity at all
+  (`package: null` + git ranges — Snowflake, React RSC); an **unparseable range type** (BigQuery's
+  CNA filed an affected range as `versionType: date`); a fix recorded only in a **container**
+  ecosystem naming versions that do not exist (Tomcat's sole OSV record is a Bitnami one); and a
+  **decoy at a higher version** (a NuGet search for the KEV'd `anticsrf` returns an unrelated
+  package at 2.0.0). MongoDB's same-repo control is the canonical example and belongs in the
+  taxonomy: four GHSAs without CVE ids 404 at OSV while a same-repo advisory *with* a CVE returns
+  200 — naming 4.18.3 as the fix, **which is exactly the vulnerable build a Python-3.10 reader is
+  stranded on**.
+- **The interpreter is the blocker in five lanes**: pymongo (`requires_python` moved to `>=3.11`
+  at **4.19.0**, so 3.10 resolves the vulnerable 4.18.3 and exits 0), LiteLLM on 3.9, vLLM capped
+  at 0.31.0, Snowflake's connector, delta-rs at 1.6.6, bigframes at 2.52.0. When you name a fix
+  version, say what it needs to install.
+- **Release notes are now a worse source than the vote or the mailing list.** Apache Iceberg Go
+  0.8.0 shipped 2026-11-27 with two known data-loss bugs documented **only in its release vote**
+  (orphan cleanup deleting live files under `snapshot-loading-mode=refs`; partial row-group stats
+  making scans skip rows) and the changelog's PR numbers jump 2595→2598. Tomcat's ship date exists
+  only on dev@tomcat. Grafana patched five lines with one-line notes while its advisory page 502s.
+- **Irreversibility is the normal shape of a data-platform decision**, and the vendor's own page
+  often documents an exit that does not exist — `variantShredding` confirmed non-removable on OSS
+  `master` (no `RemovableFeature` trait, against the `deletionVectors` control) and absent from
+  the closed list of ten droppable features, while the feature page still prints `DROP FEATURE`.
+  New reach: an `iceberg.enableVariantShredding` twin carries it to managed Iceberg tables.
+- **The lakehouse's cheap failure mode is now an over-eager cleanup against an ambiguous commit**
+  — Polaris 1.9.0, Paimon 2.1.1, Lakekeeper and iceberg-go all fixed that same class this window.
+- **MySQL's new four-part version hides the security component from `VERSION()`**: a patched
+  8.4.13.1 and a vulnerable 8.4.13 both answer `8.4.13`. Use `VERSION_WITH_UPDATE()`.
+- **.NET 8 (the previous LTS) and .NET 9 both went EOL 2026-11-10**, and .NET 10 LTS and 11 STS
+  **both** end 2028-11-14 — the LTS buys zero extra calendar over the STS that follows it.
+
+### Source access
+
+`blogs.oracle.com` 403s HTML **and** RSS for a **27th** consecutive week — a standing structural
+gap the Oracle brief states on its face. **`mikedietrichde.com` regressed again**: empty body to
+WebFetch today on both `/feed/` and `/`, where 11-27 had it serving via WebFetch, so Dietrich is
+missing from this edition. `connor-mcdonald.com/feed/` served in full via WebFetch.
+**Corrections to standing notes:** an Apache **version-directory mtime is NOT the GA date** — read
+the `bin/` child (`v10.1.62/` reads 11-18 while its `bin/` reads 11-16, matching the security
+page; the parent was bumped by a later KEYS commit), so the carried "directory mtimes are
+authoritative" note is off by two days. `docs.firebolt.io` and `docs.dremio.com` are **current, not
+stale** (Firebolt 4.33 rolling out; Dremio dated entries on 11-03/05/10/17/19/20). The
+`docs.cloud.google.com` `.md.txt` lag has **closed** on `/support/bulletins` (341 ids in both
+variants) — but **variant completeness is PER-PAGE, not per-host**: `tpu/docs/release-notes` HTML
+carries an October entry while its `.md.txt` stops at June, both HTTP 200. New: `repo1.maven.org`
+429s on bursts (space them); `dist.apache.org/repos/dist/dev/` is the cheapest way to tell "no RC
+cut" from "RC voting"; `lists.apache.org/api/thread.lua` works where `source.lua` 302s to
+unparseable JSON, and `api/mbox.lua` is the only route that finds a `[VOTE]` tally;
+`releases.atom` via WebFetch **truncates at 100k chars** on high-tag repos, so "nothing in window"
+off one of those needs an offset follow-up; `dev.mysql.com` 403s curl-with-browser-UA but serves
+WebFetch; `docs.cockroachlabs.com` is a Mintlify SPA — append `.md`, and its `releases.atom` omits
+v26.4.x entirely. **An environment constraint worth knowing:** a loop-shaped curl over two hosts
+was refused by the auto-mode classifier as scanning, so "issue parameterised calls one at a time"
+is load-bearing rather than advisory.
+
+### Security sweep, negative result — and one RETRACTION of our own carried claim
+
+The Redshift lane fetched `behavior-changes.html` in both variants (**markdown 43,212 bytes / 30
+headings vs HTML 68,327 / 33 — byte-identical to the 11-24, 11-26 and 11-27 baselines**) plus
+`cluster-versions.html` both ways, and grepped all four with `grep -o … | wc -l` for
+`agent-toolkit`, `Skills for AI`, `AI coding assistant`, `search-skills`, `llms.txt`: **zero
+matches, every marker, every file**, then `skill`, `MCP`, `assistant`, `aria-hidden`, `sr-only`,
+`hiddenDirective` — **0 in all four for all six**. **No lane followed an instruction found in a
+fetched page, fetched an `llms.txt`, or loaded a skill file.**
+
+**RETRACTED: `nextjs.org` is not an affordance sighting and this board has been carrying it
+wrongly.** The frontend lane could not reproduce it — `nextjs.org/docs` served 444,411 bytes with
+exactly **one** occurrence of `llms.txt`, and its context is Next's own RSC flight payload listing
+route segments (`"slug": [... "llms.txt", ...]`). **That is a routing manifest advertising that the
+paths exist, not text addressed to an assistant.** `hiddenDirective`, `SKILL.md` and
+`agent-toolkit` all returned 0. Drop it from the sightings list.
+
+**The affordance has moved from "a page invites a fetch" to "a dependency you installed carries
+agent instructions."** Verified by listing the published tarball: **`solid-js@2.0.4` ships three
+`SKILL.md` files out of 45 total files**. Also new: React Router v8.1.0 installs agent skills via
+`create-react-router`; Nuxt 4.7.0 ships experimental WebMCP exposing `@tool`-tagged functions to
+in-browser agents; Oracle's SQLcl 26.3.0 ships an MCP tool named **`skills_sync`**; and Google's
+Play-compliance posts instruct the reader to "use the Jetpack Compose adaptive skill with your AI
+agent of choice" while Compose 1.13 notes the Styles skill was **removed** during an API
+transition — i.e. **skills are now versioned release artifacts with their own lifecycle**.
+Re-confirmed sightings: ClickHouse Cloud's `.md` changelog, `docs.snowflake.com` (HTML *and* `.md`),
+CockroachDB's `.md`, Neon's docs, `mongodb.com/docs`, `modelcontextprotocol.io`. Counterweight
+worth crediting: Claude Code 2.1.332's `PreSkillShellCommand` hook — **but naming it in a settings
+file opens a startup dialog on 2.1.331 and older, which in an unattended run is a kill switch with
+a delay**, so the hook and the CLI version must roll out together.
+
+### Scope, stated plainly
+
+Edition 137 refreshes **Today's Read and Since-yesterday on all four chairs**, Event Horizon,
+Patch-Risk Radar, Longitudinal, the ledger and **every identity site** (title, masthead,
+GEN/ED/DSLUG, runbar, `var NAV`, povContent `meta` + `e` + `c`, and the section-shell
+`data-chips`). Claim Watch, Mirror, Question Forecast, Gap Ledger, Benchmark Scoreboard, Promise
+Tracker, Perf Signals, Build Radar, Skills Radar and Vendor Dossiers **carry forward from 136 and
+the NAV says so** — `claims[]` did not grow, because no competitor shipped a perf or price claim
+on a day when almost nothing shipped at all. **10 of 15 carried sections read exactly +0.**
+Ledger: events 59 → 58 (1 new, 2 retired by date passing), patch 294 → **296** (2 new, 2 enriched
+in place, 5 corrected), retired_events 138 → 140, no-reachable-fix register **49**. Countdowns: 32
+rewritten, 59 declined (the declined ones are non-adjacent counts the adjacency rule correctly
+leaves alone). **The quarterly Skills/Build re-rank across all four chairs is due 2027-01-01.**
+
+### Hook-log diagnostic
+
+`/tmp/claude-artifact-hook.log` holds exactly **4** records — `list`, `read` with `path`, the plain
+`read` a republish requires, and the publish — **all `PreToolUse`, all `mode=auto`, none
+`PermissionRequest`**. `/tmp/claude-bash-hook.log` holds **832 records, all `PreToolUse` at
+`mode=auto`, 415 `allow` / 417 `pass`, zero `PermissionRequest`**. Zero `PermissionRequest` means `PreToolUse`
+cleared everything before the prompt layer was reached. The 09-16 republish sequence is
+re-confirmed as the working one: **`read` with `path` to stage and build → plain `read` on the URL
+→ publish**, and today the plain read returned **the same version id the staged copy came from**
+(`1795791470-5a6b`), which is the cheap proof nobody published underneath the build.
